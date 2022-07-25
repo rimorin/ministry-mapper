@@ -6,9 +6,8 @@ import { getDatabase, ref } from "firebase/database";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  
-};
+  };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-export default ref(getDatabase(app));
+export default getDatabase(app);
