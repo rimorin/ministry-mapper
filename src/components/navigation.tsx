@@ -5,6 +5,7 @@ import Home from './../components/home';
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ref, get, child} from "firebase/database";
 import { Routes, Route } from "react-router-dom";
+import { Container, Spinner } from 'react-bootstrap';
 
 interface RouteDetails {
     postalCode: String,
@@ -37,17 +38,21 @@ function Navigation() {
         // Update the document title using the browser API
       }, []);
     if (territories.length === 0) {
-        return <div></div>
+        return <Container className='d-flex align-items-center justify-content-center vh-100' fluid>
+        <Spinner animation="border" role="status">
+            <span className="visually-hidden">Loading...</span>
+        </Spinner>
+        </Container>
     }
     return (
-        <div className="container mt-3">
+        <Container fluid>
         <Routes>
           <Route path="/" element={<div></div>}/>
           {territories.map((item,index)=>
              <Route key={index} path={`/${item.postalCode}`} element={<Home postalcode={item.postalCode} name={item.name} />}/>
         )};
         </Routes>
-        </div>
+        </Container>
     );   
 }
 

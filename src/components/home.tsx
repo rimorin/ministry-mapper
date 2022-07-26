@@ -1,10 +1,11 @@
-import React, { MouseEventHandler, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './../App.css';
-import { ref, get, child, onValue, DataSnapshot, set} from "firebase/database";
+import { ref, child, onValue, DataSnapshot, set} from "firebase/database";
 import database from './../firebase';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
+import { Container, Table } from 'react-bootstrap';
 
 
 interface homeProps {
@@ -27,7 +28,17 @@ interface floorDetails {
 
 interface unitProps {
   isDone?: Boolean,
-  isDnc?: Boolean
+  isDnc?: Boolean,
+  type: String
+}
+
+interface valuesDetails {
+  floor : String,  
+  unit : String, 
+  done?: boolean, 
+  dnc?: boolean, 
+  type: string, 
+  note: string
 }
  
 function Home({postalcode, name} :homeProps) {
@@ -51,7 +62,6 @@ function Home({postalcode, name} :homeProps) {
       }
       dataList.push({floor: floor, units: unitsDetails});
     }
-    console.log(dataList);
     setFloors(dataList);
   }
 
@@ -60,22 +70,23 @@ function Home({postalcode, name} :homeProps) {
   };
 
   const handleClickModal = (event: React.MouseEvent<HTMLElement>, floor: String, unit: String) => {
-    setValues({ ...values, floor : floor,  unit : unit, done: false, dnc: false, type: "cn", notes: ""});
+    const floorUnits = floors.find(e => e.floor === floor);
+    const unitDetails = floorUnits?.units.find(e => e.number === unit);
+    console.log(unitDetails);
+    setValues({ ...values, floor : floor,  unit : unit, done: unitDetails?.done, dnc: unitDetails?.dnc, type: unitDetails?.type, note: unitDetails?.note});
     toggleModal();
   };
 
   const handleSubmitClick = (event: React.FormEvent<HTMLElement>) => {
     event.preventDefault();
-
-    // console.log(event.currentTarget);
-    console.log(values);
-    // const { floor, unit, done, dnc, type } = values;
-
-    // set(ref(db, `/${postalcode}/${values.floor}`), {
-    //   username: name,
-    //   email: email,
-    //   profile_picture : imageUrl
-    // });
+    const details = values as valuesDetails;
+    set(ref(database, `/${postalcode}/${details.floor}/${details.unit}`), {
+      done: details.done,
+      dnc: details.dnc,
+      type : details.type,
+      note: details.note
+    });
+    toggleModal();
   };
 
   const onFormChange = (e: React.ChangeEvent<HTMLElement>) => {
@@ -94,13 +105,18 @@ function Home({postalcode, name} :homeProps) {
   function UnitStatus(props: unitProps) {
     const isDone = props.isDone;
     const isDnc = props.isDnc;
-    let status;
+    const otherType = props.type;
+    let status = "";
     if (isDone) {
       status = "✅";
     }
 
     if (isDnc) {
       status = "❌";
+    }
+
+    if (otherType !== "cn") {
+      status += ` ${otherType}`;
     }
 
     return <div>{status}</div>;
@@ -121,8 +137,8 @@ function Home({postalcode, name} :homeProps) {
     return <div></div>
   }
   return (
-    <div>
-      <table className="table table-bordered">
+    <>
+      <Table bordered responsive="sm">
         <caption><a href={`http://maps.google.com.sg/maps?q=${postalcode}`} target="blank">{name}, {postalcode}</a></caption>
         <thead>
         <tr>
@@ -137,36 +153,35 @@ function Home({postalcode, name} :homeProps) {
            <tr key={`row-${index}`}>
            <th key={`${index}-${item.floor}`}  scope="row">{item.floor}</th>
            {item.units.map((element,index)=>(
-              <td onClick={(event) => handleClickModal(event, item.floor, element.number)} key={`${item.floor}-${element.number}`}><UnitStatus isDone={element.done} isDnc={element.dnc}/></td>
+              <td onClick={(event) => handleClickModal(event, item.floor, element.number)} key={`${item.floor}-${element.number}`}><UnitStatus isDone={element.done} isDnc={element.dnc} type={element.type}/></td>
            ))}
            </tr>
         )}
         </tbody>
-      </table>
+      </Table>
       <Modal show={isOpen}>
-        <Modal.Header closeButton>
-          <Modal.Title>Modal heading</Modal.Title>
+        <Modal.Header>
+          <Modal.Title>{`# ${(values as valuesDetails).floor} - ${(values as valuesDetails).unit}`}</Modal.Title>
         </Modal.Header>
         <Form onSubmit={handleSubmitClick}>
         <Modal.Body>
-        
           <Form.Group className="mb-3" controlId="formBasicCheckbox">
-            <Form.Check onChange={onFormChange} name='done' type="checkbox" label="Done" />
+            <Form.Check onChange={onFormChange} name='done' type="checkbox" label="Done" defaultChecked={(values as valuesDetails).done} />
           </Form.Group>
           <Form.Group className="mb-3" controlId="formBasicCheckbox">
-            <Form.Check onChange={onFormChange} name='dnc' type="checkbox" label="DNC" />
+            <Form.Check onChange={onFormChange} name='dnc' type="checkbox" label="DNC" defaultChecked={(values as valuesDetails).dnc} />
           </Form.Group>
-          <Form.Group className="mb-3" controlId="formBasicPassword">
+          <Form.Group className="mb-3" controlId="formBasicSelect">
           <Form.Label>Household</Form.Label>  
-          <Form.Select onChange={onFormChange} name='household' aria-label="Default select example">
+          <Form.Select onChange={onFormChange} name='type' aria-label="Default select example" value={(values as valuesDetails).type}>
             <option value="cn">Chinese</option>
             <option value="tm">Tamil</option>
             <option value="ml">Muslim</option>
           </Form.Select>
           </Form.Group>
-          <Form.Group className="mb-3" controlId="formBasicPassword">
+          <Form.Group className="mb-3" controlId="formBasicTextArea">
             <Form.Label>Notes</Form.Label>
-            <Form.Control onChange={onFormChange} name='notes' as="textarea" rows={3} aria-label="With textarea"/>
+            <Form.Control onChange={onFormChange} name='note' as="textarea" rows={3} aria-label="With textarea" value={(values as valuesDetails).note}/>
           </Form.Group>
         </Modal.Body>
         <Modal.Footer>
@@ -179,7 +194,7 @@ function Home({postalcode, name} :homeProps) {
         </Modal.Footer>
         </Form>
       </Modal>
-      </div>
+      </>
   );
 }
  
