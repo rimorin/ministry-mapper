@@ -108,15 +108,15 @@ function Home({postalcode, name} :homeProps) {
     const otherType = props.type;
     let status = "";
     if (isDone) {
-      status = "✅";
+      status = "✅ ";
     }
 
     if (isDnc) {
-      status = "❌";
+      status = "❌ ";
     }
 
     if (otherType !== "cn") {
-      status += ` ${otherType}`;
+      status += otherType;
     }
 
     return <div>{status}</div>;
@@ -189,7 +189,7 @@ function Home({postalcode, name} :homeProps) {
             Close
           </Button>
           <Button type='submit' variant="primary">
-            Save Changes
+            Save
           </Button>
         </Modal.Footer>
         </Form>
