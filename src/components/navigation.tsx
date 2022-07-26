@@ -5,9 +5,14 @@ import Home from './../components/home';
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ref, get, child} from "firebase/database";
 import { Routes, Route } from "react-router-dom";
+
+interface RouteDetails {
+    postalCode: String,
+    name: String
+}
 function Navigation() {
 
-    const [territories, setTerritories] = useState(Array<String>);
+    const [territories, setTerritories] = useState(Array<RouteDetails>);
 
     useEffect(() => {
         get(child(ref(database),'/territories')).then((snapshot) => {
@@ -18,7 +23,7 @@ function Navigation() {
                 for(const territory in data) {
                     const addresses = data[territory]["addresses"];
                     for(const address in addresses) {
-                        dataList.push(address);
+                        dataList.push({postalCode: address, name: addresses[address]["name"]});
                     }
                 }
                 console.log(dataList);
@@ -39,7 +44,7 @@ function Navigation() {
         <Routes>
           <Route path="/" element={<div></div>}/>
           {territories.map((item,index)=>
-             <Route key={index} path={`/${item}`} element={<Home postalcode={item} />}/>
+             <Route key={index} path={`/${item.postalCode}`} element={<Home postalcode={item.postalCode} name={item.name} />}/>
         )};
         </Routes>
         </div>

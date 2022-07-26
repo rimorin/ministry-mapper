@@ -4,17 +4,18 @@ import { ref, get, child, onValue, DataSnapshot, set} from "firebase/database";
 import database from './../firebase';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import Dropdown from 'react-bootstrap/Dropdown';
 import Form from 'react-bootstrap/Form';
 
 
 interface homeProps {
   postalcode?: String
+  name?: String
 }
 
 interface unitDetails {
   number: String,
-  status: String,
+  done: Boolean,
+  dnc: Boolean,
   note: String,
   type: String
 }
@@ -24,9 +25,12 @@ interface floorDetails {
   units: Array<unitDetails>
 }
 
-
+interface unitProps {
+  isDone?: Boolean,
+  isDnc?: Boolean
+}
  
-function Home({postalcode} :homeProps) {
+function Home({postalcode, name} :homeProps) {
 
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -43,7 +47,7 @@ function Home({postalcode} :homeProps) {
       let unitsDetails = [];
       const units = data.val()[floor];
       for(const unit in units) {
-        unitsDetails.push({number: unit, status: units[unit]["status"], note: units[unit]["note"], type: units[unit]["type"] });
+        unitsDetails.push({number: unit, done: units[unit]["done"], dnc: units[unit]["dnc"], note: units[unit]["note"], type: units[unit]["type"] });
       }
       dataList.push({floor: floor, units: unitsDetails});
     }
@@ -56,23 +60,51 @@ function Home({postalcode} :homeProps) {
   };
 
   const handleClickModal = (event: React.MouseEvent<HTMLElement>, floor: String, unit: String) => {
-    console.log(floor , unit);
-    // const { value } = event.target  as HTMLButtonElement;
+    setValues({ ...values, floor : floor,  unit : unit, done: false, dnc: false, type: "cn", notes: ""});
     toggleModal();
   };
 
   const handleSubmitClick = (event: React.FormEvent<HTMLElement>) => {
     event.preventDefault();
+
     // console.log(event.currentTarget);
-    // console.log(event);
+    console.log(values);
+    // const { floor, unit, done, dnc, type } = values;
+
+    // set(ref(db, `/${postalcode}/${values.floor}`), {
+    //   username: name,
+    //   email: email,
+    //   profile_picture : imageUrl
+    // });
   };
 
   const onFormChange = (e: React.ChangeEvent<HTMLElement>) => {
-    // console.log(e);
-    const {name, value} = e.target  as HTMLButtonElement;
-    setValues({ ...values, [name]: value });
-    console.log(name, value);
+    // console.log(e.target.checked);
+    const {name, value, checked } = e.target  as HTMLInputElement;
+
+    if (name === "done" || name === "dnc") {
+      setValues({ ...values, [name]: checked });
+    } else {
+      setValues({ ...values, [name]: value });
+    }
+    
+    console.log(name, value, checked);
   };
+
+  function UnitStatus(props: unitProps) {
+    const isDone = props.isDone;
+    const isDnc = props.isDnc;
+    let status;
+    if (isDone) {
+      status = "✅";
+    }
+
+    if (isDnc) {
+      status = "❌";
+    }
+
+    return <div>{status}</div>;
+  }
 
 
   useEffect(() => {
@@ -91,7 +123,7 @@ function Home({postalcode} :homeProps) {
   return (
     <div>
       <table className="table table-bordered">
-        <caption>{postalcode}</caption>
+        <caption><a href={`http://maps.google.com.sg/maps?q=${postalcode}`} target="blank">{name}, {postalcode}</a></caption>
         <thead>
         <tr>
           <th scope="col">lvl</th>
@@ -105,7 +137,7 @@ function Home({postalcode} :homeProps) {
            <tr key={`row-${index}`}>
            <th key={`${index}-${item.floor}`}  scope="row">{item.floor}</th>
            {item.units.map((element,index)=>(
-              <td onClick={(event) => handleClickModal(event, item.floor, element.number)} key={`${item.floor}-${element.number}`}>{element.status}</td>
+              <td onClick={(event) => handleClickModal(event, item.floor, element.number)} key={`${item.floor}-${element.number}`}><UnitStatus isDone={element.done} isDnc={element.dnc}/></td>
            ))}
            </tr>
         )}
