@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-
+import { useState, useEffect } from 'react';
 import database from './../firebase';
 import Home from './../components/home';
-import "bootstrap/dist/css/bootstrap.min.css";
 import { ref, get, child} from "firebase/database";
 import { Routes, Route } from "react-router-dom";
-import { Container, Spinner } from 'react-bootstrap';
+import { Container } from 'react-bootstrap';
+import Loader from './loader';
+import "bootstrap/dist/css/bootstrap.min.css";
 
 interface RouteDetails {
     postalCode: String,
@@ -16,18 +16,23 @@ function Navigation() {
     const [territories, setTerritories] = useState(Array<RouteDetails>);
 
     useEffect(() => {
-        get(child(ref(database),'/territories')).then((snapshot) => {
+        get(child(ref(database),'/congregations')).then((snapshot) => {
             if (snapshot.exists()) {
                 let dataList = [];
-                console.log("Getting nav data");
-                const data = snapshot.val();
-                for(const territory in data) {
-                    const addresses = data[territory]["addresses"];
-                    for(const address in addresses) {
-                        dataList.push({postalCode: address, name: addresses[address]["name"]});
+                const congregations = snapshot.val();
+                for(const congregation in congregations) {
+                    const territories = congregations[congregation]["territories"];
+                    for (const territory in territories) {
+                        const addresses = territories[territory]["addresses"];
+                        for(const address in addresses) {
+                            const details = {} as RouteDetails
+                            details.name = addresses[address]["name"];
+                            details.postalCode = address;
+                            dataList.push(details);
+                        }
                     }
+                    
                 }
-                console.log(dataList);
                 setTerritories(dataList);
             } else {
             console.log("No data available");
@@ -35,17 +40,12 @@ function Navigation() {
         }).catch((error) => {
             console.error(error);
         });
-        // Update the document title using the browser API
       }, []);
     if (territories.length === 0) {
-        return <Container className='d-flex align-items-center justify-content-center vh-100' fluid>
-        <Spinner animation="border" role="status">
-            <span className="visually-hidden">Loading...</span>
-        </Spinner>
-        </Container>
+        return <Loader/>
     }
     return (
-        <Container fluid>
+        <Container className='pt-2' fluid>
         <Routes>
           <Route path="/" element={<div></div>}/>
           {territories.map((item,index)=>

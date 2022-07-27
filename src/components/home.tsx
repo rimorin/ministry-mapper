@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import './../App.css';
 import { ref, child, onValue, DataSnapshot, set} from "firebase/database";
 import database from './../firebase';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import { Container, Table } from 'react-bootstrap';
+import { Table } from 'react-bootstrap';
+import Loader from './loader';
 
 
 interface homeProps {
@@ -46,13 +46,13 @@ function Home({postalcode, name} :homeProps) {
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [values, setValues] = useState<Object>({});
-  const postalReference = child(ref(database),`/${postalcode}`);
+  const postalReference = child(ref(database),`/${postalcode}/units`);
 
-  function toggleModal() {
+  const toggleModal = () => {
     setIsOpen(!isOpen);
   }
 
-  function processData(data: DataSnapshot) {
+  const processData = (data: DataSnapshot)=> {
     let dataList = []
     for(const floor in data.val()) {
       let unitsDetails = [];
@@ -72,7 +72,6 @@ function Home({postalcode, name} :homeProps) {
   const handleClickModal = (event: React.MouseEvent<HTMLElement>, floor: String, unit: String) => {
     const floorUnits = floors.find(e => e.floor === floor);
     const unitDetails = floorUnits?.units.find(e => e.number === unit);
-    console.log(unitDetails);
     setValues({ ...values, floor : floor,  unit : unit, done: unitDetails?.done, dnc: unitDetails?.dnc, type: unitDetails?.type, note: unitDetails?.note});
     toggleModal();
   };
@@ -80,7 +79,7 @@ function Home({postalcode, name} :homeProps) {
   const handleSubmitClick = (event: React.FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
-    set(ref(database, `/${postalcode}/${details.floor}/${details.unit}`), {
+    set(ref(database, `/${postalcode}/units/${details.floor}/${details.unit}`), {
       done: details.done,
       dnc: details.dnc,
       type : details.type,
@@ -90,7 +89,6 @@ function Home({postalcode, name} :homeProps) {
   };
 
   const onFormChange = (e: React.ChangeEvent<HTMLElement>) => {
-    // console.log(e.target.checked);
     const {name, value, checked } = e.target  as HTMLInputElement;
 
     if (name === "done" || name === "dnc") {
@@ -98,11 +96,9 @@ function Home({postalcode, name} :homeProps) {
     } else {
       setValues({ ...values, [name]: value });
     }
-    
-    console.log(name, value, checked);
   };
 
-  function UnitStatus(props: unitProps) {
+  const UnitStatus = (props: unitProps) => {
     const isDone = props.isDone;
     const isDnc = props.isDnc;
     const otherType = props.type;
@@ -126,15 +122,12 @@ function Home({postalcode, name} :homeProps) {
   useEffect(() => {
     onValue(postalReference, (snapshot) => {
         if (snapshot.exists()) {
-            console.log("Getting data");
             processData(snapshot);
         }
     });
-    // Update the document title using the browser API
   }, []);
-
   if (floors.length === 0) {
-    return <div></div>
+    return <Loader/>
   }
   return (
     <>
@@ -142,18 +135,18 @@ function Home({postalcode, name} :homeProps) {
         <caption><a href={`http://maps.google.com.sg/maps?q=${postalcode}`} target="blank">{name}, {postalcode}</a></caption>
         <thead>
         <tr>
-          <th scope="col">lvl</th>
+          <th scope="col" className="text-center">lvl/unit</th>
         {floors && floors[0].units.map((item,index)=>
-           <th key={`${index}-${item.number}`} scope="col">{item.number}</th>
+           <th key={`${index}-${item.number}`} scope="col" className="text-center">{item.number}</th>
         )}
         </tr>
         </thead>
         <tbody>
         {floors && floors.map((item,index)=>
            <tr key={`row-${index}`}>
-           <th key={`${index}-${item.floor}`}  scope="row">{item.floor}</th>
+           <th className="text-center" key={`${index}-${item.floor}`}  scope="row">{item.floor}</th>
            {item.units.map((element,index)=>(
-              <td onClick={(event) => handleClickModal(event, item.floor, element.number)} key={`${item.floor}-${element.number}`}><UnitStatus isDone={element.done} isDnc={element.dnc} type={element.type}/></td>
+              <td align='center' onClick={(event) => handleClickModal(event, item.floor, element.number)} key={`${item.floor}-${element.number}`}><UnitStatus isDone={element.done} isDnc={element.dnc} type={element.type}/></td>
            ))}
            </tr>
         )}
@@ -165,10 +158,10 @@ function Home({postalcode, name} :homeProps) {
         </Modal.Header>
         <Form onSubmit={handleSubmitClick}>
         <Modal.Body>
-          <Form.Group className="mb-3" controlId="formBasicCheckbox">
+          <Form.Group className="mb-3" controlId="formBasicDoneCheckbox">
             <Form.Check onChange={onFormChange} name='done' type="checkbox" label="Done" defaultChecked={(values as valuesDetails).done} />
           </Form.Group>
-          <Form.Group className="mb-3" controlId="formBasicCheckbox">
+          <Form.Group className="mb-3" controlId="formBasicDncCheckbox">
             <Form.Check onChange={onFormChange} name='dnc' type="checkbox" label="DNC" defaultChecked={(values as valuesDetails).dnc} />
           </Form.Group>
           <Form.Group className="mb-3" controlId="formBasicSelect">
