@@ -1,5 +1,5 @@
-function admin(){
-    return <></>
+function admin() {
+  return <></>;
 }
 
 export default admin;
