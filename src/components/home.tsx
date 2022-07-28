@@ -137,6 +137,7 @@ function Home({ postalcode, name }: homeProps) {
   };
 
   useEffect(() => {
+    document.title = `${name}`;
     onValue(postalReference, (snapshot) => {
       if (snapshot.exists()) {
         processData(snapshot);
