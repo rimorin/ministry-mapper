@@ -151,6 +151,10 @@ function Home({ postalcode, name }: homeProps) {
     <>
       <Helmet>
         <title>{name}</title>
+        <meta
+          name="description"
+          content={`These are units of ${name}. To update an unit, tap on the unit box and update accordingly. For any other issues, please indicate them in the feedback.`}
+        />
         <meta property="og:title" content={`${name}`} />
         <meta
           property="og:description"
