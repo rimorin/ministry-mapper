@@ -1,8 +1,13 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-import Navigation from './components/navigation';
+import { HelmetProvider } from "react-helmet-async";
+import Navigation from "./components/navigation";
 
 function App() {
-  return <Navigation/>;
+  return (
+    <HelmetProvider>
+      <Navigation />
+    </HelmetProvider>
+  );
 }
 
 export default App;

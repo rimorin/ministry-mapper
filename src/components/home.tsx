@@ -6,6 +6,7 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { Table } from "react-bootstrap";
 import Loader from "./loader";
+import { Helmet } from "react-helmet-async";
 interface homeProps {
   postalcode?: String;
   name?: String;
@@ -137,7 +138,6 @@ function Home({ postalcode, name }: homeProps) {
   };
 
   useEffect(() => {
-    document.title = `${name}`;
     onValue(postalReference, (snapshot) => {
       if (snapshot.exists()) {
         processData(snapshot);
@@ -149,6 +149,14 @@ function Home({ postalcode, name }: homeProps) {
   }
   return (
     <>
+      <Helmet>
+        <title>{name}</title>
+        <meta property="og:title" content={`${name}`} />
+        <meta
+          property="og:description"
+          content={`These are units of ${name}. To update an unit, tap on the unit box and update accordingly. For any other issues, please indicate them in the feedback.`}
+        />
+      </Helmet>
       <Table bordered responsive="sm">
         <caption>
           <a
