@@ -6,7 +6,6 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { Table } from "react-bootstrap";
 import Loader from "./loader";
-import { Helmet } from "react-helmet-async";
 interface homeProps {
   postalcode?: String;
   name?: String;
