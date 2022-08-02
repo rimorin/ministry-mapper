@@ -6,38 +6,8 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { Table } from "react-bootstrap";
 import Loader from "./loader";
-interface homeProps {
-  postalcode?: String;
-  name?: String;
-}
-
-interface unitDetails {
-  number: String;
-  done: Boolean;
-  dnc: Boolean;
-  note: String;
-  type: String;
-}
-
-interface floorDetails {
-  floor: String;
-  units: Array<unitDetails>;
-}
-
-interface unitProps {
-  isDone?: Boolean;
-  isDnc?: Boolean;
-  type: String;
-}
-
-interface valuesDetails {
-  floor: String;
-  unit: String;
-  done?: boolean;
-  dnc?: boolean;
-  type: string;
-  note: string;
-}
+import { floorDetails, homeProps, unitProps, valuesDetails } from "./interface";
+import TableHeader from "./table";
 
 function Home({ postalcode, name }: homeProps) {
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
@@ -150,31 +120,11 @@ function Home({ postalcode, name }: homeProps) {
   return (
     <>
       <Table bordered responsive="sm">
-        <caption>
-          <a
-            href={`http://maps.google.com.sg/maps?q=${postalcode}`}
-            target="blank"
-          >
-            {name}, {postalcode}
-          </a>
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col" className="text-center">
-              lvl/unit
-            </th>
-            {floors &&
-              floors[0].units.map((item, index) => (
-                <th
-                  key={`${index}-${item.number}`}
-                  scope="col"
-                  className="text-center"
-                >
-                  {item.number}
-                </th>
-              ))}
-          </tr>
-        </thead>
+        <TableHeader
+          name={`${name}`}
+          postalcode={`${postalcode}`}
+          floors={floors}
+        />
         <tbody>
           {floors &&
             floors.map((item, index) => (
@@ -241,6 +191,8 @@ function Home({ postalcode, name }: homeProps) {
               >
                 <option value="cn">Chinese</option>
                 <option value="tm">Tamil</option>
+                <option value="in">Indonesian</option>
+                <option value="bm">Burmese</option>
                 <option value="ml">Muslim</option>
               </Form.Select>
             </Form.Group>
