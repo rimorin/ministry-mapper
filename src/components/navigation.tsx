@@ -52,9 +52,9 @@ function Navigation() {
     return (
         <Container className='pt-2' fluid>
         <Routes>
-          <Route path="/" element={<div></div>}/>
+          <Route path="/" element={<></>}/>
           {congregations.map((item,index)=>
-             <Route key={index} path={`admin/${item}`} element={<Admin congregationCode={item} />}/>)};
+             <Route key={index} path={`admin/${item}`} element={<Admin congregationCode={item}/>}/>)};
           {territories.map((item,index)=>
              <Route key={index} path={`/${item.postalCode}`} element={<Home postalcode={item.postalCode} name={item.name} />}/>
         )};
