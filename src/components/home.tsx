@@ -4,7 +4,7 @@ import database from "./../firebase";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import { Table } from "react-bootstrap";
+import { Container, Navbar, Table } from "react-bootstrap";
 import Loader from "./loader";
 import { floorDetails, homeProps, valuesDetails } from "./interface";
 import TableHeader from "./table";
@@ -100,6 +100,31 @@ function Home({ postalcode, name }: homeProps) {
   }
   return (
     <>
+      <Navbar bg="light" expand="sm">
+        <Container fluid>
+          <Navbar.Brand>{name}</Navbar.Brand>
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <Navbar.Collapse
+            id="basic-navbar-nav"
+            className="justify-content-end"
+          >
+            <Form className="d-flex">
+              <Button
+                className="me-2"
+                onClick={() => {
+                  window.open(
+                    `http://maps.google.com.sg/maps?q=${postalcode}`,
+                    "_blank"
+                  );
+                }}
+              >
+                Direction
+              </Button>
+              <Button className="me-2">Feedback</Button>
+            </Form>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
       <Table bordered responsive="sm">
         <TableHeader
           name={`${name}`}

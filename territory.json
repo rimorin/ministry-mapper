@@ -1,23 +1,22 @@
 {
   "congregations": {
     "wn": {
-      "name" : "Woodlands North",
+      "name": "Woodlands North",
       "territories": {
         "W1": {
           "name": "Woodlands",
           "addresses": {
-            "730734": { "name": "734, Woodlands Circle"}
-            }
+            "730734": { "name": "734, Woodlands Circle" }
+          }
         },
         "M2": {
           "name": "Marsiling",
           "addresses": {
-            "730101": { "name": "101, Woodlands Street 13"}
+            "730101": { "name": "101, Woodlands Street 13" }
           }
         }
       }
     }
-    
   },
   "730734": {
     "units": {
@@ -143,10 +142,6 @@
         "367": { "done": false, "dnc": false, "note": "", "type": "cn" }
       }
     },
-    "information" : {
-      "note": "",
-      "feedback": ""
-    }
-    
+    "feedback": ""
   }
 }
