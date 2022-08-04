@@ -6,8 +6,9 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { Table } from "react-bootstrap";
 import Loader from "./loader";
-import { floorDetails, homeProps, unitProps, valuesDetails } from "./interface";
+import { floorDetails, homeProps, valuesDetails } from "./interface";
 import TableHeader from "./table";
+import UnitStatus from "./unit";
 
 function Home({ postalcode, name }: homeProps) {
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
@@ -86,26 +87,6 @@ function Home({ postalcode, name }: homeProps) {
     }
   };
 
-  const UnitStatus = (props: unitProps) => {
-    const isDone = props.isDone;
-    const isDnc = props.isDnc;
-    const otherType = props.type;
-    let status = "";
-    if (isDone) {
-      status = "✅ ";
-    }
-
-    if (isDnc) {
-      status = "❌ ";
-    }
-
-    if (otherType !== "cn") {
-      status += otherType;
-    }
-
-    return <div>{status}</div>;
-  };
-
   useEffect(() => {
     document.title = `${name}`;
     onValue(postalReference, (snapshot) => {
@@ -136,7 +117,7 @@ function Home({ postalcode, name }: homeProps) {
                 >
                   {item.floor}
                 </th>
-                {item.units.map((element, index) => (
+                {item.units.map((element, _) => (
                   <td
                     align="center"
                     onClick={(event) =>
@@ -148,6 +129,7 @@ function Home({ postalcode, name }: homeProps) {
                       isDone={element.done}
                       isDnc={element.dnc}
                       type={element.type}
+                      note={element.note}
                     />
                   </td>
                 ))}

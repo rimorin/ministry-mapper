@@ -20,6 +20,7 @@ export interface unitProps {
   isDone?: Boolean;
   isDnc?: Boolean;
   type: String;
+  note?: String;
 }
 
 export interface valuesDetails {
@@ -29,4 +30,5 @@ export interface valuesDetails {
   dnc?: boolean;
   type: string;
   note: string;
+  postal?: String;
 }
