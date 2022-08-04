@@ -1,4 +1,4 @@
-import { child, onValue, ref, set } from "firebase/database";
+import { child, onValue, ref, set, get } from "firebase/database";
 import React, { useEffect, useState } from "react";
 import database from "./../firebase";
 import Container from "react-bootstrap/Container";
@@ -9,21 +9,14 @@ import { Button, Form, Modal, Table } from "react-bootstrap";
 import Loader from "./loader";
 import { RWebShare } from "react-web-share";
 import UnitStatus from "./unit";
-import { valuesDetails } from "./interface";
-interface adminProps {
-  congregationCode: String;
-}
-
-interface territoryDetails {
-  code: String;
-  name: String;
-  addresses: Array<Object>;
-}
-
-interface addressDetails {
-  postalcode: String;
-  floors: Array<Object>;
-}
+import {
+  valuesDetails,
+  territoryDetails,
+  addressDetails,
+  adminProps
+} from "./interface";
+import { confirmAlert } from "react-confirm-alert"; // Import
+import "react-confirm-alert/src/react-confirm-alert.css"; // Import css
 
 function Admin({ congregationCode }: adminProps) {
   const [name, setName] = useState<String>();
@@ -41,23 +34,51 @@ function Admin({ congregationCode }: adminProps) {
     eventKey: string | null,
     e: React.SyntheticEvent<unknown>
   ) => {
-    setAddresses([]);
     const territoryDetails = territories.find((e) => e.code === eventKey);
     const territoryAddresses = territoryDetails?.addresses;
+    setTerritory(`${territoryDetails?.name}`);
+    setAddresses([]);
     for (const territory in territoryAddresses) {
       onValue(child(ref(database), `/${territory}/units`), (snapshot) => {
         if (snapshot.exists()) {
-          setAddresses([
-            ...addresses,
-            {
-              postalcode: `${territory}`,
-              floors: snapshot.val()
-            }
-          ]);
+          const addressData = {
+            name: territoryAddresses[territory].name,
+            postalcode: `${territory}`,
+            floors: snapshot.val()
+          };
+          let updated_addresses = addresses.map((u) =>
+            u.postalcode !== territory ? u : addressData
+          );
+          if (!addresses.find((e) => e.postalcode === territory)) {
+            updated_addresses.push(addressData);
+          }
+          setAddresses(updated_addresses);
         }
       });
     }
-    setTerritory(`${territoryDetails?.name}`);
+  };
+
+  const resetBlock = (postalcode: String) => {
+    const blockAddresses = addresses.find((e) => e.postalcode === postalcode);
+    if (!blockAddresses) return;
+
+    for (const floor in blockAddresses.floors) {
+      const floorUnits = blockAddresses.floors[floor];
+      Object.values(floorUnits).map((element, index) => {
+        set(
+          ref(
+            database,
+            `/${postalcode}/units/${floor}/${Object.keys(floorUnits)[index]}`
+          ),
+          {
+            done: false,
+            dnc: element.dnc,
+            type: element.type,
+            note: element.note
+          }
+        );
+      });
+    }
   };
 
   const toggleModal = () => {
@@ -88,7 +109,6 @@ function Admin({ congregationCode }: adminProps) {
       note: note,
       postal: postal
     });
-    console.log(values);
     toggleModal();
   };
 
@@ -128,19 +148,16 @@ function Admin({ congregationCode }: adminProps) {
         const congregationTerritories = data["territories"];
         let territoryList = [];
         for (const territory in congregationTerritories) {
-          const details = congregationTerritories[territory]["name"];
+          const name = congregationTerritories[territory]["name"];
           const addresses = congregationTerritories[territory]["addresses"];
-          console.log(congregationTerritories[territory]);
           territoryList.push({
             code: territory,
-            name: details,
+            name: name,
             addresses: addresses
           });
         }
         setTerritories(territoryList);
         setName(`${data["name"]}`);
-      } else {
-        console.log("No data");
       }
     });
   }, []);
@@ -179,7 +196,7 @@ function Admin({ congregationCode }: adminProps) {
       </Navbar>
       {addresses &&
         addresses.map((addressElement) => (
-          <div>
+          <div key={`div-${addressElement.postalcode}`}>
             <Navbar
               bg="light"
               expand="sm"
@@ -187,17 +204,21 @@ function Admin({ congregationCode }: adminProps) {
               key={`navbar-${addressElement.postalcode}`}
             >
               <Container fluid>
-                <Navbar.Brand href="#">
+                <Navbar.Brand>
                   <a
+                    key={`link-${addressElement.postalcode}`}
                     href={`http://maps.google.com.sg/maps?q=${addressElement.postalcode}`}
                     target="blank"
                   >
-                    {name}, {addressElement.postalcode}
+                    {addressElement.name}
                   </a>
                 </Navbar.Brand>
                 <Navbar.Toggle aria-controls="navbarScroll" />
-                <Navbar.Collapse id="navbarScroll">
-                  <Form className="d-flex justify-content-end">
+                <Navbar.Collapse
+                  id="navbarScroll"
+                  className="justify-content-end"
+                >
+                  <Form className="d-flex">
                     <RWebShare
                       data={{
                         text: `These are unit numbers for ${addressElement.postalcode}. To update a unit, please tap on a unit box and update its details accordingly.`,
@@ -207,7 +228,30 @@ function Admin({ congregationCode }: adminProps) {
                     >
                       <Button className="me-2">Share</Button>
                     </RWebShare>
-                    <Button className="me-2">Reset</Button>
+                    <Button
+                      className="me-2"
+                      onClick={() =>
+                        confirmAlert({
+                          title: `Resetting ${addressElement.name}`,
+                          message: "Are you sure you want to do this ?",
+                          buttons: [
+                            {
+                              label: "Yes",
+                              onClick: () =>
+                                resetBlock(addressElement.postalcode)
+                            },
+                            {
+                              label: "No",
+                              onClick: () => {
+                                return;
+                              }
+                            }
+                          ]
+                        })
+                      }
+                    >
+                      Reset
+                    </Button>
                   </Form>
                 </Navbar.Collapse>
               </Container>
@@ -256,7 +300,7 @@ function Admin({ congregationCode }: adminProps) {
                                 event,
                                 addressElement.postalcode,
                                 `${floorIndex}`,
-                                `${Object.keys(detailsElement)[0]}`,
+                                `${Object.keys(floorElement)[index]}`,
                                 detailsElement.done,
                                 detailsElement.dnc,
                                 detailsElement.type,
@@ -283,9 +327,9 @@ function Admin({ congregationCode }: adminProps) {
         ))}
       <Modal show={isOpen}>
         <Modal.Header>
-          <Modal.Title>{`${(values as valuesDetails).postal} - # ${
+          <Modal.Title>{`${(values as valuesDetails).postal} - (#${
             (values as valuesDetails).floor
-          } - ${(values as valuesDetails).unit}`}</Modal.Title>
+          } - ${(values as valuesDetails).unit})`}</Modal.Title>
         </Modal.Header>
         <Form onSubmit={handleSubmitClick}>
           <Modal.Body>

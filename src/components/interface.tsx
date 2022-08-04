@@ -32,3 +32,19 @@ export interface valuesDetails {
   note: string;
   postal?: String;
 }
+
+export interface adminProps {
+  congregationCode: String;
+}
+
+export interface territoryDetails {
+  code: String;
+  name: String;
+  addresses: any;
+}
+
+export interface addressDetails {
+  name: String;
+  postalcode: String;
+  floors: Array<Object>;
+}
