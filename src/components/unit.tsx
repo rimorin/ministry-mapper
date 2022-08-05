@@ -5,7 +5,12 @@ const UnitStatus = (props: unitProps) => {
   const isDnc = props.isDnc;
   const otherType = props.type;
   const note = props.note;
+  const isInvalid = props.isInvalid;
   let status = "";
+
+  if (isInvalid) {
+    return <div>🚫</div>
+  }
   if (isDone) {
     status = "✅ ";
   }

@@ -13,11 +13,18 @@ import UnitStatus from "./unit";
 function Home({ postalcode, name }: homeProps) {
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isFeedback, setIsFeedback] = useState<boolean>(false);
   const [values, setValues] = useState<Object>({});
   const postalReference = child(ref(database), `/${postalcode}/units`);
+  const postalFeedback = child(ref(database), `/${postalcode}/feedback`);
 
-  const toggleModal = () => {
-    setIsOpen(!isOpen);
+  const toggleModal = (isModal: boolean) => {
+    if(isModal){
+      setIsOpen(!isOpen);
+    } else {
+      setIsFeedback(!isFeedback);
+    }
+    
   };
 
   const processData = (data: DataSnapshot) => {
@@ -31,7 +38,8 @@ function Home({ postalcode, name }: homeProps) {
           done: units[unit]["done"],
           dnc: units[unit]["dnc"],
           note: units[unit]["note"],
-          type: units[unit]["type"]
+          type: units[unit]["type"],
+          invalid: units[unit]["invalid"]
         });
       }
       dataList.push({ floor: floor, units: unitsDetails });
@@ -39,8 +47,8 @@ function Home({ postalcode, name }: homeProps) {
     setFloors(dataList);
   };
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    toggleModal();
+  const handleClick = (event: React.MouseEvent<HTMLElement>, isModal: boolean) => {
+    toggleModal(isModal);
   };
 
   const handleClickModal = (
@@ -57,9 +65,10 @@ function Home({ postalcode, name }: homeProps) {
       done: unitDetails?.done,
       dnc: unitDetails?.dnc,
       type: unitDetails?.type,
-      note: unitDetails?.note
+      note: unitDetails?.note,
+      invalid: unitDetails?.invalid
     });
-    toggleModal();
+    toggleModal(true);
   };
 
   const handleSubmitClick = (event: React.FormEvent<HTMLElement>) => {
@@ -71,16 +80,35 @@ function Home({ postalcode, name }: homeProps) {
         done: details.done,
         dnc: details.dnc,
         type: details.type,
-        note: details.note
+        note: details.note,
+        invalid: details.invalid
       }
     );
-    toggleModal();
+    toggleModal(true);
+  };
+
+  const handleClickFeedback = (
+    event: React.MouseEvent<HTMLElement>,
+  ) => {
+    toggleModal(false);
+  };
+
+  const handleSubmitFeedback = (event: React.FormEvent<HTMLElement>) => {
+    event.preventDefault();
+    const details = values as valuesDetails;
+    console.log("Submit fb");
+    console.log(details);
+    set(
+      ref(database, `/${postalcode}/feedback`),
+      details.feedback
+    );
+    toggleModal(false);
   };
 
   const onFormChange = (e: React.ChangeEvent<HTMLElement>) => {
     const { name, value, checked } = e.target as HTMLInputElement;
 
-    if (name === "done" || name === "dnc") {
+    if (name === "done" || name === "dnc" || name === "invalid") {
       setValues({ ...values, [name]: checked });
     } else {
       setValues({ ...values, [name]: value });
@@ -92,6 +120,11 @@ function Home({ postalcode, name }: homeProps) {
     onValue(postalReference, (snapshot) => {
       if (snapshot.exists()) {
         processData(snapshot);
+      }
+    });
+    onValue(postalFeedback, (snapshot) => {
+      if (snapshot.exists()) {
+        setValues({ ...values, feedback: snapshot.val() });
       }
     });
   }, []);
@@ -120,7 +153,7 @@ function Home({ postalcode, name }: homeProps) {
               >
                 Direction
               </Button>
-              <Button className="me-2">Feedback</Button>
+              <Button className="me-2" onClick={handleClickFeedback}>Feedback</Button>
             </Form>
           </Navbar.Collapse>
         </Container>
@@ -155,6 +188,7 @@ function Home({ postalcode, name }: homeProps) {
                       isDnc={element.dnc}
                       type={element.type}
                       note={element.note}
+                      isInvalid={element.invalid}
                     />
                   </td>
                 ))}
@@ -162,6 +196,33 @@ function Home({ postalcode, name }: homeProps) {
             ))}
         </tbody>
       </Table>
+      <Modal show={isFeedback}>
+        <Modal.Header>
+          <Modal.Title>{`Feedback on ${name}`}</Modal.Title>
+        </Modal.Header>
+        <Form onSubmit={handleSubmitFeedback}>
+          <Modal.Body>
+            <Form.Group className="mb-3" controlId="formBasicFeedbackTextArea">
+              <Form.Control
+                onChange={onFormChange}
+                name="feedback"
+                as="textarea"
+                rows={5}
+                aria-label="With textarea"
+                value={(values as valuesDetails).feedback}
+              />
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={(e) => handleClick(e, false)}>
+              Close
+            </Button>
+            <Button type="submit" variant="primary">
+              Save
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
       <Modal show={isOpen}>
         <Modal.Header>
           <Modal.Title>{`# ${(values as valuesDetails).floor} - ${
@@ -186,6 +247,15 @@ function Home({ postalcode, name }: homeProps) {
                 type="checkbox"
                 label="DNC"
                 defaultChecked={(values as valuesDetails).dnc}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="formBasicInvalidCheckbox">
+              <Form.Check
+                onChange={onFormChange}
+                name="invalid"
+                type="checkbox"
+                label="Invalid"
+                defaultChecked={(values as valuesDetails).invalid}
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicSelect">
@@ -216,7 +286,7 @@ function Home({ postalcode, name }: homeProps) {
             </Form.Group>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={handleClick}>
+            <Button variant="secondary" onClick={(e) => handleClick(e, true)}>
               Close
             </Button>
             <Button type="submit" variant="primary">

@@ -9,6 +9,7 @@ export interface unitDetails {
   dnc: Boolean;
   note: String;
   type: String;
+  invalid: Boolean;
 }
 
 export interface floorDetails {
@@ -21,6 +22,7 @@ export interface unitProps {
   isDnc?: Boolean;
   type: String;
   note?: String;
+  isInvalid?: Boolean;
 }
 
 export interface valuesDetails {
@@ -31,6 +33,8 @@ export interface valuesDetails {
   type: string;
   note: string;
   postal?: String;
+  invalid?: boolean;
+  feedback: string;
 }
 
 export interface adminProps {
