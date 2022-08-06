@@ -55,12 +55,12 @@ function Admin({ congregationCode }: adminProps) {
 
   const handleSelect = (
     eventKey: string | null,
-    e: React.SyntheticEvent<unknown>
+    _: React.SyntheticEvent<unknown>
   ) => {
     const territoryDetails = territories.find((e) => e.code === eventKey);
     const territoryAddresses = territoryDetails?.addresses;
     setTerritory(`${territoryDetails?.name}`);
-    setAddresses([]);
+    let addressListing = [] as Array<addressDetails>;
     for (const territory in territoryAddresses) {
       onValue(child(ref(database), `/${territory}/units`), (snapshot) => {
         if (snapshot.exists()) {
@@ -69,13 +69,16 @@ function Admin({ congregationCode }: adminProps) {
             postalcode: `${territory}`,
             floors: processData(snapshot)
           };
-          let updated_addresses = addresses.map((u) =>
-            u.postalcode !== territory ? u : addressData
+          const existingIndex = addressListing.findIndex(
+            (_element) => _element.postalcode === addressData.postalcode
           );
-          if (!addresses.find((e) => e.postalcode === territory)) {
-            updated_addresses.push(addressData);
+          if (existingIndex > -1) {
+            addressListing[existingIndex] = addressData;
+            setAddresses([...addressListing]);
+          } else {
+            addressListing.push(addressData);
+            setAddresses(addressListing);
           }
-          setAddresses(updated_addresses);
         }
       });
     }
@@ -87,20 +90,14 @@ function Admin({ congregationCode }: adminProps) {
 
     for (const floor in blockAddresses.floors) {
       const floorUnits = blockAddresses.floors[floor];
-      Object.values(floorUnits).map((element, index) => {
-        set(
-          ref(
-            database,
-            `/${postalcode}/units/${floor}/${Object.keys(floorUnits)[index]}`
-          ),
-          {
-            done: false,
-            dnc: element.dnc,
-            type: element.type,
-            note: element.note,
-            invalid: element.invalid
-          }
-        );
+      floorUnits.units.forEach((element) => {
+        set(ref(database, `/${postalcode}/units/${floor}/${element.number}`), {
+          done: false,
+          dnc: element.dnc,
+          type: element.type,
+          note: element.note,
+          invalid: element.invalid
+        });
       });
     }
   };
@@ -131,6 +128,7 @@ function Admin({ congregationCode }: adminProps) {
     note: String,
     invalid: Boolean
   ) => {
+    event.preventDefault();
     setValues({
       ...values,
       floor: floor,
@@ -168,6 +166,7 @@ function Admin({ congregationCode }: adminProps) {
     event: React.MouseEvent<HTMLElement>,
     postalcode: String
   ) => {
+    event.preventDefault();
     get(child(ref(database), `/${postalcode}/feedback`)).then((snapshot) => {
       if (snapshot.exists()) {
         setValues({ ...values, feedback: snapshot.val(), postal: postalcode });
