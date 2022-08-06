@@ -50,5 +50,5 @@ export interface territoryDetails {
 export interface addressDetails {
   name: String;
   postalcode: String;
-  floors: Array<Object>;
+  floors: Array<floorDetails>;
 }

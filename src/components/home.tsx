@@ -9,6 +9,7 @@ import Loader from "./loader";
 import { floorDetails, homeProps, valuesDetails } from "./interface";
 import TableHeader from "./table";
 import UnitStatus from "./unit";
+import { compareSortObjects, HHType } from "./util";
 
 function Home({ postalcode, name }: homeProps) {
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
@@ -19,12 +20,11 @@ function Home({ postalcode, name }: homeProps) {
   const postalFeedback = child(ref(database), `/${postalcode}/feedback`);
 
   const toggleModal = (isModal: boolean) => {
-    if(isModal){
+    if (isModal) {
       setIsOpen(!isOpen);
     } else {
       setIsFeedback(!isFeedback);
     }
-    
   };
 
   const processData = (data: DataSnapshot) => {
@@ -44,10 +44,14 @@ function Home({ postalcode, name }: homeProps) {
       }
       dataList.push({ floor: floor, units: unitsDetails });
     }
+    dataList.sort(compareSortObjects);
     setFloors(dataList);
   };
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>, isModal: boolean) => {
+  const handleClick = (
+    event: React.MouseEvent<HTMLElement>,
+    isModal: boolean
+  ) => {
     toggleModal(isModal);
   };
 
@@ -87,21 +91,14 @@ function Home({ postalcode, name }: homeProps) {
     toggleModal(true);
   };
 
-  const handleClickFeedback = (
-    event: React.MouseEvent<HTMLElement>,
-  ) => {
+  const handleClickFeedback = (event: React.MouseEvent<HTMLElement>) => {
     toggleModal(false);
   };
 
   const handleSubmitFeedback = (event: React.FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
-    console.log("Submit fb");
-    console.log(details);
-    set(
-      ref(database, `/${postalcode}/feedback`),
-      details.feedback
-    );
+    set(ref(database, `/${postalcode}/feedback`), details.feedback);
     toggleModal(false);
   };
 
@@ -153,7 +150,9 @@ function Home({ postalcode, name }: homeProps) {
               >
                 Direction
               </Button>
-              <Button className="me-2" onClick={handleClickFeedback}>Feedback</Button>
+              <Button className="me-2" onClick={handleClickFeedback}>
+                Feedback
+              </Button>
             </Form>
           </Navbar.Collapse>
         </Container>
@@ -266,11 +265,7 @@ function Home({ postalcode, name }: homeProps) {
                 aria-label="Default select example"
                 value={(values as valuesDetails).type}
               >
-                <option value="cn">Chinese</option>
-                <option value="tm">Tamil</option>
-                <option value="in">Indonesian</option>
-                <option value="bm">Burmese</option>
-                <option value="ml">Muslim</option>
+                <HHType />
               </Form.Select>
             </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicTextArea">

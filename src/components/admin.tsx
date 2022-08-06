@@ -1,4 +1,4 @@
-import { child, onValue, ref, set, get } from "firebase/database";
+import { child, onValue, ref, set, get, DataSnapshot } from "firebase/database";
 import React, { useEffect, useState } from "react";
 import database from "./../firebase";
 import Container from "react-bootstrap/Container";
@@ -17,6 +17,7 @@ import {
 } from "./interface";
 import { confirmAlert } from "react-confirm-alert"; // Import
 import "react-confirm-alert/src/react-confirm-alert.css"; // Import css
+import { compareSortObjects, HHType } from "./util";
 
 function Admin({ congregationCode }: adminProps) {
   const [name, setName] = useState<String>();
@@ -25,10 +26,32 @@ function Admin({ congregationCode }: adminProps) {
   const [addresses, setAddresses] = useState<Array<addressDetails>>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [values, setValues] = useState<Object>({});
+  const [isFeedback, setIsFeedback] = useState<boolean>(false);
   const congregationReference = child(
     ref(database),
     `congregations/${congregationCode}`
   );
+
+  const processData = (data: DataSnapshot) => {
+    let dataList = [];
+    for (const floor in data.val()) {
+      let unitsDetails = [];
+      const units = data.val()[floor];
+      for (const unit in units) {
+        unitsDetails.push({
+          number: unit,
+          done: units[unit]["done"],
+          dnc: units[unit]["dnc"],
+          note: units[unit]["note"],
+          type: units[unit]["type"],
+          invalid: units[unit]["invalid"]
+        });
+      }
+      dataList.push({ floor: floor, units: unitsDetails });
+    }
+    dataList.sort(compareSortObjects);
+    return dataList;
+  };
 
   const handleSelect = (
     eventKey: string | null,
@@ -44,7 +67,7 @@ function Admin({ congregationCode }: adminProps) {
           const addressData = {
             name: territoryAddresses[territory].name,
             postalcode: `${territory}`,
-            floors: snapshot.val()
+            floors: processData(snapshot)
           };
           let updated_addresses = addresses.map((u) =>
             u.postalcode !== territory ? u : addressData
@@ -74,19 +97,27 @@ function Admin({ congregationCode }: adminProps) {
             done: false,
             dnc: element.dnc,
             type: element.type,
-            note: element.note
+            note: element.note,
+            invalid: element.invalid
           }
         );
       });
     }
   };
 
-  const toggleModal = () => {
-    setIsOpen(!isOpen);
+  const toggleModal = (isModal: boolean) => {
+    if (isModal) {
+      setIsOpen(!isOpen);
+    } else {
+      setIsFeedback(!isFeedback);
+    }
   };
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    toggleModal();
+  const handleClick = (
+    event: React.MouseEvent<HTMLElement>,
+    isModal: boolean
+  ) => {
+    toggleModal(isModal);
   };
 
   const handleClickModal = (
@@ -97,7 +128,8 @@ function Admin({ congregationCode }: adminProps) {
     done: Boolean,
     dnc: Boolean,
     type: String,
-    note: String
+    note: String,
+    invalid: Boolean
   ) => {
     setValues({
       ...values,
@@ -107,9 +139,10 @@ function Admin({ congregationCode }: adminProps) {
       dnc: dnc,
       type: type,
       note: note,
-      postal: postal
+      postal: postal,
+      invalid: invalid
     });
-    toggleModal();
+    toggleModal(true);
   };
 
   const handleSubmitClick = (event: React.FormEvent<HTMLElement>) => {
@@ -124,16 +157,36 @@ function Admin({ congregationCode }: adminProps) {
         done: details.done,
         dnc: details.dnc,
         type: details.type,
-        note: details.note
+        note: details.note,
+        invalid: details.invalid
       }
     );
-    toggleModal();
+    toggleModal(true);
+  };
+
+  const handleClickFeedback = (
+    event: React.MouseEvent<HTMLElement>,
+    postalcode: String
+  ) => {
+    get(child(ref(database), `/${postalcode}/feedback`)).then((snapshot) => {
+      if (snapshot.exists()) {
+        setValues({ ...values, feedback: snapshot.val(), postal: postalcode });
+      }
+    });
+    toggleModal(false);
+  };
+
+  const handleSubmitFeedback = (event: React.FormEvent<HTMLElement>) => {
+    event.preventDefault();
+    const details = values as valuesDetails;
+    set(ref(database, `/${details.postal}/feedback`), details.feedback);
+    toggleModal(false);
   };
 
   const onFormChange = (e: React.ChangeEvent<HTMLElement>) => {
     const { name, value, checked } = e.target as HTMLInputElement;
 
-    if (name === "done" || name === "dnc") {
+    if (name === "done" || name === "dnc" || name === "invalid") {
       setValues({ ...values, [name]: checked });
     } else {
       setValues({ ...values, [name]: value });
@@ -230,6 +283,14 @@ function Admin({ congregationCode }: adminProps) {
                     </RWebShare>
                     <Button
                       className="me-2"
+                      onClick={(e) => {
+                        handleClickFeedback(e, addressElement.postalcode);
+                      }}
+                    >
+                      Feedback
+                    </Button>
+                    <Button
+                      className="me-2"
                       onClick={() =>
                         confirmAlert({
                           title: `Resetting ${addressElement.name}`,
@@ -267,17 +328,15 @@ function Admin({ congregationCode }: adminProps) {
                     lvl/unit
                   </th>
                   {addressElement.floors &&
-                    Object.keys(addressElement.floors[2]).map(
-                      (element, index) => (
-                        <th
-                          key={`${index}-y-header`}
-                          scope="col"
-                          className="text-center"
-                        >
-                          {`${element}`}
-                        </th>
-                      )
-                    )}
+                    addressElement.floors[0].units.map((element, index) => (
+                      <th
+                        key={`${index}-y-header`}
+                        scope="col"
+                        className="text-center"
+                      >
+                        {`${element.number}`}
+                      </th>
+                    ))}
                 </tr>
               </thead>
               <tbody key={`tbody-${addressElement.postalcode}`}>
@@ -289,42 +348,71 @@ function Admin({ congregationCode }: adminProps) {
                         key={`floor-${floorIndex}`}
                         scope="row"
                       >
-                        {`${floorIndex}`}
+                        {`${floorElement.floor}`}
                       </th>
-                      {Object.values(floorElement).map(
-                        (detailsElement, index) => (
-                          <td
-                            align="center"
-                            onClick={(event) =>
-                              handleClickModal(
-                                event,
-                                addressElement.postalcode,
-                                `${floorIndex}`,
-                                `${Object.keys(floorElement)[index]}`,
-                                detailsElement.done,
-                                detailsElement.dnc,
-                                detailsElement.type,
-                                detailsElement.note
-                              )
-                            }
-                            key={`${index}-${detailsElement.number}`}
-                          >
-                            <UnitStatus
-                              key={`unit-${index}-${detailsElement.number}`}
-                              isDone={detailsElement.done}
-                              isDnc={detailsElement.dnc}
-                              type={detailsElement.type}
-                              note={detailsElement.note}
-                            />
-                          </td>
-                        )
-                      )}
+                      {floorElement.units.map((detailsElement, index) => (
+                        <td
+                          align="center"
+                          onClick={(event) =>
+                            handleClickModal(
+                              event,
+                              addressElement.postalcode,
+                              floorElement.floor,
+                              detailsElement.number,
+                              detailsElement.done,
+                              detailsElement.dnc,
+                              detailsElement.type,
+                              detailsElement.note,
+                              detailsElement.invalid
+                            )
+                          }
+                          key={`${index}-${detailsElement.number}`}
+                        >
+                          <UnitStatus
+                            key={`unit-${index}-${detailsElement.number}`}
+                            isDone={detailsElement.done}
+                            isDnc={detailsElement.dnc}
+                            type={detailsElement.type}
+                            note={detailsElement.note}
+                            isInvalid={detailsElement.invalid}
+                          />
+                        </td>
+                      ))}
                     </tr>
                   ))}
               </tbody>
             </Table>
           </div>
         ))}
+      <Modal show={isFeedback}>
+        <Modal.Header>
+          <Modal.Title>{`Feedback on ${
+            (values as valuesDetails).postal
+          }`}</Modal.Title>
+        </Modal.Header>
+        <Form onSubmit={handleSubmitFeedback}>
+          <Modal.Body>
+            <Form.Group className="mb-3" controlId="formBasicFeedbackTextArea">
+              <Form.Control
+                onChange={onFormChange}
+                name="feedback"
+                as="textarea"
+                rows={5}
+                aria-label="With textarea"
+                value={(values as valuesDetails).feedback}
+              />
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={(e) => handleClick(e, false)}>
+              Close
+            </Button>
+            <Button type="submit" variant="primary">
+              Save
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
       <Modal show={isOpen}>
         <Modal.Header>
           <Modal.Title>{`${(values as valuesDetails).postal} - (#${
@@ -351,6 +439,15 @@ function Admin({ congregationCode }: adminProps) {
                 defaultChecked={(values as valuesDetails).dnc}
               />
             </Form.Group>
+            <Form.Group className="mb-3" controlId="formBasicInvalidCheckbox">
+              <Form.Check
+                onChange={onFormChange}
+                name="invalid"
+                type="checkbox"
+                label="Invalid"
+                defaultChecked={(values as valuesDetails).invalid}
+              />
+            </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicSelect">
               <Form.Label>Household</Form.Label>
               <Form.Select
@@ -359,11 +456,7 @@ function Admin({ congregationCode }: adminProps) {
                 aria-label="Default select example"
                 value={(values as valuesDetails).type}
               >
-                <option value="cn">Chinese</option>
-                <option value="tm">Tamil</option>
-                <option value="in">Indonesian</option>
-                <option value="bm">Burmese</option>
-                <option value="ml">Muslim</option>
+                <HHType />
               </Form.Select>
             </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicTextArea">
@@ -379,7 +472,7 @@ function Admin({ congregationCode }: adminProps) {
             </Form.Group>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={handleClick}>
+            <Button variant="secondary" onClick={(e) => handleClick(e, true)}>
               Close
             </Button>
             <Button type="submit" variant="primary">
