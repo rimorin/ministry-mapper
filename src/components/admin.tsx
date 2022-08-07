@@ -74,11 +74,10 @@ function Admin({ congregationCode }: adminProps) {
           );
           if (existingIndex > -1) {
             addressListing[existingIndex] = addressData;
-            setAddresses([...addressListing]);
           } else {
             addressListing.push(addressData);
-            setAddresses(addressListing);
           }
+          setAddresses([...addressListing]);
         }
       });
     }
