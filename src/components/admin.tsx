@@ -265,7 +265,7 @@ function Admin({ congregationCode }: adminProps) {
                     <RWebShare
                       data={{
                         text: `These are unit numbers for ${addressElement.postalcode}. To update a unit, please tap on a unit box and update its details accordingly.`,
-                        url: `https://www.ministry-mapper.com/${addressElement.postalcode}`,
+                        url: `${window.location.origin}/${addressElement.postalcode}`,
                         title: `Units for ${addressElement.postalcode}`
                       }}
                     >
