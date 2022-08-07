@@ -255,15 +255,7 @@ function Admin({ congregationCode }: adminProps) {
               key={`navbar-${addressElement.postalcode}`}
             >
               <Container fluid>
-                <Navbar.Brand>
-                  <a
-                    key={`link-${addressElement.postalcode}`}
-                    href={`http://maps.google.com.sg/maps?q=${addressElement.postalcode}`}
-                    target="blank"
-                  >
-                    {addressElement.name}
-                  </a>
-                </Navbar.Brand>
+                <Navbar.Brand>{addressElement.name}</Navbar.Brand>
                 <Navbar.Toggle aria-controls="navbarScroll" />
                 <Navbar.Collapse
                   id="navbarScroll"
@@ -279,6 +271,17 @@ function Admin({ congregationCode }: adminProps) {
                     >
                       <Button className="me-2">Share</Button>
                     </RWebShare>
+                    <Button
+                      className="me-2"
+                      onClick={(e) => {
+                        window.open(
+                          `http://maps.google.com.sg/maps?q=${addressElement.postalcode}`,
+                          "_blank"
+                        );
+                      }}
+                    >
+                      Direction
+                    </Button>
                     <Button
                       className="me-2"
                       onClick={(e) => {
