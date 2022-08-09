@@ -15,6 +15,7 @@ Advantages
   - Fully digital territory slips
   - Real time collaboration. Multiple publishers as able to work the same territory as everyone is in sync.
   - Cloud based. Territory data are synced to the cloud.
+  - Offline access. If client loses its internet connectivity, system will cache any changes locally first until internet is up.
 
 Disadvantages
   - Initial migration for territory data
@@ -50,7 +51,7 @@ Disadvantages
         - REACT_APP_FIREBASE_SENDER_ID=sender_id_from_firebase_account
         - REACT_APP_FIREBASE_APP_ID=app_id_from_firebase_account
 
-### Technology Used
+### Technologies Used
 
   1. Bootstrap - CSS Framework
   2. ReactJs - Javascript UI Framework
