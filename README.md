@@ -16,10 +16,18 @@ Advantages
   - Real time collaboration. Multiple publishers as able to work the same territory as everyone is in sync.
   - Cloud based. Territory data are synced to the cloud.
   - Offline access. If client loses its internet connectivity, system will cache any changes locally first until internet is up.
+  - Territories can be covered efficiently as slips are available online rather than in physical forms.
 
 Disadvantages
   - Initial migration work of the territory data.
   - Requires a internet device for publisher/conductor to use.
+  
+### Usage
+  - To access the admin screen of a congregation, `domain/admin/<congregation code>`
+    1. To assign a slip to a publisher, select territory and postal address and click on the share button.
+    2. To restart territory status during a cycle, click on reset button under each postal address.
+  - To access a particular postal address, `domain/<postal code>`
+    1. To update an unit number, tap on a unit box and update its details accordingly.
 
 ### Deployment
 
