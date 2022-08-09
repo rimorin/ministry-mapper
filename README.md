@@ -18,8 +18,8 @@ Advantages
   - Offline access. If client loses its internet connectivity, system will cache any changes locally first until internet is up.
 
 Disadvantages
-  - Initial migration for territory data
-  - Requires a internet device for publisher/conductor to use. Although its able to work offline too.
+  - Initial migration work of the territory data.
+  - Requires a internet device for publisher/conductor to use.
 
 ### Deployment
 
