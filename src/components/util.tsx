@@ -10,6 +10,21 @@ const compareSortObjects = (a: any, b: any) => {
   return 0;
 };
 
+const STATUS_CODES = {
+  DEFAULT: "-1",
+  DONE: "1",
+  NOT_HOME: "2",
+  STILL_NOT_HOME: "3",
+  DO_NOT_CALL: "4",
+  INVALID: "5"
+};
+
+const MUTABLE_CODES = [
+  STATUS_CODES.DONE,
+  STATUS_CODES.NOT_HOME,
+  STATUS_CODES.STILL_NOT_HOME
+];
+
 const HHType = () => (
   <>
     <option value="cn">Chinese</option>
@@ -21,4 +36,4 @@ const HHType = () => (
   </>
 );
 
-export { compareSortObjects, HHType };
+export { compareSortObjects, HHType, STATUS_CODES, MUTABLE_CODES };

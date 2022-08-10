@@ -9,7 +9,7 @@ import Loader from "./loader";
 import { floorDetails, homeProps, valuesDetails } from "./interface";
 import TableHeader from "./table";
 import UnitStatus from "./unit";
-import { compareSortObjects, HHType } from "./util";
+import { compareSortObjects, HHType, STATUS_CODES } from "./util";
 
 function Home({ postalcode, name }: homeProps) {
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
@@ -39,7 +39,9 @@ function Home({ postalcode, name }: homeProps) {
           dnc: units[unit]["dnc"],
           note: units[unit]["note"],
           type: units[unit]["type"],
-          invalid: units[unit]["invalid"]
+          invalid: units[unit]["invalid"],
+          not_home: units[unit]["not_home"],
+          status: units[unit]["status"]
         });
       }
       dataList.push({ floor: floor, units: unitsDetails });
@@ -66,11 +68,9 @@ function Home({ postalcode, name }: homeProps) {
       ...values,
       floor: floor,
       unit: unit,
-      done: unitDetails?.done,
-      dnc: unitDetails?.dnc,
       type: unitDetails?.type,
       note: unitDetails?.note,
-      invalid: unitDetails?.invalid
+      status: unitDetails?.status
     });
     toggleModal(true);
   };
@@ -81,11 +81,9 @@ function Home({ postalcode, name }: homeProps) {
     set(
       ref(database, `/${postalcode}/units/${details.floor}/${details.unit}`),
       {
-        done: details.done,
-        dnc: details.dnc,
         type: details.type,
         note: details.note,
-        invalid: details.invalid
+        status: details.status
       }
     );
     toggleModal(true);
@@ -103,7 +101,8 @@ function Home({ postalcode, name }: homeProps) {
   };
 
   const onFormChange = (e: React.ChangeEvent<HTMLElement>) => {
-    const { name, value, checked } = e.target as HTMLInputElement;
+    const { name, value, checked, id } = e.target as HTMLInputElement;
+    console.log(id, value);
 
     if (name === "done" || name === "dnc" || name === "invalid") {
       setValues({ ...values, [name]: checked });
@@ -183,11 +182,9 @@ function Home({ postalcode, name }: homeProps) {
                     key={`${item.floor}-${element.number}`}
                   >
                     <UnitStatus
-                      isDone={element.done}
-                      isDnc={element.dnc}
                       type={element.type}
                       note={element.note}
-                      isInvalid={element.invalid}
+                      status={element.status}
                     />
                   </td>
                 ))}
@@ -208,7 +205,7 @@ function Home({ postalcode, name }: homeProps) {
                 as="textarea"
                 rows={5}
                 aria-label="With textarea"
-                value={(values as valuesDetails).feedback}
+                value={`${(values as valuesDetails).feedback}}`}
               />
             </Form.Group>
           </Modal.Body>
@@ -230,31 +227,67 @@ function Home({ postalcode, name }: homeProps) {
         </Modal.Header>
         <Form onSubmit={handleSubmitClick}>
           <Modal.Body>
-            <Form.Group className="mb-3" controlId="formBasicDoneCheckbox">
+            <Form.Group className="mb-3" controlId="formBasicStatusCheckbox">
               <Form.Check
+                inline
                 onChange={onFormChange}
-                name="done"
-                type="checkbox"
+                name="status"
+                type="radio"
                 label="Done"
-                defaultChecked={(values as valuesDetails).done}
+                value={STATUS_CODES.DONE}
+                defaultChecked={
+                  (values as valuesDetails).status === STATUS_CODES.DONE
+                }
+                id={`status-${STATUS_CODES.DONE}`}
               />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="formBasicDncCheckbox">
               <Form.Check
+                inline
                 onChange={onFormChange}
-                name="dnc"
-                type="checkbox"
+                label="Not 🏠"
+                name="status"
+                type="radio"
+                value={STATUS_CODES.NOT_HOME}
+                defaultChecked={
+                  (values as valuesDetails).status === STATUS_CODES.NOT_HOME
+                }
+                id={`status-${STATUS_CODES.NOT_HOME}`}
+              />
+              <Form.Check
+                inline
+                onChange={onFormChange}
+                label="Not 🏠2️⃣"
+                name="status"
+                type="radio"
+                value={STATUS_CODES.STILL_NOT_HOME}
+                defaultChecked={
+                  (values as valuesDetails).status ===
+                  STATUS_CODES.STILL_NOT_HOME
+                }
+                id={`status-${STATUS_CODES.STILL_NOT_HOME}`}
+              />
+              <Form.Check
+                inline
+                onChange={onFormChange}
                 label="DNC"
-                defaultChecked={(values as valuesDetails).dnc}
+                name="status"
+                type="radio"
+                value={STATUS_CODES.DO_NOT_CALL}
+                defaultChecked={
+                  (values as valuesDetails).status === STATUS_CODES.DO_NOT_CALL
+                }
+                id={`status-${STATUS_CODES.DO_NOT_CALL}`}
               />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="formBasicInvalidCheckbox">
               <Form.Check
+                inline
                 onChange={onFormChange}
-                name="invalid"
-                type="checkbox"
                 label="Invalid"
-                defaultChecked={(values as valuesDetails).invalid}
+                name="status"
+                type="radio"
+                value={STATUS_CODES.INVALID}
+                defaultChecked={
+                  (values as valuesDetails).status === STATUS_CODES.INVALID
+                }
+                id={`status-${STATUS_CODES.INVALID}`}
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicSelect">
@@ -263,7 +296,7 @@ function Home({ postalcode, name }: homeProps) {
                 onChange={onFormChange}
                 name="type"
                 aria-label="Default select example"
-                value={(values as valuesDetails).type}
+                value={`${(values as valuesDetails).type}`}
               >
                 <HHType />
               </Form.Select>
@@ -276,7 +309,7 @@ function Home({ postalcode, name }: homeProps) {
                 as="textarea"
                 rows={3}
                 aria-label="With textarea"
-                value={(values as valuesDetails).note}
+                value={`${(values as valuesDetails).note}`}
               />
             </Form.Group>
           </Modal.Body>

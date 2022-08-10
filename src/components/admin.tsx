@@ -17,7 +17,12 @@ import {
 } from "./interface";
 import { confirmAlert } from "react-confirm-alert"; // Import
 import "react-confirm-alert/src/react-confirm-alert.css"; // Import css
-import { compareSortObjects, HHType } from "./util";
+import {
+  compareSortObjects,
+  HHType,
+  STATUS_CODES,
+  MUTABLE_CODES
+} from "./util";
 
 function Admin({ congregationCode }: adminProps) {
   const [name, setName] = useState<String>();
@@ -44,7 +49,8 @@ function Admin({ congregationCode }: adminProps) {
           dnc: units[unit]["dnc"],
           note: units[unit]["note"],
           type: units[unit]["type"],
-          invalid: units[unit]["invalid"]
+          invalid: units[unit]["invalid"],
+          status: units[unit]["status"]
         });
       }
       dataList.push({ floor: floor, units: unitsDetails });
@@ -90,12 +96,14 @@ function Admin({ congregationCode }: adminProps) {
     for (const floor in blockAddresses.floors) {
       const floorUnits = blockAddresses.floors[floor];
       floorUnits.units.forEach((element) => {
+        let currentStatus = element.status;
+        if (MUTABLE_CODES.includes(`${currentStatus}`)) {
+          currentStatus = STATUS_CODES.DEFAULT;
+        }
         set(ref(database, `/${postalcode}/units/${floor}/${element.number}`), {
-          done: false,
-          dnc: element.dnc,
           type: element.type,
           note: element.note,
-          invalid: element.invalid
+          status: element.status
         });
       });
     }
@@ -121,23 +129,19 @@ function Admin({ congregationCode }: adminProps) {
     postal: String,
     floor: String,
     unit: String,
-    done: Boolean,
-    dnc: Boolean,
     type: String,
     note: String,
-    invalid: Boolean
+    status: String
   ) => {
     event.preventDefault();
     setValues({
       ...values,
       floor: floor,
       unit: unit,
-      done: done,
-      dnc: dnc,
       type: type,
       note: note,
       postal: postal,
-      invalid: invalid
+      status: status
     });
     toggleModal(true);
   };
@@ -151,11 +155,9 @@ function Admin({ congregationCode }: adminProps) {
         `/${details.postal}/units/${details.floor}/${details.unit}`
       ),
       {
-        done: details.done,
-        dnc: details.dnc,
         type: details.type,
         note: details.note,
-        invalid: details.invalid
+        status: details.status
       }
     );
     toggleModal(true);
@@ -237,7 +239,7 @@ function Admin({ congregationCode }: adminProps) {
                       key={`${element.code}`}
                       eventKey={`${element.code}`}
                     >
-                      {element.name}
+                      {element.code} - {element.name}
                     </NavDropdown.Item>
                   ))}
               </NavDropdown>
@@ -360,22 +362,18 @@ function Admin({ congregationCode }: adminProps) {
                               addressElement.postalcode,
                               floorElement.floor,
                               detailsElement.number,
-                              detailsElement.done,
-                              detailsElement.dnc,
                               detailsElement.type,
                               detailsElement.note,
-                              detailsElement.invalid
+                              detailsElement.status
                             )
                           }
                           key={`${index}-${detailsElement.number}`}
                         >
                           <UnitStatus
                             key={`unit-${index}-${detailsElement.number}`}
-                            isDone={detailsElement.done}
-                            isDnc={detailsElement.dnc}
                             type={detailsElement.type}
                             note={detailsElement.note}
-                            isInvalid={detailsElement.invalid}
+                            status={detailsElement.status}
                           />
                         </td>
                       ))}
@@ -400,7 +398,7 @@ function Admin({ congregationCode }: adminProps) {
                 as="textarea"
                 rows={5}
                 aria-label="With textarea"
-                value={(values as valuesDetails).feedback}
+                value={`${(values as valuesDetails).feedback}}`}
               />
             </Form.Group>
           </Modal.Body>
@@ -422,31 +420,67 @@ function Admin({ congregationCode }: adminProps) {
         </Modal.Header>
         <Form onSubmit={handleSubmitClick}>
           <Modal.Body>
-            <Form.Group className="mb-3" controlId="formBasicDoneCheckbox">
+            <Form.Group className="mb-3" controlId="formBasicStatusCheckbox">
               <Form.Check
+                inline
                 onChange={onFormChange}
-                name="done"
-                type="checkbox"
+                name="status"
+                type="radio"
                 label="Done"
-                defaultChecked={(values as valuesDetails).done}
+                value={STATUS_CODES.DONE}
+                defaultChecked={
+                  (values as valuesDetails).status === STATUS_CODES.DONE
+                }
+                id={`status-${STATUS_CODES.DONE}`}
               />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="formBasicDncCheckbox">
               <Form.Check
+                inline
                 onChange={onFormChange}
-                name="dnc"
-                type="checkbox"
+                label="Not 🏠"
+                name="status"
+                type="radio"
+                value={STATUS_CODES.NOT_HOME}
+                defaultChecked={
+                  (values as valuesDetails).status === STATUS_CODES.NOT_HOME
+                }
+                id={`status-${STATUS_CODES.NOT_HOME}`}
+              />
+              <Form.Check
+                inline
+                onChange={onFormChange}
+                label="Not 🏠2️⃣"
+                name="status"
+                type="radio"
+                value={STATUS_CODES.STILL_NOT_HOME}
+                defaultChecked={
+                  (values as valuesDetails).status ===
+                  STATUS_CODES.STILL_NOT_HOME
+                }
+                id={`status-${STATUS_CODES.STILL_NOT_HOME}`}
+              />
+              <Form.Check
+                inline
+                onChange={onFormChange}
                 label="DNC"
-                defaultChecked={(values as valuesDetails).dnc}
+                name="status"
+                type="radio"
+                value={STATUS_CODES.DO_NOT_CALL}
+                defaultChecked={
+                  (values as valuesDetails).status === STATUS_CODES.DO_NOT_CALL
+                }
+                id={`status-${STATUS_CODES.DO_NOT_CALL}`}
               />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="formBasicInvalidCheckbox">
               <Form.Check
+                inline
                 onChange={onFormChange}
-                name="invalid"
-                type="checkbox"
                 label="Invalid"
-                defaultChecked={(values as valuesDetails).invalid}
+                name="status"
+                type="radio"
+                value={STATUS_CODES.INVALID}
+                defaultChecked={
+                  (values as valuesDetails).status === STATUS_CODES.INVALID
+                }
+                id={`status-${STATUS_CODES.INVALID}`}
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicSelect">
@@ -455,7 +489,7 @@ function Admin({ congregationCode }: adminProps) {
                 onChange={onFormChange}
                 name="type"
                 aria-label="Default select example"
-                value={(values as valuesDetails).type}
+                value={`${(values as valuesDetails).type}}`}
               >
                 <HHType />
               </Form.Select>
@@ -468,7 +502,7 @@ function Admin({ congregationCode }: adminProps) {
                 as="textarea"
                 rows={3}
                 aria-label="With textarea"
-                value={(values as valuesDetails).note}
+                value={`${(values as valuesDetails).note}`}
               />
             </Form.Group>
           </Modal.Body>

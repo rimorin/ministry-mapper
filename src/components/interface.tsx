@@ -5,11 +5,9 @@ export interface homeProps {
 
 export interface unitDetails {
   number: String;
-  done: Boolean;
-  dnc: Boolean;
   note: String;
   type: String;
-  invalid: Boolean;
+  status: String;
 }
 
 export interface floorDetails {
@@ -18,23 +16,19 @@ export interface floorDetails {
 }
 
 export interface unitProps {
-  isDone?: Boolean;
-  isDnc?: Boolean;
   type: String;
   note?: String;
-  isInvalid?: Boolean;
+  status: String;
 }
 
 export interface valuesDetails {
   floor: String;
   unit: String;
-  done?: boolean;
-  dnc?: boolean;
-  type: string;
-  note: string;
+  type: String;
+  note: String;
   postal?: String;
-  invalid?: boolean;
-  feedback: string;
+  feedback: String;
+  status: String;
 }
 
 export interface adminProps {
