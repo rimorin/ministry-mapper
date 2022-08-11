@@ -196,7 +196,7 @@ function Home({ postalcode, name }: homeProps) {
                 as="textarea"
                 rows={5}
                 aria-label="With textarea"
-                value={`${(values as valuesDetails).feedback}}`}
+                value={`${(values as valuesDetails).feedback}`}
               />
             </Form.Group>
           </Modal.Body>
