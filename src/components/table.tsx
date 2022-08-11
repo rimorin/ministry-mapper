@@ -9,14 +9,6 @@ interface tableProp {
 function TableHeader({ name, postalcode, floors }: tableProp) {
   return (
     <>
-      <caption>
-        <a
-          href={`http://maps.google.com.sg/maps?q=${postalcode}`}
-          target="blank"
-        >
-          {name}, {postalcode}
-        </a>
-      </caption>
       <thead>
         <tr>
           <th scope="col" className="text-center">

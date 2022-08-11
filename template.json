@@ -1,0 +1,27 @@
+{
+  "congregations": {
+    "<congregation-code>": {
+      "name": "<congregation-name>",
+      "territories": {
+        "<territory-code>": {
+          "name": "<territory-name>",
+          "addresses": {
+            "<postalcode>": { "name": "<postal name>" }
+          }
+        }
+      }
+    }
+  },
+  "<postalcode>": {
+    "feedback": "",
+    "units": {
+      "<floor-number>": {
+        "<unit-number>": {
+          "status": "-1",
+          "note": "",
+          "type": "cn"
+        }
+      }
+    }
+  }
+}

@@ -4,20 +4,27 @@ import database from "./../firebase";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import { Table } from "react-bootstrap";
+import { Container, Navbar, Table } from "react-bootstrap";
 import Loader from "./loader";
 import { floorDetails, homeProps, valuesDetails } from "./interface";
 import TableHeader from "./table";
 import UnitStatus from "./unit";
+import { compareSortObjects, HHType, STATUS_CODES } from "./util";
 
 function Home({ postalcode, name }: homeProps) {
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isFeedback, setIsFeedback] = useState<boolean>(false);
   const [values, setValues] = useState<Object>({});
   const postalReference = child(ref(database), `/${postalcode}/units`);
+  const postalFeedback = child(ref(database), `/${postalcode}/feedback`);
 
-  const toggleModal = () => {
-    setIsOpen(!isOpen);
+  const toggleModal = (isModal: boolean) => {
+    if (isModal) {
+      setIsOpen(!isOpen);
+    } else {
+      setIsFeedback(!isFeedback);
+    }
   };
 
   const processData = (data: DataSnapshot) => {
@@ -31,20 +38,24 @@ function Home({ postalcode, name }: homeProps) {
           done: units[unit]["done"],
           dnc: units[unit]["dnc"],
           note: units[unit]["note"],
-          type: units[unit]["type"]
+          type: units[unit]["type"],
+          invalid: units[unit]["invalid"],
+          not_home: units[unit]["not_home"],
+          status: units[unit]["status"]
         });
       }
       dataList.push({ floor: floor, units: unitsDetails });
     }
+    dataList.sort(compareSortObjects);
     setFloors(dataList);
   };
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    toggleModal();
+  const handleClick = (_: React.MouseEvent<HTMLElement>, isModal: boolean) => {
+    toggleModal(isModal);
   };
 
   const handleClickModal = (
-    event: React.MouseEvent<HTMLElement>,
+    _: React.MouseEvent<HTMLElement>,
     floor: String,
     unit: String
   ) => {
@@ -54,37 +65,39 @@ function Home({ postalcode, name }: homeProps) {
       ...values,
       floor: floor,
       unit: unit,
-      done: unitDetails?.done,
-      dnc: unitDetails?.dnc,
       type: unitDetails?.type,
-      note: unitDetails?.note
+      note: unitDetails?.note,
+      status: unitDetails?.status
     });
-    toggleModal();
+    toggleModal(true);
   };
 
   const handleSubmitClick = (event: React.FormEvent<HTMLElement>) => {
-    event.preventDefault();
     const details = values as valuesDetails;
     set(
       ref(database, `/${postalcode}/units/${details.floor}/${details.unit}`),
       {
-        done: details.done,
-        dnc: details.dnc,
         type: details.type,
-        note: details.note
+        note: details.note,
+        status: details.status
       }
     );
-    toggleModal();
+    toggleModal(true);
+  };
+
+  const handleClickFeedback = (event: React.MouseEvent<HTMLElement>) => {
+    toggleModal(false);
+  };
+
+  const handleSubmitFeedback = (event: React.FormEvent<HTMLElement>) => {
+    const details = values as valuesDetails;
+    set(ref(database, `/${postalcode}/feedback`), details.feedback);
+    toggleModal(false);
   };
 
   const onFormChange = (e: React.ChangeEvent<HTMLElement>) => {
-    const { name, value, checked } = e.target as HTMLInputElement;
-
-    if (name === "done" || name === "dnc") {
-      setValues({ ...values, [name]: checked });
-    } else {
-      setValues({ ...values, [name]: value });
-    }
+    const { name, value } = e.target as HTMLInputElement;
+    setValues({ ...values, [name]: value });
   };
 
   useEffect(() => {
@@ -94,12 +107,44 @@ function Home({ postalcode, name }: homeProps) {
         processData(snapshot);
       }
     });
+    onValue(postalFeedback, (snapshot) => {
+      if (snapshot.exists()) {
+        setValues({ ...values, feedback: snapshot.val() });
+      }
+    });
   }, []);
   if (floors.length === 0) {
     return <Loader />;
   }
   return (
     <>
+      <Navbar bg="light" expand="sm">
+        <Container fluid>
+          <Navbar.Brand>{name}</Navbar.Brand>
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <Navbar.Collapse
+            id="basic-navbar-nav"
+            className="justify-content-end"
+          >
+            <Form className="d-flex">
+              <Button
+                className="me-2"
+                onClick={() => {
+                  window.open(
+                    `http://maps.google.com.sg/maps?q=${postalcode}`,
+                    "_blank"
+                  );
+                }}
+              >
+                Direction
+              </Button>
+              <Button className="me-2" onClick={handleClickFeedback}>
+                Feedback
+              </Button>
+            </Form>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
       <Table bordered responsive="sm">
         <TableHeader
           name={`${name}`}
@@ -126,10 +171,9 @@ function Home({ postalcode, name }: homeProps) {
                     key={`${item.floor}-${element.number}`}
                   >
                     <UnitStatus
-                      isDone={element.done}
-                      isDnc={element.dnc}
                       type={element.type}
                       note={element.note}
+                      status={element.status}
                     />
                   </td>
                 ))}
@@ -137,6 +181,33 @@ function Home({ postalcode, name }: homeProps) {
             ))}
         </tbody>
       </Table>
+      <Modal show={isFeedback}>
+        <Modal.Header>
+          <Modal.Title>{`Feedback on ${name}`}</Modal.Title>
+        </Modal.Header>
+        <Form onSubmit={handleSubmitFeedback}>
+          <Modal.Body>
+            <Form.Group className="mb-3" controlId="formBasicFeedbackTextArea">
+              <Form.Control
+                onChange={onFormChange}
+                name="feedback"
+                as="textarea"
+                rows={5}
+                aria-label="With textarea"
+                value={`${(values as valuesDetails).feedback}}`}
+              />
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={(e) => handleClick(e, false)}>
+              Close
+            </Button>
+            <Button type="submit" variant="primary">
+              Save
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
       <Modal show={isOpen}>
         <Modal.Header>
           <Modal.Title>{`# ${(values as valuesDetails).floor} - ${
@@ -145,22 +216,67 @@ function Home({ postalcode, name }: homeProps) {
         </Modal.Header>
         <Form onSubmit={handleSubmitClick}>
           <Modal.Body>
-            <Form.Group className="mb-3" controlId="formBasicDoneCheckbox">
+            <Form.Group className="mb-3" controlId="formBasicStatusCheckbox">
               <Form.Check
+                inline
                 onChange={onFormChange}
-                name="done"
-                type="checkbox"
+                name="status"
+                type="radio"
                 label="Done"
-                defaultChecked={(values as valuesDetails).done}
+                value={STATUS_CODES.DONE}
+                defaultChecked={
+                  (values as valuesDetails).status === STATUS_CODES.DONE
+                }
+                id={`status-${STATUS_CODES.DONE}`}
               />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="formBasicDncCheckbox">
               <Form.Check
+                inline
                 onChange={onFormChange}
-                name="dnc"
-                type="checkbox"
+                label="Not 🏠"
+                name="status"
+                type="radio"
+                value={STATUS_CODES.NOT_HOME}
+                defaultChecked={
+                  (values as valuesDetails).status === STATUS_CODES.NOT_HOME
+                }
+                id={`status-${STATUS_CODES.NOT_HOME}`}
+              />
+              <Form.Check
+                inline
+                onChange={onFormChange}
+                label="Not 🏠 2️⃣"
+                name="status"
+                type="radio"
+                value={STATUS_CODES.STILL_NOT_HOME}
+                defaultChecked={
+                  (values as valuesDetails).status ===
+                  STATUS_CODES.STILL_NOT_HOME
+                }
+                id={`status-${STATUS_CODES.STILL_NOT_HOME}`}
+              />
+              <Form.Check
+                inline
+                onChange={onFormChange}
                 label="DNC"
-                defaultChecked={(values as valuesDetails).dnc}
+                name="status"
+                type="radio"
+                value={STATUS_CODES.DO_NOT_CALL}
+                defaultChecked={
+                  (values as valuesDetails).status === STATUS_CODES.DO_NOT_CALL
+                }
+                id={`status-${STATUS_CODES.DO_NOT_CALL}`}
+              />
+              <Form.Check
+                inline
+                onChange={onFormChange}
+                label="Invalid"
+                name="status"
+                type="radio"
+                value={STATUS_CODES.INVALID}
+                defaultChecked={
+                  (values as valuesDetails).status === STATUS_CODES.INVALID
+                }
+                id={`status-${STATUS_CODES.INVALID}`}
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicSelect">
@@ -169,13 +285,9 @@ function Home({ postalcode, name }: homeProps) {
                 onChange={onFormChange}
                 name="type"
                 aria-label="Default select example"
-                value={(values as valuesDetails).type}
+                value={`${(values as valuesDetails).type}`}
               >
-                <option value="cn">Chinese</option>
-                <option value="tm">Tamil</option>
-                <option value="in">Indonesian</option>
-                <option value="bm">Burmese</option>
-                <option value="ml">Muslim</option>
+                <HHType />
               </Form.Select>
             </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicTextArea">
@@ -186,12 +298,12 @@ function Home({ postalcode, name }: homeProps) {
                 as="textarea"
                 rows={3}
                 aria-label="With textarea"
-                value={(values as valuesDetails).note}
+                value={`${(values as valuesDetails).note}`}
               />
             </Form.Group>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={handleClick}>
+            <Button variant="secondary" onClick={(e) => handleClick(e, true)}>
               Close
             </Button>
             <Button type="submit" variant="primary">
