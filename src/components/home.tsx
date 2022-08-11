@@ -5,9 +5,7 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import {
-  ButtonGroup,
   Container,
-  InputGroup,
   Navbar,
   Table,
   ToggleButton,
@@ -255,7 +253,7 @@ function Home({ postalcode, name }: homeProps) {
                   variant="outline-dark"
                   value={STATUS_CODES.STILL_NOT_HOME}
                 >
-                  Not 🏠🏠
+                  Still Nt 🏠
                 </ToggleButton>
                 <ToggleButton
                   id="status-tb-4"

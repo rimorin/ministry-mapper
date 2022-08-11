@@ -23,7 +23,7 @@ const UnitStatus = (props: unitProps) => {
   }
 
   if (currentStatus === STATUS_CODES.STILL_NOT_HOME) {
-    status = "❓❓ ";
+    status = "📬 ";
   }
 
   if (note) {
