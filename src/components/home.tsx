@@ -50,15 +50,12 @@ function Home({ postalcode, name }: homeProps) {
     setFloors(dataList);
   };
 
-  const handleClick = (
-    event: React.MouseEvent<HTMLElement>,
-    isModal: boolean
-  ) => {
+  const handleClick = (_: React.MouseEvent<HTMLElement>, isModal: boolean) => {
     toggleModal(isModal);
   };
 
   const handleClickModal = (
-    event: React.MouseEvent<HTMLElement>,
+    _: React.MouseEvent<HTMLElement>,
     floor: String,
     unit: String
   ) => {
@@ -76,7 +73,6 @@ function Home({ postalcode, name }: homeProps) {
   };
 
   const handleSubmitClick = (event: React.FormEvent<HTMLElement>) => {
-    event.preventDefault();
     const details = values as valuesDetails;
     set(
       ref(database, `/${postalcode}/units/${details.floor}/${details.unit}`),
@@ -94,21 +90,14 @@ function Home({ postalcode, name }: homeProps) {
   };
 
   const handleSubmitFeedback = (event: React.FormEvent<HTMLElement>) => {
-    event.preventDefault();
     const details = values as valuesDetails;
     set(ref(database, `/${postalcode}/feedback`), details.feedback);
     toggleModal(false);
   };
 
   const onFormChange = (e: React.ChangeEvent<HTMLElement>) => {
-    const { name, value, checked, id } = e.target as HTMLInputElement;
-    console.log(id, value);
-
-    if (name === "done" || name === "dnc" || name === "invalid") {
-      setValues({ ...values, [name]: checked });
-    } else {
-      setValues({ ...values, [name]: value });
-    }
+    const { name, value } = e.target as HTMLInputElement;
+    setValues({ ...values, [name]: value });
   };
 
   useEffect(() => {
@@ -255,7 +244,7 @@ function Home({ postalcode, name }: homeProps) {
               <Form.Check
                 inline
                 onChange={onFormChange}
-                label="Not 🏠2️⃣"
+                label="Not 🏠 2️⃣"
                 name="status"
                 type="radio"
                 value={STATUS_CODES.STILL_NOT_HOME}

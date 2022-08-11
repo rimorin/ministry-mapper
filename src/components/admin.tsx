@@ -117,15 +117,12 @@ function Admin({ congregationCode }: adminProps) {
     }
   };
 
-  const handleClick = (
-    event: React.MouseEvent<HTMLElement>,
-    isModal: boolean
-  ) => {
+  const handleClick = (_: React.MouseEvent<HTMLElement>, isModal: boolean) => {
     toggleModal(isModal);
   };
 
   const handleClickModal = (
-    event: React.MouseEvent<HTMLElement>,
+    _: React.MouseEvent<HTMLElement>,
     postal: String,
     floor: String,
     unit: String,
@@ -133,7 +130,6 @@ function Admin({ congregationCode }: adminProps) {
     note: String,
     status: String
   ) => {
-    event.preventDefault();
     setValues({
       ...values,
       floor: floor,
@@ -147,7 +143,6 @@ function Admin({ congregationCode }: adminProps) {
   };
 
   const handleSubmitClick = (event: React.FormEvent<HTMLElement>) => {
-    event.preventDefault();
     const details = values as valuesDetails;
     set(
       ref(
@@ -164,10 +159,9 @@ function Admin({ congregationCode }: adminProps) {
   };
 
   const handleClickFeedback = (
-    event: React.MouseEvent<HTMLElement>,
+    _: React.MouseEvent<HTMLElement>,
     postalcode: String
   ) => {
-    event.preventDefault();
     get(child(ref(database), `/${postalcode}/feedback`)).then((snapshot) => {
       if (snapshot.exists()) {
         setValues({ ...values, feedback: snapshot.val(), postal: postalcode });
@@ -177,20 +171,14 @@ function Admin({ congregationCode }: adminProps) {
   };
 
   const handleSubmitFeedback = (event: React.FormEvent<HTMLElement>) => {
-    event.preventDefault();
     const details = values as valuesDetails;
     set(ref(database, `/${details.postal}/feedback`), details.feedback);
     toggleModal(false);
   };
 
   const onFormChange = (e: React.ChangeEvent<HTMLElement>) => {
-    const { name, value, checked } = e.target as HTMLInputElement;
-
-    if (name === "done" || name === "dnc" || name === "invalid") {
-      setValues({ ...values, [name]: checked });
-    } else {
-      setValues({ ...values, [name]: value });
-    }
+    const { name, value } = e.target as HTMLInputElement;
+    setValues({ ...values, [name]: value });
   };
 
   useEffect(() => {
