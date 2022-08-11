@@ -143,6 +143,7 @@ function Admin({ congregationCode }: adminProps) {
   };
 
   const handleSubmitClick = (event: React.FormEvent<HTMLElement>) => {
+    event.preventDefault();
     const details = values as valuesDetails;
     set(
       ref(
@@ -171,6 +172,7 @@ function Admin({ congregationCode }: adminProps) {
   };
 
   const handleSubmitFeedback = (event: React.FormEvent<HTMLElement>) => {
+    event.preventDefault();
     const details = values as valuesDetails;
     set(ref(database, `/${details.postal}/feedback`), details.feedback);
     toggleModal(false);

@@ -73,6 +73,7 @@ function Home({ postalcode, name }: homeProps) {
   };
 
   const handleSubmitClick = (event: React.FormEvent<HTMLElement>) => {
+    event.preventDefault();
     const details = values as valuesDetails;
     set(
       ref(database, `/${postalcode}/units/${details.floor}/${details.unit}`),
@@ -90,6 +91,7 @@ function Home({ postalcode, name }: homeProps) {
   };
 
   const handleSubmitFeedback = (event: React.FormEvent<HTMLElement>) => {
+    event.preventDefault();
     const details = values as valuesDetails;
     set(ref(database, `/${postalcode}/feedback`), details.feedback);
     toggleModal(false);
