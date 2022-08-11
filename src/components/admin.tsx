@@ -110,7 +110,7 @@ function Admin({ congregationCode }: adminProps) {
         set(ref(database, `/${postalcode}/units/${floor}/${element.number}`), {
           type: element.type,
           note: element.note,
-          status: element.status
+          status: currentStatus
         });
       });
     }
@@ -470,7 +470,7 @@ function Admin({ congregationCode }: adminProps) {
                 onChange={onFormChange}
                 name="type"
                 aria-label="Default select example"
-                value={`${(values as valuesDetails).type}}`}
+                value={`${(values as valuesDetails).type}`}
               >
                 <HHType />
               </Form.Select>
