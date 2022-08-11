@@ -4,7 +4,13 @@ import database from "./../firebase";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import { Container, Navbar, Table } from "react-bootstrap";
+import {
+  Container,
+  Navbar,
+  Table,
+  ToggleButton,
+  ToggleButtonGroup
+} from "react-bootstrap";
 import Loader from "./loader";
 import { floorDetails, homeProps, valuesDetails } from "./interface";
 import TableHeader from "./table";
@@ -218,68 +224,52 @@ function Home({ postalcode, name }: homeProps) {
         </Modal.Header>
         <Form onSubmit={handleSubmitClick}>
           <Modal.Body>
-            <Form.Group className="mb-3" controlId="formBasicStatusCheckbox">
-              <Form.Check
-                inline
-                onChange={onFormChange}
+            <Form.Group className="mb-3" controlId="formBasicStatusbtnCheckbox">
+              <ToggleButtonGroup
                 name="status"
                 type="radio"
-                label="Done"
-                value={STATUS_CODES.DONE}
-                defaultChecked={
-                  (values as valuesDetails).status === STATUS_CODES.DONE
-                }
-                id={`status-${STATUS_CODES.DONE}`}
-              />
-              <Form.Check
-                inline
-                onChange={onFormChange}
-                label="Not 🏠"
-                name="status"
-                type="radio"
-                value={STATUS_CODES.NOT_HOME}
-                defaultChecked={
-                  (values as valuesDetails).status === STATUS_CODES.NOT_HOME
-                }
-                id={`status-${STATUS_CODES.NOT_HOME}`}
-              />
-              <Form.Check
-                inline
-                onChange={onFormChange}
-                label="Not 🏠 2️⃣"
-                name="status"
-                type="radio"
-                value={STATUS_CODES.STILL_NOT_HOME}
-                defaultChecked={
-                  (values as valuesDetails).status ===
-                  STATUS_CODES.STILL_NOT_HOME
-                }
-                id={`status-${STATUS_CODES.STILL_NOT_HOME}`}
-              />
-              <Form.Check
-                inline
-                onChange={onFormChange}
-                label="DNC"
-                name="status"
-                type="radio"
-                value={STATUS_CODES.DO_NOT_CALL}
-                defaultChecked={
-                  (values as valuesDetails).status === STATUS_CODES.DO_NOT_CALL
-                }
-                id={`status-${STATUS_CODES.DO_NOT_CALL}`}
-              />
-              <Form.Check
-                inline
-                onChange={onFormChange}
-                label="Invalid"
-                name="status"
-                type="radio"
-                value={STATUS_CODES.INVALID}
-                defaultChecked={
-                  (values as valuesDetails).status === STATUS_CODES.INVALID
-                }
-                id={`status-${STATUS_CODES.INVALID}`}
-              />
+                value={(values as valuesDetails).status}
+                className="mb-3"
+                onChange={(toggleValue) => {
+                  setValues({ ...values, status: toggleValue });
+                }}
+              >
+                <ToggleButton
+                  id="status-tb-1"
+                  variant="outline-success"
+                  value={STATUS_CODES.DONE}
+                >
+                  Done
+                </ToggleButton>
+                <ToggleButton
+                  id="status-tb-2"
+                  variant="outline-secondary"
+                  value={STATUS_CODES.NOT_HOME}
+                >
+                  Not 🏠
+                </ToggleButton>
+                <ToggleButton
+                  id="status-tb-3"
+                  variant="outline-dark"
+                  value={STATUS_CODES.STILL_NOT_HOME}
+                >
+                  Still Nt 🏠
+                </ToggleButton>
+                <ToggleButton
+                  id="status-tb-4"
+                  variant="outline-danger"
+                  value={STATUS_CODES.DO_NOT_CALL}
+                >
+                  DNC
+                </ToggleButton>
+                <ToggleButton
+                  id="status-tb-5"
+                  variant="outline-info"
+                  value={STATUS_CODES.INVALID}
+                >
+                  Invalid
+                </ToggleButton>
+              </ToggleButtonGroup>
             </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicSelect">
               <Form.Label>Household</Form.Label>

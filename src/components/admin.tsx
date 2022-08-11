@@ -5,7 +5,14 @@ import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
-import { Button, Form, Modal, Table } from "react-bootstrap";
+import {
+  Button,
+  Form,
+  Modal,
+  Table,
+  ToggleButton,
+  ToggleButtonGroup
+} from "react-bootstrap";
 import Loader from "./loader";
 import { RWebShare } from "react-web-share";
 import UnitStatus from "./unit";
@@ -103,7 +110,7 @@ function Admin({ congregationCode }: adminProps) {
         set(ref(database, `/${postalcode}/units/${floor}/${element.number}`), {
           type: element.type,
           note: element.note,
-          status: element.status
+          status: currentStatus
         });
       });
     }
@@ -410,68 +417,52 @@ function Admin({ congregationCode }: adminProps) {
         </Modal.Header>
         <Form onSubmit={handleSubmitClick}>
           <Modal.Body>
-            <Form.Group className="mb-3" controlId="formBasicStatusCheckbox">
-              <Form.Check
-                inline
-                onChange={onFormChange}
+            <Form.Group className="mb-3" controlId="formBasicStatusbtnCheckbox">
+              <ToggleButtonGroup
                 name="status"
                 type="radio"
-                label="Done"
-                value={STATUS_CODES.DONE}
-                defaultChecked={
-                  (values as valuesDetails).status === STATUS_CODES.DONE
-                }
-                id={`status-${STATUS_CODES.DONE}`}
-              />
-              <Form.Check
-                inline
-                onChange={onFormChange}
-                label="Not 🏠"
-                name="status"
-                type="radio"
-                value={STATUS_CODES.NOT_HOME}
-                defaultChecked={
-                  (values as valuesDetails).status === STATUS_CODES.NOT_HOME
-                }
-                id={`status-${STATUS_CODES.NOT_HOME}`}
-              />
-              <Form.Check
-                inline
-                onChange={onFormChange}
-                label="Not 🏠2️⃣"
-                name="status"
-                type="radio"
-                value={STATUS_CODES.STILL_NOT_HOME}
-                defaultChecked={
-                  (values as valuesDetails).status ===
-                  STATUS_CODES.STILL_NOT_HOME
-                }
-                id={`status-${STATUS_CODES.STILL_NOT_HOME}`}
-              />
-              <Form.Check
-                inline
-                onChange={onFormChange}
-                label="DNC"
-                name="status"
-                type="radio"
-                value={STATUS_CODES.DO_NOT_CALL}
-                defaultChecked={
-                  (values as valuesDetails).status === STATUS_CODES.DO_NOT_CALL
-                }
-                id={`status-${STATUS_CODES.DO_NOT_CALL}`}
-              />
-              <Form.Check
-                inline
-                onChange={onFormChange}
-                label="Invalid"
-                name="status"
-                type="radio"
-                value={STATUS_CODES.INVALID}
-                defaultChecked={
-                  (values as valuesDetails).status === STATUS_CODES.INVALID
-                }
-                id={`status-${STATUS_CODES.INVALID}`}
-              />
+                value={(values as valuesDetails).status}
+                className="mb-3"
+                onChange={(toggleValue) => {
+                  setValues({ ...values, status: toggleValue });
+                }}
+              >
+                <ToggleButton
+                  id="status-tb-1"
+                  variant="outline-success"
+                  value={STATUS_CODES.DONE}
+                >
+                  Done
+                </ToggleButton>
+                <ToggleButton
+                  id="status-tb-2"
+                  variant="outline-secondary"
+                  value={STATUS_CODES.NOT_HOME}
+                >
+                  Not 🏠
+                </ToggleButton>
+                <ToggleButton
+                  id="status-tb-3"
+                  variant="outline-dark"
+                  value={STATUS_CODES.STILL_NOT_HOME}
+                >
+                  Not 🏠🏠
+                </ToggleButton>
+                <ToggleButton
+                  id="status-tb-4"
+                  variant="outline-danger"
+                  value={STATUS_CODES.DO_NOT_CALL}
+                >
+                  DNC
+                </ToggleButton>
+                <ToggleButton
+                  id="status-tb-5"
+                  variant="outline-info"
+                  value={STATUS_CODES.INVALID}
+                >
+                  Invalid
+                </ToggleButton>
+              </ToggleButtonGroup>
             </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicSelect">
               <Form.Label>Household</Form.Label>
@@ -479,7 +470,7 @@ function Admin({ congregationCode }: adminProps) {
                 onChange={onFormChange}
                 name="type"
                 aria-label="Default select example"
-                value={`${(values as valuesDetails).type}}`}
+                value={`${(values as valuesDetails).type}`}
               >
                 <HHType />
               </Form.Select>
