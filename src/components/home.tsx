@@ -15,7 +15,7 @@ import Loader from "./loader";
 import { floorDetails, homeProps, valuesDetails } from "./interface";
 import TableHeader from "./table";
 import UnitStatus from "./unit";
-import { compareSortObjects, HHType, STATUS_CODES } from "./util";
+import { compareSortObjects, HHType, STATUS_CODES, zeroPad } from "./util";
 
 function Home({ postalcode, name }: homeProps) {
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
@@ -168,7 +168,7 @@ function Home({ postalcode, name }: homeProps) {
                   key={`${index}-${item.floor}`}
                   scope="row"
                 >
-                  {item.floor}
+                  {zeroPad(item.floor, 2)}
                 </th>
                 {item.units.map((element, _) => (
                   <td

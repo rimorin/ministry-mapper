@@ -1,3 +1,5 @@
+import { ToggleButton } from "react-bootstrap";
+
 const compareSortObjects = (a: any, b: any) => {
   const a_floor = Number(a.floor);
   const b_floor = Number(b.floor);
@@ -36,4 +38,6 @@ const HHType = () => (
   </>
 );
 
-export { compareSortObjects, HHType, STATUS_CODES, MUTABLE_CODES };
+const zeroPad = (num: String, places: number) => num.padStart(places, "0");
+
+export { compareSortObjects, HHType, zeroPad, STATUS_CODES, MUTABLE_CODES };

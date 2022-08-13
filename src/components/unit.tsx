@@ -1,3 +1,4 @@
+import { Fade } from "react-bootstrap";
 import { unitProps } from "./interface";
 import { STATUS_CODES } from "./util";
 
@@ -37,7 +38,7 @@ const UnitStatus = (props: unitProps) => {
     status += otherType;
   }
 
-  return <div>{status}</div>;
+  return <>{status}</>;
 };
 
 export default UnitStatus;

@@ -28,7 +28,8 @@ import {
   compareSortObjects,
   HHType,
   STATUS_CODES,
-  MUTABLE_CODES
+  MUTABLE_CODES,
+  zeroPad
 } from "./util";
 
 function Admin({ congregationCode }: adminProps) {
@@ -348,7 +349,7 @@ function Admin({ congregationCode }: adminProps) {
                         key={`floor-${floorIndex}`}
                         scope="row"
                       >
-                        {`${floorElement.floor}`}
+                        {`${zeroPad(floorElement.floor, 2)}`}
                       </th>
                       {floorElement.units.map((detailsElement, index) => (
                         <td
