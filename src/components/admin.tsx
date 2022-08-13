@@ -446,7 +446,7 @@ function Admin({ congregationCode }: adminProps) {
                   variant="outline-dark"
                   value={STATUS_CODES.STILL_NOT_HOME}
                 >
-                  Not 🏠🏠
+                  Still Nt 🏠
                 </ToggleButton>
                 <ToggleButton
                   id="status-tb-4"

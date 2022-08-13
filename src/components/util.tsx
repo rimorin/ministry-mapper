@@ -1,3 +1,10 @@
+import {
+  ToggleButton,
+  ToggleButtonGroup,
+  ToggleButtonRadioProps
+} from "react-bootstrap";
+import { valuesDetails } from "./interface";
+
 const compareSortObjects = (a: any, b: any) => {
   const a_floor = Number(a.floor);
   const b_floor = Number(b.floor);
