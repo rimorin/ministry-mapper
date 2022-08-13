@@ -246,15 +246,15 @@ function Home({ postalcode, name }: homeProps) {
                   variant="outline-secondary"
                   value={STATUS_CODES.NOT_HOME}
                 >
-                  Not 🏠
+                  Not Home
                 </ToggleButton>
-                <ToggleButton
+                {/* <ToggleButton
                   id="status-tb-3"
                   variant="outline-dark"
                   value={STATUS_CODES.STILL_NOT_HOME}
                 >
                   Still Nt 🏠
-                </ToggleButton>
+                </ToggleButton> */}
                 <ToggleButton
                   id="status-tb-4"
                   variant="outline-danger"

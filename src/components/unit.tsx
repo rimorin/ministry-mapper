@@ -18,11 +18,14 @@ const UnitStatus = (props: unitProps) => {
     status = "🚫 ";
   }
 
-  if (currentStatus === STATUS_CODES.NOT_HOME) {
-    status = "❓ ";
-  }
+  // if (currentStatus === STATUS_CODES.NOT_HOME) {
+  //   status = "❓ ";
+  // }
 
-  if (currentStatus === STATUS_CODES.STILL_NOT_HOME) {
+  if (
+    currentStatus === STATUS_CODES.STILL_NOT_HOME ||
+    currentStatus === STATUS_CODES.NOT_HOME
+  ) {
     status = "📬 ";
   }
 
