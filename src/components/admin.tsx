@@ -440,6 +440,13 @@ function Admin({ congregationCode }: adminProps) {
                 }}
               >
                 <ToggleButton
+                  id="status-tb-0"
+                  variant="outline-dark"
+                  value={STATUS_CODES.DEFAULT}
+                >
+                  Not Done
+                </ToggleButton>
+                <ToggleButton
                   id="status-tb-1"
                   variant="outline-success"
                   value={STATUS_CODES.DONE}
