@@ -2,8 +2,9 @@ import { Button, Card, Container } from "react-bootstrap";
 
 const MaintenanceMode = () => (
   <Container className="d-flex align-items-center justify-content-center vh-100">
-    <Card style={{ width: "15rem" }} className="border-0">
+    <Card className="border-0 align-items-center">
       <Card.Img
+        style={{ width: "10rem" }}
         variant="top"
         src={`${process.env.PUBLIC_URL}/android-chrome-192x192.png`}
       />
