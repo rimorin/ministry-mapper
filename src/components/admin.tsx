@@ -29,8 +29,10 @@ import {
   HHType,
   STATUS_CODES,
   MUTABLE_CODES,
-  zeroPad
+  zeroPad,
+  ModalUnitTitle
 } from "./util";
+import TableHeader from "./table";
 
 function Admin({ congregationCode }: adminProps) {
   const [name, setName] = useState<String>();
@@ -192,7 +194,7 @@ function Admin({ congregationCode }: adminProps) {
   };
 
   useEffect(() => {
-    onValue(congregationReference, (snapshot) => {
+    get(congregationReference).then((snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
         document.title = `${data["name"]}`;
@@ -210,6 +212,24 @@ function Admin({ congregationCode }: adminProps) {
         setTerritories(territoryList);
         setName(`${data["name"]}`);
       }
+      // onValue(congregationReference, (snapshot) => {
+      //   if (snapshot.exists()) {
+      //     const data = snapshot.val();
+      //     document.title = `${data["name"]}`;
+      //     const congregationTerritories = data["territories"];
+      //     let territoryList = [];
+      //     for (const territory in congregationTerritories) {
+      //       const name = congregationTerritories[territory]["name"];
+      //       const addresses = congregationTerritories[territory]["addresses"];
+      //       territoryList.push({
+      //         code: territory,
+      //         name: name,
+      //         addresses: addresses
+      //       });
+      //     }
+      //     setTerritories(territoryList);
+      //     setName(`${data["name"]}`);
+      //   }
     });
   }, []);
 
@@ -321,25 +341,16 @@ function Admin({ congregationCode }: adminProps) {
             <Table
               key={`table-${addressElement.postalcode}`}
               bordered
+              striped
+              hover
               responsive="sm"
+              style={{ overflowX: "auto" }}
             >
-              <thead key={`thead-${addressElement.postalcode}`}>
-                <tr>
-                  <th scope="col" className="text-center">
-                    lvl/unit
-                  </th>
-                  {addressElement.floors &&
-                    addressElement.floors[0].units.map((element, index) => (
-                      <th
-                        key={`${index}-y-header`}
-                        scope="col"
-                        className="text-center"
-                      >
-                        {`${element.number}`}
-                      </th>
-                    ))}
-                </tr>
-              </thead>
+              <TableHeader
+                name={`${addressElement.name}`}
+                postalcode={`${addressElement.postalcode}`}
+                floors={addressElement.floors}
+              />
               <tbody key={`tbody-${addressElement.postalcode}`}>
                 {addressElement.floors &&
                   addressElement.floors.map((floorElement, floorIndex) => (
@@ -411,11 +422,11 @@ function Admin({ congregationCode }: adminProps) {
         </Form>
       </Modal>
       <Modal show={isOpen}>
-        <Modal.Header>
-          <Modal.Title>{`${(values as valuesDetails).postal} - (#${
-            (values as valuesDetails).floor
-          } - ${(values as valuesDetails).unit})`}</Modal.Title>
-        </Modal.Header>
+        <ModalUnitTitle
+          unit={(values as valuesDetails).unit}
+          floor={(values as valuesDetails).floor}
+          postal={(values as valuesDetails).postal}
+        />
         <Form onSubmit={handleSubmitClick}>
           <Modal.Body>
             <Form.Group className="mb-3" controlId="formBasicStatusbtnCheckbox">
