@@ -212,24 +212,6 @@ function Admin({ congregationCode }: adminProps) {
         setTerritories(territoryList);
         setName(`${data["name"]}`);
       }
-      // onValue(congregationReference, (snapshot) => {
-      //   if (snapshot.exists()) {
-      //     const data = snapshot.val();
-      //     document.title = `${data["name"]}`;
-      //     const congregationTerritories = data["territories"];
-      //     let territoryList = [];
-      //     for (const territory in congregationTerritories) {
-      //       const name = congregationTerritories[territory]["name"];
-      //       const addresses = congregationTerritories[territory]["addresses"];
-      //       territoryList.push({
-      //         code: territory,
-      //         name: name,
-      //         addresses: addresses
-      //       });
-      //     }
-      //     setTerritories(territoryList);
-      //     setName(`${data["name"]}`);
-      //   }
     });
   }, []);
 
