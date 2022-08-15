@@ -1,47 +1,75 @@
-# Getting Started with Create React App
+# Ministry Mapper
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A web application for the field ministry.
 
-## Available Scripts
+## Why
 
-In the project directory, you can run:
+Pain points for traditional physical territory slips
 
-### `npm start`
+- Use of paper that will be thrown once territory is completed. 🗑️
+- Preparation of physical territory slips (Printing & Cutting). ✂️ 🖨️ 💦
+- Risk of slips going missing or returned in bad & unreadable condition.
+- Syncing up updates from physical slips to an online spreadsheet.
+- High dependence on conductors presence for publishers to receive territory slips. For example, a conductor that is unable to attend due to unforeseen matter on that morning will have to find a way to get someone else to pick up the physical slips and distribute them.
+- Time constraint to receive and return physical slips to conductors. For example, later comers and conductors have to find a way to meet each other to pass territory slips. Pubs who has other arrangements and are unable to join for lunch break have to still go to the break point to pass the physical slip.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Advantages of Ministry Mapper
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- Fully digital territory slips. No more use of papers 🌳
+- Near zero effort on territory servant to manage the territory data as details are already stored in the system.
+- Real time collaboration. For example, multiple publishers are able to work the same territory as everyone will always see the territory data in real to near real-time. This reduces overlapping work that could waste time and cause trouble.
+- Designed for offline access. If publishers has poor internet connectivity, they will still be able to use the app. Territory data entered will be automatically merged once internet access is up.
+- Territories can be covered efficiently as slips are available online rather than in physical forms. If a field service group requires help on their territory, another group can easier step in to help by simply accessing their territory data.
 
-### `npm test`
+Disadvantages of Ministry Mapper
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- Initial migration work of the territory data. Territory servants will have to translate their current territory data into a json specific file to feed into the platform.
+- Requires a internet device for publishers & conductors to use.
+- A degree of learning curve especially for elderly and non tech-savvy publisher publishers.
+- Currently optimised for countries where territories are mostly apartments/flats. (Landed/House features coming in V2)
 
-### `npm run build`
+### Usage
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- To access the admin screen of a congregation, `domain/admin/<congregation code>`
+  1. To assign a slip to a publisher, select territory and postal address and click on the share button.
+  2. To restart territory status during a cycle, click on reset button under each postal address.
+- To access a particular postal address, `domain/<postal code>`
+  1. To update an unit number, tap on a unit box and update its details accordingly.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Deployment
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- Firebase Database setup
 
-### `npm run eject`
+  1. Create Google account and setup firebase realtime database
+  2. Prepare territory.json file that contains your territory data in the format specified.
+  3. Upload Json file to real-time database
+  4. Implement security rules to prevent unwanted deletions and access.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+- Local deployment
+  1. Setup .env with the following environment variables and their values.
+     - REACT_APP_FIREBASE_API_KEY=key_from_firebase_account
+     - REACT_APP_FIREBASE_AUTH_DOMAIN=domain_from_firebase_account
+     - REACT_APP_FIREBASE_DB_URL=url_from_firebase_account
+     - REACT_APP_FIREBASE_PROJECT_ID=id_from_firebase_account
+     - REACT_APP_FIREBASE_BUCKET=bucket_from_firebase_account
+     - REACT_APP_FIREBASE_SENDER_ID=sender_id_from_firebase_account
+     - REACT_APP_FIREBASE_APP_ID=app_id_from_firebase_account
+  2. Restart shell and run `npm start`
+- Production deployment
+  1. Run `npm run build`
+  2. Copy build package into a cloud CDN provider of your choice.
+  3. When deploying, ensure the following environment variables are configured.
+     - REACT_APP_FIREBASE_API_KEY=key_from_firebase_account
+     - REACT_APP_FIREBASE_AUTH_DOMAIN=domain_from_firebase_account
+     - REACT_APP_FIREBASE_DB_URL=url_from_firebase_account
+     - REACT_APP_FIREBASE_PROJECT_ID=id_from_firebase_account
+     - REACT_APP_FIREBASE_BUCKET=bucket_from_firebase_account
+     - REACT_APP_FIREBASE_SENDER_ID=sender_id_from_firebase_account
+     - REACT_APP_FIREBASE_APP_ID=app_id_from_firebase_account
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Technologies Used
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-# ministry-mapper
+1. Bootstrap - CSS Framework
+2. ReactJs - Javascript UI Framework
+3. Typescript - Javascript typed implementation library
+4. Firebase Real-time database - Cloud based database with real time synchronization across all clients.

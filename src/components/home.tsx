@@ -15,7 +15,13 @@ import Loader from "./loader";
 import { floorDetails, homeProps, valuesDetails } from "./interface";
 import TableHeader from "./table";
 import UnitStatus from "./unit";
-import { compareSortObjects, HHType, STATUS_CODES, zeroPad } from "./util";
+import {
+  compareSortObjects,
+  HHType,
+  ModalUnitTitle,
+  STATUS_CODES,
+  zeroPad
+} from "./util";
 
 function Home({ postalcode, name }: homeProps) {
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
@@ -153,7 +159,13 @@ function Home({ postalcode, name }: homeProps) {
           </Navbar.Collapse>
         </Container>
       </Navbar>
-      <Table bordered responsive="sm">
+      <Table
+        bordered
+        striped
+        hover
+        responsive="sm"
+        style={{ overflowX: "auto" }}
+      >
         <TableHeader
           name={`${name}`}
           postalcode={`${postalcode}`}
@@ -217,11 +229,10 @@ function Home({ postalcode, name }: homeProps) {
         </Form>
       </Modal>
       <Modal show={isOpen}>
-        <Modal.Header>
-          <Modal.Title>{`# ${(values as valuesDetails).floor} - ${
-            (values as valuesDetails).unit
-          }`}</Modal.Title>
-        </Modal.Header>
+        <ModalUnitTitle
+          unit={(values as valuesDetails).unit}
+          floor={(values as valuesDetails).floor}
+        />
         <Form onSubmit={handleSubmitClick}>
           <Modal.Body>
             <Form.Group className="mb-3" controlId="formBasicStatusbtnCheckbox">
@@ -234,6 +245,13 @@ function Home({ postalcode, name }: homeProps) {
                   setValues({ ...values, status: toggleValue });
                 }}
               >
+                <ToggleButton
+                  id="status-tb-0"
+                  variant="outline-dark"
+                  value={STATUS_CODES.DEFAULT}
+                >
+                  Not Done
+                </ToggleButton>
                 <ToggleButton
                   id="status-tb-1"
                   variant="outline-success"
@@ -290,6 +308,7 @@ function Home({ postalcode, name }: homeProps) {
                 as="textarea"
                 rows={3}
                 aria-label="With textarea"
+                placeholder="Optional Non-personal information. Eg, Renovation, Friends, etc."
                 value={`${(values as valuesDetails).note}`}
               />
             </Form.Group>

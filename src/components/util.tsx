@@ -1,4 +1,4 @@
-import { ToggleButton } from "react-bootstrap";
+import { Modal, ToggleButton } from "react-bootstrap";
 
 const compareSortObjects = (a: any, b: any) => {
   const a_floor = Number(a.floor);
@@ -35,9 +35,36 @@ const HHType = () => (
     <option value="bm">Burmese</option>
     <option value="ml">Muslim</option>
     <option value="sl">Sign Language</option>
+    <option value="ot">Others</option>
   </>
 );
 
+interface TitleProp {
+  floor: String;
+  unit: String;
+  postal?: String;
+}
+
+const ModalUnitTitle = ({ unit, floor, postal }: TitleProp) => {
+  let titleString = `# ${zeroPad(floor, 2)} - ${unit}`;
+
+  if (postal) {
+    titleString = `${postal}, ${titleString}`;
+  }
+  return (
+    <Modal.Header>
+      <Modal.Title>{titleString}</Modal.Title>
+    </Modal.Header>
+  );
+};
+
 const zeroPad = (num: String, places: number) => num.padStart(places, "0");
 
-export { compareSortObjects, HHType, zeroPad, STATUS_CODES, MUTABLE_CODES };
+export {
+  compareSortObjects,
+  HHType,
+  zeroPad,
+  ModalUnitTitle,
+  STATUS_CODES,
+  MUTABLE_CODES
+};
