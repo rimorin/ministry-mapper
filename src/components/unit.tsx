@@ -1,4 +1,3 @@
-import { Fade } from "react-bootstrap";
 import { unitProps } from "./interface";
 import { STATUS_CODES } from "./util";
 

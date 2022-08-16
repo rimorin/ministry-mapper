@@ -7,6 +7,7 @@ import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import {
   Button,
+  Card,
   Form,
   Modal,
   Table,
@@ -29,8 +30,9 @@ import {
   HHType,
   STATUS_CODES,
   MUTABLE_CODES,
-  zeroPad,
-  ModalUnitTitle
+  ZeroPad,
+  ModalUnitTitle,
+  assignmentMessage
 } from "./util";
 import TableHeader from "./table";
 
@@ -266,9 +268,9 @@ function Admin({ congregationCode }: adminProps) {
                   <Form className="d-flex">
                     <RWebShare
                       data={{
-                        text: `These are unit numbers for ${addressElement.postalcode}. To update a unit, please tap on a unit box and update its details accordingly.`,
+                        text: assignmentMessage(addressElement.name),
                         url: `${window.location.origin}/${addressElement.postalcode}`,
-                        title: `Units for ${addressElement.postalcode}`
+                        title: `Units for ${addressElement.name}`
                       }}
                     >
                       <Button className="me-2">Assign</Button>
@@ -296,21 +298,42 @@ function Admin({ congregationCode }: adminProps) {
                       className="me-2"
                       onClick={() =>
                         confirmAlert({
-                          title: `Resetting ${addressElement.name}`,
-                          message: "Are you sure you want to do this ?",
-                          buttons: [
-                            {
-                              label: "Yes",
-                              onClick: () =>
-                                resetBlock(addressElement.postalcode)
-                            },
-                            {
-                              label: "No",
-                              onClick: () => {
-                                return;
-                              }
-                            }
-                          ]
+                          customUI: ({ onClose }) => {
+                            return (
+                              <Container>
+                                <Card bg="warning" className="text-center">
+                                  <Card.Header>Warning ⚠️</Card.Header>
+                                  <Card.Body>
+                                    <Card.Title>Are You Very Sure ?</Card.Title>
+                                    <Card.Text>
+                                      You want to reset the data of{" "}
+                                      {addressElement.name}. This will only
+                                      reset Done & Not Home status.
+                                    </Card.Text>
+                                    <Button
+                                      className="me-2"
+                                      variant="primary"
+                                      onClick={() => {
+                                        resetBlock(addressElement.postalcode);
+                                        onClose();
+                                      }}
+                                    >
+                                      Yes, Reset It.
+                                    </Button>
+                                    <Button
+                                      className="ms-2"
+                                      variant="primary"
+                                      onClick={() => {
+                                        onClose();
+                                      }}
+                                    >
+                                      No
+                                    </Button>
+                                  </Card.Body>
+                                </Card>
+                              </Container>
+                            );
+                          }
                         })
                       }
                     >
@@ -328,11 +351,7 @@ function Admin({ congregationCode }: adminProps) {
               responsive="sm"
               style={{ overflowX: "auto" }}
             >
-              <TableHeader
-                name={`${addressElement.name}`}
-                postalcode={`${addressElement.postalcode}`}
-                floors={addressElement.floors}
-              />
+              <TableHeader floors={addressElement.floors} />
               <tbody key={`tbody-${addressElement.postalcode}`}>
                 {addressElement.floors &&
                   addressElement.floors.map((floorElement, floorIndex) => (
@@ -342,7 +361,7 @@ function Admin({ congregationCode }: adminProps) {
                         key={`floor-${floorIndex}`}
                         scope="row"
                       >
-                        {`${zeroPad(floorElement.floor, 2)}`}
+                        {`${ZeroPad(floorElement.floor, 2)}`}
                       </th>
                       {floorElement.units.map((detailsElement, index) => (
                         <td

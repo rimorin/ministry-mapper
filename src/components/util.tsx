@@ -46,7 +46,7 @@ interface TitleProp {
 }
 
 const ModalUnitTitle = ({ unit, floor, postal }: TitleProp) => {
-  let titleString = `# ${zeroPad(floor, 2)} - ${unit}`;
+  let titleString = `# ${ZeroPad(floor, 2)} - ${unit}`;
 
   if (postal) {
     titleString = `${postal}, ${titleString}`;
@@ -58,13 +58,27 @@ const ModalUnitTitle = ({ unit, floor, postal }: TitleProp) => {
   );
 };
 
-const zeroPad = (num: String, places: number) => num.padStart(places, "0");
+const ZeroPad = (num: String, places: number) => num.padStart(places, "0");
+
+const assignmentMessage = (address: String) => {
+  const currentDate = new Date();
+  const hrs = currentDate.getHours();
+
+  let greet;
+
+  if (hrs < 12) greet = "Morning";
+  else if (hrs >= 12 && hrs <= 17) greet = "Afternoon";
+  else if (hrs >= 17 && hrs <= 24) greet = "Evening";
+
+  return `Good ${greet}!! You are assigned to ${address}. Please click on the link below to proceed.`;
+};
 
 export {
   compareSortObjects,
   HHType,
-  zeroPad,
+  ZeroPad,
   ModalUnitTitle,
+  assignmentMessage,
   STATUS_CODES,
   MUTABLE_CODES
 };

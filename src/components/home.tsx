@@ -20,7 +20,7 @@ import {
   HHType,
   ModalUnitTitle,
   STATUS_CODES,
-  zeroPad
+  ZeroPad
 } from "./util";
 
 function Home({ postalcode, name }: homeProps) {
@@ -166,11 +166,7 @@ function Home({ postalcode, name }: homeProps) {
         responsive="sm"
         style={{ overflowX: "auto" }}
       >
-        <TableHeader
-          name={`${name}`}
-          postalcode={`${postalcode}`}
-          floors={floors}
-        />
+        <TableHeader floors={floors} />
         <tbody>
           {floors &&
             floors.map((item, index) => (
@@ -180,7 +176,7 @@ function Home({ postalcode, name }: homeProps) {
                   key={`${index}-${item.floor}`}
                   scope="row"
                 >
-                  {zeroPad(item.floor, 2)}
+                  {ZeroPad(item.floor, 2)}
                 </th>
                 {item.units.map((element, _) => (
                   <td
