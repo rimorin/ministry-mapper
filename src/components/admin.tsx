@@ -320,8 +320,8 @@ function Admin({ congregationCode, user }: adminProps) {
                                     <Card.Title>Are You Very Sure ?</Card.Title>
                                     <Card.Text>
                                       You want to reset the data of{" "}
-                                      {addressElement.name}. This will only
-                                      reset Done & Not Home status.
+                                      {addressElement.name}. This will reset all
+                                      Done & Not Home status.
                                     </Card.Text>
                                     <Button
                                       className="me-2"
