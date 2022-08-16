@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import database from './../firebase';
+import { database, auth } from './../firebase';
 import Home from './../components/home';
-import { ref, get, child} from "firebase/database";
+import { ref, get, child, onValue} from "firebase/database";
 import { Routes, Route } from "react-router-dom";
 import { Container } from 'react-bootstrap';
 import Loader from './loader';
 import "bootstrap/dist/css/bootstrap.min.css";
 import Admin from './admin';
+import MaintenanceMode from './maintenance';
+import Login from './login';
 
 interface RouteDetails {
     postalCode: String,
@@ -16,8 +18,19 @@ function Navigation() {
 
     const [territories, setTerritories] = useState(Array<RouteDetails>);
     const [congregations, setCongregations] = useState(Array<String>);
+    const [isMaintenance, setIsMaintenance] = useState<boolean>(false);
+    const maintenanceReference = child(ref(database), `/maintenance`);
+    const [user, setUser] = useState<any>(null);
 
     useEffect(() => {
+        auth.onAuthStateChanged(user => {
+            setUser(user);
+        });
+        onValue(maintenanceReference, (snapshot) => {
+            if (snapshot.exists()) {
+                setIsMaintenance(snapshot.val());
+            }
+        });
         get(child(ref(database),'/congregations')).then((snapshot) => {
             if (snapshot.exists()) {
                 const territoryDataList = [];
@@ -46,15 +59,19 @@ function Navigation() {
             console.error(error);
         });
       }, []);
+    if (isMaintenance) {
+        return <MaintenanceMode />;
+    }
     if (territories.length === 0) {
         return <Loader/>
     }
     return (
         <Container className='pt-2' fluid>
         <Routes>
-          <Route path="/" element={<></>}/>
+          <Route path="/" element={<MaintenanceMode></MaintenanceMode>}/>
           {congregations.map((item,index)=>
-             <Route key={index} path={`admin/${item}`} element={<Admin congregationCode={item}/>}/>)};
+            <Route key={index} path={`admin/${item}`} element={user ? <Admin user={user} congregationCode={item}/> : <Login/>}/>)};
+            
           {territories.map((item,index)=>
              <Route key={index} path={`/${item.postalCode}`} element={<Home postalcode={item.postalCode} name={item.name} />}/>
         )};

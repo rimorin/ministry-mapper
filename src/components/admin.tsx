@@ -1,11 +1,19 @@
 import { child, onValue, ref, set, get, DataSnapshot } from "firebase/database";
 import React, { useEffect, useState } from "react";
-import database from "./../firebase";
+import { database } from "./../firebase";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
-import { Button, Form, Modal, Table } from "react-bootstrap";
+import {
+  Button,
+  Card,
+  Form,
+  Modal,
+  Table,
+  ToggleButton,
+  ToggleButtonGroup
+} from "react-bootstrap";
 import Loader from "./loader";
 import { RWebShare } from "react-web-share";
 import UnitStatus from "./unit";
@@ -21,10 +29,15 @@ import {
   compareSortObjects,
   HHType,
   STATUS_CODES,
-  MUTABLE_CODES
+  MUTABLE_CODES,
+  ZeroPad,
+  ModalUnitTitle,
+  assignmentMessage
 } from "./util";
-
-function Admin({ congregationCode }: adminProps) {
+import TableHeader from "./table";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
+function Admin({ congregationCode, user }: adminProps) {
   const [name, setName] = useState<String>();
   const [territories, setTerritories] = useState<Array<territoryDetails>>([]);
   const [territory, setTerritory] = useState<String>();
@@ -103,7 +116,7 @@ function Admin({ congregationCode }: adminProps) {
         set(ref(database, `/${postalcode}/units/${floor}/${element.number}`), {
           type: element.type,
           note: element.note,
-          status: element.status
+          status: currentStatus
         });
       });
     }
@@ -143,6 +156,7 @@ function Admin({ congregationCode }: adminProps) {
   };
 
   const handleSubmitClick = (event: React.FormEvent<HTMLElement>) => {
+    event.preventDefault();
     const details = values as valuesDetails;
     set(
       ref(
@@ -171,6 +185,7 @@ function Admin({ congregationCode }: adminProps) {
   };
 
   const handleSubmitFeedback = (event: React.FormEvent<HTMLElement>) => {
+    event.preventDefault();
     const details = values as valuesDetails;
     set(ref(database, `/${details.postal}/feedback`), details.feedback);
     toggleModal(false);
@@ -182,7 +197,7 @@ function Admin({ congregationCode }: adminProps) {
   };
 
   useEffect(() => {
-    onValue(congregationReference, (snapshot) => {
+    get(congregationReference).then((snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
         document.title = `${data["name"]}`;
@@ -232,6 +247,18 @@ function Admin({ congregationCode }: adminProps) {
                   ))}
               </NavDropdown>
             </Nav>
+            <Nav className="justify-content-end">
+              <Nav.Item>
+                <Button
+                  variant="outline-primary"
+                  onClick={() => {
+                    signOut(auth);
+                  }}
+                >
+                  Log Out
+                </Button>
+              </Nav.Item>
+            </Nav>
           </Navbar.Collapse>
         </Container>
       </Navbar>
@@ -254,12 +281,12 @@ function Admin({ congregationCode }: adminProps) {
                   <Form className="d-flex">
                     <RWebShare
                       data={{
-                        text: `These are unit numbers for ${addressElement.postalcode}. To update a unit, please tap on a unit box and update its details accordingly.`,
+                        text: assignmentMessage(addressElement.name),
                         url: `${window.location.origin}/${addressElement.postalcode}`,
-                        title: `Units for ${addressElement.postalcode}`
+                        title: `Units for ${addressElement.name}`
                       }}
                     >
-                      <Button className="me-2">Share</Button>
+                      <Button className="me-2">Assign</Button>
                     </RWebShare>
                     <Button
                       className="me-2"
@@ -284,21 +311,42 @@ function Admin({ congregationCode }: adminProps) {
                       className="me-2"
                       onClick={() =>
                         confirmAlert({
-                          title: `Resetting ${addressElement.name}`,
-                          message: "Are you sure you want to do this ?",
-                          buttons: [
-                            {
-                              label: "Yes",
-                              onClick: () =>
-                                resetBlock(addressElement.postalcode)
-                            },
-                            {
-                              label: "No",
-                              onClick: () => {
-                                return;
-                              }
-                            }
-                          ]
+                          customUI: ({ onClose }) => {
+                            return (
+                              <Container>
+                                <Card bg="warning" className="text-center">
+                                  <Card.Header>Warning ⚠️</Card.Header>
+                                  <Card.Body>
+                                    <Card.Title>Are You Very Sure ?</Card.Title>
+                                    <Card.Text>
+                                      You want to reset the data of{" "}
+                                      {addressElement.name}. This will only
+                                      reset Done & Not Home status.
+                                    </Card.Text>
+                                    <Button
+                                      className="me-2"
+                                      variant="primary"
+                                      onClick={() => {
+                                        resetBlock(addressElement.postalcode);
+                                        onClose();
+                                      }}
+                                    >
+                                      Yes, Reset It.
+                                    </Button>
+                                    <Button
+                                      className="ms-2"
+                                      variant="primary"
+                                      onClick={() => {
+                                        onClose();
+                                      }}
+                                    >
+                                      No
+                                    </Button>
+                                  </Card.Body>
+                                </Card>
+                              </Container>
+                            );
+                          }
                         })
                       }
                     >
@@ -311,25 +359,12 @@ function Admin({ congregationCode }: adminProps) {
             <Table
               key={`table-${addressElement.postalcode}`}
               bordered
+              striped
+              hover
               responsive="sm"
+              style={{ overflowX: "auto" }}
             >
-              <thead key={`thead-${addressElement.postalcode}`}>
-                <tr>
-                  <th scope="col" className="text-center">
-                    lvl/unit
-                  </th>
-                  {addressElement.floors &&
-                    addressElement.floors[0].units.map((element, index) => (
-                      <th
-                        key={`${index}-y-header`}
-                        scope="col"
-                        className="text-center"
-                      >
-                        {`${element.number}`}
-                      </th>
-                    ))}
-                </tr>
-              </thead>
+              <TableHeader floors={addressElement.floors} />
               <tbody key={`tbody-${addressElement.postalcode}`}>
                 {addressElement.floors &&
                   addressElement.floors.map((floorElement, floorIndex) => (
@@ -339,7 +374,7 @@ function Admin({ congregationCode }: adminProps) {
                         key={`floor-${floorIndex}`}
                         scope="row"
                       >
-                        {`${floorElement.floor}`}
+                        {`${ZeroPad(floorElement.floor, 2)}`}
                       </th>
                       {floorElement.units.map((detailsElement, index) => (
                         <td
@@ -386,7 +421,7 @@ function Admin({ congregationCode }: adminProps) {
                 as="textarea"
                 rows={5}
                 aria-label="With textarea"
-                value={`${(values as valuesDetails).feedback}}`}
+                value={`${(values as valuesDetails).feedback}`}
               />
             </Form.Group>
           </Modal.Body>
@@ -401,75 +436,66 @@ function Admin({ congregationCode }: adminProps) {
         </Form>
       </Modal>
       <Modal show={isOpen}>
-        <Modal.Header>
-          <Modal.Title>{`${(values as valuesDetails).postal} - (#${
-            (values as valuesDetails).floor
-          } - ${(values as valuesDetails).unit})`}</Modal.Title>
-        </Modal.Header>
+        <ModalUnitTitle
+          unit={(values as valuesDetails).unit}
+          floor={(values as valuesDetails).floor}
+          postal={(values as valuesDetails).postal}
+        />
         <Form onSubmit={handleSubmitClick}>
           <Modal.Body>
-            <Form.Group className="mb-3" controlId="formBasicStatusCheckbox">
-              <Form.Check
-                inline
-                onChange={onFormChange}
+            <Form.Group className="mb-3" controlId="formBasicStatusbtnCheckbox">
+              <ToggleButtonGroup
                 name="status"
                 type="radio"
-                label="Done"
-                value={STATUS_CODES.DONE}
-                defaultChecked={
-                  (values as valuesDetails).status === STATUS_CODES.DONE
-                }
-                id={`status-${STATUS_CODES.DONE}`}
-              />
-              <Form.Check
-                inline
-                onChange={onFormChange}
-                label="Not 🏠"
-                name="status"
-                type="radio"
-                value={STATUS_CODES.NOT_HOME}
-                defaultChecked={
-                  (values as valuesDetails).status === STATUS_CODES.NOT_HOME
-                }
-                id={`status-${STATUS_CODES.NOT_HOME}`}
-              />
-              <Form.Check
-                inline
-                onChange={onFormChange}
-                label="Not 🏠2️⃣"
-                name="status"
-                type="radio"
-                value={STATUS_CODES.STILL_NOT_HOME}
-                defaultChecked={
-                  (values as valuesDetails).status ===
-                  STATUS_CODES.STILL_NOT_HOME
-                }
-                id={`status-${STATUS_CODES.STILL_NOT_HOME}`}
-              />
-              <Form.Check
-                inline
-                onChange={onFormChange}
-                label="DNC"
-                name="status"
-                type="radio"
-                value={STATUS_CODES.DO_NOT_CALL}
-                defaultChecked={
-                  (values as valuesDetails).status === STATUS_CODES.DO_NOT_CALL
-                }
-                id={`status-${STATUS_CODES.DO_NOT_CALL}`}
-              />
-              <Form.Check
-                inline
-                onChange={onFormChange}
-                label="Invalid"
-                name="status"
-                type="radio"
-                value={STATUS_CODES.INVALID}
-                defaultChecked={
-                  (values as valuesDetails).status === STATUS_CODES.INVALID
-                }
-                id={`status-${STATUS_CODES.INVALID}`}
-              />
+                value={(values as valuesDetails).status}
+                className="mb-3"
+                onChange={(toggleValue) => {
+                  setValues({ ...values, status: toggleValue });
+                }}
+              >
+                <ToggleButton
+                  id="status-tb-0"
+                  variant="outline-dark"
+                  value={STATUS_CODES.DEFAULT}
+                >
+                  Not Done
+                </ToggleButton>
+                <ToggleButton
+                  id="status-tb-1"
+                  variant="outline-success"
+                  value={STATUS_CODES.DONE}
+                >
+                  Done
+                </ToggleButton>
+                <ToggleButton
+                  id="status-tb-2"
+                  variant="outline-secondary"
+                  value={STATUS_CODES.NOT_HOME}
+                >
+                  Not Home
+                </ToggleButton>
+                {/* <ToggleButton
+                  id="status-tb-3"
+                  variant="outline-dark"
+                  value={STATUS_CODES.STILL_NOT_HOME}
+                >
+                  Still Nt 🏠
+                </ToggleButton> */}
+                <ToggleButton
+                  id="status-tb-4"
+                  variant="outline-danger"
+                  value={STATUS_CODES.DO_NOT_CALL}
+                >
+                  DNC
+                </ToggleButton>
+                <ToggleButton
+                  id="status-tb-5"
+                  variant="outline-info"
+                  value={STATUS_CODES.INVALID}
+                >
+                  Invalid
+                </ToggleButton>
+              </ToggleButtonGroup>
             </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicSelect">
               <Form.Label>Household</Form.Label>
@@ -477,7 +503,7 @@ function Admin({ congregationCode }: adminProps) {
                 onChange={onFormChange}
                 name="type"
                 aria-label="Default select example"
-                value={`${(values as valuesDetails).type}}`}
+                value={`${(values as valuesDetails).type}`}
               >
                 <HHType />
               </Form.Select>

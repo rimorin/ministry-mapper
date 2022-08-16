@@ -1,15 +1,27 @@
 import React, { useEffect, useState } from "react";
 import { ref, child, onValue, DataSnapshot, set } from "firebase/database";
-import database from "./../firebase";
+import { database } from "./../firebase";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import { Container, Navbar, Table } from "react-bootstrap";
+import {
+  Container,
+  Navbar,
+  Table,
+  ToggleButton,
+  ToggleButtonGroup
+} from "react-bootstrap";
 import Loader from "./loader";
 import { floorDetails, homeProps, valuesDetails } from "./interface";
 import TableHeader from "./table";
 import UnitStatus from "./unit";
-import { compareSortObjects, HHType, STATUS_CODES } from "./util";
+import {
+  compareSortObjects,
+  HHType,
+  ModalUnitTitle,
+  STATUS_CODES,
+  ZeroPad
+} from "./util";
 
 function Home({ postalcode, name }: homeProps) {
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
@@ -73,6 +85,7 @@ function Home({ postalcode, name }: homeProps) {
   };
 
   const handleSubmitClick = (event: React.FormEvent<HTMLElement>) => {
+    event.preventDefault();
     const details = values as valuesDetails;
     set(
       ref(database, `/${postalcode}/units/${details.floor}/${details.unit}`),
@@ -90,6 +103,7 @@ function Home({ postalcode, name }: homeProps) {
   };
 
   const handleSubmitFeedback = (event: React.FormEvent<HTMLElement>) => {
+    event.preventDefault();
     const details = values as valuesDetails;
     set(ref(database, `/${postalcode}/feedback`), details.feedback);
     toggleModal(false);
@@ -145,12 +159,14 @@ function Home({ postalcode, name }: homeProps) {
           </Navbar.Collapse>
         </Container>
       </Navbar>
-      <Table bordered responsive="sm">
-        <TableHeader
-          name={`${name}`}
-          postalcode={`${postalcode}`}
-          floors={floors}
-        />
+      <Table
+        bordered
+        striped
+        hover
+        responsive="sm"
+        style={{ overflowX: "auto" }}
+      >
+        <TableHeader floors={floors} />
         <tbody>
           {floors &&
             floors.map((item, index) => (
@@ -160,7 +176,7 @@ function Home({ postalcode, name }: homeProps) {
                   key={`${index}-${item.floor}`}
                   scope="row"
                 >
-                  {item.floor}
+                  {ZeroPad(item.floor, 2)}
                 </th>
                 {item.units.map((element, _) => (
                   <td
@@ -194,7 +210,7 @@ function Home({ postalcode, name }: homeProps) {
                 as="textarea"
                 rows={5}
                 aria-label="With textarea"
-                value={`${(values as valuesDetails).feedback}}`}
+                value={`${(values as valuesDetails).feedback}`}
               />
             </Form.Group>
           </Modal.Body>
@@ -209,75 +225,65 @@ function Home({ postalcode, name }: homeProps) {
         </Form>
       </Modal>
       <Modal show={isOpen}>
-        <Modal.Header>
-          <Modal.Title>{`# ${(values as valuesDetails).floor} - ${
-            (values as valuesDetails).unit
-          }`}</Modal.Title>
-        </Modal.Header>
+        <ModalUnitTitle
+          unit={(values as valuesDetails).unit}
+          floor={(values as valuesDetails).floor}
+        />
         <Form onSubmit={handleSubmitClick}>
           <Modal.Body>
-            <Form.Group className="mb-3" controlId="formBasicStatusCheckbox">
-              <Form.Check
-                inline
-                onChange={onFormChange}
+            <Form.Group className="mb-3" controlId="formBasicStatusbtnCheckbox">
+              <ToggleButtonGroup
                 name="status"
                 type="radio"
-                label="Done"
-                value={STATUS_CODES.DONE}
-                defaultChecked={
-                  (values as valuesDetails).status === STATUS_CODES.DONE
-                }
-                id={`status-${STATUS_CODES.DONE}`}
-              />
-              <Form.Check
-                inline
-                onChange={onFormChange}
-                label="Not 🏠"
-                name="status"
-                type="radio"
-                value={STATUS_CODES.NOT_HOME}
-                defaultChecked={
-                  (values as valuesDetails).status === STATUS_CODES.NOT_HOME
-                }
-                id={`status-${STATUS_CODES.NOT_HOME}`}
-              />
-              <Form.Check
-                inline
-                onChange={onFormChange}
-                label="Not 🏠 2️⃣"
-                name="status"
-                type="radio"
-                value={STATUS_CODES.STILL_NOT_HOME}
-                defaultChecked={
-                  (values as valuesDetails).status ===
-                  STATUS_CODES.STILL_NOT_HOME
-                }
-                id={`status-${STATUS_CODES.STILL_NOT_HOME}`}
-              />
-              <Form.Check
-                inline
-                onChange={onFormChange}
-                label="DNC"
-                name="status"
-                type="radio"
-                value={STATUS_CODES.DO_NOT_CALL}
-                defaultChecked={
-                  (values as valuesDetails).status === STATUS_CODES.DO_NOT_CALL
-                }
-                id={`status-${STATUS_CODES.DO_NOT_CALL}`}
-              />
-              <Form.Check
-                inline
-                onChange={onFormChange}
-                label="Invalid"
-                name="status"
-                type="radio"
-                value={STATUS_CODES.INVALID}
-                defaultChecked={
-                  (values as valuesDetails).status === STATUS_CODES.INVALID
-                }
-                id={`status-${STATUS_CODES.INVALID}`}
-              />
+                value={(values as valuesDetails).status}
+                className="mb-3"
+                onChange={(toggleValue) => {
+                  setValues({ ...values, status: toggleValue });
+                }}
+              >
+                <ToggleButton
+                  id="status-tb-0"
+                  variant="outline-dark"
+                  value={STATUS_CODES.DEFAULT}
+                >
+                  Not Done
+                </ToggleButton>
+                <ToggleButton
+                  id="status-tb-1"
+                  variant="outline-success"
+                  value={STATUS_CODES.DONE}
+                >
+                  Done
+                </ToggleButton>
+                <ToggleButton
+                  id="status-tb-2"
+                  variant="outline-secondary"
+                  value={STATUS_CODES.NOT_HOME}
+                >
+                  Not Home
+                </ToggleButton>
+                {/* <ToggleButton
+                  id="status-tb-3"
+                  variant="outline-dark"
+                  value={STATUS_CODES.STILL_NOT_HOME}
+                >
+                  Still Nt 🏠
+                </ToggleButton> */}
+                <ToggleButton
+                  id="status-tb-4"
+                  variant="outline-danger"
+                  value={STATUS_CODES.DO_NOT_CALL}
+                >
+                  DNC
+                </ToggleButton>
+                <ToggleButton
+                  id="status-tb-5"
+                  variant="outline-info"
+                  value={STATUS_CODES.INVALID}
+                >
+                  Invalid
+                </ToggleButton>
+              </ToggleButtonGroup>
             </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicSelect">
               <Form.Label>Household</Form.Label>
@@ -298,6 +304,7 @@ function Home({ postalcode, name }: homeProps) {
                 as="textarea"
                 rows={3}
                 aria-label="With textarea"
+                placeholder="Optional Non-personal information. Eg, Renovation, Friends, etc."
                 value={`${(values as valuesDetails).note}`}
               />
             </Form.Group>

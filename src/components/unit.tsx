@@ -18,12 +18,15 @@ const UnitStatus = (props: unitProps) => {
     status = "🚫 ";
   }
 
-  if (currentStatus === STATUS_CODES.NOT_HOME) {
-    status = "❓ ";
-  }
+  // if (currentStatus === STATUS_CODES.NOT_HOME) {
+  //   status = "❓ ";
+  // }
 
-  if (currentStatus === STATUS_CODES.STILL_NOT_HOME) {
-    status = "❓❓ ";
+  if (
+    currentStatus === STATUS_CODES.STILL_NOT_HOME ||
+    currentStatus === STATUS_CODES.NOT_HOME
+  ) {
+    status = "📬 ";
   }
 
   if (note) {
@@ -34,7 +37,7 @@ const UnitStatus = (props: unitProps) => {
     status += otherType;
   }
 
-  return <div>{status}</div>;
+  return <>{status}</>;
 };
 
 export default UnitStatus;
