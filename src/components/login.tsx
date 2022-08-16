@@ -33,6 +33,7 @@ const Login = () => {
     if (form.checkValidity() === false) {
       return;
     }
+
     loginInWithEmailAndPassword(loginEmail, loginPassword);
   };
 
@@ -54,10 +55,11 @@ const Login = () => {
                 type="email"
                 placeholder="Enter email"
                 value={loginEmail}
+                required
                 onChange={(e) => setLoginEmail(e.target.value)}
               />
               <Form.Control.Feedback type="invalid">
-                Please enter user email.
+                Please enter a valid email.
               </Form.Control.Feedback>
             </Form.Group>
 
@@ -67,6 +69,7 @@ const Login = () => {
                 type="password"
                 placeholder="Password"
                 value={loginPassword}
+                required
                 onChange={(e) => setLoginPassword(e.target.value)}
               />
               <Form.Control.Feedback type="invalid">
