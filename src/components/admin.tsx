@@ -1,6 +1,6 @@
 import { child, onValue, ref, set, get, DataSnapshot } from "firebase/database";
 import React, { useEffect, useState } from "react";
-import database from "./../firebase";
+import { database } from "./../firebase";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
@@ -35,8 +35,9 @@ import {
   assignmentMessage
 } from "./util";
 import TableHeader from "./table";
-
-function Admin({ congregationCode }: adminProps) {
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
+function Admin({ congregationCode, user }: adminProps) {
   const [name, setName] = useState<String>();
   const [territories, setTerritories] = useState<Array<territoryDetails>>([]);
   const [territory, setTerritory] = useState<String>();
@@ -245,6 +246,18 @@ function Admin({ congregationCode }: adminProps) {
                     </NavDropdown.Item>
                   ))}
               </NavDropdown>
+            </Nav>
+            <Nav className="justify-content-end">
+              <Nav.Item>
+                <Button
+                  variant="outline-primary"
+                  onClick={() => {
+                    signOut(auth);
+                  }}
+                >
+                  Log Out
+                </Button>
+              </Nav.Item>
             </Nav>
           </Navbar.Collapse>
         </Container>

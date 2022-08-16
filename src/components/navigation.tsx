@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import database from './../firebase';
+import { database, auth } from './../firebase';
 import Home from './../components/home';
 import { ref, get, child, onValue} from "firebase/database";
 import { Routes, Route } from "react-router-dom";
@@ -8,6 +8,7 @@ import Loader from './loader';
 import "bootstrap/dist/css/bootstrap.min.css";
 import Admin from './admin';
 import MaintenanceMode from './maintenance';
+import Login from './login';
 
 interface RouteDetails {
     postalCode: String,
@@ -19,8 +20,12 @@ function Navigation() {
     const [congregations, setCongregations] = useState(Array<String>);
     const [isMaintenance, setIsMaintenance] = useState<boolean>(false);
     const maintenanceReference = child(ref(database), `/maintenance`);
+    const [user, setUser] = useState<any>(null);
 
     useEffect(() => {
+        auth.onAuthStateChanged(user => {
+            setUser(user);
+        });
         onValue(maintenanceReference, (snapshot) => {
             if (snapshot.exists()) {
                 setIsMaintenance(snapshot.val());
@@ -65,7 +70,8 @@ function Navigation() {
         <Routes>
           <Route path="/" element={<MaintenanceMode></MaintenanceMode>}/>
           {congregations.map((item,index)=>
-             <Route key={index} path={`admin/${item}`} element={<Admin congregationCode={item}/>}/>)};
+            <Route key={index} path={`admin/${item}`} element={user ? <Admin user={user} congregationCode={item}/> : <Login/>}/>)};
+            
           {territories.map((item,index)=>
              <Route key={index} path={`/${item.postalCode}`} element={<Home postalcode={item.postalCode} name={item.name} />}/>
         )};

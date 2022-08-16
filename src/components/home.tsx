@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ref, child, onValue, DataSnapshot, set } from "firebase/database";
-import database from "./../firebase";
+import { database } from "./../firebase";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
