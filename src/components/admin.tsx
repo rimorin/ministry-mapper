@@ -224,41 +224,50 @@ function Admin({ congregationCode, user }: adminProps) {
 
   return (
     <>
-      <Navbar bg="light" expand="lg">
-        <Container>
-          <Navbar.Brand>{name}</Navbar.Brand>
+      <Navbar bg="light" variant="light" expand="lg">
+        <Container fluid>
+          <Navbar.Brand>
+            <img
+              alt=""
+              src={`${process.env.PUBLIC_URL}/favicon-32x32.png`}
+              width="32"
+              height="32"
+              className="d-inline-block align-top"
+            />{" "}
+            {name}
+          </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="me-auto">
-              <NavDropdown
-                title={territory ? `${territory}` : "Select Territory"}
-                id="basic-nav-dropdown"
-                onSelect={handleSelect}
-                key={`${territory}`}
-              >
-                {territories &&
-                  territories.map((element) => (
-                    <NavDropdown.Item
-                      key={`${element.code}`}
-                      eventKey={`${element.code}`}
-                    >
-                      {element.code} - {element.name}
-                    </NavDropdown.Item>
-                  ))}
-              </NavDropdown>
-            </Nav>
-            <Nav className="justify-content-end">
-              <Nav.Item>
-                <Button
-                  variant="outline-primary"
-                  onClick={() => {
-                    signOut(auth);
-                  }}
-                >
-                  Log Out
-                </Button>
-              </Nav.Item>
-            </Nav>
+          <Navbar.Collapse
+            id="basic-navbar-nav"
+            className="justify-content-end mt-1"
+          >
+            <NavDropdown
+              title={territory ? `${territory}` : "Select Territory"}
+              onSelect={handleSelect}
+              key={`${territory}`}
+              className="m-2"
+              align={{ lg: "end" }}
+            >
+              {territories &&
+                territories.map((element) => (
+                  <NavDropdown.Item
+                    key={`${element.code}`}
+                    eventKey={`${element.code}`}
+                  >
+                    {element.code} - {element.name}
+                  </NavDropdown.Item>
+                ))}
+            </NavDropdown>
+            <Button
+              className="m-2"
+              size="sm"
+              variant="outline-primary"
+              onClick={() => {
+                signOut(auth);
+              }}
+            >
+              Log Out
+            </Button>
           </Navbar.Collapse>
         </Container>
       </Navbar>
@@ -276,83 +285,93 @@ function Admin({ congregationCode, user }: adminProps) {
                 <Navbar.Toggle aria-controls="navbarScroll" />
                 <Navbar.Collapse
                   id="navbarScroll"
-                  className="justify-content-end"
+                  className="justify-content-end mt-2"
                 >
-                  <Form className="d-flex">
-                    <RWebShare
-                      data={{
-                        text: assignmentMessage(addressElement.name),
-                        url: `${window.location.origin}/${addressElement.postalcode}`,
-                        title: `Units for ${addressElement.name}`
-                      }}
-                    >
-                      <Button className="me-2">Assign</Button>
-                    </RWebShare>
+                  <RWebShare
+                    data={{
+                      text: assignmentMessage(addressElement.name),
+                      url: `${window.location.origin}/${addressElement.postalcode}`,
+                      title: `Units for ${addressElement.name}`
+                    }}
+                  >
                     <Button
+                      size="sm"
+                      variant="outline-primary"
                       className="me-2"
-                      onClick={(e) => {
-                        window.open(
-                          `http://maps.google.com.sg/maps?q=${addressElement.postalcode}`,
-                          "_blank"
-                        );
-                      }}
                     >
-                      Direction
+                      Assign
                     </Button>
-                    <Button
-                      className="me-2"
-                      onClick={(e) => {
-                        handleClickFeedback(e, addressElement.postalcode);
-                      }}
-                    >
-                      Feedback
-                    </Button>
-                    <Button
-                      className="me-2"
-                      onClick={() =>
-                        confirmAlert({
-                          customUI: ({ onClose }) => {
-                            return (
-                              <Container>
-                                <Card bg="warning" className="text-center">
-                                  <Card.Header>Warning ⚠️</Card.Header>
-                                  <Card.Body>
-                                    <Card.Title>Are You Very Sure ?</Card.Title>
-                                    <Card.Text>
-                                      You want to reset the data of{" "}
-                                      {addressElement.name}. This will only
-                                      reset Done & Not Home status.
-                                    </Card.Text>
-                                    <Button
-                                      className="me-2"
-                                      variant="primary"
-                                      onClick={() => {
-                                        resetBlock(addressElement.postalcode);
-                                        onClose();
-                                      }}
-                                    >
-                                      Yes, Reset It.
-                                    </Button>
-                                    <Button
-                                      className="ms-2"
-                                      variant="primary"
-                                      onClick={() => {
-                                        onClose();
-                                      }}
-                                    >
-                                      No
-                                    </Button>
-                                  </Card.Body>
-                                </Card>
-                              </Container>
-                            );
-                          }
-                        })
-                      }
-                    >
-                      Reset
-                    </Button>
-                  </Form>
+                  </RWebShare>
+                  <Button
+                    size="sm"
+                    variant="outline-primary"
+                    className="me-2"
+                    onClick={(e) => {
+                      window.open(
+                        `http://maps.google.com.sg/maps?q=${addressElement.postalcode}`,
+                        "_blank"
+                      );
+                    }}
+                  >
+                    Direction
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline-primary"
+                    className="me-2"
+                    onClick={(e) => {
+                      handleClickFeedback(e, addressElement.postalcode);
+                    }}
+                  >
+                    Feedback
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline-primary"
+                    className="me-2"
+                    onClick={() =>
+                      confirmAlert({
+                        customUI: ({ onClose }) => {
+                          return (
+                            <Container>
+                              <Card bg="warning" className="text-center">
+                                <Card.Header>Warning ⚠️</Card.Header>
+                                <Card.Body>
+                                  <Card.Title>Are You Very Sure ?</Card.Title>
+                                  <Card.Text>
+                                    You want to reset the data of{" "}
+                                    {addressElement.name}. This will reset all
+                                    Done & Not Home status.
+                                  </Card.Text>
+                                  <Button
+                                    className="me-2"
+                                    variant="primary"
+                                    onClick={() => {
+                                      resetBlock(addressElement.postalcode);
+                                      onClose();
+                                    }}
+                                  >
+                                    Yes, Reset It.
+                                  </Button>
+                                  <Button
+                                    className="ms-2"
+                                    variant="primary"
+                                    onClick={() => {
+                                      onClose();
+                                    }}
+                                  >
+                                    No
+                                  </Button>
+                                </Card.Body>
+                              </Card>
+                            </Container>
+                          );
+                        }
+                      })
+                    }
+                  >
+                    Reset
+                  </Button>
                 </Navbar.Collapse>
               </Container>
             </Navbar>
@@ -362,7 +381,6 @@ function Admin({ congregationCode, user }: adminProps) {
               striped
               hover
               responsive="sm"
-              style={{ overflowX: "auto" }}
             >
               <TableHeader floors={addressElement.floors} />
               <tbody key={`tbody-${addressElement.postalcode}`}>

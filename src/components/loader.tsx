@@ -6,7 +6,7 @@ function Loader() {
       className="d-flex align-items-center justify-content-center vh-100"
       fluid
     >
-      <Spinner animation="border" role="status">
+      <Spinner animation="border" variant="primary" role="status">
         <span className="visually-hidden">Loading...</span>
       </Spinner>
     </Container>
