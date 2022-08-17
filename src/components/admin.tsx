@@ -381,7 +381,6 @@ function Admin({ congregationCode, user }: adminProps) {
               striped
               hover
               responsive="sm"
-              style={{ overflowX: "auto" }}
             >
               <TableHeader floors={addressElement.floors} />
               <tbody key={`tbody-${addressElement.postalcode}`}>
