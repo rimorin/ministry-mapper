@@ -159,13 +159,7 @@ function Home({ postalcode, name }: homeProps) {
           </Navbar.Collapse>
         </Container>
       </Navbar>
-      <Table
-        bordered
-        striped
-        hover
-        responsive="sm"
-        style={{ overflowX: "auto" }}
-      >
+      <Table bordered striped hover responsive="sm">
         <TableHeader floors={floors} />
         <tbody>
           {floors &&
