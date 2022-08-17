@@ -224,12 +224,24 @@ function Admin({ congregationCode, user }: adminProps) {
 
   return (
     <>
-      <Navbar bg="light" expand="lg">
+      <Navbar bg="light" variant="light" expand="lg">
         <Container>
-          <Navbar.Brand>{name}</Navbar.Brand>
+          <Navbar.Brand>
+            <img
+              alt=""
+              src={`${process.env.PUBLIC_URL}/favicon-32x32.png`}
+              width="32"
+              height="32"
+              className="d-inline-block align-top"
+            />{" "}
+            {name}
+          </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="me-auto">
+          <Navbar.Collapse
+            id="basic-navbar-nav"
+            className="justify-content-end"
+          >
+            <Nav className="mx-2">
               <NavDropdown
                 title={territory ? `${territory}` : "Select Territory"}
                 id="basic-nav-dropdown"
@@ -247,9 +259,10 @@ function Admin({ congregationCode, user }: adminProps) {
                   ))}
               </NavDropdown>
             </Nav>
-            <Nav className="justify-content-end">
+            <Nav>
               <Nav.Item>
                 <Button
+                  size="sm"
                   variant="outline-primary"
                   onClick={() => {
                     signOut(auth);
