@@ -134,7 +134,16 @@ function Home({ postalcode, name }: homeProps) {
     <>
       <Navbar bg="light" expand="sm">
         <Container fluid>
-          <Navbar.Brand>{name}</Navbar.Brand>
+          <Navbar.Brand>
+            <img
+              alt=""
+              src={`${process.env.PUBLIC_URL}/favicon-32x32.png`}
+              width="32"
+              height="32"
+              className="d-inline-block align-top"
+            />{" "}
+            {name}
+          </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse
             id="basic-navbar-nav"
