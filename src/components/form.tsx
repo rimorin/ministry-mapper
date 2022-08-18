@@ -1,6 +1,25 @@
-import { Form, ToggleButtonGroup, ToggleButton } from "react-bootstrap";
-import { FormProps } from "./interface";
+import {
+  Form,
+  ToggleButtonGroup,
+  ToggleButton,
+  Button,
+  Modal
+} from "react-bootstrap";
+import { FooterProps, FormProps } from "./interface";
 import { STATUS_CODES } from "./util";
+
+const ModalFooter = ({ handleClick }: FooterProps) => {
+  return (
+    <Modal.Footer>
+      <Button variant="secondary" onClick={handleClick}>
+        Close
+      </Button>
+      <Button type="submit" variant="primary">
+        Save
+      </Button>
+    </Modal.Footer>
+  );
+};
 
 const HHType = () => (
   <>
@@ -119,4 +138,11 @@ const HHStatusField = ({ handleChange, changeValue }: FormProps) => {
   );
 };
 
-export { HHType, NoteField, HHTypeField, HHStatusField, FeedbackField };
+export {
+  HHType,
+  NoteField,
+  HHTypeField,
+  HHStatusField,
+  FeedbackField,
+  ModalFooter
+};

@@ -64,3 +64,7 @@ export interface TitleProps {
 export interface BrandingProps {
   naming: string;
 }
+
+export interface FooterProps {
+  handleClick?: (event: React.MouseEvent<HTMLElement>) => void;
+}

@@ -21,7 +21,13 @@ import {
   NavBarBranding,
   ZeroPad
 } from "./util";
-import { FeedbackField, HHStatusField, HHTypeField, NoteField } from "./form";
+import {
+  FeedbackField,
+  HHStatusField,
+  HHTypeField,
+  ModalFooter,
+  NoteField
+} from "./form";
 
 function Home({ postalcode, name }: homeProps) {
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
@@ -202,14 +208,7 @@ function Home({ postalcode, name }: homeProps) {
               changeValue={`${(values as valuesDetails).feedback}`}
             />
           </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={(e) => handleClick(e, false)}>
-              Close
-            </Button>
-            <Button type="submit" variant="primary">
-              Save
-            </Button>
-          </Modal.Footer>
+          <ModalFooter handleClick={(e) => handleClick(e, false)} />
         </Form>
       </Modal>
       <Modal show={isOpen}>
@@ -234,14 +233,7 @@ function Home({ postalcode, name }: homeProps) {
               changeValue={`${(values as valuesDetails).note}`}
             />
           </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={(e) => handleClick(e, true)}>
-              Close
-            </Button>
-            <Button type="submit" variant="primary">
-              Save
-            </Button>
-          </Modal.Footer>
+          <ModalFooter handleClick={(e) => handleClick(e, true)} />
         </Form>
       </Modal>
     </>

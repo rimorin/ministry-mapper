@@ -37,7 +37,13 @@ import {
 import TableHeader from "./table";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
-import { FeedbackField, HHStatusField, HHTypeField, NoteField } from "./form";
+import {
+  FeedbackField,
+  HHStatusField,
+  HHTypeField,
+  ModalFooter,
+  NoteField
+} from "./form";
 function Admin({ congregationCode, user }: adminProps) {
   const [name, setName] = useState<String>();
   const [territories, setTerritories] = useState<Array<territoryDetails>>([]);
@@ -439,14 +445,7 @@ function Admin({ congregationCode, user }: adminProps) {
               changeValue={`${(values as valuesDetails).feedback}`}
             />
           </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={(e) => handleClick(e, false)}>
-              Close
-            </Button>
-            <Button type="submit" variant="primary">
-              Save
-            </Button>
-          </Modal.Footer>
+          <ModalFooter handleClick={(e) => handleClick(e, false)} />
         </Form>
       </Modal>
       <Modal show={isOpen}>
@@ -472,14 +471,7 @@ function Admin({ congregationCode, user }: adminProps) {
               changeValue={`${(values as valuesDetails).note}`}
             />
           </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={(e) => handleClick(e, true)}>
-              Close
-            </Button>
-            <Button type="submit" variant="primary">
-              Save
-            </Button>
-          </Modal.Footer>
+          <ModalFooter handleClick={(e) => handleClick(e, true)} />
         </Form>
       </Modal>
     </>
