@@ -9,24 +9,26 @@ Pain points for traditional physical territory slips
 - Use of paper that will be thrown once territory is completed. 🗑️
 - Preparation of physical territory slips (Printing & Cutting). ✂️ 🖨️ 💦
 - Risk of slips going missing or returned in bad & unreadable condition.
-- Syncing up updates from physical slips to an online spreadsheet.
-- High dependence on conductors presence for publishers to receive territory slips. For example, a conductor that is unable to attend due to unforeseen matter on that morning will have to find a way to get someone else to pick up the physical slips and distribute them.
+- Territory servants have to read through all returned slips and update his local records for the next cycle. 📝 👀
+- Trouble of rotating physical slips among multiple conductors.
+- High dependence on conductors presence for publishers to receive territory slips. For example, a conductor that is unable to attend due to unforeseen matter on that morning, he will have to find a way to get someone else to pick up the slips and distribute them.
 - Time constraint to receive and return physical slips to conductors. For example, later comers and conductors have to find a way to meet each other to pass territory slips. Pubs who has other arrangements and are unable to join for lunch break have to still go to the break point to pass the physical slip.
 
 Advantages of Ministry Mapper
 
-- Fully digital territory slips. No more use of papers 🌳
-- Near zero effort on territory servant to manage the territory data as details are already stored in the system.
-- Real time collaboration. For example, multiple publishers are able to work the same territory as everyone will always see the territory data in real to near real-time. This reduces overlapping work that could waste time and cause trouble.
-- Designed for offline access. If publishers has poor internet connectivity, they will still be able to use the app. Territory data entered will be automatically merged once internet access is up.
-- Territories can be covered efficiently as slips are available online rather than in physical forms. If a field service group requires help on their territory, another group can easier step in to help by simply accessing their territory data.
+- Digital Technology. No more use of papers 🌳 and undesirable handwritings 🖊️ . Nether will they go missing or be damaged by publishers for some reason.
+- Simple Web-based slips. There is no need to install any android/ios/windows application. Slips are accessed via internet browser and barely uses much data or battery power.
+- Easy territory assignment. Conductors simply send a link to publishers via sms/whatsapp. No complicated login and registration required for publishers.
+- Near-zero management effort. Significant reduction of workload on the territory servants as data is sync in the cloud. For example, if a territory needs to be covered again after a few months, simply reset its status and proceed.
+- Real-time collaboration. Territory records are displayed in real-time (Similar to live traffic/booking apps). This enables territory to be covered efficiently and effectively. For example, a slip can be covered by different publishers (letter writers and HH preachers together) in real-time as overlapping never (or almost never) occurs.
+- High Availability. Slips are always available online. This allows overseers/conductors to easily access them anytime and assign them to publishers. No more passing around of territory bags 📁 or forgetting to bring them.
 
 Disadvantages of Ministry Mapper
 
 - Initial migration work of the territory data. Territory servants will have to translate their current territory data into a json specific file to feed into the platform.
-- Requires a internet device for publishers & conductors to use.
-- A degree of learning curve especially for elderly and non tech-savvy publisher publishers.
-- Currently optimised for countries where territories are mostly apartments/flats. (Landed/House features coming in V2)
+- Internet dependency. Requires publishers to use their internet capable phones/tablets to use. System may not be applicable for countries where internet access is not readily available.
+- Slight learning curve. Elderly and non tech-savvy publishers may have to overcome the challenge of transiting from paper/pen to the use of a computing device to update territory records. A similar experience from hardcopy to the use of JW Library app in the ministry.
+- Currently optimised for countries where territories are mostly apartments/flats. (Landed/House features coming in V2).
 
 ### Usage
 
