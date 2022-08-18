@@ -1,4 +1,5 @@
-import { Modal, ToggleButton } from "react-bootstrap";
+import { Modal, Navbar } from "react-bootstrap";
+import { TitleProps, BrandingProps } from "./interface";
 
 const compareSortObjects = (a: any, b: any) => {
   const a_floor = Number(a.floor);
@@ -27,25 +28,7 @@ const MUTABLE_CODES = [
   STATUS_CODES.STILL_NOT_HOME
 ];
 
-const HHType = () => (
-  <>
-    <option value="cn">Chinese</option>
-    <option value="tm">Tamil</option>
-    <option value="in">Indonesian</option>
-    <option value="bm">Burmese</option>
-    <option value="ml">Muslim</option>
-    <option value="sl">Sign Language</option>
-    <option value="ot">Others</option>
-  </>
-);
-
-interface TitleProp {
-  floor: String;
-  unit: String;
-  postal?: String;
-}
-
-const ModalUnitTitle = ({ unit, floor, postal }: TitleProp) => {
+const ModalUnitTitle = ({ unit, floor, postal }: TitleProps) => {
   let titleString = `# ${ZeroPad(floor, 2)} - ${unit}`;
 
   if (postal) {
@@ -73,12 +56,27 @@ const assignmentMessage = (address: String) => {
   return `Good ${greet}!! You are assigned to ${address}. Please click on the link below to proceed.`;
 };
 
+const NavBarBranding = ({ naming }: BrandingProps) => {
+  return (
+    <Navbar.Brand>
+      <img
+        alt=""
+        src={`${process.env.PUBLIC_URL}/favicon-32x32.png`}
+        width="32"
+        height="32"
+        className="d-inline-block align-top"
+      />{" "}
+      {naming}
+    </Navbar.Brand>
+  );
+};
+
 export {
   compareSortObjects,
-  HHType,
   ZeroPad,
   ModalUnitTitle,
   assignmentMessage,
+  NavBarBranding,
   STATUS_CODES,
   MUTABLE_CODES
 };

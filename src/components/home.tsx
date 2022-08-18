@@ -17,11 +17,11 @@ import TableHeader from "./table";
 import UnitStatus from "./unit";
 import {
   compareSortObjects,
-  HHType,
   ModalUnitTitle,
-  STATUS_CODES,
+  NavBarBranding,
   ZeroPad
 } from "./util";
+import { FeedbackField, HHStatusField, HHTypeField, NoteField } from "./form";
 
 function Home({ postalcode, name }: homeProps) {
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
@@ -134,16 +134,7 @@ function Home({ postalcode, name }: homeProps) {
     <>
       <Navbar bg="light" expand="sm">
         <Container fluid>
-          <Navbar.Brand>
-            <img
-              alt=""
-              src={`${process.env.PUBLIC_URL}/favicon-32x32.png`}
-              width="32"
-              height="32"
-              className="d-inline-block align-top"
-            />{" "}
-            {name}
-          </Navbar.Brand>
+          <NavBarBranding naming={`${name}`} />
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse
             id="basic-navbar-nav"
@@ -206,16 +197,10 @@ function Home({ postalcode, name }: homeProps) {
         </Modal.Header>
         <Form onSubmit={handleSubmitFeedback}>
           <Modal.Body>
-            <Form.Group className="mb-3" controlId="formBasicFeedbackTextArea">
-              <Form.Control
-                onChange={onFormChange}
-                name="feedback"
-                as="textarea"
-                rows={5}
-                aria-label="With textarea"
-                value={`${(values as valuesDetails).feedback}`}
-              />
-            </Form.Group>
+            <FeedbackField
+              handleChange={onFormChange}
+              changeValue={`${(values as valuesDetails).feedback}`}
+            />
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={(e) => handleClick(e, false)}>
@@ -234,83 +219,20 @@ function Home({ postalcode, name }: homeProps) {
         />
         <Form onSubmit={handleSubmitClick}>
           <Modal.Body>
-            <Form.Group className="mb-3" controlId="formBasicStatusbtnCheckbox">
-              <ToggleButtonGroup
-                name="status"
-                type="radio"
-                value={(values as valuesDetails).status}
-                className="mb-3"
-                onChange={(toggleValue) => {
-                  setValues({ ...values, status: toggleValue });
-                }}
-              >
-                <ToggleButton
-                  id="status-tb-0"
-                  variant="outline-dark"
-                  value={STATUS_CODES.DEFAULT}
-                >
-                  Not Done
-                </ToggleButton>
-                <ToggleButton
-                  id="status-tb-1"
-                  variant="outline-success"
-                  value={STATUS_CODES.DONE}
-                >
-                  Done
-                </ToggleButton>
-                <ToggleButton
-                  id="status-tb-2"
-                  variant="outline-secondary"
-                  value={STATUS_CODES.NOT_HOME}
-                >
-                  Not Home
-                </ToggleButton>
-                {/* <ToggleButton
-                  id="status-tb-3"
-                  variant="outline-dark"
-                  value={STATUS_CODES.STILL_NOT_HOME}
-                >
-                  Still Nt 🏠
-                </ToggleButton> */}
-                <ToggleButton
-                  id="status-tb-4"
-                  variant="outline-danger"
-                  value={STATUS_CODES.DO_NOT_CALL}
-                >
-                  DNC
-                </ToggleButton>
-                <ToggleButton
-                  id="status-tb-5"
-                  variant="outline-info"
-                  value={STATUS_CODES.INVALID}
-                >
-                  Invalid
-                </ToggleButton>
-              </ToggleButtonGroup>
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="formBasicSelect">
-              <Form.Label>Household</Form.Label>
-              <Form.Select
-                onChange={onFormChange}
-                name="type"
-                aria-label="Default select example"
-                value={`${(values as valuesDetails).type}`}
-              >
-                <HHType />
-              </Form.Select>
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="formBasicTextArea">
-              <Form.Label>Notes</Form.Label>
-              <Form.Control
-                onChange={onFormChange}
-                name="note"
-                as="textarea"
-                rows={3}
-                aria-label="With textarea"
-                placeholder="Optional Non-personal information. Eg, Renovation, Friends, etc."
-                value={`${(values as valuesDetails).note}`}
-              />
-            </Form.Group>
+            <HHStatusField
+              handleChange={(toggleValue) => {
+                setValues({ ...values, status: toggleValue });
+              }}
+              changeValue={`${(values as valuesDetails).status}`}
+            />
+            <HHTypeField
+              handleChange={onFormChange}
+              changeValue={`${(values as valuesDetails).type}`}
+            />
+            <NoteField
+              handleChange={onFormChange}
+              changeValue={`${(values as valuesDetails).note}`}
+            />
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={(e) => handleClick(e, true)}>
