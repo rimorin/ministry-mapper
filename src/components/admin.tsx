@@ -27,16 +27,17 @@ import { confirmAlert } from "react-confirm-alert"; // Import
 import "react-confirm-alert/src/react-confirm-alert.css"; // Import css
 import {
   compareSortObjects,
-  HHType,
   STATUS_CODES,
   MUTABLE_CODES,
   ZeroPad,
   ModalUnitTitle,
-  assignmentMessage
+  assignmentMessage,
+  NavBarBranding
 } from "./util";
 import TableHeader from "./table";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
+import { FeedbackField, HHStatusField, HHTypeField, NoteField } from "./form";
 function Admin({ congregationCode, user }: adminProps) {
   const [name, setName] = useState<String>();
   const [territories, setTerritories] = useState<Array<territoryDetails>>([]);
@@ -226,7 +227,7 @@ function Admin({ congregationCode, user }: adminProps) {
     <>
       <Navbar bg="light" variant="light" expand="lg">
         <Container fluid>
-          <Navbar.Brand>
+          {/* <Navbar.Brand>
             <img
               alt=""
               src={`${process.env.PUBLIC_URL}/favicon-32x32.png`}
@@ -235,7 +236,8 @@ function Admin({ congregationCode, user }: adminProps) {
               className="d-inline-block align-top"
             />{" "}
             {name}
-          </Navbar.Brand>
+          </Navbar.Brand> */}
+          <NavBarBranding naming={`${name}`} />
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse
             id="basic-navbar-nav"
@@ -432,16 +434,10 @@ function Admin({ congregationCode, user }: adminProps) {
         </Modal.Header>
         <Form onSubmit={handleSubmitFeedback}>
           <Modal.Body>
-            <Form.Group className="mb-3" controlId="formBasicFeedbackTextArea">
-              <Form.Control
-                onChange={onFormChange}
-                name="feedback"
-                as="textarea"
-                rows={5}
-                aria-label="With textarea"
-                value={`${(values as valuesDetails).feedback}`}
-              />
-            </Form.Group>
+            <FeedbackField
+              handleChange={onFormChange}
+              changeValue={`${(values as valuesDetails).feedback}`}
+            />
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={(e) => handleClick(e, false)}>
@@ -461,82 +457,20 @@ function Admin({ congregationCode, user }: adminProps) {
         />
         <Form onSubmit={handleSubmitClick}>
           <Modal.Body>
-            <Form.Group className="mb-3" controlId="formBasicStatusbtnCheckbox">
-              <ToggleButtonGroup
-                name="status"
-                type="radio"
-                value={(values as valuesDetails).status}
-                className="mb-3"
-                onChange={(toggleValue) => {
-                  setValues({ ...values, status: toggleValue });
-                }}
-              >
-                <ToggleButton
-                  id="status-tb-0"
-                  variant="outline-dark"
-                  value={STATUS_CODES.DEFAULT}
-                >
-                  Not Done
-                </ToggleButton>
-                <ToggleButton
-                  id="status-tb-1"
-                  variant="outline-success"
-                  value={STATUS_CODES.DONE}
-                >
-                  Done
-                </ToggleButton>
-                <ToggleButton
-                  id="status-tb-2"
-                  variant="outline-secondary"
-                  value={STATUS_CODES.NOT_HOME}
-                >
-                  Not Home
-                </ToggleButton>
-                {/* <ToggleButton
-                  id="status-tb-3"
-                  variant="outline-dark"
-                  value={STATUS_CODES.STILL_NOT_HOME}
-                >
-                  Still Nt 🏠
-                </ToggleButton> */}
-                <ToggleButton
-                  id="status-tb-4"
-                  variant="outline-danger"
-                  value={STATUS_CODES.DO_NOT_CALL}
-                >
-                  DNC
-                </ToggleButton>
-                <ToggleButton
-                  id="status-tb-5"
-                  variant="outline-info"
-                  value={STATUS_CODES.INVALID}
-                >
-                  Invalid
-                </ToggleButton>
-              </ToggleButtonGroup>
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="formBasicSelect">
-              <Form.Label>Household</Form.Label>
-              <Form.Select
-                onChange={onFormChange}
-                name="type"
-                aria-label="Default select example"
-                value={`${(values as valuesDetails).type}`}
-              >
-                <HHType />
-              </Form.Select>
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="formBasicTextArea">
-              <Form.Label>Notes</Form.Label>
-              <Form.Control
-                onChange={onFormChange}
-                name="note"
-                as="textarea"
-                rows={3}
-                aria-label="With textarea"
-                value={`${(values as valuesDetails).note}`}
-              />
-            </Form.Group>
+            <HHStatusField
+              handleChange={(toggleValue) => {
+                setValues({ ...values, status: toggleValue });
+              }}
+              changeValue={`${(values as valuesDetails).status}`}
+            />
+            <HHTypeField
+              handleChange={onFormChange}
+              changeValue={`${(values as valuesDetails).type}`}
+            />
+            <NoteField
+              handleChange={onFormChange}
+              changeValue={`${(values as valuesDetails).note}`}
+            />
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={(e) => handleClick(e, true)}>

@@ -49,3 +49,18 @@ export interface addressDetails {
   postalcode: String;
   floors: Array<floorDetails>;
 }
+
+export interface FormProps {
+  handleChange?: (event: React.ChangeEvent<HTMLElement>) => void;
+  changeValue: string;
+}
+
+export interface TitleProps {
+  floor: String;
+  unit: String;
+  postal?: String;
+}
+
+export interface BrandingProps {
+  naming: string;
+}
