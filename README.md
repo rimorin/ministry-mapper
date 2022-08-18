@@ -26,9 +26,9 @@ Advantages of Ministry Mapper
 Disadvantages of Ministry Mapper
 
 - Initial migration work of the territory data. Territory servants will have to translate their current territory data into a json specific file to feed into the platform.
-- Requires a internet device for publishers & conductors to use.
-- A degree of learning curve especially for elderly and non tech-savvy publisher publishers.
-- Currently optimised for countries where territories are mostly apartments/flats. (Landed/House features coming in V2)
+- Internet dependency. Requires publishers to use their internet capable phones/tablets to use. System may not be applicable for countries where internet access is not readily available.
+- Slight learning curve. Elderly and non tech-savvy publishers may have to overcome the challenge of transiting from paper/pen to the use of a computing device to update territory records. A similar experience from hardcopy to the use of JW Library app in the ministry.
+- Currently optimised for countries where territories are mostly apartments/flats. (Landed/House features coming in V2).
 
 ### Usage
 
