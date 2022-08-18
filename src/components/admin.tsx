@@ -2,18 +2,9 @@ import { child, onValue, ref, set, get, DataSnapshot } from "firebase/database";
 import React, { useEffect, useState } from "react";
 import { database } from "./../firebase";
 import Container from "react-bootstrap/Container";
-import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
-import {
-  Button,
-  Card,
-  Form,
-  Modal,
-  Table,
-  ToggleButton,
-  ToggleButtonGroup
-} from "react-bootstrap";
+import { Button, Card, Form, Modal, Table } from "react-bootstrap";
 import Loader from "./loader";
 import { RWebShare } from "react-web-share";
 import UnitStatus from "./unit";
@@ -23,8 +14,8 @@ import {
   addressDetails,
   adminProps
 } from "./interface";
-import { confirmAlert } from "react-confirm-alert"; // Import
-import "react-confirm-alert/src/react-confirm-alert.css"; // Import css
+import { confirmAlert } from "react-confirm-alert";
+import "react-confirm-alert/src/react-confirm-alert.css";
 import {
   compareSortObjects,
   STATUS_CODES,
@@ -233,16 +224,6 @@ function Admin({ congregationCode, user }: adminProps) {
     <>
       <Navbar bg="light" variant="light" expand="lg">
         <Container fluid>
-          {/* <Navbar.Brand>
-            <img
-              alt=""
-              src={`${process.env.PUBLIC_URL}/favicon-32x32.png`}
-              width="32"
-              height="32"
-              className="d-inline-block align-top"
-            />{" "}
-            {name}
-          </Navbar.Brand> */}
           <NavBarBranding naming={`${name}`} />
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse

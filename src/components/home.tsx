@@ -4,13 +4,7 @@ import { database } from "./../firebase";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import {
-  Container,
-  Navbar,
-  Table,
-  ToggleButton,
-  ToggleButtonGroup
-} from "react-bootstrap";
+import { Container, Navbar, Table } from "react-bootstrap";
 import Loader from "./loader";
 import { floorDetails, homeProps, valuesDetails } from "./interface";
 import TableHeader from "./table";
