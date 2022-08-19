@@ -5,11 +5,11 @@ import { ref, get, child, onValue} from "firebase/database";
 import { Routes, Route } from "react-router-dom";
 import { Container } from 'react-bootstrap';
 import Loader from './loader';
-import "bootstrap/dist/css/bootstrap.min.css";
 import Admin from './admin';
 import MaintenanceMode from './maintenance';
 import Login from './login';
 import FrontPage from './frontpage';
+import "bootstrap/dist/css/bootstrap.min.css";
 
 interface RouteDetails {
     postalCode: String,
