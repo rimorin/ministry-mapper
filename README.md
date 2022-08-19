@@ -1,5 +1,7 @@
 # Ministry Mapper
 
+![Screenshot 2022-08-19 at 2 10 11 PM](https://user-images.githubusercontent.com/40650158/185554709-ce94a04e-2a34-43a9-b7de-09aa7f437139.png)
+
 A web application for the field ministry.
 
 ## Why
