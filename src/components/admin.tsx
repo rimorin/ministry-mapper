@@ -1,12 +1,26 @@
 import { child, onValue, ref, set, get, DataSnapshot } from "firebase/database";
-import React, { useEffect, useState } from "react";
-import { database } from "./../firebase";
-import Container from "react-bootstrap/Container";
-import Navbar from "react-bootstrap/Navbar";
-import NavDropdown from "react-bootstrap/NavDropdown";
-import { Button, Card, Form, Modal, Table } from "react-bootstrap";
-import Loader from "./loader";
+import { signOut } from "firebase/auth";
+import {
+  MouseEvent,
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+  useState,
+  SyntheticEvent
+} from "react";
+import {
+  Button,
+  Card,
+  Container,
+  Form,
+  Modal,
+  Navbar,
+  NavDropdown,
+  Table
+} from "react-bootstrap";
 import { RWebShare } from "react-web-share";
+import { database } from "./../firebase";
+import Loader from "./loader";
 import UnitStatus from "./unit";
 import {
   valuesDetails,
@@ -26,7 +40,7 @@ import {
   NavBarBranding
 } from "./util";
 import TableHeader from "./table";
-import { signOut } from "firebase/auth";
+
 import { auth } from "../firebase";
 import {
   FeedbackField,
@@ -72,7 +86,7 @@ function Admin({ congregationCode, user }: adminProps) {
 
   const handleSelect = (
     eventKey: string | null,
-    _: React.SyntheticEvent<unknown>
+    _: SyntheticEvent<unknown>
   ) => {
     const territoryDetails = territories.find((e) => e.code === eventKey);
     const territoryAddresses = territoryDetails?.addresses;
@@ -128,12 +142,12 @@ function Admin({ congregationCode, user }: adminProps) {
     }
   };
 
-  const handleClick = (_: React.MouseEvent<HTMLElement>, isModal: boolean) => {
+  const handleClick = (_: MouseEvent<HTMLElement>, isModal: boolean) => {
     toggleModal(isModal);
   };
 
   const handleClickModal = (
-    _: React.MouseEvent<HTMLElement>,
+    _: MouseEvent<HTMLElement>,
     postal: String,
     floor: String,
     unit: String,
@@ -153,7 +167,7 @@ function Admin({ congregationCode, user }: adminProps) {
     toggleModal(true);
   };
 
-  const handleSubmitClick = (event: React.FormEvent<HTMLElement>) => {
+  const handleSubmitClick = (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
     set(
@@ -171,7 +185,7 @@ function Admin({ congregationCode, user }: adminProps) {
   };
 
   const handleClickFeedback = (
-    _: React.MouseEvent<HTMLElement>,
+    _: MouseEvent<HTMLElement>,
     postalcode: String
   ) => {
     get(child(ref(database), `/${postalcode}/feedback`)).then((snapshot) => {
@@ -182,14 +196,14 @@ function Admin({ congregationCode, user }: adminProps) {
     toggleModal(false);
   };
 
-  const handleSubmitFeedback = (event: React.FormEvent<HTMLElement>) => {
+  const handleSubmitFeedback = (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
     set(ref(database, `/${details.postal}/feedback`), details.feedback);
     toggleModal(false);
   };
 
-  const onFormChange = (e: React.ChangeEvent<HTMLElement>) => {
+  const onFormChange = (e: ChangeEvent<HTMLElement>) => {
     const { name, value } = e.target as HTMLInputElement;
     setValues({ ...values, [name]: value });
   };

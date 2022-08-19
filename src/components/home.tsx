@@ -1,10 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { MouseEvent, ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { ref, child, onValue, DataSnapshot, set } from "firebase/database";
 import { database } from "./../firebase";
-import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
-import Form from "react-bootstrap/Form";
-import { Container, Navbar, Table } from "react-bootstrap";
+import { Button, Container, Form, Modal, Navbar, Table } from "react-bootstrap";
 import Loader from "./loader";
 import { floorDetails, homeProps, valuesDetails } from "./interface";
 import TableHeader from "./table";
@@ -62,12 +59,12 @@ function Home({ postalcode, name }: homeProps) {
     setFloors(dataList);
   };
 
-  const handleClick = (_: React.MouseEvent<HTMLElement>, isModal: boolean) => {
+  const handleClick = (_: MouseEvent<HTMLElement>, isModal: boolean) => {
     toggleModal(isModal);
   };
 
   const handleClickModal = (
-    _: React.MouseEvent<HTMLElement>,
+    _: MouseEvent<HTMLElement>,
     floor: String,
     unit: String
   ) => {
@@ -84,7 +81,7 @@ function Home({ postalcode, name }: homeProps) {
     toggleModal(true);
   };
 
-  const handleSubmitClick = (event: React.FormEvent<HTMLElement>) => {
+  const handleSubmitClick = (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
     set(
@@ -98,18 +95,18 @@ function Home({ postalcode, name }: homeProps) {
     toggleModal(true);
   };
 
-  const handleClickFeedback = (event: React.MouseEvent<HTMLElement>) => {
+  const handleClickFeedback = (event: MouseEvent<HTMLElement>) => {
     toggleModal(false);
   };
 
-  const handleSubmitFeedback = (event: React.FormEvent<HTMLElement>) => {
+  const handleSubmitFeedback = (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
     set(ref(database, `/${postalcode}/feedback`), details.feedback);
     toggleModal(false);
   };
 
-  const onFormChange = (e: React.ChangeEvent<HTMLElement>) => {
+  const onFormChange = (e: ChangeEvent<HTMLElement>) => {
     const { name, value } = e.target as HTMLInputElement;
     setValues({ ...values, [name]: value });
   };
