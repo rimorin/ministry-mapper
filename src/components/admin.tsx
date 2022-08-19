@@ -2,18 +2,9 @@ import { child, onValue, ref, set, get, DataSnapshot } from "firebase/database";
 import React, { useEffect, useState } from "react";
 import { database } from "./../firebase";
 import Container from "react-bootstrap/Container";
-import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
-import {
-  Button,
-  Card,
-  Form,
-  Modal,
-  Table,
-  ToggleButton,
-  ToggleButtonGroup
-} from "react-bootstrap";
+import { Button, Card, Form, Modal, Table } from "react-bootstrap";
 import Loader from "./loader";
 import { RWebShare } from "react-web-share";
 import UnitStatus from "./unit";
@@ -23,8 +14,8 @@ import {
   addressDetails,
   adminProps
 } from "./interface";
-import { confirmAlert } from "react-confirm-alert"; // Import
-import "react-confirm-alert/src/react-confirm-alert.css"; // Import css
+import { confirmAlert } from "react-confirm-alert";
+import "react-confirm-alert/src/react-confirm-alert.css";
 import {
   compareSortObjects,
   STATUS_CODES,
@@ -37,7 +28,13 @@ import {
 import TableHeader from "./table";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
-import { FeedbackField, HHStatusField, HHTypeField, NoteField } from "./form";
+import {
+  FeedbackField,
+  HHStatusField,
+  HHTypeField,
+  ModalFooter,
+  NoteField
+} from "./form";
 function Admin({ congregationCode, user }: adminProps) {
   const [name, setName] = useState<String>();
   const [territories, setTerritories] = useState<Array<territoryDetails>>([]);
@@ -227,16 +224,6 @@ function Admin({ congregationCode, user }: adminProps) {
     <>
       <Navbar bg="light" variant="light" expand="lg">
         <Container fluid>
-          {/* <Navbar.Brand>
-            <img
-              alt=""
-              src={`${process.env.PUBLIC_URL}/favicon-32x32.png`}
-              width="32"
-              height="32"
-              className="d-inline-block align-top"
-            />{" "}
-            {name}
-          </Navbar.Brand> */}
           <NavBarBranding naming={`${name}`} />
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse
@@ -439,14 +426,7 @@ function Admin({ congregationCode, user }: adminProps) {
               changeValue={`${(values as valuesDetails).feedback}`}
             />
           </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={(e) => handleClick(e, false)}>
-              Close
-            </Button>
-            <Button type="submit" variant="primary">
-              Save
-            </Button>
-          </Modal.Footer>
+          <ModalFooter handleClick={(e) => handleClick(e, false)} />
         </Form>
       </Modal>
       <Modal show={isOpen}>
@@ -472,14 +452,7 @@ function Admin({ congregationCode, user }: adminProps) {
               changeValue={`${(values as valuesDetails).note}`}
             />
           </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={(e) => handleClick(e, true)}>
-              Close
-            </Button>
-            <Button type="submit" variant="primary">
-              Save
-            </Button>
-          </Modal.Footer>
+          <ModalFooter handleClick={(e) => handleClick(e, true)} />
         </Form>
       </Modal>
     </>

@@ -9,6 +9,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Admin from './admin';
 import MaintenanceMode from './maintenance';
 import Login from './login';
+import FrontPage from './frontpage';
 
 interface RouteDetails {
     postalCode: String,
@@ -68,7 +69,7 @@ function Navigation() {
     return (
         <Container className='pt-2' fluid>
         <Routes>
-          <Route path="/" element={<MaintenanceMode></MaintenanceMode>}/>
+          <Route path="/" element={<FrontPage/>}/>
           {congregations.map((item,index)=>
             <Route key={index} path={`admin/${item}`} element={user ? <Admin user={user} congregationCode={item}/> : <Login/>}/>)};
             

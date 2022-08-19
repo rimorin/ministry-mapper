@@ -1,6 +1,5 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import "../App.css";
 import { Card, Form, Button, Container } from "react-bootstrap";
 import { auth } from "../firebase";
 import Loader from "./loader";
