@@ -72,10 +72,13 @@ function Navigation() {
           <Route path="/" element={<FrontPage/>}/>
           {congregations.map((item,index)=>
             <Route key={index} path={`admin/${item}`} element={user ? <Admin user={user} congregationCode={item}/> : <Login/>}/>)};
+
+            {congregations.map((item,index)=>
+            <Route key={index} path={`conductor/${item}`} element={user ? <Admin user={user} congregationCode={item} isConductor={true}/> : <Login/>}/>)};
             
           {territories.map((item,index)=>
              <Route key={index} path={`/${item.postalCode}`} element={<Home postalcode={item.postalCode} name={item.name} />}/>
-        )};
+            )};
         </Routes>
         </Container>
     );   

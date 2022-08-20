@@ -1,12 +1,26 @@
 import { child, onValue, ref, set, get, DataSnapshot } from "firebase/database";
-import React, { useEffect, useState } from "react";
-import { database } from "./../firebase";
-import Container from "react-bootstrap/Container";
-import Navbar from "react-bootstrap/Navbar";
-import NavDropdown from "react-bootstrap/NavDropdown";
-import { Button, Card, Form, Modal, Table } from "react-bootstrap";
-import Loader from "./loader";
+import { signOut } from "firebase/auth";
+import {
+  MouseEvent,
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+  useState,
+  SyntheticEvent
+} from "react";
+import {
+  Button,
+  Card,
+  Container,
+  Form,
+  Modal,
+  Navbar,
+  NavDropdown,
+  Table
+} from "react-bootstrap";
 import { RWebShare } from "react-web-share";
+import { database } from "./../firebase";
+import Loader from "./loader";
 import UnitStatus from "./unit";
 import {
   valuesDetails,
@@ -26,7 +40,7 @@ import {
   NavBarBranding
 } from "./util";
 import TableHeader from "./table";
-import { signOut } from "firebase/auth";
+
 import { auth } from "../firebase";
 import {
   FeedbackField,
@@ -35,7 +49,7 @@ import {
   ModalFooter,
   NoteField
 } from "./form";
-function Admin({ congregationCode, user }: adminProps) {
+function Admin({ congregationCode, isConductor = false }: adminProps) {
   const [name, setName] = useState<String>();
   const [territories, setTerritories] = useState<Array<territoryDetails>>([]);
   const [territory, setTerritory] = useState<String>();
@@ -72,7 +86,7 @@ function Admin({ congregationCode, user }: adminProps) {
 
   const handleSelect = (
     eventKey: string | null,
-    _: React.SyntheticEvent<unknown>
+    _: SyntheticEvent<unknown>
   ) => {
     const territoryDetails = territories.find((e) => e.code === eventKey);
     const territoryAddresses = territoryDetails?.addresses;
@@ -128,12 +142,12 @@ function Admin({ congregationCode, user }: adminProps) {
     }
   };
 
-  const handleClick = (_: React.MouseEvent<HTMLElement>, isModal: boolean) => {
+  const handleClick = (_: MouseEvent<HTMLElement>, isModal: boolean) => {
     toggleModal(isModal);
   };
 
   const handleClickModal = (
-    _: React.MouseEvent<HTMLElement>,
+    _: MouseEvent<HTMLElement>,
     postal: String,
     floor: String,
     unit: String,
@@ -153,7 +167,7 @@ function Admin({ congregationCode, user }: adminProps) {
     toggleModal(true);
   };
 
-  const handleSubmitClick = (event: React.FormEvent<HTMLElement>) => {
+  const handleSubmitClick = (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
     set(
@@ -171,7 +185,7 @@ function Admin({ congregationCode, user }: adminProps) {
   };
 
   const handleClickFeedback = (
-    _: React.MouseEvent<HTMLElement>,
+    _: MouseEvent<HTMLElement>,
     postalcode: String
   ) => {
     get(child(ref(database), `/${postalcode}/feedback`)).then((snapshot) => {
@@ -182,14 +196,14 @@ function Admin({ congregationCode, user }: adminProps) {
     toggleModal(false);
   };
 
-  const handleSubmitFeedback = (event: React.FormEvent<HTMLElement>) => {
+  const handleSubmitFeedback = (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
     set(ref(database, `/${details.postal}/feedback`), details.feedback);
     toggleModal(false);
   };
 
-  const onFormChange = (e: React.ChangeEvent<HTMLElement>) => {
+  const onFormChange = (e: ChangeEvent<HTMLElement>) => {
     const { name, value } = e.target as HTMLInputElement;
     setValues({ ...values, [name]: value });
   };
@@ -276,21 +290,38 @@ function Admin({ congregationCode, user }: adminProps) {
                   id="navbarScroll"
                   className="justify-content-end mt-2"
                 >
-                  <RWebShare
-                    data={{
-                      text: assignmentMessage(addressElement.name),
-                      url: `${window.location.origin}/${addressElement.postalcode}`,
-                      title: `Units for ${addressElement.name}`
-                    }}
-                  >
+                  {isConductor && (
+                    <RWebShare
+                      data={{
+                        text: assignmentMessage(addressElement.name),
+                        url: `${window.location.origin}/${addressElement.postalcode}`,
+                        title: `Units for ${addressElement.name}`
+                      }}
+                    >
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        className="me-2"
+                      >
+                        Assign
+                      </Button>
+                    </RWebShare>
+                  )}
+                  {isConductor && (
                     <Button
                       size="sm"
                       variant="outline-primary"
                       className="me-2"
+                      onClick={(e) => {
+                        window.open(
+                          `${window.location.origin}/${addressElement.postalcode}`,
+                          "_blank"
+                        );
+                      }}
                     >
-                      Assign
+                      View
                     </Button>
-                  </RWebShare>
+                  )}
                   <Button
                     size="sm"
                     variant="outline-primary"
@@ -314,53 +345,55 @@ function Admin({ congregationCode, user }: adminProps) {
                   >
                     Feedback
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline-primary"
-                    className="me-2"
-                    onClick={() =>
-                      confirmAlert({
-                        customUI: ({ onClose }) => {
-                          return (
-                            <Container>
-                              <Card bg="warning" className="text-center">
-                                <Card.Header>Warning ⚠️</Card.Header>
-                                <Card.Body>
-                                  <Card.Title>Are You Very Sure ?</Card.Title>
-                                  <Card.Text>
-                                    You want to reset the data of{" "}
-                                    {addressElement.name}. This will reset all
-                                    Done & Not Home status.
-                                  </Card.Text>
-                                  <Button
-                                    className="me-2"
-                                    variant="primary"
-                                    onClick={() => {
-                                      resetBlock(addressElement.postalcode);
-                                      onClose();
-                                    }}
-                                  >
-                                    Yes, Reset It.
-                                  </Button>
-                                  <Button
-                                    className="ms-2"
-                                    variant="primary"
-                                    onClick={() => {
-                                      onClose();
-                                    }}
-                                  >
-                                    No
-                                  </Button>
-                                </Card.Body>
-                              </Card>
-                            </Container>
-                          );
-                        }
-                      })
-                    }
-                  >
-                    Reset
-                  </Button>
+                  {!isConductor && (
+                    <Button
+                      size="sm"
+                      variant="outline-primary"
+                      className="me-2"
+                      onClick={() =>
+                        confirmAlert({
+                          customUI: ({ onClose }) => {
+                            return (
+                              <Container>
+                                <Card bg="warning" className="text-center">
+                                  <Card.Header>Warning ⚠️</Card.Header>
+                                  <Card.Body>
+                                    <Card.Title>Are You Very Sure ?</Card.Title>
+                                    <Card.Text>
+                                      You want to reset the data of{" "}
+                                      {addressElement.name}. This will reset all
+                                      Done & Not Home status.
+                                    </Card.Text>
+                                    <Button
+                                      className="me-2"
+                                      variant="primary"
+                                      onClick={() => {
+                                        resetBlock(addressElement.postalcode);
+                                        onClose();
+                                      }}
+                                    >
+                                      Yes, Reset It.
+                                    </Button>
+                                    <Button
+                                      className="ms-2"
+                                      variant="primary"
+                                      onClick={() => {
+                                        onClose();
+                                      }}
+                                    >
+                                      No
+                                    </Button>
+                                  </Card.Body>
+                                </Card>
+                              </Container>
+                            );
+                          }
+                        })
+                      }
+                    >
+                      Reset
+                    </Button>
+                  )}
                 </Navbar.Collapse>
               </Container>
             </Navbar>
