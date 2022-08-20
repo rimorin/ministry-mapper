@@ -36,7 +36,7 @@ export interface valuesDetails {
 export interface adminProps {
   congregationCode: String;
   user?: User;
-  isAdmin?: boolean;
+  isConductor?: boolean;
 }
 
 export interface territoryDetails {

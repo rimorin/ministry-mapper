@@ -49,7 +49,7 @@ import {
   ModalFooter,
   NoteField
 } from "./form";
-function Admin({ congregationCode, isAdmin = true }: adminProps) {
+function Admin({ congregationCode, isConductor = false }: adminProps) {
   const [name, setName] = useState<String>();
   const [territories, setTerritories] = useState<Array<territoryDetails>>([]);
   const [territory, setTerritory] = useState<String>();
@@ -290,7 +290,7 @@ function Admin({ congregationCode, isAdmin = true }: adminProps) {
                   id="navbarScroll"
                   className="justify-content-end mt-2"
                 >
-                  {!isAdmin && (
+                  {isConductor && (
                     <RWebShare
                       data={{
                         text: assignmentMessage(addressElement.name),
@@ -306,6 +306,21 @@ function Admin({ congregationCode, isAdmin = true }: adminProps) {
                         Assign
                       </Button>
                     </RWebShare>
+                  )}
+                  {isConductor && (
+                    <Button
+                      size="sm"
+                      variant="outline-primary"
+                      className="me-2"
+                      onClick={(e) => {
+                        window.open(
+                          `${window.location.origin}/${addressElement.postalcode}`,
+                          "_blank"
+                        );
+                      }}
+                    >
+                      View
+                    </Button>
                   )}
                   <Button
                     size="sm"
@@ -330,7 +345,7 @@ function Admin({ congregationCode, isAdmin = true }: adminProps) {
                   >
                     Feedback
                   </Button>
-                  {isAdmin && (
+                  {!isConductor && (
                     <Button
                       size="sm"
                       variant="outline-primary"
