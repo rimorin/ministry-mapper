@@ -49,7 +49,7 @@ import {
   ModalFooter,
   NoteField
 } from "./form";
-function Admin({ congregationCode, user }: adminProps) {
+function Admin({ congregationCode, isAdmin = true }: adminProps) {
   const [name, setName] = useState<String>();
   const [territories, setTerritories] = useState<Array<territoryDetails>>([]);
   const [territory, setTerritory] = useState<String>();
@@ -290,21 +290,23 @@ function Admin({ congregationCode, user }: adminProps) {
                   id="navbarScroll"
                   className="justify-content-end mt-2"
                 >
-                  <RWebShare
-                    data={{
-                      text: assignmentMessage(addressElement.name),
-                      url: `${window.location.origin}/${addressElement.postalcode}`,
-                      title: `Units for ${addressElement.name}`
-                    }}
-                  >
-                    <Button
-                      size="sm"
-                      variant="outline-primary"
-                      className="me-2"
+                  {!isAdmin && (
+                    <RWebShare
+                      data={{
+                        text: assignmentMessage(addressElement.name),
+                        url: `${window.location.origin}/${addressElement.postalcode}`,
+                        title: `Units for ${addressElement.name}`
+                      }}
                     >
-                      Assign
-                    </Button>
-                  </RWebShare>
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        className="me-2"
+                      >
+                        Assign
+                      </Button>
+                    </RWebShare>
+                  )}
                   <Button
                     size="sm"
                     variant="outline-primary"
@@ -328,53 +330,55 @@ function Admin({ congregationCode, user }: adminProps) {
                   >
                     Feedback
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline-primary"
-                    className="me-2"
-                    onClick={() =>
-                      confirmAlert({
-                        customUI: ({ onClose }) => {
-                          return (
-                            <Container>
-                              <Card bg="warning" className="text-center">
-                                <Card.Header>Warning ⚠️</Card.Header>
-                                <Card.Body>
-                                  <Card.Title>Are You Very Sure ?</Card.Title>
-                                  <Card.Text>
-                                    You want to reset the data of{" "}
-                                    {addressElement.name}. This will reset all
-                                    Done & Not Home status.
-                                  </Card.Text>
-                                  <Button
-                                    className="me-2"
-                                    variant="primary"
-                                    onClick={() => {
-                                      resetBlock(addressElement.postalcode);
-                                      onClose();
-                                    }}
-                                  >
-                                    Yes, Reset It.
-                                  </Button>
-                                  <Button
-                                    className="ms-2"
-                                    variant="primary"
-                                    onClick={() => {
-                                      onClose();
-                                    }}
-                                  >
-                                    No
-                                  </Button>
-                                </Card.Body>
-                              </Card>
-                            </Container>
-                          );
-                        }
-                      })
-                    }
-                  >
-                    Reset
-                  </Button>
+                  {isAdmin && (
+                    <Button
+                      size="sm"
+                      variant="outline-primary"
+                      className="me-2"
+                      onClick={() =>
+                        confirmAlert({
+                          customUI: ({ onClose }) => {
+                            return (
+                              <Container>
+                                <Card bg="warning" className="text-center">
+                                  <Card.Header>Warning ⚠️</Card.Header>
+                                  <Card.Body>
+                                    <Card.Title>Are You Very Sure ?</Card.Title>
+                                    <Card.Text>
+                                      You want to reset the data of{" "}
+                                      {addressElement.name}. This will reset all
+                                      Done & Not Home status.
+                                    </Card.Text>
+                                    <Button
+                                      className="me-2"
+                                      variant="primary"
+                                      onClick={() => {
+                                        resetBlock(addressElement.postalcode);
+                                        onClose();
+                                      }}
+                                    >
+                                      Yes, Reset It.
+                                    </Button>
+                                    <Button
+                                      className="ms-2"
+                                      variant="primary"
+                                      onClick={() => {
+                                        onClose();
+                                      }}
+                                    >
+                                      No
+                                    </Button>
+                                  </Card.Body>
+                                </Card>
+                              </Container>
+                            );
+                          }
+                        })
+                      }
+                    >
+                      Reset
+                    </Button>
+                  )}
                 </Navbar.Collapse>
               </Container>
             </Navbar>
