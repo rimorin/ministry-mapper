@@ -1,19 +1,17 @@
-# Ministry Mapper
-
 ![Screenshot 2022-08-19 at 2 10 11 PM](https://user-images.githubusercontent.com/40650158/185554709-ce94a04e-2a34-43a9-b7de-09aa7f437139.png)
 
 A web application for the field ministry.
 
 ## Why
 
-Pain points for traditional physical territory slips
+Pain points of traditional physical territory slips
 
 - Use of paper that will be thrown once territory is completed. 🗑️
 - Preparation of physical territory slips (Printing & Cutting). ✂️ 🖨️ 💦
 - Risk of slips going missing or returned in bad & unreadable condition.
-- Territory servants have to read through all returned slips and update his local records for the next cycle. 📝 👀
+- Territory servants will have to read through all returned slips and update his local records for the next cycle. 📝 👀
 - Trouble of rotating physical slips among multiple conductors.
-- High dependence on conductors presence for publishers to receive territory slips. For example, a conductor that is unable to attend due to unforeseen matter on that morning, he will have to find a way to get someone else to pick up the slips and distribute them.
+- High dependence on the conductors presence for publishers to receive territory slips. For example, a conductor that is unable to attend due to unforeseen matter on that morning, he will have to find a way to get someone else to pick up the slips and distribute them.
 - Time constraint to receive and return physical slips to conductors. For example, later comers and conductors have to find a way to meet each other to pass territory slips. Pubs who has other arrangements and are unable to join for lunch break have to still go to the break point to pass the physical slip.
 
 Advantages of Ministry Mapper
@@ -30,15 +28,19 @@ Disadvantages of Ministry Mapper
 - Initial migration work of the territory data. Territory servants will have to translate their current territory data into a json specific file to feed into the platform.
 - Internet dependency. Requires publishers to use their internet capable phones/tablets to use. System may not be applicable for countries where internet access is not readily available.
 - Slight learning curve. Elderly and non tech-savvy publishers may have to overcome the challenge of transiting from paper/pen to the use of a computing device to update territory records. A similar experience from hardcopy to the use of JW Library app in the ministry.
-- Currently optimised for countries where territories are mostly apartments/flats. (Landed/House features coming in V2).
+- Currently optimised for countries where territories are mostly apartments/flats. (Landed/House features can be included in future versions).
 
 ### Usage
 
 - To access the admin screen of a congregation, `domain/admin/<congregation code>`
-  1. To assign a slip to a publisher, select territory and postal address and click on the share button.
+  1. Login with admin credentials
   2. To restart territory status during a cycle, click on reset button under each postal address.
+- To access the conductor screen of a congregation, `domain/conductor/<congregation code>`
+  1. Login with conductor credentials
+  2. To assign a slip to a publisher, select territory and postal address and click on the share button.
 - To access a particular postal address, `domain/<postal code>`
-  1. To update an unit number, tap on a unit box and update its details accordingly.
+  1. Login with publisher credentials (Disabled by default)
+  2. To update an unit number, tap on a unit box and update its details accordingly.
 
 ### Deployment
 
@@ -49,6 +51,12 @@ Disadvantages of Ministry Mapper
   3. Upload Json file to real-time database
   4. Implement security rules to prevent unwanted deletions and access.
 
+- Firebase Authentication setup
+
+  1. Setup firebase authentication 
+  2. Configure email/password authentication type
+  3. Add email/password credentials
+  
 - Local deployment
   1. Setup .env with the following environment variables and their values.
      - REACT_APP_FIREBASE_API_KEY=key_from_firebase_account
@@ -77,3 +85,4 @@ Disadvantages of Ministry Mapper
 2. ReactJs - Javascript UI Framework
 3. Typescript - Javascript typed implementation library
 4. Firebase Real-time database - Cloud based database with real time synchronization across all clients.
+5. Firebase Authentication - Cloud based authentication service.
