@@ -37,7 +37,8 @@ import {
   ZeroPad,
   ModalUnitTitle,
   assignmentMessage,
-  NavBarBranding
+  NavBarBranding,
+  LOGIN_TYPE_CODES
 } from "./util";
 import TableHeader from "./table";
 
@@ -49,6 +50,7 @@ import {
   ModalFooter,
   NoteField
 } from "./form";
+import Welcome from "./welcome";
 function Admin({ congregationCode, isConductor = false }: adminProps) {
   const [name, setName] = useState<String>();
   const [territories, setTerritories] = useState<Array<territoryDetails>>([]);
@@ -274,6 +276,13 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
           </Navbar.Collapse>
         </Container>
       </Navbar>
+      {addresses.length === 0 && (
+        <Welcome
+          loginType={
+            isConductor ? LOGIN_TYPE_CODES.CONDUCTOR : LOGIN_TYPE_CODES.ADMIN
+          }
+        />
+      )}
       {addresses &&
         addresses.map((addressElement) => (
           <div key={`div-${addressElement.postalcode}`}>
