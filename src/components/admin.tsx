@@ -92,7 +92,7 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
   ) => {
     const territoryDetails = territories.find((e) => e.code === eventKey);
     const territoryAddresses = territoryDetails?.addresses;
-    setTerritory(`${territoryDetails?.name}`);
+    setTerritory(`${territoryDetails?.code} - ${territoryDetails?.name}`);
     let addressListing = [] as Array<addressDetails>;
     for (const territory in territoryAddresses) {
       onValue(child(ref(database), `/${territory}/units`), (snapshot) => {
