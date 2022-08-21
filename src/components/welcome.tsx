@@ -16,8 +16,11 @@ const Welcome = ({ loginType = LOGIN_TYPE_CODES.CONDUCTOR }) => {
     >
       <Card className="border-0 align-items-center">
         <Card.Img
-          style={{ width: "60%" }}
-          variant="top"
+          style={{
+            width: "50%",
+            borderTopLeftRadius: "0",
+            borderTopRightRadius: "0"
+          }}
           src={`${process.env.PUBLIC_URL}/logo.png`}
         />
         <Card.Body>
