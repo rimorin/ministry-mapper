@@ -28,6 +28,11 @@ const MUTABLE_CODES = [
   STATUS_CODES.STILL_NOT_HOME
 ];
 
+const LOGIN_TYPE_CODES = {
+  CONDUCTOR: 1,
+  ADMIN: 2
+};
+
 const ModalUnitTitle = ({ unit, floor, postal }: TitleProps) => {
   let titleString = `# ${ZeroPad(floor, 2)} - ${unit}`;
 
@@ -78,5 +83,6 @@ export {
   assignmentMessage,
   NavBarBranding,
   STATUS_CODES,
-  MUTABLE_CODES
+  MUTABLE_CODES,
+  LOGIN_TYPE_CODES
 };
