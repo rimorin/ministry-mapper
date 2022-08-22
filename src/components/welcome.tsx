@@ -16,6 +16,7 @@ const Welcome = ({ loginType = LOGIN_TYPE_CODES.CONDUCTOR }) => {
     >
       <Card className="border-0 align-items-center">
         <Card.Img
+          alt="Ministry Mapper main logo"
           style={{
             width: "50%",
             borderTopLeftRadius: "0",
