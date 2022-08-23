@@ -1,5 +1,5 @@
-import { Modal, Navbar } from "react-bootstrap";
-import { TitleProps, BrandingProps } from "./interface";
+import { Modal, Navbar, Offcanvas, Table } from "react-bootstrap";
+import { TitleProps, BrandingProps, LegendProps } from "./interface";
 
 const compareSortObjects = (a: any, b: any) => {
   const a_floor = Number(a.floor);
@@ -76,12 +76,59 @@ const NavBarBranding = ({ naming }: BrandingProps) => {
   );
 };
 
+const Legend = ({ showLegend, hideFunction }: LegendProps) => (
+  <Offcanvas show={showLegend} onHide={hideFunction}>
+    <Offcanvas.Header closeButton>
+      <Offcanvas.Title>Legend</Offcanvas.Title>
+    </Offcanvas.Header>
+    <Offcanvas.Body>
+      <Table>
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td className="text-center align-middle">✅</td>
+            <td>
+              Spoke to householder, Sent Letter or Tried again after initial
+              call.
+            </td>
+          </tr>
+          <tr>
+            <td className="text-center align-middle">🚫</td>
+            <td>Do not call or write letter.</td>
+          </tr>
+          <tr>
+            <td className="text-center align-middle">📬</td>
+            <td>
+              Householder not around after the initial call. Try again another
+              day or write letter.
+            </td>
+          </tr>
+          <tr>
+            <td className="text-center align-middle">✖️</td>
+            <td>Unit doesn't exist for some reason.</td>
+          </tr>
+          <tr>
+            <td className="text-center align-middle">🗒️</td>
+            <td>Optional information about the unit.</td>
+          </tr>
+        </tbody>
+      </Table>
+    </Offcanvas.Body>
+  </Offcanvas>
+);
+
 export {
   compareSortObjects,
   ZeroPad,
   ModalUnitTitle,
   assignmentMessage,
   NavBarBranding,
+  Legend,
   STATUS_CODES,
   MUTABLE_CODES,
   LOGIN_TYPE_CODES
