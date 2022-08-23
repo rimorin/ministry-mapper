@@ -18,7 +18,7 @@ function TableHeader({ floors }: tableProp) {
     <>
       <thead>
         <tr>
-          <th scope="col" className="text-center">
+          <th scope="col" className="text-center align-middle">
             lvl/unit
           </th>
           {floors &&
@@ -26,7 +26,7 @@ function TableHeader({ floors }: tableProp) {
               <th
                 key={`${index}-${item.number}`}
                 scope="col"
-                className="text-center"
+                className="text-center align-middle"
               >
                 {ZeroPad(item.number, maxUnitNumberLength)}
               </th>

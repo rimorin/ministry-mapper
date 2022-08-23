@@ -69,3 +69,8 @@ export interface BrandingProps {
 export interface FooterProps {
   handleClick?: (event: React.MouseEvent<HTMLElement>) => void;
 }
+
+export interface LegendProps {
+  showLegend: boolean;
+  hideFunction: any;
+}

@@ -8,6 +8,7 @@ import TableHeader from "./table";
 import UnitStatus from "./unit";
 import {
   compareSortObjects,
+  Legend,
   ModalUnitTitle,
   NavBarBranding,
   ZeroPad
@@ -24,6 +25,7 @@ function Home({ postalcode, name }: homeProps) {
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isFeedback, setIsFeedback] = useState<boolean>(false);
+  const [showLegend, setShowLegend] = useState<boolean>(false);
   const [values, setValues] = useState<Object>({});
   const postalReference = child(ref(database), `/${postalcode}/units`);
   const postalFeedback = child(ref(database), `/${postalcode}/feedback`);
@@ -111,6 +113,10 @@ function Home({ postalcode, name }: homeProps) {
     setValues({ ...values, [name]: value });
   };
 
+  const toggleLegend = () => {
+    setShowLegend(!showLegend);
+  };
+
   useEffect(() => {
     document.title = `${name}`;
     onValue(postalReference, (snapshot) => {
@@ -129,41 +135,43 @@ function Home({ postalcode, name }: homeProps) {
   }
   return (
     <>
+      <Legend showLegend={showLegend} hideFunction={toggleLegend} />
       <Navbar bg="light" expand="sm">
         <Container fluid>
           <NavBarBranding naming={`${name}`} />
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse
             id="basic-navbar-nav"
-            className="justify-content-end"
+            className="justify-content-end mt-1"
           >
-            <Form className="d-flex">
-              <Button
-                className="me-2"
-                onClick={() => {
-                  window.open(
-                    `http://maps.google.com.sg/maps?q=${postalcode}`,
-                    "_blank"
-                  );
-                }}
-              >
-                Direction
-              </Button>
-              <Button className="me-2" onClick={handleClickFeedback}>
-                Feedback
-              </Button>
-            </Form>
+            <Button className="me-2" onClick={toggleLegend}>
+              Legend
+            </Button>
+            <Button
+              className="me-2"
+              onClick={() => {
+                window.open(
+                  `http://maps.google.com.sg/maps?q=${postalcode}`,
+                  "_blank"
+                );
+              }}
+            >
+              Direction
+            </Button>
+            <Button className="me-2" onClick={handleClickFeedback}>
+              Feedback
+            </Button>
           </Navbar.Collapse>
         </Container>
       </Navbar>
-      <Table bordered striped hover responsive="sm">
+      <Table bordered striped hover responsive="sm" style={{ height: "75vh" }}>
         <TableHeader floors={floors} />
         <tbody>
           {floors &&
             floors.map((item, index) => (
               <tr key={`row-${index}`}>
                 <th
-                  className="text-center"
+                  className="text-center align-middle"
                   key={`${index}-${item.floor}`}
                   scope="row"
                 >
@@ -171,7 +179,8 @@ function Home({ postalcode, name }: homeProps) {
                 </th>
                 {item.units.map((element, _) => (
                   <td
-                    align="center"
+                    style={{ whiteSpace: "nowrap" }}
+                    className="text-center align-middle"
                     onClick={(event) =>
                       handleClickModal(event, item.floor, element.number)
                     }
