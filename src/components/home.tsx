@@ -117,52 +117,6 @@ function Home({ postalcode, name }: homeProps) {
     setShowLegend(!showLegend);
   };
 
-  // const Legend = () => (
-  //   <Offcanvas show={showLegend} onHide={toggleLegend}>
-  //     <Offcanvas.Header closeButton>
-  //       <Offcanvas.Title>Legend</Offcanvas.Title>
-  //     </Offcanvas.Header>
-  //     <Offcanvas.Body>
-  //       <Table>
-  //         <thead>
-  //           <tr>
-  //             <th>Symbol</th>
-  //             <th>Description</th>
-  //           </tr>
-  //         </thead>
-  //         <tbody>
-  //           <tr>
-  //             <td className="text-center align-middle">✅</td>
-  //             <td>
-  //               Spoke to householder, Sent Letter or Tried again after initial
-  //               call.
-  //             </td>
-  //           </tr>
-  //           <tr>
-  //             <td className="text-center align-middle">🚫</td>
-  //             <td>Do not call or write letter.</td>
-  //           </tr>
-  //           <tr>
-  //             <td className="text-center align-middle">📬</td>
-  //             <td>
-  //               Householder not around after the initial call. Try again another
-  //               day or write letter.
-  //             </td>
-  //           </tr>
-  //           <tr>
-  //             <td className="text-center align-middle">✖️</td>
-  //             <td>Unit doesn't exist for some reason.</td>
-  //           </tr>
-  //           <tr>
-  //             <td className="text-center align-middle">🗒️</td>
-  //             <td>Optional information about the unit.</td>
-  //           </tr>
-  //         </tbody>
-  //       </Table>
-  //     </Offcanvas.Body>
-  //   </Offcanvas>
-  // );
-
   useEffect(() => {
     document.title = `${name}`;
     onValue(postalReference, (snapshot) => {
@@ -210,7 +164,7 @@ function Home({ postalcode, name }: homeProps) {
           </Navbar.Collapse>
         </Container>
       </Navbar>
-      <Table bordered striped hover responsive="sm" style={{ height: "80vh" }}>
+      <Table bordered striped hover responsive="sm" style={{ height: "75vh" }}>
         <TableHeader floors={floors} />
         <tbody>
           {floors &&
