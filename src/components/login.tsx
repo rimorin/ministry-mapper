@@ -19,7 +19,7 @@ const Login = ({ loginType }: LoginProps) => {
       setIsLogin(true);
       await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
-      alert(err);
+      alert((err as Error).message);
       setValidated(false);
     }
     setIsLogin(false);
