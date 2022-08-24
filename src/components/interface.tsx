@@ -63,7 +63,7 @@ export interface TitleProps {
 }
 
 export interface BrandingProps {
-  naming: string;
+  naming: String;
 }
 
 export interface FooterProps {
@@ -73,4 +73,8 @@ export interface FooterProps {
 export interface LegendProps {
   showLegend: boolean;
   hideFunction: any;
+}
+
+export interface LoginProps {
+  loginType: String;
 }
