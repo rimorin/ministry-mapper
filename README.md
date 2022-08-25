@@ -10,13 +10,13 @@ Pain points of traditional printed territory slips
 - Preparation of printed territory slips (Designing, Printing & Cutting). ✂️ 🖨️ 💦
 - Territory servants have to eyeball all returned slips for new updates. 📝 👀
 - Risk of slips going missing. No one knows where is it 🤷‍♂️
-- Risk of slips getting damaged & returned in bad & unreadable conditions.
+- Risk of slips being returned in bad & unreadable conditions.
 - High dependence on the conductor to show up for the ministry. No show ➡️ No slips ➡️ No HH ministry.
 
 Advantages of Ministry Mapper
 
-- Digital Technology. Slips are stored in the cloud. No more use of papers 🌳 and undesirable handwritings 🖊️. Nether will they go missing or be damaged for some reason.
-- Near-zero management effort. Significant reduction of workload on the territory servants as unit data are sync to the cloud. No more updating, printing & cutting on the servants part.
+- Digital Technology. Slips are stored online rather than on paper. No more use of papers 🌳 and undesirable handwritings 🖊️. Nether will they go missing or be damaged for some reason.
+- Near-zero management effort. Significant reduction of workload on the territory servants as records stored in the cloud. No more updating, printing & cutting on the servants part.
 - Real-time collaboration. Territory records are displayed in real-time (Similar to live traffic/booking apps). This enables territory to be covered efficiently and effectively. For example, a slip can be covered by different publishers (letter writers and HH preachers together) in real-time as overlapping never (or almost never) occurs.
 - High Availability. Slips are managed and distributed digitally. Zero to little disruption of the HH ministry as a result of sickness, travel delay or any unforeseen occurrences that may befall the conductor.
 
