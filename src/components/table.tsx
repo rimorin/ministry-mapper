@@ -1,19 +1,12 @@
 import { floorDetails } from "./interface";
 import { ZeroPad } from "./util";
 
-interface tableProp {
+interface tableHeaderProp {
   floors: Array<floorDetails>;
+  maxUnitNumber: number;
 }
 
-function TableHeader({ floors }: tableProp) {
-  let maxUnitNumberLength = 1;
-
-  floors[0].units.forEach((element) => {
-    const lengthOfUnitNumber = `${element.number}`.length;
-    if (maxUnitNumberLength < lengthOfUnitNumber) {
-      maxUnitNumberLength = lengthOfUnitNumber;
-    }
-  });
+function TableHeader({ floors, maxUnitNumber = 2 }: tableHeaderProp) {
   return (
     <>
       <thead>
@@ -28,7 +21,7 @@ function TableHeader({ floors }: tableProp) {
                 scope="col"
                 className="text-center align-middle"
               >
-                {ZeroPad(item.number, maxUnitNumberLength)}
+                {ZeroPad(item.number, maxUnitNumber)}
               </th>
             ))}
         </tr>

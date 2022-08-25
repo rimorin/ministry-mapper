@@ -1,5 +1,10 @@
 import { Modal, Navbar, Offcanvas, Table } from "react-bootstrap";
-import { TitleProps, BrandingProps, LegendProps } from "./interface";
+import {
+  TitleProps,
+  BrandingProps,
+  LegendProps,
+  floorDetails
+} from "./interface";
 
 const compareSortObjects = (a: any, b: any) => {
   const a_floor = Number(a.floor);
@@ -33,8 +38,10 @@ const LOGIN_TYPE_CODES = {
   ADMIN: 2
 };
 
+const DEFAULT_FLOOR_PADDING = 2;
+
 const ModalUnitTitle = ({ unit, floor, postal }: TitleProps) => {
-  let titleString = `# ${ZeroPad(floor, 2)} - ${unit}`;
+  let titleString = `# ${floor} - ${unit}`;
 
   if (postal) {
     titleString = `${postal}, ${titleString}`;
@@ -59,6 +66,18 @@ const assignmentMessage = (address: String) => {
   else if (hrs >= 17 && hrs <= 24) greet = "Evening";
 
   return `Good ${greet}!! You are assigned to ${address}. Please click on the link below to proceed.`;
+};
+
+const getMaxUnitLength = (floors: floorDetails[]) => {
+  let maxUnitNumberLength = 1;
+
+  floors[0].units.forEach((element) => {
+    const lengthOfUnitNumber = `${element.number}`.length;
+    if (maxUnitNumberLength < lengthOfUnitNumber) {
+      maxUnitNumberLength = lengthOfUnitNumber;
+    }
+  });
+  return maxUnitNumberLength;
 };
 
 const NavBarBranding = ({ naming }: BrandingProps) => {
@@ -127,9 +146,11 @@ export {
   ZeroPad,
   ModalUnitTitle,
   assignmentMessage,
+  getMaxUnitLength,
   NavBarBranding,
   Legend,
   STATUS_CODES,
   MUTABLE_CODES,
-  LOGIN_TYPE_CODES
+  LOGIN_TYPE_CODES,
+  DEFAULT_FLOOR_PADDING
 };

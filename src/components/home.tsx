@@ -8,6 +8,8 @@ import TableHeader from "./table";
 import UnitStatus from "./unit";
 import {
   compareSortObjects,
+  DEFAULT_FLOOR_PADDING,
+  getMaxUnitLength,
   Legend,
   ModalUnitTitle,
   NavBarBranding,
@@ -68,14 +70,17 @@ function Home({ postalcode, name }: homeProps) {
   const handleClickModal = (
     _: MouseEvent<HTMLElement>,
     floor: String,
-    unit: String
+    unit: String,
+    maxUnitNumber: number
   ) => {
     const floorUnits = floors.find((e) => e.floor === floor);
     const unitDetails = floorUnits?.units.find((e) => e.number === unit);
     setValues({
       ...values,
       floor: floor,
+      floorDisplay: ZeroPad(floor, DEFAULT_FLOOR_PADDING),
       unit: unit,
+      unitDisplay: ZeroPad(unit, maxUnitNumber),
       type: unitDetails?.type,
       note: unitDetails?.note,
       status: unitDetails?.status
@@ -133,6 +138,7 @@ function Home({ postalcode, name }: homeProps) {
   if (floors.length === 0) {
     return <Loader />;
   }
+  let maxUnitNumberLength = getMaxUnitLength(floors);
   return (
     <>
       <Legend showLegend={showLegend} hideFunction={toggleLegend} />
@@ -165,7 +171,7 @@ function Home({ postalcode, name }: homeProps) {
         </Container>
       </Navbar>
       <Table bordered striped hover responsive="sm" style={{ height: "75vh" }}>
-        <TableHeader floors={floors} />
+        <TableHeader floors={floors} maxUnitNumber={maxUnitNumberLength} />
         <tbody>
           {floors &&
             floors.map((item, index) => (
@@ -175,14 +181,19 @@ function Home({ postalcode, name }: homeProps) {
                   key={`${index}-${item.floor}`}
                   scope="row"
                 >
-                  {ZeroPad(item.floor, 2)}
+                  {ZeroPad(item.floor, DEFAULT_FLOOR_PADDING)}
                 </th>
                 {item.units.map((element, _) => (
                   <td
                     style={{ whiteSpace: "nowrap" }}
                     className="text-center align-middle"
                     onClick={(event) =>
-                      handleClickModal(event, item.floor, element.number)
+                      handleClickModal(
+                        event,
+                        item.floor,
+                        element.number,
+                        maxUnitNumberLength
+                      )
                     }
                     key={`${item.floor}-${element.number}`}
                   >
@@ -213,8 +224,8 @@ function Home({ postalcode, name }: homeProps) {
       </Modal>
       <Modal show={isOpen}>
         <ModalUnitTitle
-          unit={(values as valuesDetails).unit}
-          floor={(values as valuesDetails).floor}
+          unit={`${(values as valuesDetails).unitDisplay}`}
+          floor={`${(values as valuesDetails).floorDisplay}`}
         />
         <Form onSubmit={handleSubmitClick}>
           <Modal.Body>

@@ -25,7 +25,9 @@ export interface unitProps {
 
 export interface valuesDetails {
   floor: String;
+  floorDisplay?: String;
   unit: String;
+  unitDisplay?: String;
   type: String;
   note: String;
   postal?: String;
