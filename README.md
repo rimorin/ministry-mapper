@@ -4,30 +4,27 @@ A web application for the field ministry.
 
 ## Why
 
-Pain points of traditional physical territory slips
+Pain points of traditional printed territory slips
 
-- Use of paper that will be thrown once territory is completed. 🗑️
-- Preparation of physical territory slips (Printing & Cutting). ✂️ 🖨️ 💦
-- Risk of slips going missing or returned in bad & unreadable condition.
-- Territory servants will have to read through all returned slips and update his local records for the next cycle. 📝 👀
-- Trouble of rotating physical slips among multiple conductors.
-- High dependence on the conductors presence for publishers to receive territory slips. For example, a conductor that is unable to attend due to unforeseen matter on that morning, he will have to find a way to get someone else to pick up the slips and distribute them.
-- Time constraint to receive and return physical slips to conductors. For example, later comers and conductors have to find a way to meet each other to pass territory slips. Pubs who has other arrangements and are unable to join for lunch break have to still go to the break point to pass the physical slip.
+- Use of paper that will be discarded once territory is completed. 🗑️ (Total paper used per service yr = 4 pieces (average paper use per territory) X no. of territories in the congregation)
+- Preparation of printed territory slips (Designing, Printing & Cutting). ✂️ 🖨️ 💦
+- Territory servants have to eyeball all returned slips for new updates. 📝 👀
+- Risk of slips going missing. No one knows where is it 🤷‍♂️
+- Risk of slips being returned in bad & unreadable conditions.
+- High dependence on the conductor to show up for the ministry. No show ➡️ No slips ➡️ No HH ministry.
 
 Advantages of Ministry Mapper
 
-- Digital Technology. No more use of papers 🌳 and undesirable handwritings 🖊️ . Nether will they go missing or be damaged by publishers for some reason.
-- Simple Web-based slips. There is no need to install any android/ios/windows application. Slips are accessed via internet browser and barely uses much data or battery power.
-- Easy territory assignment. Conductors simply send a link to publishers via sms/whatsapp. No complicated login and registration required for publishers.
-- Near-zero management effort. Significant reduction of workload on the territory servants as data is sync in the cloud. For example, if a territory needs to be covered again after a few months, simply reset its status and proceed.
+- Digital Technology. Slips are stored online rather than on paper. No more use of papers 🌳 and undesirable handwritings 🖊️. Nether will they go missing or be damaged for some reason.
+- Near-zero management effort. Significant reduction of workload on the territory servants as records stored in the cloud. No more updating, printing & cutting on the servants part.
 - Real-time collaboration. Territory records are displayed in real-time (Similar to live traffic/booking apps). This enables territory to be covered efficiently and effectively. For example, a slip can be covered by different publishers (letter writers and HH preachers together) in real-time as overlapping never (or almost never) occurs.
-- High Availability. Slips are always available online. This allows overseers/conductors to easily access them anytime and assign them to publishers. No more passing around of territory bags 📁 or forgetting to bring them.
+- High Availability. Slips are managed and distributed digitally. Zero to little disruption of the HH ministry as a result of sickness, travel delay or any unforeseen occurrences that may befall the conductor.
 
 Disadvantages of Ministry Mapper
 
 - Initial migration work of the territory data. Territory servants will have to translate their current territory data into a json specific file to feed into the platform.
 - Internet dependency. Requires publishers to use their internet capable phones/tablets to use. System may not be applicable for countries where internet access is not readily available.
-- Slight learning curve. Elderly and non tech-savvy publishers may have to overcome the challenge of transiting from paper/pen to the use of a computing device to update territory records. A similar experience from hardcopy to the use of JW Library app in the ministry.
+- Slight learning curve. Elderly and non tech-savvy publishers may have to overcome the challenge of transiting from paper/pen to the use of a computing device to update territory records.
 - Currently optimised for countries where territories are mostly apartments/flats. (Landed/House features can be included in future versions).
 
 ### Usage
@@ -53,10 +50,10 @@ Disadvantages of Ministry Mapper
 
 - Firebase Authentication setup
 
-  1. Setup firebase authentication 
+  1. Setup firebase authentication
   2. Configure email/password authentication type
   3. Add email/password credentials
-  
+
 - Local deployment
   1. Setup .env with the following environment variables and their values.
      - REACT_APP_FIREBASE_API_KEY=key_from_firebase_account

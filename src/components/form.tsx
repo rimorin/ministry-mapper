@@ -24,11 +24,13 @@ const ModalFooter = ({ handleClick }: FooterProps) => {
 const HHType = () => (
   <>
     <option value="cn">Chinese</option>
-    <option value="tm">Tamil</option>
-    <option value="in">Indonesian</option>
-    <option value="bm">Burmese</option>
     <option value="ml">Muslim</option>
+    <option value="tm">Tamil</option>
+    <option value="id">Indonesian</option>
+    <option value="bm">Burmese</option>
     <option value="sl">Sign Language</option>
+    <option value="th">Thai</option>
+    <option value="vn">Vietnamese</option>
     <option value="ot">Others</option>
   </>
 );

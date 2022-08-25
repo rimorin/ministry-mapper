@@ -38,7 +38,9 @@ import {
   ModalUnitTitle,
   assignmentMessage,
   NavBarBranding,
-  LOGIN_TYPE_CODES
+  LOGIN_TYPE_CODES,
+  getMaxUnitLength,
+  DEFAULT_FLOOR_PADDING
 } from "./util";
 import TableHeader from "./table";
 
@@ -155,12 +157,15 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
     unit: String,
     type: String,
     note: String,
-    status: String
+    status: String,
+    maxUnitNumber: number
   ) => {
     setValues({
       ...values,
       floor: floor,
+      floorDisplay: ZeroPad(floor, DEFAULT_FLOOR_PADDING),
       unit: unit,
+      unitDisplay: ZeroPad(unit, maxUnitNumber),
       type: type,
       note: note,
       postal: postal,
@@ -284,177 +289,189 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
         />
       )}
       {addresses &&
-        addresses.map((addressElement) => (
-          <div key={`div-${addressElement.postalcode}`}>
-            <Navbar
-              bg="light"
-              expand="sm"
-              className="mt-3"
-              key={`navbar-${addressElement.postalcode}`}
-            >
-              <Container fluid>
-                <Navbar.Brand>{addressElement.name}</Navbar.Brand>
-                <Navbar.Toggle aria-controls="navbarScroll" />
-                <Navbar.Collapse
-                  id="navbarScroll"
-                  className="justify-content-end mt-2"
-                >
-                  {isConductor && (
-                    <RWebShare
-                      data={{
-                        text: assignmentMessage(addressElement.name),
-                        url: `${window.location.origin}/${addressElement.postalcode}`,
-                        title: `Units for ${addressElement.name}`
-                      }}
-                    >
+        addresses.map((addressElement) => {
+          const maxUnitNumberLength = getMaxUnitLength(addressElement.floors);
+          return (
+            <div key={`div-${addressElement.postalcode}`}>
+              <Navbar
+                bg="light"
+                expand="sm"
+                className="mt-3"
+                key={`navbar-${addressElement.postalcode}`}
+              >
+                <Container fluid>
+                  <Navbar.Brand>{addressElement.name}</Navbar.Brand>
+                  <Navbar.Toggle aria-controls="navbarScroll" />
+                  <Navbar.Collapse
+                    id="navbarScroll"
+                    className="justify-content-end mt-2"
+                  >
+                    {isConductor && (
+                      <RWebShare
+                        data={{
+                          text: assignmentMessage(addressElement.name),
+                          url: `${window.location.origin}/${addressElement.postalcode}`,
+                          title: `Units for ${addressElement.name}`
+                        }}
+                      >
+                        <Button
+                          size="sm"
+                          variant="outline-primary"
+                          className="me-2"
+                        >
+                          Assign
+                        </Button>
+                      </RWebShare>
+                    )}
+                    {isConductor && (
                       <Button
                         size="sm"
                         variant="outline-primary"
                         className="me-2"
+                        onClick={(e) => {
+                          window.open(
+                            `${window.location.origin}/${addressElement.postalcode}`,
+                            "_blank"
+                          );
+                        }}
                       >
-                        Assign
+                        View
                       </Button>
-                    </RWebShare>
-                  )}
-                  {isConductor && (
+                    )}
                     <Button
                       size="sm"
                       variant="outline-primary"
                       className="me-2"
                       onClick={(e) => {
                         window.open(
-                          `${window.location.origin}/${addressElement.postalcode}`,
+                          `http://maps.google.com.sg/maps?q=${addressElement.postalcode}`,
                           "_blank"
                         );
                       }}
                     >
-                      View
+                      Direction
                     </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="outline-primary"
-                    className="me-2"
-                    onClick={(e) => {
-                      window.open(
-                        `http://maps.google.com.sg/maps?q=${addressElement.postalcode}`,
-                        "_blank"
-                      );
-                    }}
-                  >
-                    Direction
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline-primary"
-                    className="me-2"
-                    onClick={(e) => {
-                      handleClickFeedback(e, addressElement.postalcode);
-                    }}
-                  >
-                    Feedback
-                  </Button>
-                  {!isConductor && (
                     <Button
                       size="sm"
                       variant="outline-primary"
                       className="me-2"
-                      onClick={() =>
-                        confirmAlert({
-                          customUI: ({ onClose }) => {
-                            return (
-                              <Container>
-                                <Card bg="warning" className="text-center">
-                                  <Card.Header>Warning ⚠️</Card.Header>
-                                  <Card.Body>
-                                    <Card.Title>Are You Very Sure ?</Card.Title>
-                                    <Card.Text>
-                                      You want to reset the data of{" "}
-                                      {addressElement.name}. This will reset all
-                                      Done & Not Home status.
-                                    </Card.Text>
-                                    <Button
-                                      className="me-2"
-                                      variant="primary"
-                                      onClick={() => {
-                                        resetBlock(addressElement.postalcode);
-                                        onClose();
-                                      }}
-                                    >
-                                      Yes, Reset It.
-                                    </Button>
-                                    <Button
-                                      className="ms-2"
-                                      variant="primary"
-                                      onClick={() => {
-                                        onClose();
-                                      }}
-                                    >
-                                      No
-                                    </Button>
-                                  </Card.Body>
-                                </Card>
-                              </Container>
-                            );
-                          }
-                        })
-                      }
+                      onClick={(e) => {
+                        handleClickFeedback(e, addressElement.postalcode);
+                      }}
                     >
-                      Reset
+                      Feedback
                     </Button>
-                  )}
-                </Navbar.Collapse>
-              </Container>
-            </Navbar>
-            <Table
-              key={`table-${addressElement.postalcode}`}
-              bordered
-              striped
-              hover
-              responsive="sm"
-            >
-              <TableHeader floors={addressElement.floors} />
-              <tbody key={`tbody-${addressElement.postalcode}`}>
-                {addressElement.floors &&
-                  addressElement.floors.map((floorElement, floorIndex) => (
-                    <tr key={`row-${floorIndex}`}>
-                      <th
-                        className="text-center"
-                        key={`floor-${floorIndex}`}
-                        scope="row"
+                    {!isConductor && (
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        className="me-2"
+                        onClick={() =>
+                          confirmAlert({
+                            customUI: ({ onClose }) => {
+                              return (
+                                <Container>
+                                  <Card bg="warning" className="text-center">
+                                    <Card.Header>Warning ⚠️</Card.Header>
+                                    <Card.Body>
+                                      <Card.Title>
+                                        Are You Very Sure ?
+                                      </Card.Title>
+                                      <Card.Text>
+                                        You want to reset the data of{" "}
+                                        {addressElement.name}. This will reset
+                                        all Done & Not Home status.
+                                      </Card.Text>
+                                      <Button
+                                        className="me-2"
+                                        variant="primary"
+                                        onClick={() => {
+                                          resetBlock(addressElement.postalcode);
+                                          onClose();
+                                        }}
+                                      >
+                                        Yes, Reset It.
+                                      </Button>
+                                      <Button
+                                        className="ms-2"
+                                        variant="primary"
+                                        onClick={() => {
+                                          onClose();
+                                        }}
+                                      >
+                                        No
+                                      </Button>
+                                    </Card.Body>
+                                  </Card>
+                                </Container>
+                              );
+                            }
+                          })
+                        }
                       >
-                        {`${ZeroPad(floorElement.floor, 2)}`}
-                      </th>
-                      {floorElement.units.map((detailsElement, index) => (
-                        <td
-                          align="center"
-                          onClick={(event) =>
-                            handleClickModal(
-                              event,
-                              addressElement.postalcode,
-                              floorElement.floor,
-                              detailsElement.number,
-                              detailsElement.type,
-                              detailsElement.note,
-                              detailsElement.status
-                            )
-                          }
-                          key={`${index}-${detailsElement.number}`}
+                        Reset
+                      </Button>
+                    )}
+                  </Navbar.Collapse>
+                </Container>
+              </Navbar>
+              <Table
+                key={`table-${addressElement.postalcode}`}
+                bordered
+                striped
+                hover
+                responsive="sm"
+              >
+                <TableHeader
+                  floors={addressElement.floors}
+                  maxUnitNumber={maxUnitNumberLength}
+                />
+                <tbody key={`tbody-${addressElement.postalcode}`}>
+                  {addressElement.floors &&
+                    addressElement.floors.map((floorElement, floorIndex) => (
+                      <tr key={`row-${floorIndex}`}>
+                        <th
+                          className="text-center"
+                          key={`floor-${floorIndex}`}
+                          scope="row"
                         >
-                          <UnitStatus
-                            key={`unit-${index}-${detailsElement.number}`}
-                            type={detailsElement.type}
-                            note={detailsElement.note}
-                            status={detailsElement.status}
-                          />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-              </tbody>
-            </Table>
-          </div>
-        ))}
+                          {`${ZeroPad(
+                            floorElement.floor,
+                            DEFAULT_FLOOR_PADDING
+                          )}`}
+                        </th>
+                        {floorElement.units.map((detailsElement, index) => (
+                          <td
+                            align="center"
+                            onClick={(event) =>
+                              handleClickModal(
+                                event,
+                                addressElement.postalcode,
+                                floorElement.floor,
+                                detailsElement.number,
+                                detailsElement.type,
+                                detailsElement.note,
+                                detailsElement.status,
+                                maxUnitNumberLength
+                              )
+                            }
+                            key={`${index}-${detailsElement.number}`}
+                          >
+                            <UnitStatus
+                              key={`unit-${index}-${detailsElement.number}`}
+                              type={detailsElement.type}
+                              note={detailsElement.note}
+                              status={detailsElement.status}
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                </tbody>
+              </Table>
+            </div>
+          );
+        })}
       <Modal show={isFeedback}>
         <Modal.Header>
           <Modal.Title>{`Feedback on ${
@@ -473,8 +490,8 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
       </Modal>
       <Modal show={isOpen}>
         <ModalUnitTitle
-          unit={(values as valuesDetails).unit}
-          floor={(values as valuesDetails).floor}
+          unit={`${(values as valuesDetails).unitDisplay}`}
+          floor={`${(values as valuesDetails).floorDisplay}`}
           postal={(values as valuesDetails).postal}
         />
         <Form onSubmit={handleSubmitClick}>

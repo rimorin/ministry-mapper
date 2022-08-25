@@ -3,8 +3,9 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { Card, Form, Button, Container } from "react-bootstrap";
 import { auth } from "../firebase";
 import Loader from "./loader";
+import { LoginProps } from "./interface";
 
-const Login = () => {
+const Login = ({ loginType }: LoginProps) => {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [validated, setValidated] = useState(false);
@@ -18,7 +19,7 @@ const Login = () => {
       setIsLogin(true);
       await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
-      alert(err);
+      alert((err as Error).message);
       setValidated(false);
     }
     setIsLogin(false);
@@ -45,8 +46,8 @@ const Login = () => {
       className="d-flex align-items-center justify-content-center vh-100"
     >
       <Card style={{ width: "80%" }}>
+        <Card.Header className="text-center">{loginType} Login</Card.Header>
         <Card.Body>
-          <Card.Title>Admin Login</Card.Title>
           <Form noValidate validated={validated} onSubmit={handleLoginSubmit}>
             <Form.Group className="mb-3" controlId="formBasicEmail">
               <Form.Label>Email address</Form.Label>
@@ -61,7 +62,6 @@ const Login = () => {
                 Please enter a valid email.
               </Form.Control.Feedback>
             </Form.Group>
-
             <Form.Group className="mb-3" controlId="formBasicPassword">
               <Form.Label>Password</Form.Label>
               <Form.Control
@@ -75,21 +75,23 @@ const Login = () => {
                 Please enter password.
               </Form.Control.Feedback>
             </Form.Group>
-            <Button variant="outline-primary" type="submit">
-              Login
-            </Button>
-            <Button
-              className="ms-2"
-              variant="outline-primary"
-              type="reset"
-              onClick={(e) => {
-                setLoginPassword("");
-                setLoginEmail("");
-                setValidated(false);
-              }}
-            >
-              Clear
-            </Button>
+            <Form.Group className="text-center" controlId="formBasicButton">
+              <Button variant="outline-primary" className="m-2" type="submit">
+                Login
+              </Button>
+              <Button
+                className="mx-2"
+                variant="outline-primary"
+                type="reset"
+                onClick={(e) => {
+                  setLoginPassword("");
+                  setLoginEmail("");
+                  setValidated(false);
+                }}
+              >
+                Clear
+              </Button>
+            </Form.Group>
           </Form>
         </Card.Body>
       </Card>

@@ -25,7 +25,9 @@ export interface unitProps {
 
 export interface valuesDetails {
   floor: String;
+  floorDisplay?: String;
   unit: String;
+  unitDisplay?: String;
   type: String;
   note: String;
   postal?: String;
@@ -63,7 +65,7 @@ export interface TitleProps {
 }
 
 export interface BrandingProps {
-  naming: string;
+  naming: String;
 }
 
 export interface FooterProps {
@@ -73,4 +75,8 @@ export interface FooterProps {
 export interface LegendProps {
   showLegend: boolean;
   hideFunction: any;
+}
+
+export interface LoginProps {
+  loginType: String;
 }
