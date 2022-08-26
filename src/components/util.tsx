@@ -133,7 +133,7 @@ const Legend = ({ showLegend, hideFunction }: LegendProps) => (
           </tr>
           <tr>
             <td className="text-center align-middle">🗒️</td>
-            <td>Optional information about the unit.</td>
+            <td>Optional information about the unit. No personal data.</td>
           </tr>
         </tbody>
       </Table>
