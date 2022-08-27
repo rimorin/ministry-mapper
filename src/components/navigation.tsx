@@ -102,7 +102,13 @@ function Navigation() {
           <Route
             key={index}
             path={`/${item.postalCode}`}
-            element={<Home postalcode={item.postalCode} name={item.name} />}
+            element={
+              user ? (
+                <Home postalcode={item.postalCode} name={item.name} />
+              ) : (
+                <Login loginType={"Publisher"} />
+              )
+            }
           />
         ))}
         ;
