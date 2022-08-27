@@ -45,7 +45,7 @@ const NoteField = ({ handleChange, changeValue }: FormProps) => {
         as="textarea"
         rows={3}
         aria-label="With textarea"
-        placeholder="Optional non-personal information. Eg, Renovation, Friends, etc."
+        placeholder="Optional non-personal information. Eg, Renovation, Foreclosed, Friends, etc."
         value={changeValue}
       />
     </Form.Group>
