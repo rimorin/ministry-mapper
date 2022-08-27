@@ -123,7 +123,7 @@ const Legend = ({ showLegend, hideFunction }: LegendProps) => (
           <tr>
             <td className="text-center align-middle">📬</td>
             <td>
-              Householder not around after the initial call. Try again another
+              Householder was not home at the initial call. Try again another
               day or write letter.
             </td>
           </tr>
