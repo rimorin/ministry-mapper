@@ -51,6 +51,7 @@ export interface addressDetails {
   name: String;
   postalcode: String;
   floors: Array<floorDetails>;
+  feedback: String;
 }
 
 export interface FormProps {

@@ -1,4 +1,4 @@
-import { child, onValue, ref, set, get, DataSnapshot } from "firebase/database";
+import { child, onValue, ref, set, get } from "firebase/database";
 import { signOut } from "firebase/auth";
 import {
   MouseEvent,
@@ -9,6 +9,7 @@ import {
   SyntheticEvent
 } from "react";
 import {
+  Badge,
   Button,
   Card,
   Container,
@@ -66,11 +67,11 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
     `congregations/${congregationCode}`
   );
 
-  const processData = (data: DataSnapshot) => {
+  const processData = (data: any) => {
     let dataList = [];
-    for (const floor in data.val()) {
+    for (const floor in data) {
       let unitsDetails = [];
-      const units = data.val()[floor];
+      const units = data[floor];
       for (const unit in units) {
         unitsDetails.push({
           number: unit,
@@ -97,12 +98,14 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
     setTerritory(`${territoryDetails?.code} - ${territoryDetails?.name}`);
     let addressListing = [] as Array<addressDetails>;
     for (const territory in territoryAddresses) {
-      onValue(child(ref(database), `/${territory}/units`), (snapshot) => {
+      onValue(child(ref(database), `/${territory}`), (snapshot) => {
         if (snapshot.exists()) {
+          const territoryData = snapshot.val();
           const addressData = {
             name: territoryAddresses[territory].name,
             postalcode: `${territory}`,
-            floors: processData(snapshot)
+            floors: processData(territoryData.units),
+            feedback: territoryData.feedback
           };
           const existingIndex = addressListing.findIndex(
             (_element) => _element.postalcode === addressData.postalcode
@@ -193,13 +196,10 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
 
   const handleClickFeedback = (
     _: MouseEvent<HTMLElement>,
-    postalcode: String
+    postalcode: String,
+    feedback: String
   ) => {
-    get(child(ref(database), `/${postalcode}/feedback`)).then((snapshot) => {
-      if (snapshot.exists()) {
-        setValues({ ...values, feedback: snapshot.val(), postal: postalcode });
-      }
-    });
+    setValues({ ...values, feedback: feedback, postal: postalcode });
     toggleModal(false);
   };
 
@@ -355,11 +355,23 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                       size="sm"
                       variant="outline-primary"
                       className="me-2"
-                      onClick={(e) => {
-                        handleClickFeedback(e, addressElement.postalcode);
+                      onClick={(event) => {
+                        handleClickFeedback(
+                          event,
+                          addressElement.postalcode,
+                          addressElement.feedback
+                        );
                       }}
                     >
                       Feedback
+                      {addressElement.feedback && (
+                        <>
+                          {" "}
+                          <Badge pill bg="secondary">
+                            ⭐
+                          </Badge>
+                        </>
+                      )}
                     </Button>
                     {!isConductor && (
                       <Button
