@@ -1,5 +1,6 @@
 import { child, onValue, ref, set, get } from "firebase/database";
 import { signOut } from "firebase/auth";
+import { nanoid } from "nanoid";
 import {
   MouseEvent,
   ChangeEvent,
@@ -41,7 +42,8 @@ import {
   NavBarBranding,
   LOGIN_TYPE_CODES,
   getMaxUnitLength,
-  DEFAULT_FLOOR_PADDING
+  DEFAULT_FLOOR_PADDING,
+  addHours
 } from "./util";
 import TableHeader from "./table";
 
@@ -291,6 +293,7 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
       {addresses &&
         addresses.map((addressElement) => {
           const maxUnitNumberLength = getMaxUnitLength(addressElement.floors);
+          const addressLinkId = nanoid();
           return (
             <div key={`div-${addressElement.postalcode}`}>
               <Navbar
@@ -310,8 +313,14 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                       <RWebShare
                         data={{
                           text: assignmentMessage(addressElement.name),
-                          url: `${window.location.origin}/${addressElement.postalcode}`,
+                          url: `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
                           title: `Units for ${addressElement.name}`
+                        }}
+                        onClick={() => {
+                          set(
+                            ref(database, `links/${addressLinkId}`),
+                            addHours(6)
+                          );
                         }}
                       >
                         <Button

@@ -80,6 +80,11 @@ const getMaxUnitLength = (floors: floorDetails[]) => {
   return maxUnitNumberLength;
 };
 
+const addHours = (numOfHours: number, date = new Date()) => {
+  date.setTime(date.getTime() + numOfHours * 60 * 60 * 1000);
+  return date.getTime();
+};
+
 const NavBarBranding = ({ naming }: BrandingProps) => {
   return (
     <Navbar.Brand>
@@ -112,7 +117,7 @@ const Legend = ({ showLegend, hideFunction }: LegendProps) => (
           <tr>
             <td className="text-center align-middle">✅</td>
             <td>
-              Spoke to householder, Sent Letter or Tried again after initial
+              Spoke to householder, Wrote Letter or Tried again after initial
               call.
             </td>
           </tr>
@@ -123,8 +128,8 @@ const Legend = ({ showLegend, hideFunction }: LegendProps) => (
           <tr>
             <td className="text-center align-middle">📬</td>
             <td>
-              Householder was not home at the initial call. Try again another
-              day or write letter.
+              Householder was not home at the initial call. Try visiting again
+              another day or write letter, whichever comes first.
             </td>
           </tr>
           <tr>
@@ -147,6 +152,7 @@ export {
   ModalUnitTitle,
   assignmentMessage,
   getMaxUnitLength,
+  addHours,
   NavBarBranding,
   Legend,
   STATUS_CODES,

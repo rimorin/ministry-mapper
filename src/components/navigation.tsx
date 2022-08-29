@@ -101,7 +101,7 @@ function Navigation() {
         {territories.map((item, index) => (
           <Route
             key={index}
-            path={`/${item.postalCode}`}
+            path={`/${item.postalCode}/:id`}
             element={
               user ? (
                 <Home postalcode={item.postalCode} name={item.name} />
