@@ -39,6 +39,7 @@ const LOGIN_TYPE_CODES = {
 };
 
 const DEFAULT_FLOOR_PADDING = 2;
+const DEFAULT_SELF_DESTRUCT_HOURS = 4;
 
 const ModalUnitTitle = ({ unit, floor, postal }: TitleProps) => {
   let titleString = `# ${floor} - ${unit}`;
@@ -158,5 +159,6 @@ export {
   STATUS_CODES,
   MUTABLE_CODES,
   LOGIN_TYPE_CODES,
-  DEFAULT_FLOOR_PADDING
+  DEFAULT_FLOOR_PADDING,
+  DEFAULT_SELF_DESTRUCT_HOURS
 };

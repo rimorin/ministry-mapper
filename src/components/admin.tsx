@@ -43,7 +43,8 @@ import {
   LOGIN_TYPE_CODES,
   getMaxUnitLength,
   DEFAULT_FLOOR_PADDING,
-  addHours
+  addHours,
+  DEFAULT_SELF_DESTRUCT_HOURS
 } from "./util";
 import TableHeader from "./table";
 
@@ -196,6 +197,13 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
     toggleModal(true);
   };
 
+  const setTimedLink = (addressLinkId: String) => {
+    set(
+      ref(database, `links/${addressLinkId}`),
+      addHours(DEFAULT_SELF_DESTRUCT_HOURS)
+    );
+  };
+
   const handleClickFeedback = (
     _: MouseEvent<HTMLElement>,
     postalcode: String,
@@ -317,10 +325,7 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                           title: `Units for ${addressElement.name}`
                         }}
                         onClick={() => {
-                          set(
-                            ref(database, `links/${addressLinkId}`),
-                            addHours(6)
-                          );
+                          setTimedLink(addressLinkId);
                         }}
                       >
                         <Button
@@ -338,8 +343,9 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                         variant="outline-primary"
                         className="me-2"
                         onClick={(e) => {
+                          setTimedLink(addressLinkId);
                           window.open(
-                            `${window.location.origin}/${addressElement.postalcode}`,
+                            `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
                             "_blank"
                           );
                         }}
