@@ -131,12 +131,14 @@ function Home({ postalcode, name }: homeProps) {
 
   useEffect(() => {
     document.title = `${name}`;
-    get(linkReference).then((snapshot) => {
+    onValue(linkReference, (snapshot) => {
       if (snapshot.exists()) {
         const currentTimestamp = new Date().getTime();
         if (currentTimestamp < snapshot.val()) {
           setIsLinkExpired(false);
         }
+      } else {
+        setIsLinkExpired(true);
       }
       setIsLoading(false);
     });
