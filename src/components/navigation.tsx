@@ -10,6 +10,7 @@ import MaintenanceMode from "./maintenance";
 import Login from "./login";
 import FrontPage from "./frontpage";
 import "bootstrap/dist/css/bootstrap.min.css";
+import InvalidPage from "./invalidpage";
 
 interface RouteDetails {
   postalCode: String;
@@ -69,6 +70,7 @@ function Navigation() {
   return (
     <Container className="pt-2" fluid>
       <Routes>
+        <Route path="*" element={<InvalidPage />} />
         <Route path="/" element={<FrontPage />} />
         {congregations.map((item, index) => (
           <Route
@@ -101,14 +103,8 @@ function Navigation() {
         {territories.map((item, index) => (
           <Route
             key={index}
-            path={`/${item.postalCode}`}
-            element={
-              user ? (
-                <Home postalcode={item.postalCode} name={item.name} />
-              ) : (
-                <Login loginType={"Publisher"} />
-              )
-            }
+            path={`/${item.postalCode}/:id`}
+            element={<Home postalcode={item.postalCode} name={item.name} />}
           />
         ))}
         ;

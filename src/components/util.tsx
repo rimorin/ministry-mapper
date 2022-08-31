@@ -39,6 +39,7 @@ const LOGIN_TYPE_CODES = {
 };
 
 const DEFAULT_FLOOR_PADDING = 2;
+const DEFAULT_SELF_DESTRUCT_HOURS = 4;
 
 const ModalUnitTitle = ({ unit, floor, postal }: TitleProps) => {
   let titleString = `# ${floor} - ${unit}`;
@@ -80,6 +81,11 @@ const getMaxUnitLength = (floors: floorDetails[]) => {
   return maxUnitNumberLength;
 };
 
+const addHours = (numOfHours: number, date = new Date()) => {
+  date.setTime(date.getTime() + numOfHours * 60 * 60 * 1000);
+  return date.getTime();
+};
+
 const NavBarBranding = ({ naming }: BrandingProps) => {
   return (
     <Navbar.Brand>
@@ -112,7 +118,7 @@ const Legend = ({ showLegend, hideFunction }: LegendProps) => (
           <tr>
             <td className="text-center align-middle">✅</td>
             <td>
-              Spoke to householder, Sent Letter or Tried again after initial
+              Spoke to householder, Wrote Letter or Tried again after initial
               call.
             </td>
           </tr>
@@ -123,8 +129,8 @@ const Legend = ({ showLegend, hideFunction }: LegendProps) => (
           <tr>
             <td className="text-center align-middle">📬</td>
             <td>
-              Householder not around after the initial call. Try again another
-              day or write letter.
+              Householder was not home at the initial call. Try visiting again
+              another day or write letter, whichever comes first.
             </td>
           </tr>
           <tr>
@@ -147,10 +153,12 @@ export {
   ModalUnitTitle,
   assignmentMessage,
   getMaxUnitLength,
+  addHours,
   NavBarBranding,
   Legend,
   STATUS_CODES,
   MUTABLE_CODES,
   LOGIN_TYPE_CODES,
-  DEFAULT_FLOOR_PADDING
+  DEFAULT_FLOOR_PADDING,
+  DEFAULT_SELF_DESTRUCT_HOURS
 };

@@ -1,5 +1,6 @@
 import { child, onValue, ref, set, get } from "firebase/database";
 import { signOut } from "firebase/auth";
+import { nanoid } from "nanoid";
 import {
   MouseEvent,
   ChangeEvent,
@@ -41,7 +42,9 @@ import {
   NavBarBranding,
   LOGIN_TYPE_CODES,
   getMaxUnitLength,
-  DEFAULT_FLOOR_PADDING
+  DEFAULT_FLOOR_PADDING,
+  addHours,
+  DEFAULT_SELF_DESTRUCT_HOURS
 } from "./util";
 import TableHeader from "./table";
 
@@ -194,6 +197,13 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
     toggleModal(true);
   };
 
+  const setTimedLink = (addressLinkId: String) => {
+    set(
+      ref(database, `links/${addressLinkId}`),
+      addHours(DEFAULT_SELF_DESTRUCT_HOURS)
+    );
+  };
+
   const handleClickFeedback = (
     _: MouseEvent<HTMLElement>,
     postalcode: String,
@@ -291,6 +301,7 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
       {addresses &&
         addresses.map((addressElement) => {
           const maxUnitNumberLength = getMaxUnitLength(addressElement.floors);
+          const addressLinkId = nanoid();
           return (
             <div key={`div-${addressElement.postalcode}`}>
               <Navbar
@@ -310,8 +321,11 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                       <RWebShare
                         data={{
                           text: assignmentMessage(addressElement.name),
-                          url: `${window.location.origin}/${addressElement.postalcode}`,
+                          url: `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
                           title: `Units for ${addressElement.name}`
+                        }}
+                        onClick={() => {
+                          setTimedLink(addressLinkId);
                         }}
                       >
                         <Button
@@ -329,8 +343,9 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                         variant="outline-primary"
                         className="me-2"
                         onClick={(e) => {
+                          setTimedLink(addressLinkId);
                           window.open(
-                            `${window.location.origin}/${addressElement.postalcode}`,
+                            `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
                             "_blank"
                           );
                         }}

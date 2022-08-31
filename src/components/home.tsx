@@ -1,5 +1,5 @@
 import { MouseEvent, ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { ref, child, onValue, DataSnapshot, set } from "firebase/database";
+import { ref, child, onValue, DataSnapshot, set, get } from "firebase/database";
 import { database } from "./../firebase";
 import { Button, Container, Form, Modal, Navbar, Table } from "react-bootstrap";
 import Loader from "./loader";
@@ -22,8 +22,11 @@ import {
   ModalFooter,
   NoteField
 } from "./form";
+import { useParams } from "react-router-dom";
+import InvalidPage from "./invalidpage";
 
 function Home({ postalcode, name }: homeProps) {
+  const [isLinkExpired, setIsLinkExpired] = useState<boolean>(true);
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isFeedback, setIsFeedback] = useState<boolean>(false);
@@ -31,6 +34,10 @@ function Home({ postalcode, name }: homeProps) {
   const [values, setValues] = useState<Object>({});
   const postalReference = child(ref(database), `/${postalcode}/units`);
   const postalFeedback = child(ref(database), `/${postalcode}/feedback`);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const { id } = useParams();
+  const linkReference = child(ref(database), `/links/${id}`);
 
   const toggleModal = (isModal: boolean) => {
     if (isModal) {
@@ -124,6 +131,17 @@ function Home({ postalcode, name }: homeProps) {
 
   useEffect(() => {
     document.title = `${name}`;
+    onValue(linkReference, (snapshot) => {
+      if (snapshot.exists()) {
+        const currentTimestamp = new Date().getTime();
+        if (currentTimestamp < snapshot.val()) {
+          setIsLinkExpired(false);
+        }
+      } else {
+        setIsLinkExpired(true);
+      }
+      setIsLoading(false);
+    });
     onValue(postalReference, (snapshot) => {
       if (snapshot.exists()) {
         processData(snapshot);
@@ -135,8 +153,11 @@ function Home({ postalcode, name }: homeProps) {
       }
     });
   }, []);
-  if (floors.length === 0) {
+  if (isLoading || floors.length === 0) {
     return <Loader />;
+  }
+  if (isLinkExpired) {
+    return <InvalidPage />;
   }
   let maxUnitNumberLength = getMaxUnitLength(floors);
   return (
