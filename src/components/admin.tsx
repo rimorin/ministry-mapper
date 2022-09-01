@@ -18,6 +18,7 @@ import {
   Modal,
   Navbar,
   NavDropdown,
+  ProgressBar,
   Table
 } from "react-bootstrap";
 import { RWebShare } from "react-web-share";
@@ -44,7 +45,8 @@ import {
   getMaxUnitLength,
   DEFAULT_FLOOR_PADDING,
   addHours,
-  DEFAULT_SELF_DESTRUCT_HOURS
+  DEFAULT_SELF_DESTRUCT_HOURS,
+  getCompletedPercent
 } from "./util";
 import TableHeader from "./table";
 
@@ -301,6 +303,7 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
       {addresses &&
         addresses.map((addressElement) => {
           const maxUnitNumberLength = getMaxUnitLength(addressElement.floors);
+          const completedPercent = getCompletedPercent(addressElement.floors);
           const addressLinkId = nanoid();
           return (
             <div key={`div-${addressElement.postalcode}`}>
@@ -442,6 +445,11 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                   </Navbar.Collapse>
                 </Container>
               </Navbar>
+              <ProgressBar
+                style={{ borderRadius: 0 }}
+                now={completedPercent.completedValue}
+                label={completedPercent.completedDisplay}
+              />
               <Table
                 key={`table-${addressElement.postalcode}`}
                 bordered
