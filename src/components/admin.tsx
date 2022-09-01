@@ -446,6 +446,7 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                 </Container>
               </Navbar>
               <ProgressBar
+                style={{ borderRadius: 0 }}
                 now={completedPercent.completedValue}
                 label={completedPercent.completedDisplay}
               />
