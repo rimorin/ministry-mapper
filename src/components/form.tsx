@@ -6,7 +6,7 @@ import {
   Modal
 } from "react-bootstrap";
 import { FooterProps, FormProps } from "./interface";
-import { STATUS_CODES } from "./util";
+import { HOUSEHOLD_TYPES, STATUS_CODES } from "./util";
 
 const ModalFooter = ({ handleClick }: FooterProps) => {
   return (
@@ -23,15 +23,15 @@ const ModalFooter = ({ handleClick }: FooterProps) => {
 
 const HHType = () => (
   <>
-    <option value="cn">Chinese</option>
-    <option value="ml">Muslim</option>
-    <option value="tm">Tamil</option>
-    <option value="id">Indonesian</option>
-    <option value="bm">Burmese</option>
-    <option value="sl">Sign Language</option>
-    <option value="th">Thai</option>
-    <option value="vn">Vietnamese</option>
-    <option value="ot">Others</option>
+    <option value={HOUSEHOLD_TYPES.CHINESE}>Chinese</option>
+    <option value={HOUSEHOLD_TYPES.MUSLIM}>Muslim</option>
+    <option value={HOUSEHOLD_TYPES.TAMIL}>Tamil</option>
+    <option value={HOUSEHOLD_TYPES.INDONESIAN}>Indonesian</option>
+    <option value={HOUSEHOLD_TYPES.BURMESE}>Burmese</option>
+    <option value={HOUSEHOLD_TYPES.SIGN_LANGUAGE}>Sign Language</option>
+    <option value={HOUSEHOLD_TYPES.THAI}>Thai</option>
+    <option value={HOUSEHOLD_TYPES.VIETNAMESE}>Vietnamese</option>
+    <option value={HOUSEHOLD_TYPES.OTHER}>Others</option>
   </>
 );
 
