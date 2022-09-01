@@ -27,6 +27,18 @@ const STATUS_CODES = {
   INVALID: "5"
 };
 
+const HOUSEHOLD_TYPES = {
+  CHINESE: "cn",
+  MUSLIM: "ml",
+  TAMIL: "tm",
+  INDONESIAN: "id",
+  BURMESE: "bm",
+  SIGN_LANGUAGE: "sl",
+  THAI: "th",
+  VIETNAMESE: "vn",
+  OTHER: "ot"
+};
+
 const MUTABLE_CODES = [
   STATUS_CODES.DONE,
   STATUS_CODES.NOT_HOME,
@@ -40,6 +52,12 @@ const LOGIN_TYPE_CODES = {
 
 const DEFAULT_FLOOR_PADDING = 2;
 const DEFAULT_SELF_DESTRUCT_HOURS = 4;
+const MIN_PERCENTAGE_DISPLAY = 10;
+
+const IGNORE_HOUSEHOLD_STATUS = [
+  STATUS_CODES.DO_NOT_CALL,
+  STATUS_CODES.INVALID
+];
 
 const ModalUnitTitle = ({ unit, floor, postal }: TitleProps) => {
   let titleString = `# ${floor} - ${unit}`;
@@ -79,6 +97,30 @@ const getMaxUnitLength = (floors: floorDetails[]) => {
     }
   });
   return maxUnitNumberLength;
+};
+
+const getCompletedPercent = (floors: floorDetails[]) => {
+  let totalUnits = 0;
+  let completedUnits = 0;
+
+  floors.forEach((element) => {
+    element.units.forEach((uElement) => {
+      const unitStatus = uElement.status;
+      const unitType = uElement.type;
+      const isCountable =
+        !IGNORE_HOUSEHOLD_STATUS.includes(unitStatus.toString()) &&
+        unitType !== HOUSEHOLD_TYPES.MUSLIM;
+
+      if (isCountable) totalUnits++;
+      if (unitStatus === STATUS_CODES.DONE) {
+        completedUnits++;
+      }
+    });
+  });
+  const completedValue = Math.round((completedUnits / totalUnits) * 100);
+  const completedDisplay =
+    completedValue > MIN_PERCENTAGE_DISPLAY ? `${completedValue}%` : "";
+  return { completedValue, completedDisplay };
 };
 
 const addHours = (numOfHours: number, date = new Date()) => {
@@ -153,6 +195,7 @@ export {
   ModalUnitTitle,
   assignmentMessage,
   getMaxUnitLength,
+  getCompletedPercent,
   addHours,
   NavBarBranding,
   Legend,
@@ -160,5 +203,6 @@ export {
   MUTABLE_CODES,
   LOGIN_TYPE_CODES,
   DEFAULT_FLOOR_PADDING,
-  DEFAULT_SELF_DESTRUCT_HOURS
+  DEFAULT_SELF_DESTRUCT_HOURS,
+  HOUSEHOLD_TYPES
 };
