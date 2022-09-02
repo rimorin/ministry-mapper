@@ -227,6 +227,24 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
     setValues({ ...values, [name]: value });
   };
 
+  const shareTimedLink = (
+    linkId: String,
+    title: string,
+    body: string,
+    url: string
+  ) => {
+    if (navigator.share) {
+      setTimedLink(linkId);
+      navigator.share({
+        title: title,
+        text: body,
+        url: url
+      });
+    } else {
+      alert("Browser doesn't support this feature.");
+    }
+  };
+
   useEffect(() => {
     get(congregationReference).then((snapshot) => {
       if (snapshot.exists()) {
@@ -326,22 +344,12 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                         variant="outline-primary"
                         className="me-2"
                         onClick={() => {
-                          if (navigator.share) {
-                            setTimedLink(addressLinkId);
-                            navigator
-                              .share({
-                                title: `Units for ${addressElement.name}`,
-                                text: assignmentMessage(addressElement.name),
-                                url: `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`
-                              })
-                              .then(() => {
-                                console.log("Thanks for sharing!");
-                              })
-                              .catch(console.error);
-                          } else {
-                            // fallback
-                            alert("Browser doesn't support sharing");
-                          }
+                          shareTimedLink(
+                            addressLinkId,
+                            `Units for ${addressElement.name}`,
+                            assignmentMessage(addressElement.name),
+                            `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`
+                          );
                         }}
                       >
                         Assign
