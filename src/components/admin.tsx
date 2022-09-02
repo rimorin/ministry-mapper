@@ -321,25 +321,31 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                     className="justify-content-end mt-2"
                   >
                     {isConductor && (
-                      <RWebShare
-                        key={`webshare-${addressLinkId}`}
-                        data={{
-                          text: assignmentMessage(addressElement.name),
-                          url: `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
-                          title: `Units for ${addressElement.name}`
-                        }}
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        className="me-2"
                         onClick={() => {
-                          setTimedLink(addressLinkId);
+                          if (navigator.share) {
+                            setTimedLink(addressLinkId);
+                            navigator
+                              .share({
+                                title: `Units for ${addressElement.name}`,
+                                text: assignmentMessage(addressElement.name),
+                                url: `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`
+                              })
+                              .then(() => {
+                                console.log("Thanks for sharing!");
+                              })
+                              .catch(console.error);
+                          } else {
+                            // fallback
+                            alert("Browser doesn't support sharing");
+                          }
                         }}
                       >
-                        <Button
-                          size="sm"
-                          variant="outline-primary"
-                          className="me-2"
-                        >
-                          Assign
-                        </Button>
-                      </RWebShare>
+                        Assign
+                      </Button>
                     )}
                     {isConductor && (
                       <Button
