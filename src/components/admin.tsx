@@ -200,6 +200,7 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
   };
 
   const setTimedLink = (addressLinkId: String) => {
+    console.log("timed link locked");
     set(
       ref(database, `links/${addressLinkId}`),
       addHours(DEFAULT_SELF_DESTRUCT_HOURS)
@@ -321,25 +322,28 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                     className="justify-content-end mt-2"
                   >
                     {isConductor && (
-                      <RWebShare
-                        key={`webshare-${addressLinkId}`}
-                        data={{
-                          text: assignmentMessage(addressElement.name),
-                          url: `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
-                          title: `Units for ${addressElement.name}`
-                        }}
-                        onClick={() => {
-                          setTimedLink(addressLinkId);
-                        }}
+                      <div
+                        style={{ display: "inline-block" }}
+                        onClick={() => setTimedLink(addressLinkId)}
                       >
-                        <Button
-                          size="sm"
-                          variant="outline-primary"
-                          className="me-2"
+                        <RWebShare
+                          key={`webshare-${addressLinkId}`}
+                          data={{
+                            text: assignmentMessage(addressElement.name),
+                            url: `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
+                            title: `Units for ${addressElement.name}`
+                          }}
+                          onClick={() => console.log("done share")}
                         >
-                          Assign
-                        </Button>
-                      </RWebShare>
+                          <Button
+                            size="sm"
+                            variant="outline-primary"
+                            className="me-2"
+                          >
+                            Assign
+                          </Button>
+                        </RWebShare>
+                      </div>
                     )}
                     {isConductor && (
                       <Button
