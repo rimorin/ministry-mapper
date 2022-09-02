@@ -199,11 +199,11 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
     toggleModal(true);
   };
 
-  const setTimedLink = (addressLinkId: String) => {
-    set(
-      ref(database, `links/${addressLinkId}`),
-      addHours(DEFAULT_SELF_DESTRUCT_HOURS)
-    );
+  const setTimedLink = (
+    addressLinkId: String,
+    hours = DEFAULT_SELF_DESTRUCT_HOURS
+  ) => {
+    set(ref(database, `links/${addressLinkId}`), addHours(hours));
   };
 
   const handleClickFeedback = (
@@ -231,10 +231,11 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
     linkId: String,
     title: string,
     body: string,
-    url: string
+    url: string,
+    hours = DEFAULT_SELF_DESTRUCT_HOURS
   ) => {
     if (navigator.share) {
-      setTimedLink(linkId);
+      setTimedLink(linkId, hours);
       navigator.share({
         title: title,
         text: body,
