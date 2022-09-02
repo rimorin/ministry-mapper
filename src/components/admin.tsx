@@ -21,7 +21,6 @@ import {
   ProgressBar,
   Table
 } from "react-bootstrap";
-import { RWebShare } from "react-web-share";
 import { database } from "./../firebase";
 import Loader from "./loader";
 import UnitStatus from "./unit";
