@@ -322,6 +322,7 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                   >
                     {isConductor && (
                       <RWebShare
+                        key={`webshare-${addressLinkId}`}
                         data={{
                           text: assignmentMessage(addressElement.name),
                           url: `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
