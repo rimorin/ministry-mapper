@@ -21,7 +21,6 @@ import {
   ProgressBar,
   Table
 } from "react-bootstrap";
-import { RWebShare } from "react-web-share";
 import { database } from "./../firebase";
 import Loader from "./loader";
 import UnitStatus from "./unit";
@@ -199,11 +198,11 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
     toggleModal(true);
   };
 
-  const setTimedLink = (addressLinkId: String) => {
-    set(
-      ref(database, `links/${addressLinkId}`),
-      addHours(DEFAULT_SELF_DESTRUCT_HOURS)
-    );
+  const setTimedLink = (
+    addressLinkId: String,
+    hours = DEFAULT_SELF_DESTRUCT_HOURS
+  ) => {
+    set(ref(database, `links/${addressLinkId}`), addHours(hours));
   };
 
   const handleClickFeedback = (
@@ -225,6 +224,25 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
   const onFormChange = (e: ChangeEvent<HTMLElement>) => {
     const { name, value } = e.target as HTMLInputElement;
     setValues({ ...values, [name]: value });
+  };
+
+  const shareTimedLink = (
+    linkId: String,
+    title: string,
+    body: string,
+    url: string,
+    hours = DEFAULT_SELF_DESTRUCT_HOURS
+  ) => {
+    if (navigator.share) {
+      setTimedLink(linkId, hours);
+      navigator.share({
+        title: title,
+        text: body,
+        url: url
+      });
+    } else {
+      alert("Browser doesn't support this feature.");
+    }
   };
 
   useEffect(() => {
@@ -321,25 +339,21 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                     className="justify-content-end mt-2"
                   >
                     {isConductor && (
-                      <RWebShare
-                        key={`webshare-${addressLinkId}`}
-                        data={{
-                          text: assignmentMessage(addressElement.name),
-                          url: `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
-                          title: `Units for ${addressElement.name}`
-                        }}
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        className="me-2"
                         onClick={() => {
-                          setTimedLink(addressLinkId);
+                          shareTimedLink(
+                            addressLinkId,
+                            `Units for ${addressElement.name}`,
+                            assignmentMessage(addressElement.name),
+                            `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`
+                          );
                         }}
                       >
-                        <Button
-                          size="sm"
-                          variant="outline-primary"
-                          className="me-2"
-                        >
-                          Assign
-                        </Button>
-                      </RWebShare>
+                        Assign
+                      </Button>
                     )}
                     {isConductor && (
                       <Button
