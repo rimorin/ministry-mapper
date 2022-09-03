@@ -337,7 +337,10 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                 <Container fluid>
                   <Navbar.Brand>{addressElement.name}</Navbar.Brand>
                   <Navbar.Toggle aria-controls="navbarScroll" />
-                  <Navbar.Collapse id="navbarScroll" className="mt-2">
+                  <Navbar.Collapse
+                    id="navbarScroll"
+                    className="justify-content-end mt-2"
+                  >
                     {isConductor && (
                       <DropdownButton
                         key={`assigndrop-${addressElement.postalcode}`}
