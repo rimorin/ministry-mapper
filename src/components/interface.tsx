@@ -81,3 +81,12 @@ export interface LegendProps {
 export interface LoginProps {
   loginType: String;
 }
+
+export interface unitMaps {
+  [key: string]: Object;
+}
+
+export interface RouteDetails {
+  postalCode: String;
+  name: String;
+}
