@@ -21,6 +21,7 @@ import {
   Navbar,
   NavDropdown,
   ProgressBar,
+  Spinner,
   Table
 } from "react-bootstrap";
 import { database } from "./../firebase";
@@ -73,7 +74,9 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
     ref(database),
     `congregations/${congregationCode}`
   );
-
+  const [isSettingAssignLink, setIsSettingAssignLink] =
+    useState<boolean>(false);
+  const [isSettingViewLink, setIsSettingViewLink] = useState<boolean>(false);
   const processData = (data: any) => {
     let dataList = [];
     for (const floor in data) {
@@ -237,7 +240,9 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
     hours = DEFAULT_SELF_DESTRUCT_HOURS
   ) => {
     if (navigator.share) {
+      setIsSettingAssignLink(true);
       setTimedLink(linkId, hours).then(() => {
+        setIsSettingAssignLink(false);
         navigator.share({
           title: title,
           text: body,
@@ -360,6 +365,16 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                             );
                           }}
                         >
+                          {isSettingAssignLink && (
+                            <>
+                              <Spinner
+                                as="span"
+                                animation="border"
+                                size="sm"
+                                aria-hidden="true"
+                              />{" "}
+                            </>
+                          )}
                           House-To-House
                         </Dropdown.Item>
                         <Dropdown.Item
@@ -373,6 +388,16 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                             );
                           }}
                         >
+                          {isSettingAssignLink && (
+                            <>
+                              <Spinner
+                                as="span"
+                                animation="border"
+                                size="sm"
+                                aria-hidden="true"
+                              />{" "}
+                            </>
+                          )}
                           Personal
                         </Dropdown.Item>
                       </DropdownButton>
@@ -391,6 +416,16 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                           );
                         }}
                       >
+                        {isSettingAssignLink && (
+                          <>
+                            <Spinner
+                              as="span"
+                              animation="border"
+                              size="sm"
+                              aria-hidden="true"
+                            />{" "}
+                          </>
+                        )}
                         Assign
                       </Button>
                     )}
@@ -399,15 +434,25 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                         size="sm"
                         variant="outline-primary"
                         className="me-2"
-                        onClick={(e) => {
+                        onClick={() => {
+                          setIsSettingViewLink(true);
+                          const territoryWindow = window.open("", "_blank");
                           setTimedLink(addressLinkId).then(() => {
-                            window.open(
-                              `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
-                              "_blank"
-                            );
+                            setIsSettingViewLink(false);
+                            territoryWindow!.location.href = `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`;
                           });
                         }}
                       >
+                        {isSettingViewLink && (
+                          <>
+                            <Spinner
+                              as="span"
+                              animation="border"
+                              size="sm"
+                              aria-hidden="true"
+                            />{" "}
+                          </>
+                        )}
                         View
                       </Button>
                     )}
