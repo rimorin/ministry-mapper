@@ -1,4 +1,4 @@
-import { child, onValue, ref, set, get } from "firebase/database";
+import { child, onValue, ref, set, get, update } from "firebase/database";
 import { signOut } from "firebase/auth";
 import { nanoid } from "nanoid";
 import {
@@ -31,7 +31,8 @@ import {
   valuesDetails,
   territoryDetails,
   addressDetails,
-  adminProps
+  adminProps,
+  unitMaps
 } from "./interface";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
@@ -70,13 +71,13 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [values, setValues] = useState<Object>({});
   const [isFeedback, setIsFeedback] = useState<boolean>(false);
+  const [isSettingAssignLink, setIsSettingAssignLink] =
+    useState<boolean>(false);
+  const [isSettingViewLink, setIsSettingViewLink] = useState<boolean>(false);
   const congregationReference = child(
     ref(database),
     `congregations/${congregationCode}`
   );
-  const [isSettingAssignLink, setIsSettingAssignLink] =
-    useState<boolean>(false);
-  const [isSettingViewLink, setIsSettingViewLink] = useState<boolean>(false);
   const processData = (data: any) => {
     let dataList = [];
     for (const floor in data) {
@@ -131,24 +132,27 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
     }
   };
 
-  const resetBlock = (postalcode: String) => {
+  const resetBlock = async (postalcode: String) => {
     const blockAddresses = addresses.find((e) => e.postalcode === postalcode);
     if (!blockAddresses) return;
-
-    for (const floor in blockAddresses.floors) {
-      const floorUnits = blockAddresses.floors[floor];
-      floorUnits.units.forEach((element) => {
+    const unitUpdates: unitMaps = {};
+    for (const index in blockAddresses.floors) {
+      const floorDetails = blockAddresses.floors[index];
+      floorDetails.units.forEach((element) => {
         let currentStatus = element.status;
         if (MUTABLE_CODES.includes(`${currentStatus}`)) {
           currentStatus = STATUS_CODES.DEFAULT;
         }
-        set(ref(database, `/${postalcode}/units/${floor}/${element.number}`), {
+        unitUpdates[
+          `/${postalcode}/units/${floorDetails.floor}/${element.number}`
+        ] = {
           type: element.type,
           note: element.note,
           status: currentStatus
-        });
+        };
       });
     }
+    await update(ref(database), unitUpdates);
   };
 
   const toggleModal = (isModal: boolean) => {
