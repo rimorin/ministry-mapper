@@ -14,6 +14,8 @@ import {
   Button,
   Card,
   Container,
+  Dropdown,
+  DropdownButton,
   Form,
   Modal,
   Navbar,
@@ -45,7 +47,8 @@ import {
   DEFAULT_FLOOR_PADDING,
   addHours,
   DEFAULT_SELF_DESTRUCT_HOURS,
-  getCompletedPercent
+  getCompletedPercent,
+  DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS
 } from "./util";
 import TableHeader from "./table";
 
@@ -285,7 +288,7 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
               title={territory ? `${territory}` : "Select Territory"}
               onSelect={handleSelect}
               key={`${territory}`}
-              className="m-2"
+              className="m-2 d-inline-block"
               align={{ lg: "end" }}
             >
               {territories &&
@@ -338,12 +341,47 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                     id="navbarScroll"
                     className="justify-content-end mt-2"
                   >
+                    {!isConductor && (
+                      <DropdownButton
+                        key={`assigndrop-${addressElement.postalcode}`}
+                        size="sm"
+                        variant="outline-primary"
+                        title="Assign"
+                        className="me-2 d-inline-block"
+                      >
+                        <Dropdown.Item
+                          onClick={() => {
+                            shareTimedLink(
+                              addressLinkId,
+                              `Units for ${addressElement.name}`,
+                              assignmentMessage(addressElement.name),
+                              `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`
+                            );
+                          }}
+                        >
+                          House-To-House
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() => {
+                            shareTimedLink(
+                              addressLinkId,
+                              `Units for ${addressElement.name}`,
+                              assignmentMessage(addressElement.name),
+                              `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
+                              DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS
+                            );
+                          }}
+                        >
+                          Personal
+                        </Dropdown.Item>
+                      </DropdownButton>
+                    )}
                     {isConductor && (
                       <Button
                         size="sm"
                         variant="outline-primary"
                         className="me-2"
-                        onClick={() => {
+                        onClick={(_) => {
                           shareTimedLink(
                             addressLinkId,
                             `Units for ${addressElement.name}`,
@@ -360,7 +398,7 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                         size="sm"
                         variant="outline-primary"
                         className="me-2"
-                        onClick={(e) => {
+                        onClick={(_) => {
                           setTimedLink(addressLinkId);
                           window.open(
                             `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
