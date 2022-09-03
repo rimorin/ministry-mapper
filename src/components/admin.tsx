@@ -205,7 +205,7 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
     addressLinkId: String,
     hours = DEFAULT_SELF_DESTRUCT_HOURS
   ) => {
-    set(ref(database, `links/${addressLinkId}`), addHours(hours));
+    return set(ref(database, `links/${addressLinkId}`), addHours(hours));
   };
 
   const handleClickFeedback = (
@@ -237,11 +237,12 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
     hours = DEFAULT_SELF_DESTRUCT_HOURS
   ) => {
     if (navigator.share) {
-      setTimedLink(linkId, hours);
-      navigator.share({
-        title: title,
-        text: body,
-        url: url
+      setTimedLink(linkId, hours).then(() => {
+        navigator.share({
+          title: title,
+          text: body,
+          url: url
+        });
       });
     } else {
       alert("Browser doesn't support this feature.");
@@ -398,12 +399,13 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                         size="sm"
                         variant="outline-primary"
                         className="me-2"
-                        onClick={(_) => {
-                          setTimedLink(addressLinkId);
-                          window.open(
-                            `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
-                            "_blank"
-                          );
+                        onClick={(e) => {
+                          setTimedLink(addressLinkId).then(() => {
+                            window.open(
+                              `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
+                              "_blank"
+                            );
+                          });
                         }}
                       >
                         View
