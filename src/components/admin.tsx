@@ -436,12 +436,10 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                         className="me-2"
                         onClick={() => {
                           setIsSettingViewLink(true);
+                          const territoryWindow = window.open("", "_blank");
                           setTimedLink(addressLinkId).then(() => {
                             setIsSettingViewLink(false);
-                            window.open(
-                              `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
-                              "_blank"
-                            );
+                            territoryWindow!.location.href = `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`;
                           });
                         }}
                       >
