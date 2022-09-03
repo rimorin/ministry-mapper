@@ -341,7 +341,7 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                     id="navbarScroll"
                     className="justify-content-end mt-2"
                   >
-                    {isConductor && (
+                    {!isConductor && (
                       <DropdownButton
                         key={`assigndrop-${addressElement.postalcode}`}
                         size="sm"
@@ -381,7 +381,24 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                         size="sm"
                         variant="outline-primary"
                         className="me-2"
-                        onClick={(e) => {
+                        onClick={(_) => {
+                          shareTimedLink(
+                            addressLinkId,
+                            `Units for ${addressElement.name}`,
+                            assignmentMessage(addressElement.name),
+                            `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`
+                          );
+                        }}
+                      >
+                        Assign
+                      </Button>
+                    )}
+                    {isConductor && (
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        className="me-2"
+                        onClick={(_) => {
                           setTimedLink(addressLinkId);
                           window.open(
                             `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
