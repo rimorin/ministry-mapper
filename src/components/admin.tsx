@@ -14,6 +14,8 @@ import {
   Button,
   Card,
   Container,
+  Dropdown,
+  DropdownButton,
   Form,
   Modal,
   Navbar,
@@ -21,7 +23,6 @@ import {
   ProgressBar,
   Table
 } from "react-bootstrap";
-import { RWebShare } from "react-web-share";
 import { database } from "./../firebase";
 import Loader from "./loader";
 import UnitStatus from "./unit";
@@ -46,7 +47,8 @@ import {
   DEFAULT_FLOOR_PADDING,
   addHours,
   DEFAULT_SELF_DESTRUCT_HOURS,
-  getCompletedPercent
+  getCompletedPercent,
+  DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS
 } from "./util";
 import TableHeader from "./table";
 
@@ -199,11 +201,11 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
     toggleModal(true);
   };
 
-  const setTimedLink = (addressLinkId: String) => {
-    set(
-      ref(database, `links/${addressLinkId}`),
-      addHours(DEFAULT_SELF_DESTRUCT_HOURS)
-    );
+  const setTimedLink = (
+    addressLinkId: String,
+    hours = DEFAULT_SELF_DESTRUCT_HOURS
+  ) => {
+    set(ref(database, `links/${addressLinkId}`), addHours(hours));
   };
 
   const handleClickFeedback = (
@@ -225,6 +227,25 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
   const onFormChange = (e: ChangeEvent<HTMLElement>) => {
     const { name, value } = e.target as HTMLInputElement;
     setValues({ ...values, [name]: value });
+  };
+
+  const shareTimedLink = (
+    linkId: String,
+    title: string,
+    body: string,
+    url: string,
+    hours = DEFAULT_SELF_DESTRUCT_HOURS
+  ) => {
+    if (navigator.share) {
+      setTimedLink(linkId, hours);
+      navigator.share({
+        title: title,
+        text: body,
+        url: url
+      });
+    } else {
+      alert("Browser doesn't support this feature.");
+    }
   };
 
   useEffect(() => {
@@ -267,7 +288,7 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
               title={territory ? `${territory}` : "Select Territory"}
               onSelect={handleSelect}
               key={`${territory}`}
-              className="m-2"
+              className="m-2 d-inline-block"
               align={{ lg: "end" }}
             >
               {territories &&
@@ -320,33 +341,64 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
                     id="navbarScroll"
                     className="justify-content-end mt-2"
                   >
-                    {isConductor && (
-                      <RWebShare
-                        key={`webshare-${addressLinkId}`}
-                        data={{
-                          text: assignmentMessage(addressElement.name),
-                          url: `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
-                          title: `Units for ${addressElement.name}`
-                        }}
-                        onClick={() => {
-                          setTimedLink(addressLinkId);
-                        }}
+                    {!isConductor && (
+                      <DropdownButton
+                        key={`assigndrop-${addressElement.postalcode}`}
+                        size="sm"
+                        variant="outline-primary"
+                        title="Assign"
+                        className="me-2 d-inline-block"
                       >
-                        <Button
-                          size="sm"
-                          variant="outline-primary"
-                          className="me-2"
+                        <Dropdown.Item
+                          onClick={() => {
+                            shareTimedLink(
+                              addressLinkId,
+                              `Units for ${addressElement.name}`,
+                              assignmentMessage(addressElement.name),
+                              `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`
+                            );
+                          }}
                         >
-                          Assign
-                        </Button>
-                      </RWebShare>
+                          House-To-House
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() => {
+                            shareTimedLink(
+                              addressLinkId,
+                              `Units for ${addressElement.name}`,
+                              assignmentMessage(addressElement.name),
+                              `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
+                              DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS
+                            );
+                          }}
+                        >
+                          Personal
+                        </Dropdown.Item>
+                      </DropdownButton>
                     )}
                     {isConductor && (
                       <Button
                         size="sm"
                         variant="outline-primary"
                         className="me-2"
-                        onClick={(e) => {
+                        onClick={(_) => {
+                          shareTimedLink(
+                            addressLinkId,
+                            `Units for ${addressElement.name}`,
+                            assignmentMessage(addressElement.name),
+                            `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`
+                          );
+                        }}
+                      >
+                        Assign
+                      </Button>
+                    )}
+                    {isConductor && (
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        className="me-2"
+                        onClick={(_) => {
                           setTimedLink(addressLinkId);
                           window.open(
                             `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
