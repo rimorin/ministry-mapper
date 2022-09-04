@@ -1,4 +1,4 @@
-import { child, onValue, ref, set, get, update } from "firebase/database";
+import { child, onValue, ref, set, get, update, off } from "firebase/database";
 import { signOut } from "firebase/auth";
 import { nanoid } from "nanoid";
 import {
@@ -100,6 +100,12 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
     return dataList;
   };
 
+  const clearExistingListeners = () => {
+    addresses.forEach((existingAddress) => {
+      off(child(ref(database), `/${existingAddress.postalcode}`));
+    });
+  };
+
   const handleSelect = (
     eventKey: string | null,
     _: SyntheticEvent<unknown>
@@ -107,7 +113,8 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
     const territoryDetails = territories.find((e) => e.code === eventKey);
     const territoryAddresses = territoryDetails?.addresses;
     setTerritory(`${territoryDetails?.code} - ${territoryDetails?.name}`);
-    let addressListing = [] as Array<addressDetails>;
+    clearExistingListeners();
+    const addressListing = [] as Array<addressDetails>;
     for (const territory in territoryAddresses) {
       onValue(child(ref(database), `/${territory}`), (snapshot) => {
         if (snapshot.exists()) {
