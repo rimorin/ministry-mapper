@@ -11,11 +11,8 @@ import Login from "./login";
 import FrontPage from "./frontpage";
 import "bootstrap/dist/css/bootstrap.min.css";
 import InvalidPage from "./invalidpage";
+import { RouteDetails } from "./interface";
 
-interface RouteDetails {
-  postalCode: String;
-  name: String;
-}
 function Navigation() {
   const [territories, setTerritories] = useState(Array<RouteDetails>);
   const [congregations, setCongregations] = useState(Array<String>);
