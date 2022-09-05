@@ -1,10 +1,5 @@
 import { User } from "firebase/auth";
 
-export interface homeProps {
-  postalcode?: String;
-  name?: String;
-}
-
 export interface unitDetails {
   number: String;
   note: String;
@@ -36,7 +31,6 @@ export interface valuesDetails {
 }
 
 export interface adminProps {
-  congregationCode: String;
   user?: User;
   isConductor?: boolean;
 }

@@ -24,7 +24,7 @@ import {
   Spinner,
   Table
 } from "react-bootstrap";
-import { database } from "./../firebase";
+import { database, auth } from "./../firebase";
 import Loader from "./loader";
 import UnitStatus from "./unit";
 import {
@@ -53,8 +53,7 @@ import {
   DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS
 } from "./util";
 import TableHeader from "./table";
-
-import { auth } from "../firebase";
+import { useParams } from "react-router-dom";
 import {
   FeedbackField,
   HHStatusField,
@@ -63,7 +62,10 @@ import {
   NoteField
 } from "./form";
 import Welcome from "./welcome";
-function Admin({ congregationCode, isConductor = false }: adminProps) {
+import NotFoundPage from "./notfoundpage";
+import Login from "./login";
+function Admin({ isConductor = false }: adminProps) {
+  const { code } = useParams();
   const [name, setName] = useState<String>();
   const [territories, setTerritories] = useState<Array<territoryDetails>>([]);
   const [territory, setTerritory] = useState<String>();
@@ -74,10 +76,10 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
   const [isSettingAssignLink, setIsSettingAssignLink] =
     useState<boolean>(false);
   const [isSettingViewLink, setIsSettingViewLink] = useState<boolean>(false);
-  const congregationReference = child(
-    ref(database),
-    `congregations/${congregationCode}`
-  );
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isCheckingLogin, setIsCheckingLogin] = useState<boolean>(true);
+  const [loginUser, setLoginUser] = useState<any>(null);
+  const congregationReference = child(ref(database), `congregations/${code}`);
   const processData = (data: any) => {
     let dataList = [];
     for (const floor in data) {
@@ -120,7 +122,7 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
         if (snapshot.exists()) {
           const territoryData = snapshot.val();
           const addressData = {
-            name: territoryAddresses[territory].name,
+            name: territoryData.name,
             postalcode: `${territory}`,
             floors: processData(territoryData.units),
             feedback: territoryData.feedback
@@ -266,6 +268,10 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
   };
 
   useEffect(() => {
+    auth.onAuthStateChanged((user) => {
+      setLoginUser(user);
+      setIsCheckingLogin(false);
+    });
     get(congregationReference).then((snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
@@ -284,11 +290,20 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
         setTerritories(territoryList);
         setName(`${data["name"]}`);
       }
+      setIsLoading(false);
     });
   }, []);
 
-  if (territories.length === 0) {
+  if (isLoading || isCheckingLogin) {
     return <Loader />;
+  }
+
+  if (!loginUser) {
+    return <Login loginType={isConductor ? "Conductor" : "Admin"} />;
+  }
+
+  if (territories.length === 0) {
+    return <NotFoundPage />;
   }
 
   return (
