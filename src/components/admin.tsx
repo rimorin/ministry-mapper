@@ -24,7 +24,7 @@ import {
   Spinner,
   Table
 } from "react-bootstrap";
-import { database } from "./../firebase";
+import { database, auth } from "./../firebase";
 import Loader from "./loader";
 import UnitStatus from "./unit";
 import {
@@ -54,7 +54,6 @@ import {
 } from "./util";
 import TableHeader from "./table";
 import { useParams } from "react-router-dom";
-import { auth } from "../firebase";
 import {
   FeedbackField,
   HHStatusField,
@@ -64,6 +63,7 @@ import {
 } from "./form";
 import Welcome from "./welcome";
 import NotFoundPage from "./notfoundpage";
+import Login from "./login";
 function Admin({ isConductor = false }: adminProps) {
   const { code } = useParams();
   const [name, setName] = useState<String>();
@@ -77,6 +77,8 @@ function Admin({ isConductor = false }: adminProps) {
     useState<boolean>(false);
   const [isSettingViewLink, setIsSettingViewLink] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isCheckingLogin, setIsCheckingLogin] = useState<boolean>(true);
+  const [loginUser, setLoginUser] = useState<any>(null);
   const congregationReference = child(ref(database), `congregations/${code}`);
   const processData = (data: any) => {
     let dataList = [];
@@ -266,6 +268,10 @@ function Admin({ isConductor = false }: adminProps) {
   };
 
   useEffect(() => {
+    auth.onAuthStateChanged((user) => {
+      setLoginUser(user);
+      setIsCheckingLogin(false);
+    });
     get(congregationReference).then((snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
@@ -287,8 +293,13 @@ function Admin({ isConductor = false }: adminProps) {
       setIsLoading(false);
     });
   }, []);
-  if (isLoading) {
+
+  if (isLoading || isCheckingLogin) {
     return <Loader />;
+  }
+
+  if (!loginUser) {
+    return <Login loginType={isConductor ? "Conductor" : "Admin"} />;
   }
 
   if (territories.length === 0) {
