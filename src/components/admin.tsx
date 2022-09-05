@@ -117,7 +117,8 @@ function Admin({ isConductor = false }: adminProps) {
     setTerritory(`${territoryDetails?.code} - ${territoryDetails?.name}`);
     clearExistingListeners();
     const addressListing = [] as Array<addressDetails>;
-    for (const territory in territoryAddresses) {
+    for (const territoryIndex in territoryAddresses) {
+      const territory = territoryAddresses[territoryIndex];
       onValue(child(ref(database), `/${territory}`), (snapshot) => {
         if (snapshot.exists()) {
           const territoryData = snapshot.val();
