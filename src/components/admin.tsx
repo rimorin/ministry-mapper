@@ -53,7 +53,7 @@ import {
   DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS
 } from "./util";
 import TableHeader from "./table";
-
+import { useParams } from "react-router-dom";
 import { auth } from "../firebase";
 import {
   FeedbackField,
@@ -63,7 +63,9 @@ import {
   NoteField
 } from "./form";
 import Welcome from "./welcome";
-function Admin({ congregationCode, isConductor = false }: adminProps) {
+import NotFoundPage from "./notfoundpage";
+function Admin({ isConductor = false }: adminProps) {
+  const { code } = useParams();
   const [name, setName] = useState<String>();
   const [territories, setTerritories] = useState<Array<territoryDetails>>([]);
   const [territory, setTerritory] = useState<String>();
@@ -74,10 +76,8 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
   const [isSettingAssignLink, setIsSettingAssignLink] =
     useState<boolean>(false);
   const [isSettingViewLink, setIsSettingViewLink] = useState<boolean>(false);
-  const congregationReference = child(
-    ref(database),
-    `congregations/${congregationCode}`
-  );
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const congregationReference = child(ref(database), `congregations/${code}`);
   const processData = (data: any) => {
     let dataList = [];
     for (const floor in data) {
@@ -120,7 +120,7 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
         if (snapshot.exists()) {
           const territoryData = snapshot.val();
           const addressData = {
-            name: territoryAddresses[territory].name,
+            name: territoryData.name,
             postalcode: `${territory}`,
             floors: processData(territoryData.units),
             feedback: territoryData.feedback
@@ -284,11 +284,15 @@ function Admin({ congregationCode, isConductor = false }: adminProps) {
         setTerritories(territoryList);
         setName(`${data["name"]}`);
       }
+      setIsLoading(false);
     });
   }, []);
+  if (isLoading) {
+    return <Loader />;
+  }
 
   if (territories.length === 0) {
-    return <Loader />;
+    return <NotFoundPage />;
   }
 
   return (

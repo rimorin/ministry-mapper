@@ -1,9 +1,9 @@
 import { MouseEvent, ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { ref, child, onValue, DataSnapshot, set } from "firebase/database";
+import { ref, child, onValue, set } from "firebase/database";
 import { database } from "./../firebase";
 import { Button, Container, Form, Modal, Navbar, Table } from "react-bootstrap";
 import Loader from "./loader";
-import { floorDetails, homeProps, valuesDetails } from "./interface";
+import { floorDetails, valuesDetails } from "./interface";
 import TableHeader from "./table";
 import UnitStatus from "./unit";
 import {
@@ -24,19 +24,20 @@ import {
 } from "./form";
 import { useParams } from "react-router-dom";
 import InvalidPage from "./invalidpage";
+import NotFoundPage from "./notfoundpage";
 
-function Home({ postalcode, name }: homeProps) {
+function Home() {
+  const { id, postalcode } = useParams();
   const [isLinkExpired, setIsLinkExpired] = useState<boolean>(true);
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isFeedback, setIsFeedback] = useState<boolean>(false);
   const [showLegend, setShowLegend] = useState<boolean>(false);
   const [values, setValues] = useState<Object>({});
-  const postalReference = child(ref(database), `/${postalcode}/units`);
-  const postalFeedback = child(ref(database), `/${postalcode}/feedback`);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  const { id } = useParams();
+  const [isLinkLoading, setIsLinkLoading] = useState<boolean>(true);
+  const [isPostalLoading, setIsPostalLoading] = useState<boolean>(true);
+  const [postalName, setPostalName] = useState<String>();
+  const postalReference = child(ref(database), `/${postalcode}`);
   const linkReference = child(ref(database), `/links/${id}`);
 
   const toggleModal = (isModal: boolean) => {
@@ -47,11 +48,11 @@ function Home({ postalcode, name }: homeProps) {
     }
   };
 
-  const processData = (data: DataSnapshot) => {
+  const processData = (data: any) => {
     let dataList = [];
-    for (const floor in data.val()) {
+    for (const floor in data) {
       let unitsDetails = [];
-      const units = data.val()[floor];
+      const units = data[floor];
       for (const unit in units) {
         unitsDetails.push({
           number: unit,
@@ -130,7 +131,6 @@ function Home({ postalcode, name }: homeProps) {
   };
 
   useEffect(() => {
-    document.title = `${name}`;
     onValue(linkReference, (snapshot) => {
       if (snapshot.exists()) {
         const currentTimestamp = new Date().getTime();
@@ -140,21 +140,27 @@ function Home({ postalcode, name }: homeProps) {
       } else {
         setIsLinkExpired(true);
       }
-      setIsLoading(false);
+      setIsLinkLoading(false);
     });
     onValue(postalReference, (snapshot) => {
       if (snapshot.exists()) {
-        processData(snapshot);
+        const postalData = snapshot.val();
+        const postalName = postalData.name;
+        const postalFeedback = postalData.feedback;
+        const postalUnits = postalData.units;
+        processData(postalUnits);
+        setValues({ ...values, feedback: postalFeedback });
+        setPostalName(postalName);
+        document.title = postalName;
       }
-    });
-    onValue(postalFeedback, (snapshot) => {
-      if (snapshot.exists()) {
-        setValues({ ...values, feedback: snapshot.val() });
-      }
+      setIsPostalLoading(false);
     });
   }, []);
-  if (isLoading || floors.length === 0) {
+  if (isLinkLoading || isPostalLoading) {
     return <Loader />;
+  }
+  if (floors.length === 0) {
+    return <NotFoundPage />;
   }
   if (isLinkExpired) {
     return <InvalidPage />;
@@ -165,7 +171,7 @@ function Home({ postalcode, name }: homeProps) {
       <Legend showLegend={showLegend} hideFunction={toggleLegend} />
       <Navbar bg="light" expand="sm">
         <Container fluid>
-          <NavBarBranding naming={`${name}`} />
+          <NavBarBranding naming={`${postalName}`} />
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse
             id="basic-navbar-nav"
@@ -231,7 +237,7 @@ function Home({ postalcode, name }: homeProps) {
       </Table>
       <Modal show={isFeedback}>
         <Modal.Header>
-          <Modal.Title>{`Feedback on ${name}`}</Modal.Title>
+          <Modal.Title>{`Feedback on ${postalName}`}</Modal.Title>
         </Modal.Header>
         <Form onSubmit={handleSubmitFeedback}>
           <Modal.Body>

@@ -12,6 +12,7 @@ import FrontPage from "./frontpage";
 import "bootstrap/dist/css/bootstrap.min.css";
 import InvalidPage from "./invalidpage";
 import { RouteDetails } from "./interface";
+import NotFoundPage from "./notfoundpage";
 
 function Navigation() {
   const [territories, setTerritories] = useState(Array<RouteDetails>);
@@ -67,44 +68,23 @@ function Navigation() {
   return (
     <Container className="pt-2" fluid>
       <Routes>
-        <Route path="*" element={<InvalidPage />} />
+        <Route path="*" element={<NotFoundPage />} />
         <Route path="/" element={<FrontPage />} />
-        {congregations.map((item, index) => (
-          <Route
-            key={index}
-            path={`admin/${item}`}
-            element={
-              user ? (
-                <Admin user={user} congregationCode={item} />
-              ) : (
-                <Login loginType={"Admin"} />
-              )
-            }
-          />
-        ))}
-        ;
-        {congregations.map((item, index) => (
-          <Route
-            key={index}
-            path={`conductor/${item}`}
-            element={
-              user ? (
-                <Admin user={user} congregationCode={item} isConductor={true} />
-              ) : (
-                <Login loginType={"Conductor"} />
-              )
-            }
-          />
-        ))}
-        ;
-        {territories.map((item, index) => (
-          <Route
-            key={index}
-            path={`/${item.postalCode}/:id`}
-            element={<Home postalcode={item.postalCode} name={item.name} />}
-          />
-        ))}
-        ;
+        <Route
+          path={"admin/:code"}
+          element={user ? <Admin user={user} /> : <Login loginType={"Admin"} />}
+        />
+        <Route
+          path={"conductor/:code"}
+          element={
+            user ? (
+              <Admin user={user} isConductor={true} />
+            ) : (
+              <Login loginType={"Conductor"} />
+            )
+          }
+        />
+        <Route path={"/:postalcode/:id"} element={<Home />} />
       </Routes>
     </Container>
   );
