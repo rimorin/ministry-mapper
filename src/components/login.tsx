@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { Card, Form, Button, Container } from "react-bootstrap";
+import { Card, Form, Button, Container, Spinner } from "react-bootstrap";
 import { auth } from "../firebase";
-import Loader from "./loader";
 import { LoginProps } from "./interface";
+import { FirebaseError } from "firebase/app";
+import { errorMessage } from "./util";
 
 const Login = ({ loginType }: LoginProps) => {
   const [loginEmail, setLoginEmail] = useState("");
@@ -19,10 +20,11 @@ const Login = ({ loginType }: LoginProps) => {
       setIsLogin(true);
       await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
-      alert((err as Error).message);
       setValidated(false);
+      alert(errorMessage((err as FirebaseError).code));
+    } finally {
+      setIsLogin(false);
     }
-    setIsLogin(false);
   };
 
   const handleLoginSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -33,13 +35,9 @@ const Login = ({ loginType }: LoginProps) => {
     if (form.checkValidity() === false) {
       return;
     }
-
     loginInWithEmailAndPassword(loginEmail, loginPassword);
   };
 
-  if (isLogin) {
-    return <Loader />;
-  }
   return (
     <Container
       fluid
@@ -77,6 +75,16 @@ const Login = ({ loginType }: LoginProps) => {
             </Form.Group>
             <Form.Group className="text-center" controlId="formBasicButton">
               <Button variant="outline-primary" className="m-2" type="submit">
+                {isLogin && (
+                  <>
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      aria-hidden="true"
+                    />{" "}
+                  </>
+                )}
                 Login
               </Button>
               <Button

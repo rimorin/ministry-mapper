@@ -1,27 +1,30 @@
 {
   "congregations": {
     "<congregation-code>": {
-      "name": "<congregation-name>",
+      "name": "Name of congregation",
       "territories": {
         "<territory-code>": {
-          "name": "<territory-name>",
-          "addresses": {
-            "<postalcode>": { "name": "<postal name>" }
-          }
+          "name": "Territory name",
+          "addresses": [
+            "postalcode 1",
+            "postalcode 2"
+          ]
         }
       }
     }
   },
   "<postalcode>": {
-    "feedback": "",
-    "units": {
-      "<floor-number>": {
-        "<unit-number>": {
+    "name" : "Postal address name here",
+    "feedback": "Leave it empty",
+    "units": [
+      null, 
+      {
+        "Individual floor unit number here.": {
           "status": "-1",
           "note": "",
           "type": "cn"
         }
       }
-    }
+    ]    
   }
 }
