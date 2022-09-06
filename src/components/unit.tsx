@@ -1,5 +1,6 @@
+import { Badge } from "react-bootstrap";
 import { unitProps } from "./interface";
-import { STATUS_CODES } from "./util";
+import { HOUSEHOLD_TYPES, STATUS_CODES } from "./util";
 
 const UnitStatus = (props: unitProps) => {
   const otherType = props.type;
@@ -18,10 +19,6 @@ const UnitStatus = (props: unitProps) => {
     status = "🚫 ";
   }
 
-  // if (currentStatus === STATUS_CODES.NOT_HOME) {
-  //   status = "❓ ";
-  // }
-
   if (
     currentStatus === STATUS_CODES.STILL_NOT_HOME ||
     currentStatus === STATUS_CODES.NOT_HOME
@@ -33,11 +30,16 @@ const UnitStatus = (props: unitProps) => {
     status += "🗒️ ";
   }
 
-  if (otherType !== "cn") {
-    status += otherType;
-  }
-
-  return <>{status}</>;
+  return (
+    <>
+      {status}
+      {otherType !== HOUSEHOLD_TYPES.CHINESE && (
+        <Badge bg="secondary" pill>
+          {otherType}
+        </Badge>
+      )}
+    </>
+  );
 };
 
 export default UnitStatus;
