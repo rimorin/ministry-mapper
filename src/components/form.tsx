@@ -10,7 +10,7 @@ import { HOUSEHOLD_TYPES, STATUS_CODES } from "./util";
 
 const ModalFooter = ({ handleClick }: FooterProps) => {
   return (
-    <Modal.Footer>
+    <Modal.Footer className="justify-content-around">
       <Button variant="secondary" onClick={handleClick}>
         Close
       </Button>
