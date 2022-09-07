@@ -4,11 +4,11 @@ import Home from "./../components/home";
 import { ref, child, onValue } from "firebase/database";
 import { Routes, Route } from "react-router-dom";
 import { Container } from "react-bootstrap";
-import Admin from "./admin";
 import MaintenanceMode from "./maintenance";
 import FrontPage from "./frontpage";
 import "bootstrap/dist/css/bootstrap.min.css";
 import NotFoundPage from "./notfoundpage";
+import Dashboard from "./dashboard";
 
 function Navigation() {
   const [isMaintenance, setIsMaintenance] = useState<boolean>(false);
@@ -21,18 +21,16 @@ function Navigation() {
       }
     });
   }, []);
-  if (isMaintenance) {
-    return <MaintenanceMode />;
-  }
+  if (isMaintenance) <MaintenanceMode />;
   return (
     <Container className="pt-2" fluid>
       <Routes>
         <Route path="*" element={<NotFoundPage />} />
         <Route path="/" element={<FrontPage />} />
-        <Route path={"admin/:code"} element={<Admin />} />
+        <Route path={"admin/:code"} element={<Dashboard />} />
         <Route
           path={"conductor/:code"}
-          element={<Admin isConductor={true} />}
+          element={<Dashboard isConductor={true} userType="Conductor" />}
         />
         <Route path={"/:postalcode/:id"} element={<Home />} />
       </Routes>
