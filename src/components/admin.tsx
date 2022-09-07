@@ -356,20 +356,22 @@ function Admin({ isConductor = false }: adminProps) {
                   </NavDropdown.Item>
                 ))}
             </NavDropdown>
-            <Button
-              className="m-2"
-              size="sm"
-              variant="outline-primary"
-              onClick={() => {
-                setValues({
-                  ...values,
-                  link: ""
-                });
-                toggleModal(ADMIN_MODAL_TYPES.LINK);
-              }}
-            >
-              Revoke
-            </Button>
+            {!isConductor && (
+              <Button
+                className="m-2"
+                size="sm"
+                variant="outline-primary"
+                onClick={() => {
+                  setValues({
+                    ...values,
+                    link: ""
+                  });
+                  toggleModal(ADMIN_MODAL_TYPES.LINK);
+                }}
+              >
+                Revoke
+              </Button>
+            )}
             <Button
               className="m-2"
               size="sm"
