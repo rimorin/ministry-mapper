@@ -258,8 +258,8 @@ function Admin({ isConductor = false }: adminProps) {
     event.preventDefault();
     const details = values as valuesDetails;
     const link = details.link || "";
-    const linkId = link.substring(link.lastIndexOf("/") + 1);
     try {
+      const linkId = link.substring(link.lastIndexOf("/") + 1);
       await remove(ref(database, `links/${linkId}`));
       alert(`Revoked territory link token, ${linkId}.`);
     } catch (error) {

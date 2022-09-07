@@ -147,6 +147,7 @@ const AdminLinkField = ({ handleChange, changeValue }: FormProps) => {
         onChange={handleChange}
         placeholder="Paste territory link here"
         aria-label="link"
+        name="link"
         value={changeValue}
       />
     </Form.Group>
