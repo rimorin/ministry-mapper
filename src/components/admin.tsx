@@ -672,45 +672,47 @@ function Admin({ isConductor = false }: adminProps) {
             </div>
           );
         })}
-      <Modal show={isLinkRevoke}>
-        <Modal.Header>
-          <Modal.Title>Revoke territory link</Modal.Title>
-        </Modal.Header>
-        <Form onSubmit={handleRevokeLink}>
-          <Modal.Body>
-            <AdminLinkField
-              handleChange={onFormChange}
-              changeValue={`${(values as valuesDetails).link}`}
-            />
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              variant="secondary"
-              onClick={() => toggleModal(ADMIN_MODAL_TYPES.LINK)}
-            >
-              Close
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => {
-                navigator.clipboard.readText().then(
-                  (cliptext) => {
-                    setValues({ ...values, link: cliptext });
-                  },
-                  (err) => {
-                    alert(err);
-                  }
-                );
-              }}
-            >
-              Paste Link
-            </Button>
-            <Button type="submit" variant="primary">
-              Revoke
-            </Button>
-          </Modal.Footer>
-        </Form>
-      </Modal>
+      {!isConductor && (
+        <Modal show={isLinkRevoke}>
+          <Modal.Header>
+            <Modal.Title>Revoke territory link</Modal.Title>
+          </Modal.Header>
+          <Form onSubmit={handleRevokeLink}>
+            <Modal.Body>
+              <AdminLinkField
+                handleChange={onFormChange}
+                changeValue={`${(values as valuesDetails).link}`}
+              />
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                onClick={() => toggleModal(ADMIN_MODAL_TYPES.LINK)}
+              >
+                Close
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  navigator.clipboard.readText().then(
+                    (cliptext) => {
+                      setValues({ ...values, link: cliptext });
+                    },
+                    (err) => {
+                      alert(err);
+                    }
+                  );
+                }}
+              >
+                Paste Link
+              </Button>
+              <Button type="submit" variant="primary">
+                Revoke
+              </Button>
+            </Modal.Footer>
+          </Form>
+        </Modal>
+      )}
       <Modal show={isFeedback}>
         <Modal.Header>
           <Modal.Title>{`Feedback on ${
