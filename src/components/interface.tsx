@@ -33,6 +33,7 @@ export interface valuesDetails {
 export interface adminProps {
   user?: User;
   isConductor?: boolean;
+  userType?: String;
 }
 
 export interface territoryDetails {
