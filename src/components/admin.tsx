@@ -50,7 +50,8 @@ import {
   addHours,
   DEFAULT_SELF_DESTRUCT_HOURS,
   getCompletedPercent,
-  DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS
+  DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS,
+  FIREBASE_AUTH_UNAUTHORISED_MSG
 } from "./util";
 import TableHeader from "./table";
 import { useParams } from "react-router-dom";
@@ -63,7 +64,7 @@ import {
 } from "./form";
 import Welcome from "./welcome";
 import NotFoundPage from "./notfoundpage";
-import Login from "./login";
+import UnauthorizedPage from "./unauthorisedpage";
 function Admin({ isConductor = false }: adminProps) {
   const { code } = useParams();
   const [name, setName] = useState<String>();
@@ -77,8 +78,7 @@ function Admin({ isConductor = false }: adminProps) {
     useState<boolean>(false);
   const [isSettingViewLink, setIsSettingViewLink] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isCheckingLogin, setIsCheckingLogin] = useState<boolean>(true);
-  const [loginUser, setLoginUser] = useState<any>(null);
+  const [isUnauthorised, setIsUnauthorised] = useState<boolean>(false);
   const congregationReference = child(ref(database), `congregations/${code}`);
   const processData = (data: any) => {
     let dataList = [];
@@ -269,43 +269,37 @@ function Admin({ isConductor = false }: adminProps) {
   };
 
   useEffect(() => {
-    auth.onAuthStateChanged((user) => {
-      setLoginUser(user);
-      setIsCheckingLogin(false);
-    });
-    get(congregationReference).then((snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        document.title = `${data["name"]}`;
-        const congregationTerritories = data["territories"];
-        let territoryList = [];
-        for (const territory in congregationTerritories) {
-          const name = congregationTerritories[territory]["name"];
-          const addresses = congregationTerritories[territory]["addresses"];
-          territoryList.push({
-            code: territory,
-            name: name,
-            addresses: addresses
-          });
+    get(congregationReference)
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          document.title = `${data["name"]}`;
+          const congregationTerritories = data["territories"];
+          let territoryList = [];
+          for (const territory in congregationTerritories) {
+            const name = congregationTerritories[territory]["name"];
+            const addresses = congregationTerritories[territory]["addresses"];
+            territoryList.push({
+              code: territory,
+              name: name,
+              addresses: addresses
+            });
+          }
+          setTerritories(territoryList);
+          setName(`${data["name"]}`);
         }
-        setTerritories(territoryList);
-        setName(`${data["name"]}`);
-      }
-      setIsLoading(false);
-    });
+      })
+      .catch((reason) => {
+        setIsUnauthorised(reason.message === FIREBASE_AUTH_UNAUTHORISED_MSG);
+      })
+      .finally(() => setIsLoading(false));
   }, []);
 
-  if (isLoading || isCheckingLogin) {
-    return <Loader />;
-  }
+  const noSuchTerritory = territories.length === 0;
 
-  if (!loginUser) {
-    return <Login loginType={isConductor ? "Conductor" : "Admin"} />;
-  }
-
-  if (territories.length === 0) {
-    return <NotFoundPage />;
-  }
+  if (isLoading) return <Loader />;
+  if (isUnauthorised) return <UnauthorizedPage />;
+  if (noSuchTerritory) return <NotFoundPage />;
 
   return (
     <>
