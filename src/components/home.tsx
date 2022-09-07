@@ -163,6 +163,7 @@ function Home() {
     return <NotFoundPage />;
   }
   if (isLinkExpired) {
+    document.title = "Ministry Mapper";
     return <InvalidPage />;
   }
   let maxUnitNumberLength = getMaxUnitLength(floors);
