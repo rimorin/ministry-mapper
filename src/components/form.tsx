@@ -140,11 +140,25 @@ const HHStatusField = ({ handleChange, changeValue }: FormProps) => {
   );
 };
 
+const AdminLinkField = ({ handleChange, changeValue }: FormProps) => {
+  return (
+    <Form.Group className="mb-3" controlId="formLinkInput">
+      <Form.Control
+        onChange={handleChange}
+        placeholder="Paste territory link here"
+        aria-label="link"
+        value={changeValue}
+      />
+    </Form.Group>
+  );
+};
+
 export {
   HHType,
   NoteField,
   HHTypeField,
   HHStatusField,
   FeedbackField,
+  AdminLinkField,
   ModalFooter
 };

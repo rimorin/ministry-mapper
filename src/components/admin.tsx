@@ -1,4 +1,13 @@
-import { child, onValue, ref, set, get, update, off } from "firebase/database";
+import {
+  child,
+  onValue,
+  ref,
+  set,
+  get,
+  update,
+  off,
+  remove
+} from "firebase/database";
 import { signOut } from "firebase/auth";
 import { nanoid } from "nanoid";
 import {
@@ -51,11 +60,13 @@ import {
   DEFAULT_SELF_DESTRUCT_HOURS,
   getCompletedPercent,
   DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS,
-  FIREBASE_AUTH_UNAUTHORISED_MSG
+  FIREBASE_AUTH_UNAUTHORISED_MSG,
+  ADMIN_MODAL_TYPES
 } from "./util";
 import TableHeader from "./table";
 import { useParams } from "react-router-dom";
 import {
+  AdminLinkField,
   FeedbackField,
   HHStatusField,
   HHTypeField,
@@ -74,6 +85,7 @@ function Admin({ isConductor = false }: adminProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [values, setValues] = useState<Object>({});
   const [isFeedback, setIsFeedback] = useState<boolean>(false);
+  const [isLinkRevoke, setIsLinkRevoke] = useState<boolean>(false);
   const [isSettingAssignLink, setIsSettingAssignLink] =
     useState<boolean>(false);
   const [isSettingViewLink, setIsSettingViewLink] = useState<boolean>(false);
@@ -165,16 +177,17 @@ function Admin({ isConductor = false }: adminProps) {
     await update(ref(database), unitUpdates);
   };
 
-  const toggleModal = (isModal: boolean) => {
-    if (isModal) {
-      setIsOpen(!isOpen);
-    } else {
-      setIsFeedback(!isFeedback);
+  const toggleModal = (modalType = ADMIN_MODAL_TYPES.UNIT) => {
+    switch (modalType) {
+      case ADMIN_MODAL_TYPES.FEEDBACK:
+        setIsFeedback(!isFeedback);
+        break;
+      case ADMIN_MODAL_TYPES.LINK:
+        setIsLinkRevoke(!isLinkRevoke);
+        break;
+      default:
+        setIsOpen(!isOpen);
     }
-  };
-
-  const handleClick = (_: MouseEvent<HTMLElement>, isModal: boolean) => {
-    toggleModal(isModal);
   };
 
   const handleClickModal = (
@@ -198,7 +211,7 @@ function Admin({ isConductor = false }: adminProps) {
       postal: postal,
       status: status
     });
-    toggleModal(true);
+    toggleModal();
   };
 
   const handleSubmitClick = (event: FormEvent<HTMLElement>) => {
@@ -215,7 +228,7 @@ function Admin({ isConductor = false }: adminProps) {
         status: details.status
       }
     );
-    toggleModal(true);
+    toggleModal();
   };
 
   const setTimedLink = (
@@ -231,14 +244,29 @@ function Admin({ isConductor = false }: adminProps) {
     feedback: String
   ) => {
     setValues({ ...values, feedback: feedback, postal: postalcode });
-    toggleModal(false);
+    toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
   };
 
   const handleSubmitFeedback = (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
     set(ref(database, `/${details.postal}/feedback`), details.feedback);
-    toggleModal(false);
+    toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
+  };
+
+  const handleRevokeLink = async (event: FormEvent<HTMLElement>) => {
+    event.preventDefault();
+    const details = values as valuesDetails;
+    const link = details.link || "";
+    const linkId = link.substring(link.lastIndexOf("/") + 1);
+    try {
+      await remove(ref(database, `links/${linkId}`));
+      alert(`Revoked territory link token, ${linkId}.`);
+    } catch (error) {
+      alert(`Invalid territory link`);
+      return;
+    }
+    toggleModal(ADMIN_MODAL_TYPES.LINK);
   };
 
   const onFormChange = (e: ChangeEvent<HTMLElement>) => {
@@ -328,6 +356,20 @@ function Admin({ isConductor = false }: adminProps) {
                   </NavDropdown.Item>
                 ))}
             </NavDropdown>
+            <Button
+              className="m-2"
+              size="sm"
+              variant="outline-primary"
+              onClick={() => {
+                setValues({
+                  ...values,
+                  link: ""
+                });
+                toggleModal(ADMIN_MODAL_TYPES.LINK);
+              }}
+            >
+              Revoke
+            </Button>
             <Button
               className="m-2"
               size="sm"
@@ -628,6 +670,45 @@ function Admin({ isConductor = false }: adminProps) {
             </div>
           );
         })}
+      <Modal show={isLinkRevoke}>
+        <Modal.Header>
+          <Modal.Title>Revoke territory link</Modal.Title>
+        </Modal.Header>
+        <Form onSubmit={handleRevokeLink}>
+          <Modal.Body>
+            <AdminLinkField
+              handleChange={onFormChange}
+              changeValue={`${(values as valuesDetails).link}`}
+            />
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              variant="secondary"
+              onClick={() => toggleModal(ADMIN_MODAL_TYPES.LINK)}
+            >
+              Close
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => {
+                navigator.clipboard.readText().then(
+                  (cliptext) => {
+                    setValues({ ...values, link: cliptext });
+                  },
+                  (err) => {
+                    alert(err);
+                  }
+                );
+              }}
+            >
+              Paste Link
+            </Button>
+            <Button type="submit" variant="primary">
+              Revoke
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
       <Modal show={isFeedback}>
         <Modal.Header>
           <Modal.Title>{`Feedback on ${
@@ -641,7 +722,9 @@ function Admin({ isConductor = false }: adminProps) {
               changeValue={`${(values as valuesDetails).feedback}`}
             />
           </Modal.Body>
-          <ModalFooter handleClick={(e) => handleClick(e, false)} />
+          <ModalFooter
+            handleClick={() => toggleModal(ADMIN_MODAL_TYPES.FEEDBACK)}
+          />
         </Form>
       </Modal>
       <Modal show={isOpen}>
@@ -667,7 +750,9 @@ function Admin({ isConductor = false }: adminProps) {
               changeValue={`${(values as valuesDetails).note}`}
             />
           </Modal.Body>
-          <ModalFooter handleClick={(e) => handleClick(e, true)} />
+          <ModalFooter
+            handleClick={() => toggleModal(ADMIN_MODAL_TYPES.UNIT)}
+          />
         </Form>
       </Modal>
     </>
