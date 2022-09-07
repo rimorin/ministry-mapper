@@ -28,6 +28,7 @@ export interface valuesDetails {
   postal?: String;
   feedback: String;
   status: String;
+  link?: String;
 }
 
 export interface adminProps {
