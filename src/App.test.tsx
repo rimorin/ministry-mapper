@@ -17,8 +17,10 @@ import {
   FeedbackField,
   HHStatusField,
   HHTypeField,
+  ModalFooter,
   NoteField
 } from "./components/form";
+import UnitStatus from "./components/unit";
 
 test("renders frontpage", () => {
   render(<FrontPage />);
@@ -147,4 +149,60 @@ test("renders form feedback", () => {
   const testFB = "I am testing feedback";
   render(<FeedbackField changeValue={testFB} />);
   expect(screen.getByText(testFB)).toBeInTheDocument();
+});
+
+test("renders note status", () => {
+  const testNote = "I am testing notes";
+  render(
+    <UnitStatus
+      type={HOUSEHOLD_TYPES.CHINESE}
+      note={testNote}
+      status={STATUS_CODES.DEFAULT}
+    />
+  );
+  expect(screen.getByText("🗒️")).toBeInTheDocument();
+});
+
+test("renders not home status", () => {
+  render(
+    <UnitStatus
+      type={HOUSEHOLD_TYPES.CHINESE}
+      note={""}
+      status={STATUS_CODES.NOT_HOME}
+    />
+  );
+  expect(screen.getByText("📬")).toBeInTheDocument();
+});
+
+test("renders done status", () => {
+  render(
+    <UnitStatus
+      type={HOUSEHOLD_TYPES.CHINESE}
+      note={""}
+      status={STATUS_CODES.DONE}
+    />
+  );
+  expect(screen.getByText("✅")).toBeInTheDocument();
+});
+
+test("renders dnc status", () => {
+  render(
+    <UnitStatus
+      type={HOUSEHOLD_TYPES.CHINESE}
+      note={""}
+      status={STATUS_CODES.DO_NOT_CALL}
+    />
+  );
+  expect(screen.getByText("🚫")).toBeInTheDocument();
+});
+
+test("renders invalid status", () => {
+  render(
+    <UnitStatus
+      type={HOUSEHOLD_TYPES.CHINESE}
+      note={""}
+      status={STATUS_CODES.INVALID}
+    />
+  );
+  expect(screen.getByText("✖️")).toBeInTheDocument();
 });
