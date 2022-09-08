@@ -13,7 +13,12 @@ import {
 } from "./components/util";
 import Loader from "./components/loader";
 import Login from "./components/login";
-import { HHStatusField } from "./components/form";
+import {
+  FeedbackField,
+  HHStatusField,
+  HHTypeField,
+  NoteField
+} from "./components/form";
 
 test("renders frontpage", () => {
   render(<FrontPage />);
@@ -115,4 +120,31 @@ test("renders form householder status", () => {
   expect(screen.getByText("DNC")).toBeInTheDocument();
   expect(screen.getByText("Invalid")).toBeInTheDocument();
   expect(screen.getByText("Not Home")).toBeInTheDocument();
+});
+
+test("renders form householder type", () => {
+  render(<HHTypeField changeValue={HOUSEHOLD_TYPES.CHINESE} />);
+  expect(screen.getByText("Household")).toBeInTheDocument();
+  expect(screen.getByText("Chinese")).toBeInTheDocument();
+  expect(screen.getByText("Muslim")).toBeInTheDocument();
+  expect(screen.getByText("Tamil")).toBeInTheDocument();
+  expect(screen.getByText("Indonesian")).toBeInTheDocument();
+  expect(screen.getByText("Burmese")).toBeInTheDocument();
+  expect(screen.getByText("Sign Language")).toBeInTheDocument();
+  expect(screen.getByText("Thai")).toBeInTheDocument();
+  expect(screen.getByText("Vietnamese")).toBeInTheDocument();
+  expect(screen.getByText("Others")).toBeInTheDocument();
+});
+
+test("renders form householder note", () => {
+  const testNotes = "I am testing notes";
+  render(<NoteField changeValue={testNotes} />);
+  expect(screen.getByText("Notes")).toBeInTheDocument();
+  expect(screen.getByText(testNotes)).toBeInTheDocument();
+});
+
+test("renders form feedback", () => {
+  const testFB = "I am testing feedback";
+  render(<FeedbackField changeValue={testFB} />);
+  expect(screen.getByText(testFB)).toBeInTheDocument();
 });
