@@ -227,8 +227,9 @@ function Admin({ isConductor = false }: adminProps) {
         note: details.note,
         status: details.status
       }
-    );
-    toggleModal();
+    )
+      .then(() => toggleModal())
+      .catch((reason) => alert(reason));
   };
 
   const setTimedLink = (
@@ -250,8 +251,9 @@ function Admin({ isConductor = false }: adminProps) {
   const handleSubmitFeedback = (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
-    set(ref(database, `/${details.postal}/feedback`), details.feedback);
-    toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
+    set(ref(database, `/${details.postal}/feedback`), details.feedback)
+      .then(() => toggleModal(ADMIN_MODAL_TYPES.FEEDBACK))
+      .catch((reason) => alert(reason));
   };
 
   const handleRevokeLink = async (event: FormEvent<HTMLElement>) => {
@@ -283,14 +285,16 @@ function Admin({ isConductor = false }: adminProps) {
   ) => {
     if (navigator.share) {
       setIsSettingAssignLink(true);
-      setTimedLink(linkId, hours).then(() => {
-        setIsSettingAssignLink(false);
-        navigator.share({
-          title: title,
-          text: body,
-          url: url
-        });
-      });
+      setTimedLink(linkId, hours)
+        .then(() => {
+          setIsSettingAssignLink(false);
+          navigator.share({
+            title: title,
+            text: body,
+            url: url
+          });
+        })
+        .catch((reason) => alert(reason));
     } else {
       alert("Browser doesn't support this feature.");
     }
@@ -502,10 +506,12 @@ function Admin({ isConductor = false }: adminProps) {
                         onClick={() => {
                           setIsSettingViewLink(true);
                           const territoryWindow = window.open("", "_blank");
-                          setTimedLink(addressLinkId).then(() => {
-                            setIsSettingViewLink(false);
-                            territoryWindow!.location.href = `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`;
-                          });
+                          setTimedLink(addressLinkId)
+                            .then(() => {
+                              setIsSettingViewLink(false);
+                              territoryWindow!.location.href = `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`;
+                            })
+                            .catch((reason) => alert(reason));
                         }}
                       >
                         {isSettingViewLink && (

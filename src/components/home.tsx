@@ -106,8 +106,9 @@ function Home() {
         note: details.note,
         status: details.status
       }
-    );
-    toggleModal(true);
+    )
+      .then(() => toggleModal(true))
+      .catch((reason) => alert(reason));
   };
 
   const handleClickFeedback = (event: MouseEvent<HTMLElement>) => {
@@ -117,8 +118,9 @@ function Home() {
   const handleSubmitFeedback = (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
-    set(ref(database, `/${postalcode}/feedback`), details.feedback);
-    toggleModal(false);
+    set(ref(database, `/${postalcode}/feedback`), details.feedback)
+      .then(() => toggleModal(false))
+      .catch((reason) => alert(reason));
   };
 
   const onFormChange = (e: ChangeEvent<HTMLElement>) => {
