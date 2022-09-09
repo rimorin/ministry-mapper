@@ -37,6 +37,7 @@ function Home() {
   const [isLinkLoading, setIsLinkLoading] = useState<boolean>(true);
   const [isPostalLoading, setIsPostalLoading] = useState<boolean>(true);
   const [postalName, setPostalName] = useState<String>();
+  const [isSaving, setIsSaving] = useState<boolean>(false);
   const postalReference = child(ref(database), `/${postalcode}`);
   const linkReference = child(ref(database), `/links/${id}`);
 
@@ -99,6 +100,7 @@ function Home() {
   const handleSubmitClick = (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
+    setIsSaving(true);
     set(
       ref(database, `/${postalcode}/units/${details.floor}/${details.unit}`),
       {
@@ -106,8 +108,10 @@ function Home() {
         note: details.note,
         status: details.status
       }
-    );
-    toggleModal(true);
+    ).finally(() => {
+      setIsSaving(false);
+      toggleModal(true);
+    });
   };
 
   const handleClickFeedback = (event: MouseEvent<HTMLElement>) => {
@@ -117,8 +121,12 @@ function Home() {
   const handleSubmitFeedback = (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
-    set(ref(database, `/${postalcode}/feedback`), details.feedback);
-    toggleModal(false);
+    set(ref(database, `/${postalcode}/feedback`), details.feedback).finally(
+      () => {
+        setIsSaving(false);
+        toggleModal(true);
+      }
+    );
   };
 
   const onFormChange = (e: ChangeEvent<HTMLElement>) => {
@@ -247,7 +255,10 @@ function Home() {
               changeValue={`${(values as valuesDetails).feedback}`}
             />
           </Modal.Body>
-          <ModalFooter handleClick={(e) => handleClick(e, false)} />
+          <ModalFooter
+            isSaving={isSaving}
+            handleClick={(e) => handleClick(e, false)}
+          />
         </Form>
       </Modal>
       <Modal show={isOpen}>
@@ -272,7 +283,10 @@ function Home() {
               changeValue={`${(values as valuesDetails).note}`}
             />
           </Modal.Body>
-          <ModalFooter handleClick={(e) => handleClick(e, true)} />
+          <ModalFooter
+            isSaving={isSaving}
+            handleClick={(e) => handleClick(e, true)}
+          />
         </Form>
       </Modal>
     </>

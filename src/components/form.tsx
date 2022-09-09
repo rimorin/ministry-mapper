@@ -3,18 +3,29 @@ import {
   ToggleButtonGroup,
   ToggleButton,
   Button,
-  Modal
+  Modal,
+  Spinner
 } from "react-bootstrap";
 import { FooterProps, FormProps } from "./interface";
 import { HOUSEHOLD_TYPES, STATUS_CODES } from "./util";
 
-const ModalFooter = ({ handleClick }: FooterProps) => {
+const ModalFooter = ({ handleClick, isSaving = false }: FooterProps) => {
   return (
     <Modal.Footer className="justify-content-around">
       <Button variant="secondary" onClick={handleClick}>
         Close
       </Button>
       <Button type="submit" variant="primary">
+        {isSaving && (
+          <>
+            <Spinner
+              as="span"
+              animation="border"
+              size="sm"
+              aria-hidden="true"
+            />{" "}
+          </>
+        )}
         Save
       </Button>
     </Modal.Footer>

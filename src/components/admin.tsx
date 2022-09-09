@@ -91,6 +91,7 @@ function Admin({ isConductor = false }: adminProps) {
   const [isSettingViewLink, setIsSettingViewLink] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isUnauthorised, setIsUnauthorised] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
   const congregationReference = child(ref(database), `congregations/${code}`);
   const processData = (data: any) => {
     let dataList = [];
@@ -217,6 +218,7 @@ function Admin({ isConductor = false }: adminProps) {
   const handleSubmitClick = (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
+    setIsSaving(true);
     set(
       ref(
         database,
@@ -227,8 +229,10 @@ function Admin({ isConductor = false }: adminProps) {
         note: details.note,
         status: details.status
       }
-    );
-    toggleModal();
+    ).finally(() => {
+      setIsSaving(false);
+      toggleModal();
+    });
   };
 
   const setTimedLink = (
@@ -250,8 +254,13 @@ function Admin({ isConductor = false }: adminProps) {
   const handleSubmitFeedback = (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
-    set(ref(database, `/${details.postal}/feedback`), details.feedback);
-    toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
+    setIsSaving(true);
+    set(ref(database, `/${details.postal}/feedback`), details.feedback).finally(
+      () => {
+        setIsSaving(false);
+        toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
+      }
+    );
   };
 
   const handleRevokeLink = async (event: FormEvent<HTMLElement>) => {
@@ -727,6 +736,7 @@ function Admin({ isConductor = false }: adminProps) {
             />
           </Modal.Body>
           <ModalFooter
+            isSaving={isSaving}
             handleClick={() => toggleModal(ADMIN_MODAL_TYPES.FEEDBACK)}
           />
         </Form>
@@ -755,6 +765,7 @@ function Admin({ isConductor = false }: adminProps) {
             />
           </Modal.Body>
           <ModalFooter
+            isSaving={isSaving}
             handleClick={() => toggleModal(ADMIN_MODAL_TYPES.UNIT)}
           />
         </Form>
