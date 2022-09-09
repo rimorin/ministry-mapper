@@ -114,13 +114,6 @@ const HHStatusField = ({ handleChange, changeValue }: FormProps) => {
         >
           Not Home
         </ToggleButton>
-        {/* <ToggleButton
-                    id="status-tb-3"
-                    variant="outline-dark"
-                    value={STATUS_CODES.STILL_NOT_HOME}
-                  >
-                    Still Nt 🏠
-                  </ToggleButton> */}
         <ToggleButton
           id="status-tb-4"
           variant="outline-danger"

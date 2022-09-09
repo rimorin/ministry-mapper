@@ -342,7 +342,6 @@ function Admin({ isConductor = false }: adminProps) {
             <NavDropdown
               title={territory ? `${territory}` : "Select Territory"}
               onSelect={handleSelect}
-              key={`${territory}`}
               className="m-2 d-inline-block"
               align={{ lg: "end" }}
             >
