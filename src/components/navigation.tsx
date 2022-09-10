@@ -21,7 +21,7 @@ function Navigation() {
       }
     });
   }, []);
-  if (isMaintenance) <MaintenanceMode />;
+  if (isMaintenance) return <MaintenanceMode />;
   return (
     <Container className="pt-2" fluid>
       <Routes>
