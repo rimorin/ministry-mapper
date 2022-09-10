@@ -17,7 +17,6 @@ function Navigation() {
   useEffect(() => {
     onValue(maintenanceReference, (snapshot) => {
       if (snapshot.exists()) {
-        console.log(snapshot.val());
         setIsMaintenance(snapshot.val());
       }
     });
