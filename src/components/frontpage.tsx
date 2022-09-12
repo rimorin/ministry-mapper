@@ -8,13 +8,6 @@ const FrontPage = () => (
       fluid
       src={`${process.env.PUBLIC_URL}/logo.png`}
     ></Image>
-    <button
-      onClick={() => {
-        throw Error("Testing Sentry IO In Staging");
-      }}
-    >
-      test error
-    </button>
   </Container>
 );
 
