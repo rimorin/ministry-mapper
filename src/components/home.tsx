@@ -39,7 +39,7 @@ function Home() {
   const [isPostalLoading, setIsPostalLoading] = useState<boolean>(true);
   const [postalName, setPostalName] = useState<String>();
   const [isSaving, setIsSaving] = useState<boolean>(false);
-  const [isOnline, setIsOnline] = useState<boolean>(true);
+  const [isOffline, setIsOffline] = useState<boolean>(false);
   const postalNameReference = child(ref(database), `/${postalcode}/name`);
   const postalUnitReference = child(ref(database), `/${postalcode}/units`);
   const postalFeedbaclReference = child(
@@ -105,37 +105,33 @@ function Home() {
     toggleModal(true);
   };
 
-  const handleSubmitClick = (event: FormEvent<HTMLElement>) => {
+  const handleSubmitClick = async (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
     setIsSaving(true);
-    set(
+    await set(
       ref(database, `/${postalcode}/units/${details.floor}/${details.unit}`),
       {
         type: details.type,
         note: details.note,
         status: details.status
       }
-    ).finally(() => {
-      setIsSaving(false);
-      toggleModal(true);
-    });
+    );
+    setIsSaving(false);
+    toggleModal(true);
   };
 
   const handleClickFeedback = (event: MouseEvent<HTMLElement>) => {
     toggleModal(false);
   };
 
-  const handleSubmitFeedback = (event: FormEvent<HTMLElement>) => {
+  const handleSubmitFeedback = async (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
     setIsSaving(true);
-    set(ref(database, `/${postalcode}/feedback`), details.feedback).finally(
-      () => {
-        setIsSaving(false);
-        toggleModal(false);
-      }
-    );
+    await set(ref(database, `/${postalcode}/feedback`), details.feedback);
+    setIsSaving(false);
+    toggleModal(false);
   };
 
   const onFormChange = (e: ChangeEvent<HTMLElement>) => {
@@ -178,7 +174,7 @@ function Home() {
       }
     });
     onValue(connectedRef, (snapshot) => {
-      setIsOnline(snapshot.val() === true);
+      setIsOffline(snapshot.val() === false);
     });
   }, []);
   if (isLinkLoading || isPostalLoading) {
@@ -192,7 +188,7 @@ function Home() {
     return <InvalidPage />;
   }
 
-  if (!isOnline) {
+  if (isOffline) {
     return <ConnectionPage />;
   }
   let maxUnitNumberLength = getMaxUnitLength(floors);
