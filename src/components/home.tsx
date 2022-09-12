@@ -25,6 +25,7 @@ import {
 import { useParams } from "react-router-dom";
 import InvalidPage from "./invalidpage";
 import NotFoundPage from "./notfoundpage";
+import ConnectionPage from "./connectionpage";
 
 function Home() {
   const { id, postalcode } = useParams();
@@ -38,6 +39,7 @@ function Home() {
   const [isPostalLoading, setIsPostalLoading] = useState<boolean>(true);
   const [postalName, setPostalName] = useState<String>();
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isOnline, setIsOnline] = useState<boolean>(true);
   const postalNameReference = child(ref(database), `/${postalcode}/name`);
   const postalUnitReference = child(ref(database), `/${postalcode}/units`);
   const postalFeedbaclReference = child(
@@ -45,6 +47,7 @@ function Home() {
     `/${postalcode}/feedback`
   );
   const linkReference = child(ref(database), `/links/${id}`);
+  const connectedRef = ref(database, ".info/connected");
 
   const toggleModal = (isModal: boolean) => {
     if (isModal) {
@@ -174,6 +177,9 @@ function Home() {
         setValues({ ...values, feedback: snapshot.val() });
       }
     });
+    onValue(connectedRef, (snapshot) => {
+      setIsOnline(snapshot.val() === true);
+    });
   }, []);
   if (isLinkLoading || isPostalLoading) {
     return <Loader />;
@@ -184,6 +190,10 @@ function Home() {
   if (isLinkExpired) {
     document.title = "Ministry Mapper";
     return <InvalidPage />;
+  }
+
+  if (!isOnline) {
+    return <ConnectionPage />;
   }
   let maxUnitNumberLength = getMaxUnitLength(floors);
   return (
