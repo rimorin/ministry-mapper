@@ -9,10 +9,13 @@ import FrontPage from "./frontpage";
 import "bootstrap/dist/css/bootstrap.min.css";
 import NotFoundPage from "./notfoundpage";
 import Dashboard from "./dashboard";
+import ConnectionPage from "./connectionpage";
 
 function Navigation() {
   const [isMaintenance, setIsMaintenance] = useState<boolean>(false);
+  const [isOnline, setIsOnline] = useState<boolean>(true);
   const maintenanceReference = child(ref(database), `/maintenance`);
+  const connectedRef = ref(database, ".info/connected");
 
   useEffect(() => {
     onValue(maintenanceReference, (snapshot) => {
@@ -20,7 +23,11 @@ function Navigation() {
         setIsMaintenance(snapshot.val());
       }
     });
+    onValue(connectedRef, (snapshot) => {
+      setIsOnline(snapshot.val());
+    });
   }, []);
+  if (!isOnline) return <ConnectionPage />;
   if (isMaintenance) return <MaintenanceMode />;
   return (
     <Container className="pt-2" fluid>
