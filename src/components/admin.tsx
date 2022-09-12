@@ -76,6 +76,7 @@ import {
 import Welcome from "./welcome";
 import NotFoundPage from "./notfoundpage";
 import UnauthorizedPage from "./unauthorisedpage";
+import ConnectionPage from "./connectionpage";
 function Admin({ isConductor = false }: adminProps) {
   const { code } = useParams();
   const [name, setName] = useState<String>();
@@ -91,7 +92,10 @@ function Admin({ isConductor = false }: adminProps) {
   const [isSettingViewLink, setIsSettingViewLink] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isUnauthorised, setIsUnauthorised] = useState<boolean>(false);
+  const [isOffline, setIsOffline] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
   const congregationReference = child(ref(database), `congregations/${code}`);
+  const connectedRef = ref(database, ".info/connected");
   const processData = (data: any) => {
     let dataList = [];
     for (const floor in data) {
@@ -214,10 +218,11 @@ function Admin({ isConductor = false }: adminProps) {
     toggleModal();
   };
 
-  const handleSubmitClick = (event: FormEvent<HTMLElement>) => {
+  const handleSubmitClick = async (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
-    set(
+    setIsSaving(true);
+    await set(
       ref(
         database,
         `/${details.postal}/units/${details.floor}/${details.unit}`
@@ -228,6 +233,7 @@ function Admin({ isConductor = false }: adminProps) {
         status: details.status
       }
     );
+    setIsSaving(false);
     toggleModal();
   };
 
@@ -247,10 +253,12 @@ function Admin({ isConductor = false }: adminProps) {
     toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
   };
 
-  const handleSubmitFeedback = (event: FormEvent<HTMLElement>) => {
+  const handleSubmitFeedback = async (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
-    set(ref(database, `/${details.postal}/feedback`), details.feedback);
+    setIsSaving(true);
+    await set(ref(database, `/${details.postal}/feedback`), details.feedback);
+    setIsSaving(false);
     toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
   };
 
@@ -321,6 +329,10 @@ function Admin({ isConductor = false }: adminProps) {
         setIsUnauthorised(reason.message === FIREBASE_AUTH_UNAUTHORISED_MSG);
       })
       .finally(() => setIsLoading(false));
+
+    onValue(connectedRef, (snapshot) => {
+      setIsOffline(snapshot.val() === false);
+    });
   }, []);
 
   const noSuchTerritory = territories.length === 0;
@@ -328,6 +340,7 @@ function Admin({ isConductor = false }: adminProps) {
   if (isLoading) return <Loader />;
   if (isUnauthorised) return <UnauthorizedPage />;
   if (noSuchTerritory) return <NotFoundPage />;
+  if (isOffline) return <ConnectionPage />;
 
   return (
     <>
@@ -727,6 +740,7 @@ function Admin({ isConductor = false }: adminProps) {
           </Modal.Body>
           <ModalFooter
             handleClick={() => toggleModal(ADMIN_MODAL_TYPES.FEEDBACK)}
+            isSaving={isSaving}
           />
         </Form>
       </Modal>
@@ -755,6 +769,7 @@ function Admin({ isConductor = false }: adminProps) {
           </Modal.Body>
           <ModalFooter
             handleClick={() => toggleModal(ADMIN_MODAL_TYPES.UNIT)}
+            isSaving={isSaving}
           />
         </Form>
       </Modal>
