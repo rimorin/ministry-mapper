@@ -176,6 +176,11 @@ function Home() {
     // onValue(connectedRef, (snapshot) => {
     //   setIsOffline(snapshot.val() === false);
     // });
+    document.addEventListener("visibilitychange", function () {
+      if (!document.hidden) {
+        window.location.reload();
+      }
+    });
   }, []);
   if (isLinkLoading || isPostalLoading) {
     return <Loader />;
