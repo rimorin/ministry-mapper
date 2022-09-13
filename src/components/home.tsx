@@ -25,7 +25,6 @@ import {
 import { useParams } from "react-router-dom";
 import InvalidPage from "./invalidpage";
 import NotFoundPage from "./notfoundpage";
-import ConnectionPage from "./connectionpage";
 
 function Home() {
   const { id, postalcode } = useParams();
@@ -39,7 +38,6 @@ function Home() {
   const [isPostalLoading, setIsPostalLoading] = useState<boolean>(true);
   const [postalName, setPostalName] = useState<String>();
   const [isSaving, setIsSaving] = useState<boolean>(false);
-  const [isOffline, setIsOffline] = useState<boolean>(false);
   const postalNameReference = child(ref(database), `/${postalcode}/name`);
   const postalUnitReference = child(ref(database), `/${postalcode}/units`);
   const postalFeedbaclReference = child(
@@ -171,14 +169,6 @@ function Home() {
     onValue(postalFeedbaclReference, (snapshot) => {
       if (snapshot.exists()) {
         setValues({ ...values, feedback: snapshot.val() });
-      }
-    });
-    // onValue(connectedRef, (snapshot) => {
-    //   setIsOffline(snapshot.val() === false);
-    // });
-    document.addEventListener("visibilitychange", function () {
-      if (!document.hidden) {
-        window.location.reload();
       }
     });
   }, []);

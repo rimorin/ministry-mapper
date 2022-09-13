@@ -76,7 +76,6 @@ import {
 import Welcome from "./welcome";
 import NotFoundPage from "./notfoundpage";
 import UnauthorizedPage from "./unauthorisedpage";
-import ConnectionPage from "./connectionpage";
 function Admin({ isConductor = false }: adminProps) {
   const { code } = useParams();
   const [name, setName] = useState<String>();
@@ -92,10 +91,8 @@ function Admin({ isConductor = false }: adminProps) {
   const [isSettingViewLink, setIsSettingViewLink] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isUnauthorised, setIsUnauthorised] = useState<boolean>(false);
-  const [isOffline, setIsOffline] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const congregationReference = child(ref(database), `congregations/${code}`);
-  const connectedRef = ref(database, ".info/connected");
   const processData = (data: any) => {
     let dataList = [];
     for (const floor in data) {
@@ -282,7 +279,7 @@ function Admin({ isConductor = false }: adminProps) {
     setValues({ ...values, [name]: value });
   };
 
-  const shareTimedLink = (
+  const shareTimedLink = async (
     linkId: String,
     title: string,
     body: string,
@@ -291,13 +288,12 @@ function Admin({ isConductor = false }: adminProps) {
   ) => {
     if (navigator.share) {
       setIsSettingAssignLink(true);
-      setTimedLink(linkId, hours).then(() => {
-        setIsSettingAssignLink(false);
-        navigator.share({
-          title: title,
-          text: body,
-          url: url
-        });
+      await setTimedLink(linkId, hours);
+      setIsSettingAssignLink(false);
+      navigator.share({
+        title: title,
+        text: body,
+        url: url
       });
     } else {
       alert("Browser doesn't support this feature.");
@@ -329,10 +325,6 @@ function Admin({ isConductor = false }: adminProps) {
         setIsUnauthorised(reason.message === FIREBASE_AUTH_UNAUTHORISED_MSG);
       })
       .finally(() => setIsLoading(false));
-
-    onValue(connectedRef, (snapshot) => {
-      setIsOffline(snapshot.val() === false);
-    });
   }, []);
 
   const noSuchTerritory = territories.length === 0;
@@ -340,7 +332,6 @@ function Admin({ isConductor = false }: adminProps) {
   if (isLoading) return <Loader />;
   if (isUnauthorised) return <UnauthorizedPage />;
   if (noSuchTerritory) return <NotFoundPage />;
-  if (isOffline) return <ConnectionPage />;
 
   return (
     <>
@@ -511,13 +502,12 @@ function Admin({ isConductor = false }: adminProps) {
                         size="sm"
                         variant="outline-primary"
                         className="me-2"
-                        onClick={() => {
+                        onClick={async () => {
                           setIsSettingViewLink(true);
                           const territoryWindow = window.open("", "_blank");
-                          setTimedLink(addressLinkId).then(() => {
-                            setIsSettingViewLink(false);
-                            territoryWindow!.location.href = `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`;
-                          });
+                          await setTimedLink(addressLinkId);
+                          setIsSettingViewLink(false);
+                          territoryWindow!.location.href = `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`;
                         }}
                       >
                         {isSettingViewLink && (
