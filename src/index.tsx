@@ -10,7 +10,7 @@ const { REACT_APP_SENTRY_LOGGING_DSN } = process.env;
 init({
   dsn: REACT_APP_SENTRY_LOGGING_DSN,
   integrations: [new BrowserTracing()],
-  tracesSampleRate: 0
+  tracesSampleRate: 0.2
 });
 
 const root = createRoot(document.getElementById("root") as HTMLElement);
