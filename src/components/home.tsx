@@ -173,9 +173,9 @@ function Home() {
         setValues({ ...values, feedback: snapshot.val() });
       }
     });
-    onValue(connectedRef, (snapshot) => {
-      setIsOffline(snapshot.val() === false);
-    });
+    // onValue(connectedRef, (snapshot) => {
+    //   setIsOffline(snapshot.val() === false);
+    // });
   }, []);
   if (isLinkLoading || isPostalLoading) {
     return <Loader />;
@@ -188,9 +188,9 @@ function Home() {
     return <InvalidPage />;
   }
 
-  if (isOffline) {
-    return <ConnectionPage />;
-  }
+  // if (isOffline) {
+  //   return <ConnectionPage />;
+  // }
   let maxUnitNumberLength = getMaxUnitLength(floors);
   return (
     <>
