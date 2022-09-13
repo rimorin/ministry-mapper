@@ -172,20 +172,12 @@ function Home() {
       }
     });
   }, []);
-  if (isLinkLoading || isPostalLoading) {
-    return <Loader />;
-  }
-  if (floors.length === 0) {
-    return <NotFoundPage />;
-  }
+  if (isLinkLoading || isPostalLoading) return <Loader />;
+  if (floors.length === 0) return <NotFoundPage />;
   if (isLinkExpired) {
     document.title = "Ministry Mapper";
     return <InvalidPage />;
   }
-
-  // if (isOffline) {
-  //   return <ConnectionPage />;
-  // }
   let maxUnitNumberLength = getMaxUnitLength(floors);
   return (
     <>
