@@ -63,7 +63,6 @@ export interface TitleProps {
 
 export interface BrandingProps {
   naming: String;
-  isOnline?: boolean;
 }
 
 export interface FooterProps {
