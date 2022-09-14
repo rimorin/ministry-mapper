@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { enableLogging, getDatabase } from "firebase/database";
+import { getDatabase } from "firebase/database";
 import { initializeAuth, browserLocalPersistence } from "firebase/auth";
 
 const {
@@ -34,5 +34,4 @@ const auth = initializeAuth(app, {
   persistence: browserLocalPersistence
   // No popupRedirectResolver defined
 });
-enableLogging(true, true);
 export { database, auth };
