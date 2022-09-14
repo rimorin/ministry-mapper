@@ -288,13 +288,19 @@ function Admin({ isConductor = false }: adminProps) {
   ) => {
     if (navigator.share) {
       setIsSettingAssignLink(true);
-      await setTimedLink(linkId, hours);
-      setIsSettingAssignLink(false);
-      navigator.share({
-        title: title,
-        text: body,
-        url: url
-      });
+      try {
+        const result = await setTimedLink(linkId, hours);
+        console.info(result);
+        navigator.share({
+          title: title,
+          text: body,
+          url: url
+        });
+      } catch (error) {
+        alert(`Error: ${error}. Please try again.`);
+      } finally {
+        setIsSettingAssignLink(false);
+      }
     } else {
       alert("Browser doesn't support this feature.");
     }
@@ -504,10 +510,15 @@ function Admin({ isConductor = false }: adminProps) {
                         className="me-2"
                         onClick={async () => {
                           setIsSettingViewLink(true);
-                          const territoryWindow = window.open("", "_blank");
-                          await setTimedLink(addressLinkId);
-                          setIsSettingViewLink(false);
-                          territoryWindow!.location.href = `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`;
+                          try {
+                            const territoryWindow = window.open("", "_blank");
+                            const result = await setTimedLink(addressLinkId);
+                            territoryWindow!.location.href = `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`;
+                          } catch (error) {
+                            alert(`Error: ${error}. Please try again.`);
+                          } finally {
+                            setIsSettingViewLink(false);
+                          }
                         }}
                       >
                         {isSettingViewLink && (

@@ -45,7 +45,6 @@ function Home() {
     `/${postalcode}/feedback`
   );
   const linkReference = child(ref(database), `/links/${id}`);
-  const connectedRef = ref(database, ".info/connected");
 
   const toggleModal = (isModal: boolean) => {
     if (isModal) {
@@ -107,16 +106,21 @@ function Home() {
     event.preventDefault();
     const details = values as valuesDetails;
     setIsSaving(true);
-    await set(
-      ref(database, `/${postalcode}/units/${details.floor}/${details.unit}`),
-      {
-        type: details.type,
-        note: details.note,
-        status: details.status
-      }
-    );
-    setIsSaving(false);
-    toggleModal(true);
+    try {
+      await set(
+        ref(database, `/${postalcode}/units/${details.floor}/${details.unit}`),
+        {
+          type: details.type,
+          note: details.note,
+          status: details.status
+        }
+      );
+      toggleModal(true);
+    } catch (error) {
+      alert(`Error: ${error}. Please try again.`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleClickFeedback = (event: MouseEvent<HTMLElement>) => {
@@ -127,9 +131,14 @@ function Home() {
     event.preventDefault();
     const details = values as valuesDetails;
     setIsSaving(true);
-    await set(ref(database, `/${postalcode}/feedback`), details.feedback);
-    setIsSaving(false);
-    toggleModal(false);
+    try {
+      await set(ref(database, `/${postalcode}/feedback`), details.feedback);
+      toggleModal(false);
+    } catch (error) {
+      alert(`Error: ${error}. Please try again.`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const onFormChange = (e: ChangeEvent<HTMLElement>) => {

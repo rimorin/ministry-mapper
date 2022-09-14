@@ -211,7 +211,34 @@ const Legend = ({ showLegend, hideFunction }: LegendProps) => (
   </Offcanvas>
 );
 
+const getNetworkConnection = () => {
+  const navigator = window.navigator as any;
+  return (
+    navigator.connection ||
+    navigator.mozConnection ||
+    navigator.webkitConnection ||
+    null
+  );
+};
+
+const getNetworkConnectionInfo = () => {
+  const connection = getNetworkConnection();
+  if (!connection) {
+    return {};
+  }
+  return {
+    rtt: connection.rtt,
+    type: connection.type,
+    saveData: connection.saveData,
+    downLink: connection.downLink,
+    downLinkMax: connection.downLinkMax,
+    effectiveType: connection.effectiveType
+  };
+};
+
 export {
+  getNetworkConnection,
+  getNetworkConnectionInfo,
   compareSortObjects,
   ZeroPad,
   ModalUnitTitle,
