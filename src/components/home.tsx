@@ -13,6 +13,8 @@ import {
   Legend,
   ModalUnitTitle,
   NavBarBranding,
+  RELOAD_CHECK_INTERVAL_MS,
+  RELOAD_INACTIVITY_DURATION,
   ZeroPad
 } from "./util";
 import {
@@ -45,6 +47,19 @@ function Home() {
     `/${postalcode}/feedback`
   );
   const linkReference = child(ref(database), `/links/${id}`);
+  let currentTime = new Date().getTime();
+
+  const setActivityTime = () => {
+    currentTime = new Date().getTime();
+  };
+
+  const refreshPage = () => {
+    if (new Date().getTime() - currentTime >= RELOAD_INACTIVITY_DURATION) {
+      window.location.reload();
+    } else {
+      setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
+    }
+  };
 
   const toggleModal = (isModal: boolean) => {
     if (isModal) {
@@ -180,6 +195,12 @@ function Home() {
         setValues({ ...values, feedback: snapshot.val() });
       }
     });
+
+    document.body.addEventListener("mousemove", setActivityTime);
+    document.body.addEventListener("keypress", setActivityTime);
+    document.body.addEventListener("touchstart", setActivityTime);
+
+    setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
   }, []);
   if (isLinkLoading || isPostalLoading) return <Loader />;
   if (floors.length === 0) return <NotFoundPage />;
