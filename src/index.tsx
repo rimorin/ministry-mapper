@@ -3,6 +3,15 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter } from "react-router-dom";
 import { StrictMode } from "react";
+import { init } from "@sentry/react";
+import { BrowserTracing } from "@sentry/tracing";
+const { REACT_APP_SENTRY_LOGGING_DSN } = process.env;
+
+init({
+  dsn: REACT_APP_SENTRY_LOGGING_DSN,
+  integrations: [new BrowserTracing()],
+  tracesSampleRate: 0.2
+});
 
 const root = createRoot(document.getElementById("root") as HTMLElement);
 root.render(

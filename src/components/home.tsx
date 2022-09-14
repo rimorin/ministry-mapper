@@ -1,5 +1,5 @@
 import { MouseEvent, ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { ref, child, onValue, set } from "firebase/database";
+import { ref, child, onValue, set, get } from "firebase/database";
 import { database } from "./../firebase";
 import { Button, Container, Form, Modal, Navbar, Table } from "react-bootstrap";
 import Loader from "./loader";
@@ -13,6 +13,8 @@ import {
   Legend,
   ModalUnitTitle,
   NavBarBranding,
+  RELOAD_CHECK_INTERVAL_MS,
+  RELOAD_INACTIVITY_DURATION,
   ZeroPad
 } from "./util";
 import {
@@ -37,8 +39,27 @@ function Home() {
   const [isLinkLoading, setIsLinkLoading] = useState<boolean>(true);
   const [isPostalLoading, setIsPostalLoading] = useState<boolean>(true);
   const [postalName, setPostalName] = useState<String>();
-  const postalReference = child(ref(database), `/${postalcode}`);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const postalNameReference = child(ref(database), `/${postalcode}/name`);
+  const postalUnitReference = child(ref(database), `/${postalcode}/units`);
+  const postalFeedbaclReference = child(
+    ref(database),
+    `/${postalcode}/feedback`
+  );
   const linkReference = child(ref(database), `/links/${id}`);
+  let currentTime = new Date().getTime();
+
+  const setActivityTime = () => {
+    currentTime = new Date().getTime();
+  };
+
+  const refreshPage = () => {
+    if (new Date().getTime() - currentTime >= RELOAD_INACTIVITY_DURATION) {
+      window.location.reload();
+    } else {
+      setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
+    }
+  };
 
   const toggleModal = (isModal: boolean) => {
     if (isModal) {
@@ -96,29 +117,43 @@ function Home() {
     toggleModal(true);
   };
 
-  const handleSubmitClick = (event: FormEvent<HTMLElement>) => {
+  const handleSubmitClick = async (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
-    set(
-      ref(database, `/${postalcode}/units/${details.floor}/${details.unit}`),
-      {
-        type: details.type,
-        note: details.note,
-        status: details.status
-      }
-    );
-    toggleModal(true);
+    setIsSaving(true);
+    try {
+      await set(
+        ref(database, `/${postalcode}/units/${details.floor}/${details.unit}`),
+        {
+          type: details.type,
+          note: details.note,
+          status: details.status
+        }
+      );
+      toggleModal(true);
+    } catch (error) {
+      alert(`Error: ${error}. Please try again.`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleClickFeedback = (event: MouseEvent<HTMLElement>) => {
     toggleModal(false);
   };
 
-  const handleSubmitFeedback = (event: FormEvent<HTMLElement>) => {
+  const handleSubmitFeedback = async (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
-    set(ref(database, `/${postalcode}/feedback`), details.feedback);
-    toggleModal(false);
+    setIsSaving(true);
+    try {
+      await set(ref(database, `/${postalcode}/feedback`), details.feedback);
+      toggleModal(false);
+    } catch (error) {
+      alert(`Error: ${error}. Please try again.`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const onFormChange = (e: ChangeEvent<HTMLElement>) => {
@@ -131,6 +166,13 @@ function Home() {
   };
 
   useEffect(() => {
+    get(postalNameReference).then((snapshot) => {
+      if (snapshot.exists()) {
+        const postalData = snapshot.val();
+        setPostalName(postalData);
+        document.title = postalData;
+      }
+    });
     onValue(linkReference, (snapshot) => {
       if (snapshot.exists()) {
         const currentTimestamp = new Date().getTime();
@@ -142,26 +184,26 @@ function Home() {
       }
       setIsLinkLoading(false);
     });
-    onValue(postalReference, (snapshot) => {
+    onValue(postalUnitReference, (snapshot) => {
       if (snapshot.exists()) {
-        const postalData = snapshot.val();
-        const postalName = postalData.name;
-        const postalFeedback = postalData.feedback;
-        const postalUnits = postalData.units;
-        processData(postalUnits);
-        setValues({ ...values, feedback: postalFeedback });
-        setPostalName(postalName);
-        document.title = postalName;
+        processData(snapshot.val());
       }
       setIsPostalLoading(false);
     });
+    onValue(postalFeedbaclReference, (snapshot) => {
+      if (snapshot.exists()) {
+        setValues({ ...values, feedback: snapshot.val() });
+      }
+    });
+
+    document.body.addEventListener("mousemove", setActivityTime);
+    document.body.addEventListener("keypress", setActivityTime);
+    document.body.addEventListener("touchstart", setActivityTime);
+
+    setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
   }, []);
-  if (isLinkLoading || isPostalLoading) {
-    return <Loader />;
-  }
-  if (floors.length === 0) {
-    return <NotFoundPage />;
-  }
+  if (isLinkLoading || isPostalLoading) return <Loader />;
+  if (floors.length === 0) return <NotFoundPage />;
   if (isLinkExpired) {
     document.title = "Ministry Mapper";
     return <InvalidPage />;
@@ -247,7 +289,10 @@ function Home() {
               changeValue={`${(values as valuesDetails).feedback}`}
             />
           </Modal.Body>
-          <ModalFooter handleClick={(e) => handleClick(e, false)} />
+          <ModalFooter
+            handleClick={(e) => handleClick(e, false)}
+            isSaving={isSaving}
+          />
         </Form>
       </Modal>
       <Modal show={isOpen}>
@@ -272,7 +317,10 @@ function Home() {
               changeValue={`${(values as valuesDetails).note}`}
             />
           </Modal.Body>
-          <ModalFooter handleClick={(e) => handleClick(e, true)} />
+          <ModalFooter
+            handleClick={(e) => handleClick(e, true)}
+            isSaving={isSaving}
+          />
         </Form>
       </Modal>
     </>
