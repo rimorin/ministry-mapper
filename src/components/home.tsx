@@ -54,7 +54,6 @@ function Home() {
   };
 
   const refreshPage = () => {
-    if (isLinkExpired) return;
     if (new Date().getTime() - currentTime >= RELOAD_INACTIVITY_DURATION) {
       window.location.reload();
     } else {
