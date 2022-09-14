@@ -91,6 +91,7 @@ function Admin({ isConductor = false }: adminProps) {
   const [isSettingViewLink, setIsSettingViewLink] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isUnauthorised, setIsUnauthorised] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
   const congregationReference = child(ref(database), `congregations/${code}`);
   const processData = (data: any) => {
     let dataList = [];
@@ -214,10 +215,11 @@ function Admin({ isConductor = false }: adminProps) {
     toggleModal();
   };
 
-  const handleSubmitClick = (event: FormEvent<HTMLElement>) => {
+  const handleSubmitClick = async (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
-    set(
+    setIsSaving(true);
+    await set(
       ref(
         database,
         `/${details.postal}/units/${details.floor}/${details.unit}`
@@ -228,6 +230,7 @@ function Admin({ isConductor = false }: adminProps) {
         status: details.status
       }
     );
+    setIsSaving(false);
     toggleModal();
   };
 
@@ -247,10 +250,12 @@ function Admin({ isConductor = false }: adminProps) {
     toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
   };
 
-  const handleSubmitFeedback = (event: FormEvent<HTMLElement>) => {
+  const handleSubmitFeedback = async (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
-    set(ref(database, `/${details.postal}/feedback`), details.feedback);
+    setIsSaving(true);
+    await set(ref(database, `/${details.postal}/feedback`), details.feedback);
+    setIsSaving(false);
     toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
   };
 
@@ -274,7 +279,7 @@ function Admin({ isConductor = false }: adminProps) {
     setValues({ ...values, [name]: value });
   };
 
-  const shareTimedLink = (
+  const shareTimedLink = async (
     linkId: String,
     title: string,
     body: string,
@@ -283,14 +288,19 @@ function Admin({ isConductor = false }: adminProps) {
   ) => {
     if (navigator.share) {
       setIsSettingAssignLink(true);
-      setTimedLink(linkId, hours).then(() => {
-        setIsSettingAssignLink(false);
+      try {
+        const result = await setTimedLink(linkId, hours);
+        console.info(result);
         navigator.share({
           title: title,
           text: body,
           url: url
         });
-      });
+      } catch (error) {
+        alert(`Error: ${error}. Please try again.`);
+      } finally {
+        setIsSettingAssignLink(false);
+      }
     } else {
       alert("Browser doesn't support this feature.");
     }
@@ -498,13 +508,17 @@ function Admin({ isConductor = false }: adminProps) {
                         size="sm"
                         variant="outline-primary"
                         className="me-2"
-                        onClick={() => {
+                        onClick={async () => {
                           setIsSettingViewLink(true);
-                          const territoryWindow = window.open("", "_blank");
-                          setTimedLink(addressLinkId).then(() => {
-                            setIsSettingViewLink(false);
+                          try {
+                            const territoryWindow = window.open("", "_blank");
+                            const result = await setTimedLink(addressLinkId);
                             territoryWindow!.location.href = `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`;
-                          });
+                          } catch (error) {
+                            alert(`Error: ${error}. Please try again.`);
+                          } finally {
+                            setIsSettingViewLink(false);
+                          }
                         }}
                       >
                         {isSettingViewLink && (
@@ -727,6 +741,7 @@ function Admin({ isConductor = false }: adminProps) {
           </Modal.Body>
           <ModalFooter
             handleClick={() => toggleModal(ADMIN_MODAL_TYPES.FEEDBACK)}
+            isSaving={isSaving}
           />
         </Form>
       </Modal>
@@ -755,6 +770,7 @@ function Admin({ isConductor = false }: adminProps) {
           </Modal.Body>
           <ModalFooter
             handleClick={() => toggleModal(ADMIN_MODAL_TYPES.UNIT)}
+            isSaving={isSaving}
           />
         </Form>
       </Modal>

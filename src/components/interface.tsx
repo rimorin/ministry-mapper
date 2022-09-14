@@ -63,10 +63,12 @@ export interface TitleProps {
 
 export interface BrandingProps {
   naming: String;
+  isOnline?: boolean;
 }
 
 export interface FooterProps {
   handleClick?: (event: React.MouseEvent<HTMLElement>) => void;
+  isSaving?: boolean;
 }
 
 export interface LegendProps {
