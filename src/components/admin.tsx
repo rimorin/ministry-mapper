@@ -61,7 +61,9 @@ import {
   getCompletedPercent,
   DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS,
   FIREBASE_AUTH_UNAUTHORISED_MSG,
-  ADMIN_MODAL_TYPES
+  ADMIN_MODAL_TYPES,
+  RELOAD_INACTIVITY_DURATION,
+  RELOAD_CHECK_INTERVAL_MS
 } from "./util";
 import TableHeader from "./table";
 import { useParams } from "react-router-dom";
@@ -93,6 +95,20 @@ function Admin({ isConductor = false }: adminProps) {
   const [isUnauthorised, setIsUnauthorised] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const congregationReference = child(ref(database), `congregations/${code}`);
+  let currentTime = new Date().getTime();
+
+  const setActivityTime = () => {
+    currentTime = new Date().getTime();
+  };
+
+  const refreshPage = () => {
+    if (new Date().getTime() - currentTime >= RELOAD_INACTIVITY_DURATION) {
+      window.location.reload();
+    } else {
+      setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
+    }
+  };
+
   const processData = (data: any) => {
     let dataList = [];
     for (const floor in data) {
@@ -331,6 +347,12 @@ function Admin({ isConductor = false }: adminProps) {
         setIsUnauthorised(reason.message === FIREBASE_AUTH_UNAUTHORISED_MSG);
       })
       .finally(() => setIsLoading(false));
+
+    document.body.addEventListener("mousemove", setActivityTime);
+    document.body.addEventListener("keypress", setActivityTime);
+    document.body.addEventListener("touchstart", setActivityTime);
+
+    setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
   }, []);
 
   const noSuchTerritory = territories.length === 0;
