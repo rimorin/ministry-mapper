@@ -1,5 +1,5 @@
 import { MouseEvent, ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { ref, child, onValue, set, get } from "firebase/database";
+import { ref, child, onValue, set } from "firebase/database";
 import { database } from "./../firebase";
 import { Button, Container, Form, Modal, Navbar, Table } from "react-bootstrap";
 import Loader from "./loader";
@@ -42,7 +42,7 @@ function Home() {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const postalNameReference = child(ref(database), `/${postalcode}/name`);
   const postalUnitReference = child(ref(database), `/${postalcode}/units`);
-  const postalFeedbaclReference = child(
+  const postalFeedbackReference = child(
     ref(database),
     `/${postalcode}/feedback`
   );
@@ -77,12 +77,8 @@ function Home() {
       for (const unit in units) {
         unitsDetails.push({
           number: unit,
-          done: units[unit]["done"],
-          dnc: units[unit]["dnc"],
           note: units[unit]["note"],
           type: units[unit]["type"],
-          invalid: units[unit]["invalid"],
-          not_home: units[unit]["not_home"],
           status: units[unit]["status"]
         });
       }
@@ -166,13 +162,17 @@ function Home() {
   };
 
   useEffect(() => {
-    get(postalNameReference).then((snapshot) => {
-      if (snapshot.exists()) {
-        const postalData = snapshot.val();
-        setPostalName(postalData);
-        document.title = postalData;
-      }
-    });
+    onValue(
+      postalNameReference,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const postalData = snapshot.val();
+          setPostalName(postalData);
+          document.title = postalData;
+        }
+      },
+      { onlyOnce: true }
+    );
     onValue(linkReference, (snapshot) => {
       if (snapshot.exists()) {
         const currentTimestamp = new Date().getTime();
@@ -190,7 +190,7 @@ function Home() {
       }
       setIsPostalLoading(false);
     });
-    onValue(postalFeedbaclReference, (snapshot) => {
+    onValue(postalFeedbackReference, (snapshot) => {
       if (snapshot.exists()) {
         setValues({ ...values, feedback: snapshot.val() });
       }

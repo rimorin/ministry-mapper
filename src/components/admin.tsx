@@ -3,7 +3,6 @@ import {
   onValue,
   ref,
   set,
-  get,
   update,
   off,
   remove
@@ -117,11 +116,8 @@ function Admin({ isConductor = false }: adminProps) {
       for (const unit in units) {
         unitsDetails.push({
           number: unit,
-          done: units[unit]["done"],
-          dnc: units[unit]["dnc"],
           note: units[unit]["note"],
           type: units[unit]["type"],
-          invalid: units[unit]["invalid"],
           status: units[unit]["status"]
         });
       }
@@ -323,8 +319,9 @@ function Admin({ isConductor = false }: adminProps) {
   };
 
   useEffect(() => {
-    get(congregationReference)
-      .then((snapshot) => {
+    onValue(
+      congregationReference,
+      (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.val();
           document.title = `${data["name"]}`;
@@ -342,11 +339,13 @@ function Admin({ isConductor = false }: adminProps) {
           setTerritories(territoryList);
           setName(`${data["name"]}`);
         }
-      })
-      .catch((reason) => {
+        setIsLoading(false);
+      },
+      (reason) => {
         setIsUnauthorised(reason.message === FIREBASE_AUTH_UNAUTHORISED_MSG);
-      })
-      .finally(() => setIsLoading(false));
+      },
+      { onlyOnce: true }
+    );
 
     document.body.addEventListener("mousemove", setActivityTime);
     document.body.addEventListener("keypress", setActivityTime);
