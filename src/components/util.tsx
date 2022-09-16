@@ -76,6 +76,8 @@ const FIREBASE_AUTH_UNAUTHORISED_MSG =
 const RELOAD_CHECK_INTERVAL_MS = 5000;
 // 10mins
 const RELOAD_INACTIVITY_DURATION = 600000;
+// 10 secs
+const FIREBASE_FUNCTION_TIMEOUT = 10000;
 
 const IGNORE_HOUSEHOLD_STATUS = [
   STATUS_CODES.DO_NOT_CALL,
@@ -93,6 +95,13 @@ const ModalUnitTitle = ({ unit, floor, postal }: TitleProps) => {
       <Modal.Title>{titleString}</Modal.Title>
     </Modal.Header>
   );
+};
+
+const connectionTimeout = () => {
+  return setTimeout(function () {
+    alert("Connection instability detected. Refreshing page.");
+    window.location.reload();
+  }, FIREBASE_FUNCTION_TIMEOUT);
 };
 
 const errorMessage = (code: String) => {
@@ -236,6 +245,7 @@ export {
   NavBarBranding,
   Legend,
   errorHandler,
+  connectionTimeout,
   STATUS_CODES,
   MUTABLE_CODES,
   LOGIN_TYPE_CODES,
@@ -246,5 +256,6 @@ export {
   FIREBASE_AUTH_UNAUTHORISED_MSG,
   ADMIN_MODAL_TYPES,
   RELOAD_CHECK_INTERVAL_MS,
-  RELOAD_INACTIVITY_DURATION
+  RELOAD_INACTIVITY_DURATION,
+  FIREBASE_FUNCTION_TIMEOUT
 };

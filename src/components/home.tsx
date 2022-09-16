@@ -8,8 +8,10 @@ import TableHeader from "./table";
 import UnitStatus from "./unit";
 import {
   compareSortObjects,
+  connectionTimeout,
   DEFAULT_FLOOR_PADDING,
   errorHandler,
+  FIREBASE_FUNCTION_TIMEOUT,
   getMaxUnitLength,
   Legend,
   ModalUnitTitle,
@@ -119,6 +121,7 @@ function Home() {
     const details = values as valuesDetails;
     setIsSaving(true);
     try {
+      const timeoutId = connectionTimeout();
       await set(
         ref(database, `/${postalcode}/units/${details.floor}/${details.unit}`),
         {
@@ -127,6 +130,7 @@ function Home() {
           status: details.status
         }
       );
+      clearTimeout(timeoutId);
       toggleModal(true);
     } catch (error) {
       errorHandler(error);
@@ -143,12 +147,14 @@ function Home() {
     event.preventDefault();
     const details = values as valuesDetails;
     setIsSaving(true);
+    const timeoutId = connectionTimeout();
     try {
       await set(ref(database, `/${postalcode}/feedback`), details.feedback);
       toggleModal(false);
     } catch (error) {
       errorHandler(error);
     } finally {
+      clearTimeout(timeoutId);
       setIsSaving(false);
     }
   };
