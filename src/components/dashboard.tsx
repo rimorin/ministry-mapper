@@ -18,7 +18,7 @@ function Dashboard({ isConductor = false, userType = "Admin" }: adminProps) {
   }, []);
   if (isLoading) return <Loader />;
   return loginUser ? (
-    <Admin isConductor={isConductor} />
+    <Admin user={loginUser} isConductor={isConductor} />
   ) : (
     <Login loginType={userType} />
   );

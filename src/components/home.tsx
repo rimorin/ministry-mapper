@@ -9,6 +9,7 @@ import UnitStatus from "./unit";
 import {
   compareSortObjects,
   DEFAULT_FLOOR_PADDING,
+  errorHandler,
   getMaxUnitLength,
   Legend,
   ModalUnitTitle,
@@ -70,9 +71,9 @@ function Home() {
   };
 
   const processData = (data: any) => {
-    let dataList = [];
+    const dataList = [];
     for (const floor in data) {
-      let unitsDetails = [];
+      const unitsDetails = [];
       const units = data[floor];
       for (const unit in units) {
         unitsDetails.push({
@@ -128,7 +129,7 @@ function Home() {
       );
       toggleModal(true);
     } catch (error) {
-      alert(`Error: ${error}. Please try again.`);
+      errorHandler(error);
     } finally {
       setIsSaving(false);
     }
@@ -146,7 +147,7 @@ function Home() {
       await set(ref(database, `/${postalcode}/feedback`), details.feedback);
       toggleModal(false);
     } catch (error) {
-      alert(`Error: ${error}. Please try again.`);
+      errorHandler(error);
     } finally {
       setIsSaving(false);
     }

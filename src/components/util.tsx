@@ -1,3 +1,4 @@
+import { captureException } from "@sentry/react";
 import { Modal, Navbar, Offcanvas, Table } from "react-bootstrap";
 import {
   TitleProps,
@@ -5,6 +6,13 @@ import {
   LegendProps,
   floorDetails
 } from "./interface";
+
+const errorHandler = (error: any, showAlert = true) => {
+  captureException(error);
+  if (showAlert) {
+    alert(error);
+  }
+};
 
 const compareSortObjects = (a: any, b: any) => {
   const a_floor = Number(a.floor);
@@ -62,7 +70,8 @@ const DEFAULT_SELF_DESTRUCT_HOURS = 24;
 // 4 Weeks for personal slips
 const DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS = 24 * 7 * 4;
 const MIN_PERCENTAGE_DISPLAY = 10;
-const FIREBASE_AUTH_UNAUTHORISED_MSG = "Permission denied";
+const FIREBASE_AUTH_UNAUTHORISED_MSG =
+  "Client doesn't have permission to access the desired data.";
 // 5 secs
 const RELOAD_CHECK_INTERVAL_MS = 5000;
 // 10mins
@@ -226,6 +235,7 @@ export {
   errorMessage,
   NavBarBranding,
   Legend,
+  errorHandler,
   STATUS_CODES,
   MUTABLE_CODES,
   LOGIN_TYPE_CODES,
