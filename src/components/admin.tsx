@@ -7,6 +7,7 @@ import {
   remove,
   Unsubscribe
 } from "firebase/database";
+import { setUser } from "@sentry/react";
 import { signOut } from "firebase/auth";
 import { nanoid } from "nanoid";
 import {
@@ -62,7 +63,8 @@ import {
   FIREBASE_AUTH_UNAUTHORISED_MSG,
   ADMIN_MODAL_TYPES,
   RELOAD_INACTIVITY_DURATION,
-  RELOAD_CHECK_INTERVAL_MS
+  RELOAD_CHECK_INTERVAL_MS,
+  errorHandler
 } from "./util";
 import TableHeader from "./table";
 import { useParams } from "react-router-dom";
@@ -77,7 +79,7 @@ import {
 import Welcome from "./welcome";
 import NotFoundPage from "./notfoundpage";
 import UnauthorizedPage from "./unauthorisedpage";
-function Admin({ isConductor = false }: adminProps) {
+function Admin({ user, isConductor = false }: adminProps) {
   const { code } = useParams();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isFeedback, setIsFeedback] = useState<boolean>(false);
@@ -90,7 +92,9 @@ function Admin({ isConductor = false }: adminProps) {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [name, setName] = useState<String>();
   const [values, setValues] = useState<Object>({});
-  const [territories, setTerritories] = useState<Array<territoryDetails>>([]);
+  const [territories, setTerritories] = useState(
+    new Map<String, territoryDetails>()
+  );
   const [selectedTerritory, setSelectedTerritory] = useState<String>();
   const [unsubscribers, setUnsubscribers] = useState<Array<Unsubscribe>>([]);
   const [addresses, setAddresses] = useState(new Map<String, addressDetails>());
@@ -135,11 +139,8 @@ function Admin({ isConductor = false }: adminProps) {
     setAddresses(new Map<String, addressDetails>());
   };
 
-  const handleSelect = (
-    eventKey: string | null,
-    _: SyntheticEvent<unknown>
-  ) => {
-    const territoryDetails = territories.find((e) => e.code === eventKey);
+  const handleSelect = (eventKey: String, _: SyntheticEvent<unknown>) => {
+    const territoryDetails = territories.get(eventKey);
     const territoryAddresses = territoryDetails?.addresses;
     refreshAddressState();
     const addressUnsubscribers = [] as Array<Unsubscribe>;
@@ -191,7 +192,11 @@ function Admin({ isConductor = false }: adminProps) {
         };
       });
     }
-    await update(ref(database), unitUpdates);
+    try {
+      await update(ref(database), unitUpdates);
+    } catch (error) {
+      errorHandler(error);
+    }
   };
 
   const toggleModal = (modalType = ADMIN_MODAL_TYPES.UNIT) => {
@@ -235,19 +240,24 @@ function Admin({ isConductor = false }: adminProps) {
     event.preventDefault();
     const details = values as valuesDetails;
     setIsSaving(true);
-    await set(
-      ref(
-        database,
-        `/${details.postal}/units/${details.floor}/${details.unit}`
-      ),
-      {
-        type: details.type,
-        note: details.note,
-        status: details.status
-      }
-    );
-    setIsSaving(false);
-    toggleModal();
+    try {
+      await set(
+        ref(
+          database,
+          `/${details.postal}/units/${details.floor}/${details.unit}`
+        ),
+        {
+          type: details.type,
+          note: details.note,
+          status: details.status
+        }
+      );
+    } catch (error) {
+      errorHandler(error);
+    } finally {
+      setIsSaving(false);
+      toggleModal();
+    }
   };
 
   const setTimedLink = (
@@ -270,9 +280,14 @@ function Admin({ isConductor = false }: adminProps) {
     event.preventDefault();
     const details = values as valuesDetails;
     setIsSaving(true);
-    await set(ref(database, `/${details.postal}/feedback`), details.feedback);
-    setIsSaving(false);
-    toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
+    try {
+      await set(ref(database, `/${details.postal}/feedback`), details.feedback);
+    } catch (error) {
+      errorHandler(error);
+    } finally {
+      setIsSaving(false);
+      toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
+    }
   };
 
   const handleRevokeLink = async (event: FormEvent<HTMLElement>) => {
@@ -284,7 +299,7 @@ function Admin({ isConductor = false }: adminProps) {
       await remove(ref(database, `links/${linkId}`));
       alert(`Revoked territory link token, ${linkId}.`);
     } catch (error) {
-      alert(`Invalid territory link`);
+      errorHandler(error);
       return;
     }
     toggleModal(ADMIN_MODAL_TYPES.LINK);
@@ -305,15 +320,14 @@ function Admin({ isConductor = false }: adminProps) {
     if (navigator.share) {
       setIsSettingAssignLink(true);
       try {
-        const result = await setTimedLink(linkId, hours);
-        console.info(result);
+        await setTimedLink(linkId, hours);
         navigator.share({
           title: title,
           text: body,
           url: url
         });
       } catch (error) {
-        alert(`Error: ${error}. Please try again.`);
+        errorHandler(error);
       } finally {
         setIsSettingAssignLink(false);
       }
@@ -323,18 +337,20 @@ function Admin({ isConductor = false }: adminProps) {
   };
 
   useEffect(() => {
+    setUser({ email: `${user?.email}` });
     onValue(
       congregationReference,
       (snapshot) => {
+        setIsLoading(false);
         if (snapshot.exists()) {
           const data = snapshot.val();
           document.title = `${data["name"]}`;
           const congregationTerritories = data["territories"];
-          const territoryList = [];
+          const territoryList = new Map<String, territoryDetails>();
           for (const territory in congregationTerritories) {
             const name = congregationTerritories[territory]["name"];
             const addresses = congregationTerritories[territory]["addresses"];
-            territoryList.push({
+            territoryList.set(territory, {
               code: territory,
               name: name,
               addresses: addresses
@@ -343,10 +359,13 @@ function Admin({ isConductor = false }: adminProps) {
           setTerritories(territoryList);
           setName(`${data["name"]}`);
         }
-        setIsLoading(false);
       },
       (reason) => {
-        setIsUnauthorised(reason.message === FIREBASE_AUTH_UNAUTHORISED_MSG);
+        setIsUnauthorised(
+          reason.message.includes(FIREBASE_AUTH_UNAUTHORISED_MSG)
+        );
+        setIsLoading(false);
+        errorHandler(reason, false);
       },
       { onlyOnce: true }
     );
@@ -358,13 +377,14 @@ function Admin({ isConductor = false }: adminProps) {
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
   }, []);
 
-  const noSuchTerritory = territories.length === 0;
+  const noSuchTerritory = territories.size === 0;
 
   if (isLoading) return <Loader />;
   if (isUnauthorised) return <UnauthorizedPage />;
   if (noSuchTerritory) return <NotFoundPage />;
 
   const territoryAddresses = Array.from(addresses.values());
+  const congregationTerritoryList = Array.from(territories.values());
 
   return (
     <>
@@ -380,12 +400,15 @@ function Admin({ isConductor = false }: adminProps) {
               title={
                 selectedTerritory ? `${selectedTerritory}` : "Select Territory"
               }
-              onSelect={handleSelect}
+              onSelect={(
+                eventKey: string | null,
+                e: React.SyntheticEvent<unknown>
+              ) => handleSelect(`${eventKey}`, e)}
               className="m-2 d-inline-block"
               align={{ lg: "end" }}
             >
-              {territories &&
-                territories.map((element) => (
+              {congregationTerritoryList &&
+                congregationTerritoryList.map((element) => (
                   <NavDropdown.Item
                     key={`${element.code}`}
                     eventKey={`${element.code}`}
@@ -540,10 +563,10 @@ function Admin({ isConductor = false }: adminProps) {
                         setIsSettingViewLink(true);
                         try {
                           const territoryWindow = window.open("", "_blank");
-                          const result = await setTimedLink(addressLinkId);
+                          await setTimedLink(addressLinkId);
                           territoryWindow!.location.href = `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`;
                         } catch (error) {
-                          alert(`Error: ${error}. Please try again.`);
+                          errorHandler(error);
                         } finally {
                           setIsSettingViewLink(false);
                         }
