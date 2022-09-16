@@ -70,9 +70,9 @@ function Home() {
   };
 
   const processData = (data: any) => {
-    let dataList = [];
+    const dataList = [];
     for (const floor in data) {
-      let unitsDetails = [];
+      const unitsDetails = [];
       const units = data[floor];
       for (const unit in units) {
         unitsDetails.push({

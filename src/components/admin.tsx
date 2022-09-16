@@ -4,8 +4,8 @@ import {
   ref,
   set,
   update,
-  off,
-  remove
+  remove,
+  Unsubscribe
 } from "firebase/database";
 import { signOut } from "firebase/auth";
 import { nanoid } from "nanoid";
@@ -79,12 +79,7 @@ import NotFoundPage from "./notfoundpage";
 import UnauthorizedPage from "./unauthorisedpage";
 function Admin({ isConductor = false }: adminProps) {
   const { code } = useParams();
-  const [name, setName] = useState<String>();
-  const [territories, setTerritories] = useState<Array<territoryDetails>>([]);
-  const [territory, setTerritory] = useState<String>();
-  const [addresses, setAddresses] = useState<Array<addressDetails>>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [values, setValues] = useState<Object>({});
   const [isFeedback, setIsFeedback] = useState<boolean>(false);
   const [isLinkRevoke, setIsLinkRevoke] = useState<boolean>(false);
   const [isSettingAssignLink, setIsSettingAssignLink] =
@@ -93,6 +88,12 @@ function Admin({ isConductor = false }: adminProps) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isUnauthorised, setIsUnauthorised] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [name, setName] = useState<String>();
+  const [values, setValues] = useState<Object>({});
+  const [territories, setTerritories] = useState<Array<territoryDetails>>([]);
+  const [selectedTerritory, setSelectedTerritory] = useState<String>();
+  const [unsubscribers, setUnsubscribers] = useState<Array<Unsubscribe>>([]);
+  const [addresses, setAddresses] = useState(new Map<String, addressDetails>());
   const congregationReference = child(ref(database), `congregations/${code}`);
   let currentTime = new Date().getTime();
 
@@ -109,9 +110,9 @@ function Admin({ isConductor = false }: adminProps) {
   };
 
   const processData = (data: any) => {
-    let dataList = [];
+    const dataList = [];
     for (const floor in data) {
-      let unitsDetails = [];
+      const unitsDetails = [];
       const units = data[floor];
       for (const unit in units) {
         unitsDetails.push({
@@ -127,10 +128,11 @@ function Admin({ isConductor = false }: adminProps) {
     return dataList;
   };
 
-  const clearExistingListeners = () => {
-    addresses.forEach((existingAddress) => {
-      off(child(ref(database), `/${existingAddress.postalcode}`));
+  const refreshAddressState = () => {
+    unsubscribers.forEach((unsubFunction) => {
+      unsubFunction();
     });
+    setAddresses(new Map<String, addressDetails>());
   };
 
   const handleSelect = (
@@ -139,36 +141,38 @@ function Admin({ isConductor = false }: adminProps) {
   ) => {
     const territoryDetails = territories.find((e) => e.code === eventKey);
     const territoryAddresses = territoryDetails?.addresses;
-    setTerritory(`${territoryDetails?.code} - ${territoryDetails?.name}`);
-    clearExistingListeners();
-    const addressListing = [] as Array<addressDetails>;
+    refreshAddressState();
+    const addressUnsubscribers = [] as Array<Unsubscribe>;
     for (const territoryIndex in territoryAddresses) {
-      const territory = territoryAddresses[territoryIndex];
-      onValue(child(ref(database), `/${territory}`), (snapshot) => {
-        if (snapshot.exists()) {
-          const territoryData = snapshot.val();
-          const addressData = {
-            name: territoryData.name,
-            postalcode: `${territory}`,
-            floors: processData(territoryData.units),
-            feedback: territoryData.feedback
-          };
-          const existingIndex = addressListing.findIndex(
-            (_element) => _element.postalcode === addressData.postalcode
-          );
-          if (existingIndex > -1) {
-            addressListing[existingIndex] = addressData;
-          } else {
-            addressListing.push(addressData);
+      const postalCode = territoryAddresses[territoryIndex];
+      addressUnsubscribers.push(
+        onValue(child(ref(database), `/${postalCode}`), (snapshot) => {
+          if (snapshot.exists()) {
+            const territoryData = snapshot.val();
+            const addressData = {
+              name: territoryData.name,
+              postalcode: `${postalCode}`,
+              floors: processData(territoryData.units),
+              feedback: territoryData.feedback
+            };
+            setAddresses(
+              (existingAddresses) =>
+                new Map<String, addressDetails>(
+                  existingAddresses.set(postalCode, addressData)
+                )
+            );
           }
-          setAddresses([...addressListing]);
-        }
-      });
+        })
+      );
     }
+    setSelectedTerritory(
+      `${territoryDetails?.code} - ${territoryDetails?.name}`
+    );
+    setUnsubscribers([...addressUnsubscribers]);
   };
 
   const resetBlock = async (postalcode: String) => {
-    const blockAddresses = addresses.find((e) => e.postalcode === postalcode);
+    const blockAddresses = addresses.get(postalcode);
     if (!blockAddresses) return;
     const unitUpdates: unitMaps = {};
     for (const index in blockAddresses.floors) {
@@ -326,7 +330,7 @@ function Admin({ isConductor = false }: adminProps) {
           const data = snapshot.val();
           document.title = `${data["name"]}`;
           const congregationTerritories = data["territories"];
-          let territoryList = [];
+          const territoryList = [];
           for (const territory in congregationTerritories) {
             const name = congregationTerritories[territory]["name"];
             const addresses = congregationTerritories[territory]["addresses"];
@@ -360,6 +364,8 @@ function Admin({ isConductor = false }: adminProps) {
   if (isUnauthorised) return <UnauthorizedPage />;
   if (noSuchTerritory) return <NotFoundPage />;
 
+  const territoryAddresses = Array.from(addresses.values());
+
   return (
     <>
       <Navbar bg="light" variant="light" expand="lg">
@@ -371,7 +377,9 @@ function Admin({ isConductor = false }: adminProps) {
             className="justify-content-end mt-1"
           >
             <NavDropdown
-              title={territory ? `${territory}` : "Select Territory"}
+              title={
+                selectedTerritory ? `${selectedTerritory}` : "Select Territory"
+              }
               onSelect={handleSelect}
               className="m-2 d-inline-block"
               align={{ lg: "end" }}
@@ -415,94 +423,42 @@ function Admin({ isConductor = false }: adminProps) {
           </Navbar.Collapse>
         </Container>
       </Navbar>
-      {addresses.length === 0 && (
+      {!selectedTerritory && (
         <Welcome
           loginType={
             isConductor ? LOGIN_TYPE_CODES.CONDUCTOR : LOGIN_TYPE_CODES.ADMIN
           }
         />
       )}
-      {addresses &&
-        addresses.map((addressElement) => {
-          const maxUnitNumberLength = getMaxUnitLength(addressElement.floors);
-          const completedPercent = getCompletedPercent(addressElement.floors);
-          const addressLinkId = nanoid();
-          return (
-            <div key={`div-${addressElement.postalcode}`}>
-              <Navbar
-                bg="light"
-                expand="sm"
-                className="mt-3"
-                key={`navbar-${addressElement.postalcode}`}
-              >
-                <Container fluid>
-                  <Navbar.Brand>{addressElement.name}</Navbar.Brand>
-                  <Navbar.Toggle aria-controls="navbarScroll" />
-                  <Navbar.Collapse
-                    id="navbarScroll"
-                    className="justify-content-end mt-2"
-                  >
-                    {!isConductor && (
-                      <DropdownButton
-                        key={`assigndrop-${addressElement.postalcode}`}
-                        size="sm"
-                        variant="outline-primary"
-                        title="Assign"
-                        className="me-2 d-inline-block"
-                      >
-                        <Dropdown.Item
-                          onClick={() => {
-                            shareTimedLink(
-                              addressLinkId,
-                              `Units for ${addressElement.name}`,
-                              assignmentMessage(addressElement.name),
-                              `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`
-                            );
-                          }}
-                        >
-                          {isSettingAssignLink && (
-                            <>
-                              <Spinner
-                                as="span"
-                                animation="border"
-                                size="sm"
-                                aria-hidden="true"
-                              />{" "}
-                            </>
-                          )}
-                          House-To-House
-                        </Dropdown.Item>
-                        <Dropdown.Item
-                          onClick={() => {
-                            shareTimedLink(
-                              addressLinkId,
-                              `Units for ${addressElement.name}`,
-                              assignmentMessage(addressElement.name),
-                              `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
-                              DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS
-                            );
-                          }}
-                        >
-                          {isSettingAssignLink && (
-                            <>
-                              <Spinner
-                                as="span"
-                                animation="border"
-                                size="sm"
-                                aria-hidden="true"
-                              />{" "}
-                            </>
-                          )}
-                          Personal
-                        </Dropdown.Item>
-                      </DropdownButton>
-                    )}
-                    {isConductor && (
-                      <Button
-                        size="sm"
-                        variant="outline-primary"
-                        className="me-2"
-                        onClick={(_) => {
+      {territoryAddresses.map((addressElement) => {
+        const maxUnitNumberLength = getMaxUnitLength(addressElement.floors);
+        const completedPercent = getCompletedPercent(addressElement.floors);
+        const addressLinkId = nanoid();
+        return (
+          <div key={`div-${addressElement.postalcode}`}>
+            <Navbar
+              bg="light"
+              expand="sm"
+              className="mt-3"
+              key={`navbar-${addressElement.postalcode}`}
+            >
+              <Container fluid>
+                <Navbar.Brand>{addressElement.name}</Navbar.Brand>
+                <Navbar.Toggle aria-controls="navbarScroll" />
+                <Navbar.Collapse
+                  id="navbarScroll"
+                  className="justify-content-end mt-2"
+                >
+                  {!isConductor && (
+                    <DropdownButton
+                      key={`assigndrop-${addressElement.postalcode}`}
+                      size="sm"
+                      variant="outline-primary"
+                      title="Assign"
+                      className="me-2 d-inline-block"
+                    >
+                      <Dropdown.Item
+                        onClick={() => {
                           shareTimedLink(
                             addressLinkId,
                             `Units for ${addressElement.name}`,
@@ -521,28 +477,20 @@ function Admin({ isConductor = false }: adminProps) {
                             />{" "}
                           </>
                         )}
-                        Assign
-                      </Button>
-                    )}
-                    {isConductor && (
-                      <Button
-                        size="sm"
-                        variant="outline-primary"
-                        className="me-2"
-                        onClick={async () => {
-                          setIsSettingViewLink(true);
-                          try {
-                            const territoryWindow = window.open("", "_blank");
-                            const result = await setTimedLink(addressLinkId);
-                            territoryWindow!.location.href = `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`;
-                          } catch (error) {
-                            alert(`Error: ${error}. Please try again.`);
-                          } finally {
-                            setIsSettingViewLink(false);
-                          }
+                        House-To-House
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        onClick={() => {
+                          shareTimedLink(
+                            addressLinkId,
+                            `Units for ${addressElement.name}`,
+                            assignmentMessage(addressElement.name),
+                            `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
+                            DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS
+                          );
                         }}
                       >
-                        {isSettingViewLink && (
+                        {isSettingAssignLink && (
                           <>
                             <Spinner
                               as="span"
@@ -552,160 +500,217 @@ function Admin({ isConductor = false }: adminProps) {
                             />{" "}
                           </>
                         )}
-                        View
-                      </Button>
-                    )}
+                        Personal
+                      </Dropdown.Item>
+                    </DropdownButton>
+                  )}
+                  {isConductor && (
                     <Button
                       size="sm"
                       variant="outline-primary"
                       className="me-2"
-                      onClick={(e) => {
-                        window.open(
-                          `http://maps.google.com.sg/maps?q=${addressElement.postalcode}`,
-                          "_blank"
+                      onClick={(_) => {
+                        shareTimedLink(
+                          addressLinkId,
+                          `Units for ${addressElement.name}`,
+                          assignmentMessage(addressElement.name),
+                          `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`
                         );
                       }}
                     >
-                      Direction
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline-primary"
-                      className="me-2"
-                      onClick={(event) => {
-                        handleClickFeedback(
-                          event,
-                          addressElement.postalcode,
-                          addressElement.feedback
-                        );
-                      }}
-                    >
-                      Feedback
-                      {addressElement.feedback && (
+                      {isSettingAssignLink && (
                         <>
-                          {" "}
-                          <Badge pill bg="secondary">
-                            ⭐
-                          </Badge>
+                          <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            aria-hidden="true"
+                          />{" "}
                         </>
                       )}
+                      Assign
                     </Button>
-                    {!isConductor && (
-                      <Button
-                        size="sm"
-                        variant="outline-primary"
-                        className="me-2"
-                        onClick={() =>
-                          confirmAlert({
-                            customUI: ({ onClose }) => {
-                              return (
-                                <Container>
-                                  <Card bg="warning" className="text-center">
-                                    <Card.Header>Warning ⚠️</Card.Header>
-                                    <Card.Body>
-                                      <Card.Title>
-                                        Are You Very Sure ?
-                                      </Card.Title>
-                                      <Card.Text>
-                                        You want to reset the data of{" "}
-                                        {addressElement.name}. This will reset
-                                        all Done & Not Home status.
-                                      </Card.Text>
-                                      <Button
-                                        className="me-2"
-                                        variant="primary"
-                                        onClick={() => {
-                                          resetBlock(addressElement.postalcode);
-                                          onClose();
-                                        }}
-                                      >
-                                        Yes, Reset It.
-                                      </Button>
-                                      <Button
-                                        className="ms-2"
-                                        variant="primary"
-                                        onClick={() => {
-                                          onClose();
-                                        }}
-                                      >
-                                        No
-                                      </Button>
-                                    </Card.Body>
-                                  </Card>
-                                </Container>
-                              );
-                            }
-                          })
+                  )}
+                  {isConductor && (
+                    <Button
+                      size="sm"
+                      variant="outline-primary"
+                      className="me-2"
+                      onClick={async () => {
+                        setIsSettingViewLink(true);
+                        try {
+                          const territoryWindow = window.open("", "_blank");
+                          const result = await setTimedLink(addressLinkId);
+                          territoryWindow!.location.href = `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`;
+                        } catch (error) {
+                          alert(`Error: ${error}. Please try again.`);
+                        } finally {
+                          setIsSettingViewLink(false);
                         }
-                      >
-                        Reset
-                      </Button>
+                      }}
+                    >
+                      {isSettingViewLink && (
+                        <>
+                          <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            aria-hidden="true"
+                          />{" "}
+                        </>
+                      )}
+                      View
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="outline-primary"
+                    className="me-2"
+                    onClick={(e) => {
+                      window.open(
+                        `http://maps.google.com.sg/maps?q=${addressElement.postalcode}`,
+                        "_blank"
+                      );
+                    }}
+                  >
+                    Direction
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline-primary"
+                    className="me-2"
+                    onClick={(event) => {
+                      handleClickFeedback(
+                        event,
+                        addressElement.postalcode,
+                        addressElement.feedback
+                      );
+                    }}
+                  >
+                    Feedback
+                    {addressElement.feedback && (
+                      <>
+                        {" "}
+                        <Badge pill bg="secondary">
+                          ⭐
+                        </Badge>
+                      </>
                     )}
-                  </Navbar.Collapse>
-                </Container>
-              </Navbar>
-              <ProgressBar
-                style={{ borderRadius: 0 }}
-                now={completedPercent.completedValue}
-                label={completedPercent.completedDisplay}
+                  </Button>
+                  {!isConductor && (
+                    <Button
+                      size="sm"
+                      variant="outline-primary"
+                      className="me-2"
+                      onClick={() =>
+                        confirmAlert({
+                          customUI: ({ onClose }) => {
+                            return (
+                              <Container>
+                                <Card bg="warning" className="text-center">
+                                  <Card.Header>Warning ⚠️</Card.Header>
+                                  <Card.Body>
+                                    <Card.Title>Are You Very Sure ?</Card.Title>
+                                    <Card.Text>
+                                      You want to reset the data of{" "}
+                                      {addressElement.name}. This will reset all
+                                      Done & Not Home status.
+                                    </Card.Text>
+                                    <Button
+                                      className="me-2"
+                                      variant="primary"
+                                      onClick={() => {
+                                        resetBlock(addressElement.postalcode);
+                                        onClose();
+                                      }}
+                                    >
+                                      Yes, Reset It.
+                                    </Button>
+                                    <Button
+                                      className="ms-2"
+                                      variant="primary"
+                                      onClick={() => {
+                                        onClose();
+                                      }}
+                                    >
+                                      No
+                                    </Button>
+                                  </Card.Body>
+                                </Card>
+                              </Container>
+                            );
+                          }
+                        })
+                      }
+                    >
+                      Reset
+                    </Button>
+                  )}
+                </Navbar.Collapse>
+              </Container>
+            </Navbar>
+            <ProgressBar
+              style={{ borderRadius: 0 }}
+              now={completedPercent.completedValue}
+              label={completedPercent.completedDisplay}
+            />
+            <Table
+              key={`table-${addressElement.postalcode}`}
+              bordered
+              striped
+              hover
+              responsive="sm"
+            >
+              <TableHeader
+                floors={addressElement.floors}
+                maxUnitNumber={maxUnitNumberLength}
               />
-              <Table
-                key={`table-${addressElement.postalcode}`}
-                bordered
-                striped
-                hover
-                responsive="sm"
-              >
-                <TableHeader
-                  floors={addressElement.floors}
-                  maxUnitNumber={maxUnitNumberLength}
-                />
-                <tbody key={`tbody-${addressElement.postalcode}`}>
-                  {addressElement.floors &&
-                    addressElement.floors.map((floorElement, floorIndex) => (
-                      <tr key={`row-${floorIndex}`}>
-                        <th
-                          className="text-center"
-                          key={`floor-${floorIndex}`}
-                          scope="row"
+              <tbody key={`tbody-${addressElement.postalcode}`}>
+                {addressElement.floors &&
+                  addressElement.floors.map((floorElement, floorIndex) => (
+                    <tr key={`row-${floorIndex}`}>
+                      <th
+                        className="text-center"
+                        key={`floor-${floorIndex}`}
+                        scope="row"
+                      >
+                        {`${ZeroPad(
+                          floorElement.floor,
+                          DEFAULT_FLOOR_PADDING
+                        )}`}
+                      </th>
+                      {floorElement.units.map((detailsElement, index) => (
+                        <td
+                          align="center"
+                          onClick={(event) =>
+                            handleClickModal(
+                              event,
+                              addressElement.postalcode,
+                              floorElement.floor,
+                              detailsElement.number,
+                              detailsElement.type,
+                              detailsElement.note,
+                              detailsElement.status,
+                              maxUnitNumberLength
+                            )
+                          }
+                          key={`${index}-${detailsElement.number}`}
                         >
-                          {`${ZeroPad(
-                            floorElement.floor,
-                            DEFAULT_FLOOR_PADDING
-                          )}`}
-                        </th>
-                        {floorElement.units.map((detailsElement, index) => (
-                          <td
-                            align="center"
-                            onClick={(event) =>
-                              handleClickModal(
-                                event,
-                                addressElement.postalcode,
-                                floorElement.floor,
-                                detailsElement.number,
-                                detailsElement.type,
-                                detailsElement.note,
-                                detailsElement.status,
-                                maxUnitNumberLength
-                              )
-                            }
-                            key={`${index}-${detailsElement.number}`}
-                          >
-                            <UnitStatus
-                              key={`unit-${index}-${detailsElement.number}`}
-                              type={detailsElement.type}
-                              note={detailsElement.note}
-                              status={detailsElement.status}
-                            />
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                </tbody>
-              </Table>
-            </div>
-          );
-        })}
+                          <UnitStatus
+                            key={`unit-${index}-${detailsElement.number}`}
+                            type={detailsElement.type}
+                            note={detailsElement.note}
+                            status={detailsElement.status}
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+              </tbody>
+            </Table>
+          </div>
+        );
+      })}
       {!isConductor && (
         <Modal show={isLinkRevoke}>
           <Modal.Header>
