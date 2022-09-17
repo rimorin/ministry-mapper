@@ -12,9 +12,9 @@ import Dashboard from "./dashboard";
 
 function Navigation() {
   const [isMaintenance, setIsMaintenance] = useState<boolean>(false);
-  const maintenanceReference = child(ref(database), `/maintenance`);
 
   useEffect(() => {
+    const maintenanceReference = child(ref(database), `/maintenance`);
     onValue(maintenanceReference, (snapshot) => {
       if (snapshot.exists()) {
         setIsMaintenance(snapshot.val());
