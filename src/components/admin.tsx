@@ -64,7 +64,8 @@ import {
   ADMIN_MODAL_TYPES,
   RELOAD_INACTIVITY_DURATION,
   RELOAD_CHECK_INTERVAL_MS,
-  errorHandler
+  errorHandler,
+  connectionTimeout
 } from "./util";
 import TableHeader from "./table";
 import { useParams } from "react-router-dom";
@@ -143,6 +144,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     const territoryDetails = territories.get(eventKey);
     const territoryAddresses = territoryDetails?.addresses;
     refreshAddressState();
+    setIsLoading(true);
     const addressUnsubscribers = [] as Array<Unsubscribe>;
     for (const territoryIndex in territoryAddresses) {
       const postalCode = territoryAddresses[territoryIndex];
@@ -162,6 +164,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                   existingAddresses.set(postalCode, addressData)
                 )
             );
+            setIsLoading(false);
           }
         })
       );
@@ -240,6 +243,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     event.preventDefault();
     const details = values as valuesDetails;
     setIsSaving(true);
+    const timeoutId = connectionTimeout();
     try {
       await set(
         ref(
@@ -252,11 +256,12 @@ function Admin({ user, isConductor = false }: adminProps) {
           status: details.status
         }
       );
+      toggleModal();
     } catch (error) {
       errorHandler(error);
     } finally {
+      clearTimeout(timeoutId);
       setIsSaving(false);
-      toggleModal();
     }
   };
 
@@ -319,6 +324,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   ) => {
     if (navigator.share) {
       setIsSettingAssignLink(true);
+      const timeoutId = connectionTimeout();
       try {
         await setTimedLink(linkId, hours);
         navigator.share({
@@ -329,6 +335,7 @@ function Admin({ user, isConductor = false }: adminProps) {
       } catch (error) {
         errorHandler(error);
       } finally {
+        clearTimeout(timeoutId);
         setIsSettingAssignLink(false);
       }
     } else {
@@ -561,6 +568,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                       className="me-2"
                       onClick={async () => {
                         setIsSettingViewLink(true);
+                        const timeoutId = connectionTimeout();
                         try {
                           const territoryWindow = window.open("", "_blank");
                           await setTimedLink(addressLinkId);
@@ -568,6 +576,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                         } catch (error) {
                           errorHandler(error);
                         } finally {
+                          clearTimeout(timeoutId);
                           setIsSettingViewLink(false);
                         }
                       }}
