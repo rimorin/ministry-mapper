@@ -97,11 +97,11 @@ const ModalUnitTitle = ({ unit, floor, postal }: TitleProps) => {
   );
 };
 
-const connectionTimeout = () => {
+const connectionTimeout = (timeout = FIREBASE_FUNCTION_TIMEOUT) => {
   return setTimeout(function () {
     alert("Connection instability detected. Refreshing page.");
     window.location.reload();
-  }, FIREBASE_FUNCTION_TIMEOUT);
+  }, timeout);
 };
 
 const errorMessage = (code: String) => {
