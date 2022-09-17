@@ -4,7 +4,7 @@ import { Card, Form, Button, Container, Spinner } from "react-bootstrap";
 import { auth } from "../firebase";
 import { LoginProps } from "./interface";
 import { FirebaseError } from "firebase/app";
-import { errorMessage } from "./util";
+import { errorHandler, errorMessage } from "./util";
 
 const Login = ({ loginType }: LoginProps) => {
   const [loginEmail, setLoginEmail] = useState("");
@@ -21,7 +21,7 @@ const Login = ({ loginType }: LoginProps) => {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
       setValidated(false);
-      alert(errorMessage((err as FirebaseError).code));
+      errorHandler(errorMessage((err as FirebaseError).code));
     } finally {
       setIsLogin(false);
     }

@@ -1,3 +1,4 @@
+import { captureException } from "@sentry/react";
 import { Modal, Navbar, Offcanvas, Table } from "react-bootstrap";
 import {
   TitleProps,
@@ -5,6 +6,13 @@ import {
   LegendProps,
   floorDetails
 } from "./interface";
+
+const errorHandler = (error: any, showAlert = true) => {
+  captureException(error);
+  if (showAlert) {
+    alert(error);
+  }
+};
 
 const compareSortObjects = (a: any, b: any) => {
   const a_floor = Number(a.floor);
@@ -62,11 +70,14 @@ const DEFAULT_SELF_DESTRUCT_HOURS = 24;
 // 4 Weeks for personal slips
 const DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS = 24 * 7 * 4;
 const MIN_PERCENTAGE_DISPLAY = 10;
-const FIREBASE_AUTH_UNAUTHORISED_MSG = "Permission denied";
+const FIREBASE_AUTH_UNAUTHORISED_MSG =
+  "Client doesn't have permission to access the desired data.";
 // 5 secs
 const RELOAD_CHECK_INTERVAL_MS = 5000;
 // 10mins
 const RELOAD_INACTIVITY_DURATION = 600000;
+// 10 secs
+const FIREBASE_FUNCTION_TIMEOUT = 10000;
 
 const IGNORE_HOUSEHOLD_STATUS = [
   STATUS_CODES.DO_NOT_CALL,
@@ -84,6 +95,13 @@ const ModalUnitTitle = ({ unit, floor, postal }: TitleProps) => {
       <Modal.Title>{titleString}</Modal.Title>
     </Modal.Header>
   );
+};
+
+const connectionTimeout = (timeout = FIREBASE_FUNCTION_TIMEOUT) => {
+  return setTimeout(function () {
+    alert("Connection instability detected. Refreshing page.");
+    window.location.reload();
+  }, timeout);
 };
 
 const errorMessage = (code: String) => {
@@ -226,6 +244,8 @@ export {
   errorMessage,
   NavBarBranding,
   Legend,
+  errorHandler,
+  connectionTimeout,
   STATUS_CODES,
   MUTABLE_CODES,
   LOGIN_TYPE_CODES,
@@ -236,5 +256,6 @@ export {
   FIREBASE_AUTH_UNAUTHORISED_MSG,
   ADMIN_MODAL_TYPES,
   RELOAD_CHECK_INTERVAL_MS,
-  RELOAD_INACTIVITY_DURATION
+  RELOAD_INACTIVITY_DURATION,
+  FIREBASE_FUNCTION_TIMEOUT
 };
