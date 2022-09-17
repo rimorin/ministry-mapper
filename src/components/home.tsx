@@ -11,7 +11,6 @@ import {
   connectionTimeout,
   DEFAULT_FLOOR_PADDING,
   errorHandler,
-  FIREBASE_FUNCTION_TIMEOUT,
   getMaxUnitLength,
   Legend,
   ModalUnitTitle,
@@ -30,6 +29,7 @@ import {
 import { useParams } from "react-router-dom";
 import InvalidPage from "./invalidpage";
 import NotFoundPage from "./notfoundpage";
+import { setContext } from "@sentry/react";
 
 function Home() {
   const { id, postalcode } = useParams();
@@ -169,6 +169,10 @@ function Home() {
   };
 
   useEffect(() => {
+    setContext("publisher", {
+      token: id,
+      postalcode: postalcode
+    });
     onValue(
       postalNameReference,
       (snapshot) => {
