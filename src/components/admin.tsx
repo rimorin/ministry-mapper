@@ -7,7 +7,7 @@ import {
   remove,
   Unsubscribe
 } from "firebase/database";
-import { setUser } from "@sentry/react";
+import { setContext } from "@sentry/react";
 import { signOut } from "firebase/auth";
 import { nanoid } from "nanoid";
 import {
@@ -99,20 +99,6 @@ function Admin({ user, isConductor = false }: adminProps) {
   const [selectedTerritory, setSelectedTerritory] = useState<String>();
   const [unsubscribers, setUnsubscribers] = useState<Array<Unsubscribe>>([]);
   const [addresses, setAddresses] = useState(new Map<String, addressDetails>());
-  const congregationReference = child(ref(database), `congregations/${code}`);
-  let currentTime = new Date().getTime();
-
-  const setActivityTime = () => {
-    currentTime = new Date().getTime();
-  };
-
-  const refreshPage = () => {
-    if (new Date().getTime() - currentTime >= RELOAD_INACTIVITY_DURATION) {
-      window.location.reload();
-    } else {
-      setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-    }
-  };
 
   const processData = (data: any) => {
     const dataList = [];
@@ -344,7 +330,12 @@ function Admin({ user, isConductor = false }: adminProps) {
   };
 
   useEffect(() => {
-    setUser({ email: `${user?.email}` });
+    setContext("conductor", {
+      congregation: code,
+      login: user?.email
+    });
+
+    const congregationReference = child(ref(database), `congregations/${code}`);
     onValue(
       congregationReference,
       (snapshot) => {
@@ -377,12 +368,27 @@ function Admin({ user, isConductor = false }: adminProps) {
       { onlyOnce: true }
     );
 
+    let currentTime = new Date().getTime();
+
+    const setActivityTime = () => {
+      currentTime = new Date().getTime();
+    };
+
     document.body.addEventListener("mousemove", setActivityTime);
     document.body.addEventListener("keypress", setActivityTime);
     document.body.addEventListener("touchstart", setActivityTime);
 
+    const refreshPage = () => {
+      const inactivityPeriod = new Date().getTime() - currentTime;
+      if (inactivityPeriod >= RELOAD_INACTIVITY_DURATION) {
+        window.location.reload();
+      } else {
+        setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
+      }
+    };
+
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-  }, []);
+  }, [user, code]);
 
   const noSuchTerritory = territories.size === 0;
 

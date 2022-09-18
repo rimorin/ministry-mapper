@@ -43,26 +43,6 @@ function Home() {
   const [isPostalLoading, setIsPostalLoading] = useState<boolean>(true);
   const [postalName, setPostalName] = useState<String>();
   const [isSaving, setIsSaving] = useState<boolean>(false);
-  const postalNameReference = child(ref(database), `/${postalcode}/name`);
-  const postalUnitReference = child(ref(database), `/${postalcode}/units`);
-  const postalFeedbackReference = child(
-    ref(database),
-    `/${postalcode}/feedback`
-  );
-  const linkReference = child(ref(database), `/links/${id}`);
-  let currentTime = new Date().getTime();
-
-  const setActivityTime = () => {
-    currentTime = new Date().getTime();
-  };
-
-  const refreshPage = () => {
-    if (new Date().getTime() - currentTime >= RELOAD_INACTIVITY_DURATION) {
-      window.location.reload();
-    } else {
-      setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-    }
-  };
 
   const toggleModal = (isModal: boolean) => {
     if (isModal) {
@@ -173,6 +153,13 @@ function Home() {
       token: id,
       postalcode: postalcode
     });
+    const postalNameReference = child(ref(database), `/${postalcode}/name`);
+    const postalUnitReference = child(ref(database), `/${postalcode}/units`);
+    const postalFeedbackReference = child(
+      ref(database),
+      `/${postalcode}/feedback`
+    );
+    const linkReference = child(ref(database), `/links/${id}`);
     onValue(
       postalNameReference,
       (snapshot) => {
@@ -203,16 +190,31 @@ function Home() {
     });
     onValue(postalFeedbackReference, (snapshot) => {
       if (snapshot.exists()) {
-        setValues({ ...values, feedback: snapshot.val() });
+        setValues((values) => ({ ...values, feedback: snapshot.val() }));
       }
     });
+
+    let currentTime = new Date().getTime();
+
+    const setActivityTime = () => {
+      currentTime = new Date().getTime();
+    };
+
+    const refreshPage = () => {
+      const inactivityPeriod = new Date().getTime() - currentTime;
+      if (inactivityPeriod >= RELOAD_INACTIVITY_DURATION) {
+        window.location.reload();
+      } else {
+        setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
+      }
+    };
 
     document.body.addEventListener("mousemove", setActivityTime);
     document.body.addEventListener("keypress", setActivityTime);
     document.body.addEventListener("touchstart", setActivityTime);
 
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-  }, []);
+  }, [id, postalcode]);
   if (isLinkLoading || isPostalLoading) return <Loader />;
   if (floors.length === 0) return <NotFoundPage />;
   if (isLinkExpired) {
