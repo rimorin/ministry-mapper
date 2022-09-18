@@ -1,5 +1,7 @@
 import { captureException } from "@sentry/react";
+import { goOffline, goOnline } from "firebase/database";
 import { Modal, Navbar, Offcanvas, Table } from "react-bootstrap";
+import { database } from "../firebase";
 import {
   TitleProps,
   BrandingProps,
@@ -77,7 +79,7 @@ const RELOAD_CHECK_INTERVAL_MS = 5000;
 // 10mins
 const RELOAD_INACTIVITY_DURATION = 600000;
 // 10 secs
-const FIREBASE_FUNCTION_TIMEOUT = 10000;
+const FIREBASE_FUNCTION_TIMEOUT = 5000;
 
 const IGNORE_HOUSEHOLD_STATUS = [
   STATUS_CODES.DO_NOT_CALL,
@@ -99,8 +101,8 @@ const ModalUnitTitle = ({ unit, floor, postal }: TitleProps) => {
 
 const connectionTimeout = (timeout = FIREBASE_FUNCTION_TIMEOUT) => {
   return setTimeout(function () {
-    alert("Connection instability detected. Refreshing page.");
-    window.location.reload();
+    goOffline(database);
+    goOnline(database);
   }, timeout);
 };
 
