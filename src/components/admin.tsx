@@ -576,7 +576,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                       className="me-2"
                       onClick={async () => {
                         setIsSettingViewLink(true);
-                        const timeoutId = connectionTimeout("", 3000);
+                        const timeoutId = connectionTimeout();
                         try {
                           const territoryWindow = window.open("", "_blank");
                           await setTimedLink(addressLinkId);
