@@ -78,7 +78,7 @@ const FIREBASE_AUTH_UNAUTHORISED_MSG =
 const RELOAD_CHECK_INTERVAL_MS = 5000;
 // 10mins
 const RELOAD_INACTIVITY_DURATION = 600000;
-// 10 secs
+// 5 secs
 const FIREBASE_FUNCTION_TIMEOUT = 5000;
 
 const IGNORE_HOUSEHOLD_STATUS = [
@@ -99,10 +99,16 @@ const ModalUnitTitle = ({ unit, floor, postal }: TitleProps) => {
   );
 };
 
-const connectionTimeout = (timeout = FIREBASE_FUNCTION_TIMEOUT) => {
+const connectionTimeout = (
+  alertMesage = "",
+  timeout = FIREBASE_FUNCTION_TIMEOUT
+) => {
   return setTimeout(function () {
     goOffline(database);
     goOnline(database);
+    if (alertMesage) {
+      alert(alertMesage);
+    }
   }, timeout);
 };
 

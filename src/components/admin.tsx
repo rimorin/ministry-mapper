@@ -310,7 +310,9 @@ function Admin({ user, isConductor = false }: adminProps) {
   ) => {
     if (navigator.share) {
       setIsSettingAssignLink(true);
-      const timeoutId = connectionTimeout();
+      const timeoutId = connectionTimeout(
+        "There is instability in the connection. Please try assigning again."
+      );
       try {
         await setTimedLink(linkId, hours);
         navigator.share({
@@ -574,7 +576,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                       className="me-2"
                       onClick={async () => {
                         setIsSettingViewLink(true);
-                        const timeoutId = connectionTimeout();
+                        const timeoutId = connectionTimeout("", 3000);
                         try {
                           const territoryWindow = window.open("", "_blank");
                           await setTimedLink(addressLinkId);
