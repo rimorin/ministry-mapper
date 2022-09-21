@@ -311,9 +311,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   ) => {
     if (navigator.share) {
       setIsSettingAssignLink(true);
-      const timeoutId = connectionTimeout(
-        "There is instability in the connection. Please try assigning again."
-      );
+      const timeoutId = connectionTimeout();
       try {
         await setTimedLink(linkId, hours);
         navigator.share({
