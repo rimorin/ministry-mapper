@@ -86,6 +86,9 @@ const IGNORE_HOUSEHOLD_STATUS = [
   STATUS_CODES.INVALID
 ];
 
+const TERRITORY_VIEW_WINDOW_WELCOME_TEXT =
+  "<!DOCTYPE html><html><head><title>Loading Territory...</title></<head><body><style> body {display: flex; justify-content: center;align-items: center;}</style><h1>Loading Territory...</h1></body></html>";
+
 const ModalUnitTitle = ({ unit, floor, postal }: TitleProps) => {
   let titleString = `# ${floor} - ${unit}`;
 
@@ -265,5 +268,6 @@ export {
   ADMIN_MODAL_TYPES,
   RELOAD_CHECK_INTERVAL_MS,
   RELOAD_INACTIVITY_DURATION,
-  FIREBASE_FUNCTION_TIMEOUT
+  FIREBASE_FUNCTION_TIMEOUT,
+  TERRITORY_VIEW_WINDOW_WELCOME_TEXT
 };
