@@ -65,7 +65,8 @@ import {
   RELOAD_INACTIVITY_DURATION,
   RELOAD_CHECK_INTERVAL_MS,
   errorHandler,
-  connectionTimeout
+  connectionTimeout,
+  TERRITORY_VIEW_WINDOW_WELCOME_TEXT
 } from "./util";
 import TableHeader from "./table";
 import { useParams } from "react-router-dom";
@@ -579,6 +580,10 @@ function Admin({ user, isConductor = false }: adminProps) {
                         const timeoutId = connectionTimeout();
                         try {
                           const territoryWindow = window.open("", "_blank");
+                          if (territoryWindow) {
+                            territoryWindow.document.body.innerHTML =
+                              TERRITORY_VIEW_WINDOW_WELCOME_TEXT;
+                          }
                           await setTimedLink(addressLinkId);
                           territoryWindow!.location.href = `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`;
                         } catch (error) {
