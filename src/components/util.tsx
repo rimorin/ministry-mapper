@@ -41,7 +41,7 @@ const HOUSEHOLD_TYPES = {
   CHINESE: "cn",
   MALAY: "ml",
   INDIAN: "in",
-  FILIPINO: "py",
+  FILIPINO: "fp",
   INDONESIAN: "id",
   BURMESE: "bm",
   THAI: "th",
