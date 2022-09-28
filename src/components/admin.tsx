@@ -162,6 +162,26 @@ function Admin({ user, isConductor = false }: adminProps) {
     setUnsubscribers([...addressUnsubscribers]);
   };
 
+  const deleteBlockFloor = async (postalcode: String, floor: String) => {
+    try {
+      await remove(ref(database, `${postalcode}/units/${floor}`));
+    } catch (error) {
+      errorHandler(error);
+    }
+  };
+
+  const deleteBlock = async (postalcode: String) => {
+    try {
+      await remove(ref(database, `${postalcode}`));
+      setAddresses((existingAddresses) => {
+        existingAddresses.delete(postalcode);
+        return new Map<String, addressDetails>(existingAddresses);
+      });
+    } catch (error) {
+      errorHandler(error);
+    }
+  };
+
   const resetBlock = async (postalcode: String) => {
     const blockAddresses = addresses.get(postalcode);
     if (!blockAddresses) return;
@@ -689,6 +709,53 @@ function Admin({ user, isConductor = false }: adminProps) {
                       Reset
                     </Button>
                   )}
+                  {!isConductor && (
+                    <Button
+                      size="sm"
+                      variant="outline-primary"
+                      className="me-2"
+                      onClick={() =>
+                        confirmAlert({
+                          customUI: ({ onClose }) => {
+                            return (
+                              <Container>
+                                <Card bg="warning" className="text-center">
+                                  <Card.Header>Warning ⚠️</Card.Header>
+                                  <Card.Body>
+                                    <Card.Title>Are You Very Sure ?</Card.Title>
+                                    <Card.Text>
+                                      You want to delete {addressElement.name}.
+                                    </Card.Text>
+                                    <Button
+                                      className="me-2"
+                                      variant="primary"
+                                      onClick={() => {
+                                        deleteBlock(addressElement.postalcode);
+                                        onClose();
+                                      }}
+                                    >
+                                      Yes, Delete It.
+                                    </Button>
+                                    <Button
+                                      className="ms-2"
+                                      variant="primary"
+                                      onClick={() => {
+                                        onClose();
+                                      }}
+                                    >
+                                      No
+                                    </Button>
+                                  </Card.Body>
+                                </Card>
+                              </Container>
+                            );
+                          }
+                        })
+                      }
+                    >
+                      Delete
+                    </Button>
+                  )}
                 </Navbar.Collapse>
               </Container>
             </Navbar>
@@ -717,6 +784,63 @@ function Admin({ user, isConductor = false }: adminProps) {
                         key={`floor-${floorIndex}`}
                         scope="row"
                       >
+                        {!isConductor && (
+                          <Button
+                            size="sm"
+                            variant="outline-warning"
+                            className="me-2"
+                            onClick={() =>
+                              confirmAlert({
+                                customUI: ({ onClose }) => {
+                                  return (
+                                    <Container>
+                                      <Card
+                                        bg="warning"
+                                        className="text-center"
+                                      >
+                                        <Card.Header>Warning ⚠️</Card.Header>
+                                        <Card.Body>
+                                          <Card.Title>
+                                            Are You Very Sure ?
+                                          </Card.Title>
+                                          <Card.Text>
+                                            You want to delete floor{" "}
+                                            {floorElement.floor} of{" "}
+                                            {addressElement.name}.
+                                          </Card.Text>
+                                          <Button
+                                            className="me-2"
+                                            variant="primary"
+                                            onClick={() => {
+                                              deleteBlockFloor(
+                                                addressElement.postalcode,
+                                                floorElement.floor
+                                              );
+                                              onClose();
+                                            }}
+                                          >
+                                            Yes, Delete It.
+                                          </Button>
+                                          <Button
+                                            className="ms-2"
+                                            variant="primary"
+                                            onClick={() => {
+                                              onClose();
+                                            }}
+                                          >
+                                            No
+                                          </Button>
+                                        </Card.Body>
+                                      </Card>
+                                    </Container>
+                                  );
+                                }
+                              })
+                            }
+                          >
+                            🗑️
+                          </Button>
+                        )}
                         {`${ZeroPad(
                           floorElement.floor,
                           DEFAULT_FLOOR_PADDING
