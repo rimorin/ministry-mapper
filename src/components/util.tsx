@@ -39,11 +39,11 @@ const STATUS_CODES = {
 
 const HOUSEHOLD_TYPES = {
   CHINESE: "cn",
-  MUSLIM: "ml",
-  TAMIL: "tm",
+  MALAY: "ml",
+  INDIAN: "in",
+  FILIPINO: "fp",
   INDONESIAN: "id",
   BURMESE: "bm",
-  SIGN_LANGUAGE: "sl",
   THAI: "th",
   VIETNAMESE: "vn",
   OTHER: "ot"
@@ -164,7 +164,7 @@ const getCompletedPercent = (floors: floorDetails[]) => {
       const unitType = uElement.type;
       const isCountable =
         !IGNORE_HOUSEHOLD_STATUS.includes(unitStatus.toString()) &&
-        unitType !== HOUSEHOLD_TYPES.MUSLIM;
+        unitType !== HOUSEHOLD_TYPES.MALAY;
 
       if (isCountable) totalUnits++;
       if (unitStatus === STATUS_CODES.DONE) {

@@ -128,11 +128,11 @@ test("renders form householder type", () => {
   render(<HHTypeField changeValue={HOUSEHOLD_TYPES.CHINESE} />);
   expect(screen.getByText("Household")).toBeInTheDocument();
   expect(screen.getByText("Chinese")).toBeInTheDocument();
-  expect(screen.getByText("Muslim")).toBeInTheDocument();
-  expect(screen.getByText("Tamil")).toBeInTheDocument();
+  expect(screen.getByText("Malay")).toBeInTheDocument();
+  expect(screen.getByText("Indian")).toBeInTheDocument();
   expect(screen.getByText("Indonesian")).toBeInTheDocument();
   expect(screen.getByText("Burmese")).toBeInTheDocument();
-  expect(screen.getByText("Sign Language")).toBeInTheDocument();
+  expect(screen.getByText("Filipino")).toBeInTheDocument();
   expect(screen.getByText("Thai")).toBeInTheDocument();
   expect(screen.getByText("Vietnamese")).toBeInTheDocument();
   expect(screen.getByText("Others")).toBeInTheDocument();
