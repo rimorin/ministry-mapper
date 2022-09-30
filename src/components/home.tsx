@@ -30,12 +30,11 @@ import {
   ZeroPad
 } from "./util";
 import {
-  FeedbackField,
+  GenericTextAreaField,
   HHNotHomeField,
   HHStatusField,
   HHTypeField,
-  ModalFooter,
-  NoteField
+  ModalFooter
 } from "./form";
 import { useParams } from "react-router-dom";
 import InvalidPage from "./invalidpage";
@@ -315,7 +314,9 @@ function Home() {
         </Modal.Header>
         <Form onSubmit={handleSubmitFeedback}>
           <Modal.Body>
-            <FeedbackField
+            <GenericTextAreaField
+              name="feedback"
+              rows={5}
               handleChange={onFormChange}
               changeValue={`${(values as valuesDetails).feedback}`}
             />
@@ -361,7 +362,10 @@ function Home() {
               handleChange={onFormChange}
               changeValue={`${(values as valuesDetails).type}`}
             />
-            <NoteField
+            <GenericTextAreaField
+              label="Notes"
+              name="note"
+              placeholder="Optional non-personal information. Eg, Renovation, Foreclosed, Friends, etc."
               handleChange={onFormChange}
               changeValue={`${(values as valuesDetails).note}`}
             />

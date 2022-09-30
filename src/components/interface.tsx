@@ -60,6 +60,10 @@ export interface addressDetails {
 export interface FormProps {
   handleChange?: (event: React.ChangeEvent<HTMLElement>) => void;
   changeValue: string;
+  name?: string;
+  label?: string;
+  placeholder?: string;
+  rows?: number;
 }
 
 export interface FloorProps {

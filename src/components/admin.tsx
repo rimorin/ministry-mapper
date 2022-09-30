@@ -78,16 +78,13 @@ import TableHeader from "./table";
 import { useParams } from "react-router-dom";
 import {
   AdminLinkField,
-  FeedbackField,
   FloorField,
+  GenericTextAreaField,
+  GenericTextField,
   HHNotHomeField,
   HHStatusField,
   HHTypeField,
-  ModalFooter,
-  NameField,
-  NoteField,
-  PostalField,
-  UnitsField
+  ModalFooter
 } from "./form";
 import Welcome from "./welcome";
 import NotFoundPage from "./notfoundpage";
@@ -1082,7 +1079,9 @@ function Admin({ user, isConductor = false }: adminProps) {
           </Modal.Header>
           <Form onSubmit={handleUpdateBlockName}>
             <Modal.Body>
-              <NameField
+              <GenericTextField
+                label="Name"
+                name="name"
                 handleChange={onFormChange}
                 changeValue={`${(values as valuesDetails).name}`}
               />
@@ -1104,18 +1103,22 @@ function Admin({ user, isConductor = false }: adminProps) {
       {!isConductor && (
         <Modal show={isCreate}>
           <Modal.Header>
-            <Modal.Title>Create Territory Block</Modal.Title>
+            <Modal.Title>Create Territory Address</Modal.Title>
           </Modal.Header>
           <Form onSubmit={handleCreateTerritory}>
             <Modal.Body>
-              <PostalField
+              <GenericTextField
+                label="Postal Code"
+                name="postalcode"
                 handleChange={(e: ChangeEvent<HTMLElement>) => {
                   const { value } = e.target as HTMLInputElement;
                   setValues({ ...values, newPostal: value });
                 }}
                 changeValue={`${(values as valuesDetails).newPostal}`}
               />
-              <NameField
+              <GenericTextField
+                label="Address Name"
+                name="name"
                 handleChange={onFormChange}
                 changeValue={`${(values as valuesDetails).name}`}
               />
@@ -1128,7 +1131,10 @@ function Admin({ user, isConductor = false }: adminProps) {
                   (values as valuesDetails).floors || MIN_START_FLOOR
                 }
               />
-              <UnitsField
+              <GenericTextAreaField
+                label="Unit Sequence"
+                name="units"
+                placeholder="Unit sequence with comma seperator. For eg, 301,303,305 ..."
                 handleChange={onFormChange}
                 changeValue={`${(values as valuesDetails).units}`}
               />
@@ -1155,7 +1161,9 @@ function Admin({ user, isConductor = false }: adminProps) {
         </Modal.Header>
         <Form onSubmit={handleSubmitFeedback}>
           <Modal.Body>
-            <FeedbackField
+            <GenericTextAreaField
+              name="feedback"
+              rows={5}
               handleChange={onFormChange}
               changeValue={`${(values as valuesDetails).feedback}`}
             />
@@ -1202,7 +1210,10 @@ function Admin({ user, isConductor = false }: adminProps) {
               handleChange={onFormChange}
               changeValue={`${(values as valuesDetails).type}`}
             />
-            <NoteField
+            <GenericTextAreaField
+              label="Notes"
+              name="note"
+              placeholder="Optional non-personal information. Eg, Renovation, Foreclosed, Friends, etc."
               handleChange={onFormChange}
               changeValue={`${(values as valuesDetails).note}`}
             />

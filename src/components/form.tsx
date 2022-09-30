@@ -47,41 +47,16 @@ const HHType = () => (
   </>
 );
 
-const NoteField = ({ handleChange, changeValue }: FormProps) => {
+const GenericTextField = ({
+  handleChange,
+  changeValue,
+  name,
+  label
+}: FormProps) => {
   return (
-    <Form.Group className="mb-3" controlId="formBasicTextArea">
-      <Form.Label>Notes</Form.Label>
-      <Form.Control
-        onChange={handleChange}
-        name="note"
-        as="textarea"
-        rows={3}
-        aria-label="With textarea"
-        placeholder="Optional non-personal information. Eg, Renovation, Foreclosed, Friends, etc."
-        value={changeValue}
-      />
-    </Form.Group>
-  );
-};
-
-const PostalField = ({ handleChange, changeValue }: FormProps) => {
-  return (
-    <Form.Group className="mb-3" controlId="formBasicPostalText">
-      <Form.Label>Postal Code</Form.Label>
-      <Form.Control
-        onChange={handleChange}
-        name="postalcode"
-        value={changeValue}
-      />
-    </Form.Group>
-  );
-};
-
-const NameField = ({ handleChange, changeValue }: FormProps) => {
-  return (
-    <Form.Group className="mb-3" controlId="formBasicNameText">
-      <Form.Label>Block Name</Form.Label>
-      <Form.Control onChange={handleChange} name="name" value={changeValue} />
+    <Form.Group className="mb-3" controlId={`basicForm${name}Text`}>
+      <Form.Label>{label}</Form.Label>
+      <Form.Control onChange={handleChange} name={name} value={changeValue} />
     </Form.Group>
   );
 };
@@ -100,32 +75,23 @@ const FloorField = ({ handleChange, changeValue }: FloorProps) => {
   );
 };
 
-const UnitsField = ({ handleChange, changeValue }: FormProps) => {
+const GenericTextAreaField = ({
+  handleChange,
+  changeValue,
+  label,
+  name,
+  placeholder,
+  rows = 3
+}: FormProps) => {
   return (
-    <Form.Group className="mb-3" controlId="formBasicUnitTextArea">
-      <Form.Label>Unit Sequence</Form.Label>
+    <Form.Group className="mb-3" controlId={`formBasic${name}TextAreaField`}>
+      {label && <Form.Label>{label}</Form.Label>}
       <Form.Control
         onChange={handleChange}
-        name="units"
+        name={name}
         as="textarea"
-        rows={3}
-        aria-label="With textarea"
-        placeholder="Unit sequence with comma seperator. For eg, 301,303,305 ..."
-        value={changeValue}
-      />
-    </Form.Group>
-  );
-};
-
-const FeedbackField = ({ handleChange, changeValue }: FormProps) => {
-  return (
-    <Form.Group className="mb-3" controlId="formBasicFeedbackTextArea">
-      <Form.Control
-        onChange={handleChange}
-        name="feedback"
-        as="textarea"
-        rows={5}
-        aria-label="With textarea"
+        rows={rows}
+        placeholder={placeholder}
         value={changeValue}
       />
     </Form.Group>
@@ -256,15 +222,12 @@ const AdminLinkField = ({ handleChange, changeValue }: FormProps) => {
 
 export {
   HHType,
-  NoteField,
   HHTypeField,
   HHStatusField,
-  FeedbackField,
   AdminLinkField,
   HHNotHomeField,
-  NameField,
   FloorField,
-  UnitsField,
-  PostalField,
+  GenericTextField,
+  GenericTextAreaField,
   ModalFooter
 };
