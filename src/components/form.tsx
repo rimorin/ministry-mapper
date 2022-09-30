@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Form,
   ToggleButtonGroup,
@@ -151,7 +150,10 @@ const HHTypeField = ({ handleChange, changeValue }: FormProps) => {
 
 const HHStatusField = ({ handleChange, changeValue }: FormProps) => {
   return (
-    <Form.Group className="mb-3" controlId="formBasicStatusbtnCheckbox">
+    <Form.Group
+      className="mb-1 text-center"
+      controlId="formBasicStatusbtnCheckbox"
+    >
       <ToggleButtonGroup
         name="status"
         type="radio"

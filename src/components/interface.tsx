@@ -5,7 +5,7 @@ export interface unitDetails {
   note: String;
   type: String;
   status: String;
-  nhcount?: number;
+  nhcount: String;
 }
 
 export interface floorDetails {
@@ -17,7 +17,7 @@ export interface unitProps {
   type: String;
   note?: String;
   status: String;
-  nhcount?: number;
+  nhcount?: String;
 }
 
 export interface valuesDetails {
@@ -31,7 +31,7 @@ export interface valuesDetails {
   feedback: String;
   status: String;
   link?: String;
-  nhcount?: number;
+  nhcount?: String;
   name?: String;
   units?: String;
   floors?: number;
