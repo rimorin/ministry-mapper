@@ -29,6 +29,10 @@ export interface valuesDetails {
   feedback: String;
   status: String;
   link?: String;
+  name?: String;
+  units?: String;
+  floors?: number;
+  newPostal?: String;
 }
 
 export interface adminProps {
@@ -53,6 +57,11 @@ export interface addressDetails {
 export interface FormProps {
   handleChange?: (event: React.ChangeEvent<HTMLElement>) => void;
   changeValue: string;
+}
+
+export interface FloorProps {
+  handleChange?: (event: React.ChangeEvent<HTMLElement>) => void;
+  changeValue: number;
 }
 
 export interface TitleProps {

@@ -5,7 +5,9 @@ import {
   set,
   update,
   remove,
-  Unsubscribe
+  Unsubscribe,
+  push,
+  get
 } from "firebase/database";
 import { setContext } from "@sentry/react";
 import { signOut } from "firebase/auth";
@@ -66,26 +68,35 @@ import {
   RELOAD_CHECK_INTERVAL_MS,
   errorHandler,
   connectionTimeout,
-  TERRITORY_VIEW_WINDOW_WELCOME_TEXT
+  TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
+  HOUSEHOLD_TYPES,
+  MIN_START_FLOOR
 } from "./util";
 import TableHeader from "./table";
 import { useParams } from "react-router-dom";
 import {
   AdminLinkField,
   FeedbackField,
+  FloorField,
   HHStatusField,
   HHTypeField,
   ModalFooter,
-  NoteField
+  NameField,
+  NoteField,
+  PostalField,
+  UnitsField
 } from "./form";
 import Welcome from "./welcome";
 import NotFoundPage from "./notfoundpage";
 import UnauthorizedPage from "./unauthorisedpage";
+import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 function Admin({ user, isConductor = false }: adminProps) {
   const { code } = useParams();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isFeedback, setIsFeedback] = useState<boolean>(false);
   const [isLinkRevoke, setIsLinkRevoke] = useState<boolean>(false);
+  const [isCreate, setIsCreate] = useState<boolean>(false);
+  const [isRename, setIsRename] = useState<boolean>(false);
   const [isSettingAssignLink, setIsSettingAssignLink] =
     useState<boolean>(false);
   const [isSettingViewLink, setIsSettingViewLink] = useState<boolean>(false);
@@ -98,6 +109,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     new Map<String, territoryDetails>()
   );
   const [selectedTerritory, setSelectedTerritory] = useState<String>();
+  const [selectedTerritoryCode, setSelectedTerritoryCode] = useState<String>();
   const [unsubscribers, setUnsubscribers] = useState<Array<Unsubscribe>>([]);
   const [addresses, setAddresses] = useState(new Map<String, addressDetails>());
 
@@ -159,6 +171,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     setSelectedTerritory(
       `${territoryDetails?.code} - ${territoryDetails?.name}`
     );
+    setSelectedTerritoryCode(territoryDetails?.code);
     setUnsubscribers([...addressUnsubscribers]);
   };
 
@@ -173,6 +186,28 @@ function Admin({ user, isConductor = false }: adminProps) {
   const deleteBlock = async (postalcode: String) => {
     try {
       await remove(ref(database, `${postalcode}`));
+      const addressSnapshot = await get(
+        ref(
+          database,
+          `congregations/${code}/territories/${selectedTerritoryCode}/addresses`
+        )
+      );
+      if (addressSnapshot.exists()) {
+        const addressData = addressSnapshot.val();
+        for (const addkey in addressData) {
+          const units = addressData[addkey];
+          if (units === postalcode) {
+            await remove(
+              ref(
+                database,
+                `congregations/${code}/territories/${selectedTerritoryCode}/addresses/${addkey}`
+              )
+            );
+            break;
+          }
+        }
+      }
+
       setAddresses((existingAddresses) => {
         existingAddresses.delete(postalcode);
         return new Map<String, addressDetails>(existingAddresses);
@@ -216,6 +251,12 @@ function Admin({ user, isConductor = false }: adminProps) {
         break;
       case ADMIN_MODAL_TYPES.LINK:
         setIsLinkRevoke(!isLinkRevoke);
+        break;
+      case ADMIN_MODAL_TYPES.CREATE_ADDRESS:
+        setIsCreate(!isCreate);
+        break;
+      case ADMIN_MODAL_TYPES.RENAME_TERRITORY:
+        setIsRename(!isRename);
         break;
       default:
         setIsOpen(!isOpen);
@@ -302,6 +343,77 @@ function Admin({ user, isConductor = false }: adminProps) {
     }
   };
 
+  const handleClickChangeName = (
+    _: MouseEvent<HTMLElement>,
+    postalcode: String,
+    name: String
+  ) => {
+    setValues({ ...values, name: name, postal: postalcode });
+    toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
+  };
+
+  const handleUpdateBlockName = async (event: FormEvent<HTMLElement>) => {
+    event.preventDefault();
+    const details = values as valuesDetails;
+    setIsSaving(true);
+    try {
+      await set(ref(database, `/${details.postal}/name`), details.name);
+    } catch (error) {
+      errorHandler(error);
+    } finally {
+      setIsSaving(false);
+      toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
+    }
+  };
+
+  const handleCreateTerritory = async (event: FormEvent<HTMLElement>) => {
+    event.preventDefault();
+    const details = values as valuesDetails;
+    const newPostalCode = details.newPostal;
+    const noOfFloors = details.floors || 0;
+    const unitSequence = details.units;
+    const postalName = details.name;
+
+    // Add empty details for 0 floor
+    let floorDetails = [{}];
+    const units = unitSequence?.split(",");
+
+    for (let i = 0; i < noOfFloors; i++) {
+      const floorMap = {} as any;
+      units?.forEach((unitNo) => {
+        floorMap[unitNo] = {
+          status: STATUS_CODES.DEFAULT,
+          type: HOUSEHOLD_TYPES.CHINESE,
+          notes: ""
+        };
+      });
+      floorDetails.push(floorMap);
+    }
+
+    setIsSaving(true);
+    try {
+      await set(
+        push(
+          ref(
+            database,
+            `congregations/${code}/territories/${selectedTerritoryCode}/addresses`
+          )
+        ),
+        newPostalCode
+      );
+      await set(ref(database, `/${newPostalCode}`), {
+        name: postalName,
+        feedback: "",
+        units: floorDetails
+      });
+    } catch (error) {
+      errorHandler(error);
+    } finally {
+      setIsSaving(false);
+      toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS);
+    }
+  };
+
   const handleRevokeLink = async (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
@@ -320,6 +432,11 @@ function Admin({ user, isConductor = false }: adminProps) {
   const onFormChange = (e: ChangeEvent<HTMLElement>) => {
     const { name, value } = e.target as HTMLInputElement;
     setValues({ ...values, [name]: value });
+  };
+
+  const handleClickCreate = () => {
+    setValues({ ...values, name: "", units: "", floors: 1, newPostal: "" });
+    toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS);
   };
 
   const shareTimedLink = async (
@@ -451,6 +568,18 @@ function Admin({ user, isConductor = false }: adminProps) {
                   </NavDropdown.Item>
                 ))}
             </NavDropdown>
+            {!isConductor && selectedTerritory && (
+              <Button
+                className="m-2"
+                size="sm"
+                variant="outline-primary"
+                onClick={() => {
+                  handleClickCreate();
+                }}
+              >
+                Create Address
+              </Button>
+            )}
             {!isConductor && (
               <Button
                 className="m-2"
@@ -464,7 +593,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                   toggleModal(ADMIN_MODAL_TYPES.LINK);
                 }}
               >
-                Revoke
+                Revoke Link
               </Button>
             )}
             <Button
@@ -660,6 +789,22 @@ function Admin({ user, isConductor = false }: adminProps) {
                       </>
                     )}
                   </Button>
+                  {!isConductor && (
+                    <Button
+                      size="sm"
+                      variant="outline-primary"
+                      className="me-2"
+                      onClick={(event) => {
+                        handleClickChangeName(
+                          event,
+                          addressElement.postalcode,
+                          addressElement.name
+                        );
+                      }}
+                    >
+                      Rename
+                    </Button>
+                  )}
                   {!isConductor && (
                     <Button
                       size="sm"
@@ -914,6 +1059,78 @@ function Admin({ user, isConductor = false }: adminProps) {
               </Button>
               <Button type="submit" variant="primary">
                 Revoke
+              </Button>
+            </Modal.Footer>
+          </Form>
+        </Modal>
+      )}
+      {!isConductor && (
+        <Modal show={isRename}>
+          <Modal.Header>
+            <Modal.Title>Change Block Name</Modal.Title>
+          </Modal.Header>
+          <Form onSubmit={handleUpdateBlockName}>
+            <Modal.Body>
+              <NameField
+                handleChange={onFormChange}
+                changeValue={`${(values as valuesDetails).name}`}
+              />
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                onClick={() => toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY)}
+              >
+                Close
+              </Button>
+              <Button type="submit" variant="primary">
+                Save
+              </Button>
+            </Modal.Footer>
+          </Form>
+        </Modal>
+      )}
+      {!isConductor && (
+        <Modal show={isCreate}>
+          <Modal.Header>
+            <Modal.Title>Create Territory Block</Modal.Title>
+          </Modal.Header>
+          <Form onSubmit={handleCreateTerritory}>
+            <Modal.Body>
+              <PostalField
+                handleChange={(e: ChangeEvent<HTMLElement>) => {
+                  const { value } = e.target as HTMLInputElement;
+                  setValues({ ...values, newPostal: value });
+                }}
+                changeValue={`${(values as valuesDetails).newPostal}`}
+              />
+              <NameField
+                handleChange={onFormChange}
+                changeValue={`${(values as valuesDetails).name}`}
+              />
+              <FloorField
+                handleChange={(e: ChangeEvent<HTMLElement>) => {
+                  const { value } = e.target as HTMLInputElement;
+                  setValues({ ...values, floors: value });
+                }}
+                changeValue={
+                  (values as valuesDetails).floors || MIN_START_FLOOR
+                }
+              />
+              <UnitsField
+                handleChange={onFormChange}
+                changeValue={`${(values as valuesDetails).units}`}
+              />
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                onClick={() => toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS)}
+              >
+                Close
+              </Button>
+              <Button type="submit" variant="primary">
+                Save
               </Button>
             </Modal.Footer>
           </Form>
