@@ -63,7 +63,9 @@ const LOGIN_TYPE_CODES = {
 const ADMIN_MODAL_TYPES = {
   UNIT: 0,
   FEEDBACK: 1,
-  LINK: 2
+  LINK: 2,
+  RENAME_TERRITORY: 3,
+  CREATE_ADDRESS: 4
 };
 
 const DEFAULT_FLOOR_PADDING = 2;
@@ -85,6 +87,9 @@ const IGNORE_HOUSEHOLD_STATUS = [
   STATUS_CODES.DO_NOT_CALL,
   STATUS_CODES.INVALID
 ];
+
+const MIN_START_FLOOR = 1;
+const MAX_TOP_FLOOR = 30;
 
 const TERRITORY_VIEW_WINDOW_WELCOME_TEXT =
   "<!DOCTYPE html><html><head><title>Loading Territory...</title></<head><body><style> body {display: flex; justify-content: center;align-items: center;}</style><h1>Loading Territory...</h1></body></html>";
@@ -269,5 +274,7 @@ export {
   RELOAD_CHECK_INTERVAL_MS,
   RELOAD_INACTIVITY_DURATION,
   FIREBASE_FUNCTION_TIMEOUT,
-  TERRITORY_VIEW_WINDOW_WELCOME_TEXT
+  TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
+  MIN_START_FLOOR,
+  MAX_TOP_FLOOR
 };
