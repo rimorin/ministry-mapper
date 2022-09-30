@@ -35,7 +35,7 @@ const UnitStatus = (props: unitProps) => {
     <>
       {currentStatus !== STATUS_CODES.NOT_HOME && <>{status}</>}
       {currentStatus === STATUS_CODES.NOT_HOME && (
-        <Badge bg="secondary" text="light">
+        <Badge bg="secondary" text="light" style={{ marginRight: 1 }}>
           {status} {nhcount}
         </Badge>
       )}

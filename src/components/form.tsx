@@ -8,14 +8,13 @@ import {
   Spinner,
   InputGroup
 } from "react-bootstrap";
-import { FooterProps, FormProps } from "./interface";
-import { HOUSEHOLD_TYPES, NOT_HOME_STATUS_CODES, STATUS_CODES } from "./util";
 import RangeSlider from "react-bootstrap-range-slider";
 import { FloorProps, FooterProps, FormProps } from "./interface";
 import {
   HOUSEHOLD_TYPES,
   MAX_TOP_FLOOR,
   MIN_START_FLOOR,
+  NOT_HOME_STATUS_CODES,
   STATUS_CODES
 } from "./util";
 
