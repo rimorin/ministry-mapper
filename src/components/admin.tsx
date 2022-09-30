@@ -139,7 +139,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     setAddresses(new Map<String, addressDetails>());
   };
 
-  const handleSelect = (eventKey: String, _: SyntheticEvent<unknown>) => {
+  const handleSelect = (eventKey: String, _?: SyntheticEvent<unknown>) => {
     const territoryDetails = territories.get(eventKey);
     const territoryAddresses = territoryDetails?.addresses;
     refreshAddressState();
@@ -207,11 +207,8 @@ function Admin({ user, isConductor = false }: adminProps) {
           }
         }
       }
-
-      setAddresses((existingAddresses) => {
-        existingAddresses.delete(postalcode);
-        return new Map<String, addressDetails>(existingAddresses);
-      });
+      alert(`Deleted postal address, ${postalcode}.`);
+      window.location.reload();
     } catch (error) {
       errorHandler(error);
     }
@@ -335,11 +332,11 @@ function Admin({ user, isConductor = false }: adminProps) {
     setIsSaving(true);
     try {
       await set(ref(database, `/${details.postal}/feedback`), details.feedback);
+      toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
     } catch (error) {
       errorHandler(error);
     } finally {
       setIsSaving(false);
-      toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
     }
   };
 
@@ -358,11 +355,11 @@ function Admin({ user, isConductor = false }: adminProps) {
     setIsSaving(true);
     try {
       await set(ref(database, `/${details.postal}/name`), details.name);
+      toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
     } catch (error) {
       errorHandler(error);
     } finally {
       setIsSaving(false);
-      toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
     }
   };
 
@@ -406,11 +403,12 @@ function Admin({ user, isConductor = false }: adminProps) {
         feedback: "",
         units: floorDetails
       });
+      alert(`Created postal address, ${newPostalCode}.`);
+      window.location.reload();
     } catch (error) {
       errorHandler(error);
     } finally {
       setIsSaving(false);
-      toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS);
     }
   };
 
