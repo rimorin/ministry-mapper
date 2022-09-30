@@ -173,12 +173,18 @@ const getCompletedPercent = (floors: floorDetails[]) => {
     element.units.forEach((uElement) => {
       const unitStatus = uElement.status;
       const unitType = uElement.type;
+      const unitNotHomeCount = uElement.nhcount;
       const isCountable =
         !IGNORE_HOUSEHOLD_STATUS.includes(unitStatus.toString()) &&
         unitType !== HOUSEHOLD_TYPES.MALAY;
 
       if (isCountable) totalUnits++;
-      if (unitStatus === STATUS_CODES.DONE) {
+      if (
+        unitStatus === STATUS_CODES.DONE ||
+        (unitStatus === STATUS_CODES.NOT_HOME &&
+          (unitNotHomeCount === NOT_HOME_STATUS_CODES.SECOND_TRY ||
+            unitNotHomeCount === NOT_HOME_STATUS_CODES.THIRD_TRY))
+      ) {
         completedUnits++;
       }
     });
