@@ -24,6 +24,7 @@ import {
   Badge,
   Button,
   Card,
+  Collapse,
   Container,
   Dropdown,
   DropdownButton,
@@ -70,7 +71,8 @@ import {
   connectionTimeout,
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   HOUSEHOLD_TYPES,
-  MIN_START_FLOOR
+  MIN_START_FLOOR,
+  NOT_HOME_STATUS_CODES
 } from "./util";
 import TableHeader from "./table";
 import { useParams } from "react-router-dom";
@@ -78,6 +80,7 @@ import {
   AdminLinkField,
   FeedbackField,
   FloorField,
+  HHNotHomeField,
   HHStatusField,
   HHTypeField,
   ModalFooter,
@@ -103,6 +106,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isUnauthorised, setIsUnauthorised] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isNotHome, setIsNotHome] = useState<boolean>(false);
   const [name, setName] = useState<String>();
   const [values, setValues] = useState<Object>({});
   const [territories, setTerritories] = useState(
@@ -123,7 +127,8 @@ function Admin({ user, isConductor = false }: adminProps) {
           number: unit,
           note: units[unit]["note"],
           type: units[unit]["type"],
-          status: units[unit]["status"]
+          status: units[unit]["status"],
+          nhcount: units[unit]["nhcount"] || NOT_HOME_STATUS_CODES.DEFAULT
         });
       }
       dataList.push({ floor: floor, units: unitsDetails });
@@ -230,7 +235,8 @@ function Admin({ user, isConductor = false }: adminProps) {
         ] = {
           type: element.type,
           note: element.note,
-          status: currentStatus
+          status: currentStatus,
+          nhcount: NOT_HOME_STATUS_CODES.DEFAULT
         };
       });
     }
@@ -268,6 +274,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     type: String,
     note: String,
     status: String,
+    nhcount: String,
     maxUnitNumber: number
   ) => {
     setValues({
@@ -279,8 +286,10 @@ function Admin({ user, isConductor = false }: adminProps) {
       type: type,
       note: note,
       postal: postal,
-      status: status
+      status: status,
+      nhcount: nhcount
     });
+    setIsNotHome(status === STATUS_CODES.NOT_HOME);
     toggleModal();
   };
 
@@ -298,7 +307,8 @@ function Admin({ user, isConductor = false }: adminProps) {
         {
           type: details.type,
           note: details.note,
-          status: details.status
+          status: details.status,
+          nhcount: details.nhcount
         }
       );
       toggleModal();
@@ -381,7 +391,8 @@ function Admin({ user, isConductor = false }: adminProps) {
         floorMap[unitNo] = {
           status: STATUS_CODES.DEFAULT,
           type: HOUSEHOLD_TYPES.CHINESE,
-          notes: ""
+          notes: "",
+          nhcount: NOT_HOME_STATUS_CODES.DEFAULT
         };
       });
       floorDetails.push(floorMap);
@@ -1001,6 +1012,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                               detailsElement.type,
                               detailsElement.note,
                               detailsElement.status,
+                              detailsElement.nhcount,
                               maxUnitNumberLength
                             )
                           }
@@ -1011,6 +1023,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                             type={detailsElement.type}
                             note={detailsElement.note}
                             status={detailsElement.status}
+                            nhcount={detailsElement.nhcount}
                           />
                         </td>
                       ))}
@@ -1163,10 +1176,28 @@ function Admin({ user, isConductor = false }: adminProps) {
           <Modal.Body>
             <HHStatusField
               handleChange={(toggleValue) => {
-                setValues({ ...values, status: toggleValue });
+                setIsNotHome(false);
+                if (toggleValue.toString() === STATUS_CODES.NOT_HOME) {
+                  setIsNotHome(true);
+                }
+                setValues({
+                  ...values,
+                  nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+                  status: toggleValue
+                });
               }}
               changeValue={`${(values as valuesDetails).status}`}
             />
+            <Collapse in={isNotHome}>
+              <div className="text-center">
+                <HHNotHomeField
+                  changeValue={`${(values as valuesDetails).nhcount}`}
+                  handleChange={(toggleValue) => {
+                    setValues({ ...values, nhcount: toggleValue });
+                  }}
+                />
+              </div>
+            </Collapse>
             <HHTypeField
               handleChange={onFormChange}
               changeValue={`${(values as valuesDetails).type}`}
