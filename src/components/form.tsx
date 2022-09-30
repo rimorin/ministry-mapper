@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Form,
   ToggleButtonGroup,
@@ -9,6 +10,14 @@ import {
 } from "react-bootstrap";
 import { FooterProps, FormProps } from "./interface";
 import { HOUSEHOLD_TYPES, NOT_HOME_STATUS_CODES, STATUS_CODES } from "./util";
+import RangeSlider from "react-bootstrap-range-slider";
+import { FloorProps, FooterProps, FormProps } from "./interface";
+import {
+  HOUSEHOLD_TYPES,
+  MAX_TOP_FLOOR,
+  MIN_START_FLOOR,
+  STATUS_CODES
+} from "./util";
 
 const ModalFooter = ({ handleClick, isSaving = false }: FooterProps) => {
   return (
@@ -51,6 +60,59 @@ const NoteField = ({ handleChange, changeValue }: FormProps) => {
         rows={3}
         aria-label="With textarea"
         placeholder="Optional non-personal information. Eg, Renovation, Foreclosed, Friends, etc."
+        value={changeValue}
+      />
+    </Form.Group>
+  );
+};
+
+const PostalField = ({ handleChange, changeValue }: FormProps) => {
+  return (
+    <Form.Group className="mb-3" controlId="formBasicPostalText">
+      <Form.Label>Postal Code</Form.Label>
+      <Form.Control
+        onChange={handleChange}
+        name="postalcode"
+        value={changeValue}
+      />
+    </Form.Group>
+  );
+};
+
+const NameField = ({ handleChange, changeValue }: FormProps) => {
+  return (
+    <Form.Group className="mb-3" controlId="formBasicNameText">
+      <Form.Label>Block Name</Form.Label>
+      <Form.Control onChange={handleChange} name="name" value={changeValue} />
+    </Form.Group>
+  );
+};
+
+const FloorField = ({ handleChange, changeValue }: FloorProps) => {
+  return (
+    <Form.Group className="mb-3" controlId="formBasicFloorRange">
+      <Form.Label>No. of floors</Form.Label>
+      <RangeSlider
+        min={MIN_START_FLOOR}
+        max={MAX_TOP_FLOOR}
+        value={changeValue}
+        onChange={handleChange}
+      />
+    </Form.Group>
+  );
+};
+
+const UnitsField = ({ handleChange, changeValue }: FormProps) => {
+  return (
+    <Form.Group className="mb-3" controlId="formBasicUnitTextArea">
+      <Form.Label>Unit Sequence</Form.Label>
+      <Form.Control
+        onChange={handleChange}
+        name="units"
+        as="textarea"
+        rows={3}
+        aria-label="With textarea"
+        placeholder="Unit sequence with comma seperator. For eg, 301,303,305 ..."
         value={changeValue}
       />
     </Form.Group>
@@ -199,5 +261,9 @@ export {
   FeedbackField,
   AdminLinkField,
   HHNotHomeField,
+  NameField,
+  FloorField,
+  UnitsField,
+  PostalField,
   ModalFooter
 };
