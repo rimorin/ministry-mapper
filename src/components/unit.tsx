@@ -27,18 +27,15 @@ const UnitStatus = (props: unitProps) => {
     status = "📬";
   }
 
-  if (note) {
-    status += "🗒️ ";
-  }
-
   return (
     <>
       {currentStatus !== STATUS_CODES.NOT_HOME && <>{status}</>}
       {currentStatus === STATUS_CODES.NOT_HOME && (
-        <Badge bg="secondary" text="light" style={{ marginRight: 1 }}>
+        <Badge bg="secondary" text="light" className="me-1">
           {status} {nhcount}
         </Badge>
       )}
+      {note && <>🗒️ </>}
       {otherType !== HOUSEHOLD_TYPES.CHINESE && (
         <Badge bg="secondary" pill>
           {otherType}
