@@ -232,10 +232,7 @@ const Legend = ({ showLegend, hideFunction }: LegendProps) => (
         <tbody>
           <tr>
             <td className="text-center align-middle">✅</td>
-            <td>
-              Spoke to householder, Wrote Letter or Tried again after initial
-              call.
-            </td>
+            <td>Spoke to householder or Wrote Letter.</td>
           </tr>
           <tr>
             <td className="text-center align-middle">🚫</td>
@@ -243,10 +240,7 @@ const Legend = ({ showLegend, hideFunction }: LegendProps) => (
           </tr>
           <tr>
             <td className="text-center align-middle">📬</td>
-            <td>
-              Householder was not home at the initial call. Try visiting again
-              another day or write letter, whichever comes first.
-            </td>
+            <td>Householder is not at home.</td>
           </tr>
           <tr>
             <td className="text-center align-middle">✖️</td>
