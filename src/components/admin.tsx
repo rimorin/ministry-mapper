@@ -412,7 +412,7 @@ function Admin({ user, isConductor = false }: adminProps) {
         floorMap[unitNo] = {
           status: STATUS_CODES.DEFAULT,
           type: HOUSEHOLD_TYPES.CHINESE,
-          notes: "",
+          note: "",
           nhcount: NOT_HOME_STATUS_CODES.DEFAULT
         };
       });
