@@ -34,5 +34,4 @@ const auth = initializeAuth(app, {
   persistence: browserLocalPersistence
   // No popupRedirectResolver defined
 });
-enableLogging(true);
 export { database, auth };

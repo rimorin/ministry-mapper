@@ -114,6 +114,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   const [selectedTerritoryCode, setSelectedTerritoryCode] = useState<String>();
   const [unsubscribers, setUnsubscribers] = useState<Array<Unsubscribe>>([]);
   const [addresses, setAddresses] = useState(new Map<String, addressDetails>());
+  const congregationReference = child(ref(database), `congregations/${code}`);
 
   const processData = (data: any) => {
     const dataList = [];
@@ -142,8 +143,14 @@ function Admin({ user, isConductor = false }: adminProps) {
     setAddresses(new Map<String, addressDetails>());
   };
 
-  const handleSelect = (eventKey: String, _?: SyntheticEvent<unknown>) => {
-    const territoryDetails = territories.get(eventKey);
+  const processSelectedTerritory = (
+    eventKey: String,
+    territoryData?: any,
+    _?: SyntheticEvent<unknown>
+  ) => {
+    const territoryDetails = territoryData
+      ? territoryData.get(eventKey)
+      : territories.get(eventKey);
     const territoryAddresses = territoryDetails?.addresses;
     setSelectedTerritory(
       `${territoryDetails?.code} - ${territoryDetails?.name}`
@@ -212,7 +219,7 @@ function Admin({ user, isConductor = false }: adminProps) {
         }
       }
       alert(`Deleted postal address, ${postalcode}.`);
-      window.location.reload();
+      await refreshCongregationTerritory(`${selectedTerritoryCode}`);
     } catch (error) {
       errorHandler(error);
     }
@@ -375,6 +382,16 @@ function Admin({ user, isConductor = false }: adminProps) {
     }
   };
 
+  const refreshCongregationTerritory = async (selectTerritoryCode: String) => {
+    const updatedTerritory = await get(congregationReference);
+    if (updatedTerritory.exists()) {
+      processSelectedTerritory(
+        selectTerritoryCode,
+        processCongregationTerritories(updatedTerritory.val())
+      );
+    }
+  };
+
   const handleCreateTerritoryAddress = async (
     event: FormEvent<HTMLElement>
   ) => {
@@ -419,7 +436,8 @@ function Admin({ user, isConductor = false }: adminProps) {
         units: floorDetails
       });
       alert(`Created postal address, ${newPostalCode}.`);
-      window.location.reload();
+      await refreshCongregationTerritory(`${selectedTerritoryCode}`);
+      toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS);
     } catch (error) {
       errorHandler(error);
     } finally {
@@ -508,33 +526,37 @@ function Admin({ user, isConductor = false }: adminProps) {
     }
   };
 
+  const processCongregationTerritories = (data: any) => {
+    if (!data) return;
+    document.title = `${data["name"]}`;
+    const congregationTerritories = data["territories"];
+    const territoryList = new Map<String, territoryDetails>();
+    for (const territory in congregationTerritories) {
+      const name = congregationTerritories[territory]["name"];
+      const addresses = congregationTerritories[territory]["addresses"];
+      territoryList.set(territory, {
+        code: territory,
+        name: name,
+        addresses: addresses
+      });
+    }
+    setTerritories(territoryList);
+    setName(`${data["name"]}`);
+    return territoryList;
+  };
+
   useEffect(() => {
     setContext("conductor", {
       congregation: code,
       login: user?.email
     });
 
-    const congregationReference = child(ref(database), `congregations/${code}`);
     onValue(
       congregationReference,
       (snapshot) => {
         setIsLoading(false);
         if (snapshot.exists()) {
-          const data = snapshot.val();
-          document.title = `${data["name"]}`;
-          const congregationTerritories = data["territories"];
-          const territoryList = new Map<String, territoryDetails>();
-          for (const territory in congregationTerritories) {
-            const name = congregationTerritories[territory]["name"];
-            const addresses = congregationTerritories[territory]["addresses"];
-            territoryList.set(territory, {
-              code: territory,
-              name: name,
-              addresses: addresses
-            });
-          }
-          setTerritories(territoryList);
-          setName(`${data["name"]}`);
+          processCongregationTerritories(snapshot.val());
         }
       },
       (reason) => {
@@ -597,8 +619,8 @@ function Admin({ user, isConductor = false }: adminProps) {
                 }
                 onSelect={(
                   eventKey: string | null,
-                  e: React.SyntheticEvent<unknown>
-                ) => handleSelect(`${eventKey}`, e)}
+                  _: React.SyntheticEvent<unknown>
+                ) => processSelectedTerritory(`${eventKey}`)}
                 className="m-2 d-inline-block"
                 align={{ lg: "end" }}
               >
