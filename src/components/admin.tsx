@@ -104,6 +104,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   const [isUnauthorised, setIsUnauthorised] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isNotHome, setIsNotHome] = useState<boolean>(false);
+  const [isNewTerritory, setIsNewTerritory] = useState<boolean>(false);
   const [name, setName] = useState<String>();
   const [values, setValues] = useState<Object>({});
   const [territories, setTerritories] = useState(
@@ -144,7 +145,12 @@ function Admin({ user, isConductor = false }: adminProps) {
   const handleSelect = (eventKey: String, _?: SyntheticEvent<unknown>) => {
     const territoryDetails = territories.get(eventKey);
     const territoryAddresses = territoryDetails?.addresses;
+    setSelectedTerritory(
+      `${territoryDetails?.code} - ${territoryDetails?.name}`
+    );
+    setSelectedTerritoryCode(territoryDetails?.code);
     refreshAddressState();
+    if (!territoryAddresses) return;
     setIsLoading(true);
     const addressUnsubscribers = [] as Array<Unsubscribe>;
     for (const territoryIndex in territoryAddresses) {
@@ -165,15 +171,11 @@ function Admin({ user, isConductor = false }: adminProps) {
                   existingAddresses.set(postalCode, addressData)
                 )
             );
-            setIsLoading(false);
           }
+          setIsLoading(false);
         })
       );
     }
-    setSelectedTerritory(
-      `${territoryDetails?.code} - ${territoryDetails?.name}`
-    );
-    setSelectedTerritoryCode(territoryDetails?.code);
     setUnsubscribers([...addressUnsubscribers]);
   };
 
@@ -257,6 +259,9 @@ function Admin({ user, isConductor = false }: adminProps) {
         break;
       case ADMIN_MODAL_TYPES.RENAME_TERRITORY:
         setIsRename(!isRename);
+        break;
+      case ADMIN_MODAL_TYPES.CREATE_TERRITORY:
+        setIsNewTerritory(!isNewTerritory);
         break;
       default:
         setIsOpen(!isOpen);
@@ -370,13 +375,15 @@ function Admin({ user, isConductor = false }: adminProps) {
     }
   };
 
-  const handleCreateTerritory = async (event: FormEvent<HTMLElement>) => {
+  const handleCreateTerritoryAddress = async (
+    event: FormEvent<HTMLElement>
+  ) => {
     event.preventDefault();
     const details = values as valuesDetails;
     const newPostalCode = details.newPostal;
-    const noOfFloors = details.floors || 0;
+    const noOfFloors = details.floors || 1;
     const unitSequence = details.units;
-    const postalName = details.name;
+    const newPostalName = details.name;
 
     // Add empty details for 0 floor
     let floorDetails = [{}];
@@ -407,11 +414,34 @@ function Admin({ user, isConductor = false }: adminProps) {
         newPostalCode
       );
       await set(ref(database, `/${newPostalCode}`), {
-        name: postalName,
+        name: newPostalName,
         feedback: "",
         units: floorDetails
       });
       alert(`Created postal address, ${newPostalCode}.`);
+      window.location.reload();
+    } catch (error) {
+      errorHandler(error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCreateTerritory = async (event: FormEvent<HTMLElement>) => {
+    event.preventDefault();
+    const details = values as valuesDetails;
+    const newTerritoryCode = details.code;
+    const newTerritoryName = details.name;
+
+    setIsSaving(true);
+    try {
+      await set(
+        ref(database, `congregations/${code}/territories/${newTerritoryCode}`),
+        {
+          name: newTerritoryName
+        }
+      );
+      alert(`Created territory, ${newTerritoryName}.`);
       window.location.reload();
     } catch (error) {
       errorHandler(error);
@@ -440,9 +470,14 @@ function Admin({ user, isConductor = false }: adminProps) {
     setValues({ ...values, [name]: value });
   };
 
-  const handleClickCreate = () => {
+  const handleClickCreateAddress = () => {
     setValues({ ...values, name: "", units: "", floors: 1, newPostal: "" });
     toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS);
+  };
+
+  const handleClickCreateTerritory = () => {
+    setValues({ ...values, name: "", code: "" });
+    toggleModal(ADMIN_MODAL_TYPES.CREATE_TERRITORY);
   };
 
   const shareTimedLink = async (
@@ -553,19 +588,21 @@ function Admin({ user, isConductor = false }: adminProps) {
             id="basic-navbar-nav"
             className="justify-content-end mt-1"
           >
-            <NavDropdown
-              title={
-                selectedTerritory ? `${selectedTerritory}` : "Select Territory"
-              }
-              onSelect={(
-                eventKey: string | null,
-                e: React.SyntheticEvent<unknown>
-              ) => handleSelect(`${eventKey}`, e)}
-              className="m-2 d-inline-block"
-              align={{ lg: "end" }}
-            >
-              {congregationTerritoryList &&
-                congregationTerritoryList.map((element) => (
+            {congregationTerritoryList && (
+              <NavDropdown
+                title={
+                  selectedTerritory
+                    ? `${selectedTerritory}`
+                    : "Select Territory"
+                }
+                onSelect={(
+                  eventKey: string | null,
+                  e: React.SyntheticEvent<unknown>
+                ) => handleSelect(`${eventKey}`, e)}
+                className="m-2 d-inline-block"
+                align={{ lg: "end" }}
+              >
+                {congregationTerritoryList.map((element) => (
                   <NavDropdown.Item
                     key={`${element.code}`}
                     eventKey={`${element.code}`}
@@ -573,14 +610,27 @@ function Admin({ user, isConductor = false }: adminProps) {
                     {element.code} - {element.name}
                   </NavDropdown.Item>
                 ))}
-            </NavDropdown>
+              </NavDropdown>
+            )}
+            {!isConductor && !selectedTerritory && (
+              <Button
+                className="m-2"
+                size="sm"
+                variant="outline-primary"
+                onClick={() => {
+                  handleClickCreateTerritory();
+                }}
+              >
+                Create Territory
+              </Button>
+            )}
             {!isConductor && selectedTerritory && (
               <Button
                 className="m-2"
                 size="sm"
                 variant="outline-primary"
                 onClick={() => {
-                  handleClickCreate();
+                  handleClickCreateAddress();
                 }}
               >
                 Create Address
@@ -1101,11 +1151,48 @@ function Admin({ user, isConductor = false }: adminProps) {
         </Modal>
       )}
       {!isConductor && (
+        <Modal show={isNewTerritory}>
+          <Modal.Header>
+            <Modal.Title>Create New Territory</Modal.Title>
+          </Modal.Header>
+          <Form onSubmit={handleCreateTerritory}>
+            <Modal.Body>
+              <GenericTextField
+                label="Territory Code"
+                name="code"
+                handleChange={(e: ChangeEvent<HTMLElement>) => {
+                  const { value } = e.target as HTMLInputElement;
+                  setValues({ ...values, code: value });
+                }}
+                changeValue={`${(values as valuesDetails).code}`}
+              />
+              <GenericTextField
+                label="Name"
+                name="name"
+                handleChange={onFormChange}
+                changeValue={`${(values as valuesDetails).name}`}
+              />
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                onClick={() => toggleModal(ADMIN_MODAL_TYPES.CREATE_TERRITORY)}
+              >
+                Close
+              </Button>
+              <Button type="submit" variant="primary">
+                Save
+              </Button>
+            </Modal.Footer>
+          </Form>
+        </Modal>
+      )}
+      {!isConductor && (
         <Modal show={isCreate}>
           <Modal.Header>
             <Modal.Title>Create Territory Address</Modal.Title>
           </Modal.Header>
-          <Form onSubmit={handleCreateTerritory}>
+          <Form onSubmit={handleCreateTerritoryAddress}>
             <Modal.Body>
               <GenericTextField
                 label="Postal Code"

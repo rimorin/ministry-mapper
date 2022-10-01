@@ -36,6 +36,7 @@ export interface valuesDetails {
   units?: String;
   floors?: number;
   newPostal?: String;
+  code?: String;
 }
 
 export interface adminProps {
