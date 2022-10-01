@@ -37,6 +37,12 @@ const STATUS_CODES = {
   INVALID: "5"
 };
 
+const NOT_HOME_STATUS_CODES = {
+  DEFAULT: "1",
+  SECOND_TRY: "2",
+  THIRD_TRY: "3"
+};
+
 const HOUSEHOLD_TYPES = {
   CHINESE: "cn",
   MALAY: "ml",
@@ -63,7 +69,10 @@ const LOGIN_TYPE_CODES = {
 const ADMIN_MODAL_TYPES = {
   UNIT: 0,
   FEEDBACK: 1,
-  LINK: 2
+  LINK: 2,
+  RENAME_TERRITORY: 3,
+  CREATE_ADDRESS: 4,
+  CREATE_TERRITORY: 5
 };
 
 const DEFAULT_FLOOR_PADDING = 2;
@@ -85,6 +94,9 @@ const IGNORE_HOUSEHOLD_STATUS = [
   STATUS_CODES.DO_NOT_CALL,
   STATUS_CODES.INVALID
 ];
+
+const MIN_START_FLOOR = 1;
+const MAX_TOP_FLOOR = 30;
 
 const TERRITORY_VIEW_WINDOW_WELCOME_TEXT =
   "<!DOCTYPE html><html><head><title>Loading Territory...</title></<head><body><style> body {display: flex; justify-content: center;align-items: center;}</style><h1>Loading Territory...</h1></body></html>";
@@ -162,12 +174,18 @@ const getCompletedPercent = (floors: floorDetails[]) => {
     element.units.forEach((uElement) => {
       const unitStatus = uElement.status;
       const unitType = uElement.type;
+      const unitNotHomeCount = uElement.nhcount;
       const isCountable =
         !IGNORE_HOUSEHOLD_STATUS.includes(unitStatus.toString()) &&
         unitType !== HOUSEHOLD_TYPES.MALAY;
 
       if (isCountable) totalUnits++;
-      if (unitStatus === STATUS_CODES.DONE) {
+      if (
+        unitStatus === STATUS_CODES.DONE ||
+        (unitStatus === STATUS_CODES.NOT_HOME &&
+          (unitNotHomeCount === NOT_HOME_STATUS_CODES.SECOND_TRY ||
+            unitNotHomeCount === NOT_HOME_STATUS_CODES.THIRD_TRY))
+      ) {
         completedUnits++;
       }
     });
@@ -269,5 +287,8 @@ export {
   RELOAD_CHECK_INTERVAL_MS,
   RELOAD_INACTIVITY_DURATION,
   FIREBASE_FUNCTION_TIMEOUT,
-  TERRITORY_VIEW_WINDOW_WELCOME_TEXT
+  TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
+  NOT_HOME_STATUS_CODES,
+  MIN_START_FLOOR,
+  MAX_TOP_FLOOR
 };

@@ -6,6 +6,7 @@ const UnitStatus = (props: unitProps) => {
   const otherType = props.type;
   const note = props.note;
   const currentStatus = props.status;
+  const nhcount = props.nhcount;
   let status = "";
 
   if (currentStatus === STATUS_CODES.INVALID) {
@@ -23,16 +24,18 @@ const UnitStatus = (props: unitProps) => {
     currentStatus === STATUS_CODES.STILL_NOT_HOME ||
     currentStatus === STATUS_CODES.NOT_HOME
   ) {
-    status = "📬 ";
-  }
-
-  if (note) {
-    status += "🗒️ ";
+    status = "📬";
   }
 
   return (
     <>
-      {status}
+      {currentStatus !== STATUS_CODES.NOT_HOME && <>{status}</>}
+      {currentStatus === STATUS_CODES.NOT_HOME && (
+        <Badge bg="secondary" text="light" className="me-1">
+          {status} {nhcount}
+        </Badge>
+      )}
+      {note && <>🗒️ </>}
       {otherType !== HOUSEHOLD_TYPES.CHINESE && (
         <Badge bg="secondary" pill>
           {otherType}

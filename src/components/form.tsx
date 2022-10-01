@@ -4,10 +4,18 @@ import {
   ToggleButton,
   Button,
   Modal,
-  Spinner
+  Spinner,
+  InputGroup
 } from "react-bootstrap";
-import { FooterProps, FormProps } from "./interface";
-import { HOUSEHOLD_TYPES, STATUS_CODES } from "./util";
+import RangeSlider from "react-bootstrap-range-slider";
+import { FloorProps, FooterProps, FormProps } from "./interface";
+import {
+  HOUSEHOLD_TYPES,
+  MAX_TOP_FLOOR,
+  MIN_START_FLOOR,
+  NOT_HOME_STATUS_CODES,
+  STATUS_CODES
+} from "./util";
 
 const ModalFooter = ({ handleClick, isSaving = false }: FooterProps) => {
   return (
@@ -39,32 +47,51 @@ const HHType = () => (
   </>
 );
 
-const NoteField = ({ handleChange, changeValue }: FormProps) => {
+const GenericTextField = ({
+  handleChange,
+  changeValue,
+  name,
+  label
+}: FormProps) => {
   return (
-    <Form.Group className="mb-3" controlId="formBasicTextArea">
-      <Form.Label>Notes</Form.Label>
-      <Form.Control
-        onChange={handleChange}
-        name="note"
-        as="textarea"
-        rows={3}
-        aria-label="With textarea"
-        placeholder="Optional non-personal information. Eg, Renovation, Foreclosed, Friends, etc."
+    <Form.Group className="mb-3" controlId={`basicForm${name}Text`}>
+      <Form.Label>{label}</Form.Label>
+      <Form.Control onChange={handleChange} name={name} value={changeValue} />
+    </Form.Group>
+  );
+};
+
+const FloorField = ({ handleChange, changeValue }: FloorProps) => {
+  return (
+    <Form.Group className="mb-3" controlId="formBasicFloorRange">
+      <Form.Label>No. of floors</Form.Label>
+      <RangeSlider
+        min={MIN_START_FLOOR}
+        max={MAX_TOP_FLOOR}
         value={changeValue}
+        onChange={handleChange}
       />
     </Form.Group>
   );
 };
 
-const FeedbackField = ({ handleChange, changeValue }: FormProps) => {
+const GenericTextAreaField = ({
+  handleChange,
+  changeValue,
+  label,
+  name,
+  placeholder,
+  rows = 3
+}: FormProps) => {
   return (
-    <Form.Group className="mb-3" controlId="formBasicFeedbackTextArea">
+    <Form.Group className="mb-3" controlId={`formBasic${name}TextAreaField`}>
+      {label && <Form.Label>{label}</Form.Label>}
       <Form.Control
         onChange={handleChange}
-        name="feedback"
+        name={name}
         as="textarea"
-        rows={5}
-        aria-label="With textarea"
+        rows={rows}
+        placeholder={placeholder}
         value={changeValue}
       />
     </Form.Group>
@@ -89,7 +116,10 @@ const HHTypeField = ({ handleChange, changeValue }: FormProps) => {
 
 const HHStatusField = ({ handleChange, changeValue }: FormProps) => {
   return (
-    <Form.Group className="mb-3" controlId="formBasicStatusbtnCheckbox">
+    <Form.Group
+      className="mb-1 text-center"
+      controlId="formBasicStatusbtnCheckbox"
+    >
       <ToggleButtonGroup
         name="status"
         type="radio"
@@ -137,6 +167,45 @@ const HHStatusField = ({ handleChange, changeValue }: FormProps) => {
   );
 };
 
+const HHNotHomeField = ({ handleChange, changeValue }: FormProps) => {
+  return (
+    <Form.Group className="mb-1" controlId="formBasicNtHomebtnCheckbox">
+      <Form.Label>Number of tries</Form.Label>
+      <InputGroup className="justify-content-center">
+        <ToggleButtonGroup
+          name="nhcount"
+          type="radio"
+          value={changeValue}
+          className="mb-3"
+          onChange={handleChange}
+        >
+          <ToggleButton
+            id="nh-status-tb-0"
+            variant="outline-secondary"
+            value={NOT_HOME_STATUS_CODES.DEFAULT}
+          >
+            1st
+          </ToggleButton>
+          <ToggleButton
+            id="nh-status-tb-1"
+            variant="outline-secondary"
+            value={NOT_HOME_STATUS_CODES.SECOND_TRY}
+          >
+            2nd
+          </ToggleButton>
+          <ToggleButton
+            id="nh-status-tb-2"
+            variant="outline-secondary"
+            value={NOT_HOME_STATUS_CODES.THIRD_TRY}
+          >
+            3rd
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </InputGroup>
+    </Form.Group>
+  );
+};
+
 const AdminLinkField = ({ handleChange, changeValue }: FormProps) => {
   return (
     <Form.Group className="mb-3" controlId="formLinkInput">
@@ -153,10 +222,12 @@ const AdminLinkField = ({ handleChange, changeValue }: FormProps) => {
 
 export {
   HHType,
-  NoteField,
   HHTypeField,
   HHStatusField,
-  FeedbackField,
   AdminLinkField,
+  HHNotHomeField,
+  FloorField,
+  GenericTextField,
+  GenericTextAreaField,
   ModalFooter
 };

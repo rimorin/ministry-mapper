@@ -14,11 +14,9 @@ import {
 import Loader from "./components/loader";
 import Login from "./components/login";
 import {
-  FeedbackField,
+  GenericTextAreaField,
   HHStatusField,
-  HHTypeField,
-  ModalFooter,
-  NoteField
+  HHTypeField
 } from "./components/form";
 import UnitStatus from "./components/unit";
 
@@ -140,14 +138,21 @@ test("renders form householder type", () => {
 
 test("renders form householder note", () => {
   const testNotes = "I am testing notes";
-  render(<NoteField changeValue={testNotes} />);
+  render(
+    <GenericTextAreaField
+      label="Notes"
+      name="notes"
+      placeholder="Optional non-personal information. Eg, Renovation, Foreclosed, Friends, etc."
+      changeValue={testNotes}
+    />
+  );
   expect(screen.getByText("Notes")).toBeInTheDocument();
   expect(screen.getByText(testNotes)).toBeInTheDocument();
 });
 
 test("renders form feedback", () => {
   const testFB = "I am testing feedback";
-  render(<FeedbackField changeValue={testFB} />);
+  render(<GenericTextAreaField name="feedback" changeValue={testFB} />);
   expect(screen.getByText(testFB)).toBeInTheDocument();
 });
 

@@ -5,7 +5,9 @@ import {
   set,
   update,
   remove,
-  Unsubscribe
+  Unsubscribe,
+  push,
+  get
 } from "firebase/database";
 import { setContext } from "@sentry/react";
 import { signOut } from "firebase/auth";
@@ -22,6 +24,7 @@ import {
   Badge,
   Button,
   Card,
+  Collapse,
   Container,
   Dropdown,
   DropdownButton,
@@ -66,40 +69,52 @@ import {
   RELOAD_CHECK_INTERVAL_MS,
   errorHandler,
   connectionTimeout,
-  TERRITORY_VIEW_WINDOW_WELCOME_TEXT
+  TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
+  HOUSEHOLD_TYPES,
+  MIN_START_FLOOR,
+  NOT_HOME_STATUS_CODES
 } from "./util";
 import TableHeader from "./table";
 import { useParams } from "react-router-dom";
 import {
   AdminLinkField,
-  FeedbackField,
+  FloorField,
+  GenericTextAreaField,
+  GenericTextField,
+  HHNotHomeField,
   HHStatusField,
   HHTypeField,
-  ModalFooter,
-  NoteField
+  ModalFooter
 } from "./form";
 import Welcome from "./welcome";
 import NotFoundPage from "./notfoundpage";
 import UnauthorizedPage from "./unauthorisedpage";
+import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 function Admin({ user, isConductor = false }: adminProps) {
   const { code } = useParams();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isFeedback, setIsFeedback] = useState<boolean>(false);
   const [isLinkRevoke, setIsLinkRevoke] = useState<boolean>(false);
+  const [isCreate, setIsCreate] = useState<boolean>(false);
+  const [isRename, setIsRename] = useState<boolean>(false);
   const [isSettingAssignLink, setIsSettingAssignLink] =
     useState<boolean>(false);
   const [isSettingViewLink, setIsSettingViewLink] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isUnauthorised, setIsUnauthorised] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isNotHome, setIsNotHome] = useState<boolean>(false);
+  const [isNewTerritory, setIsNewTerritory] = useState<boolean>(false);
   const [name, setName] = useState<String>();
   const [values, setValues] = useState<Object>({});
   const [territories, setTerritories] = useState(
     new Map<String, territoryDetails>()
   );
   const [selectedTerritory, setSelectedTerritory] = useState<String>();
+  const [selectedTerritoryCode, setSelectedTerritoryCode] = useState<String>();
   const [unsubscribers, setUnsubscribers] = useState<Array<Unsubscribe>>([]);
   const [addresses, setAddresses] = useState(new Map<String, addressDetails>());
+  const congregationReference = child(ref(database), `congregations/${code}`);
 
   const processData = (data: any) => {
     const dataList = [];
@@ -111,7 +126,8 @@ function Admin({ user, isConductor = false }: adminProps) {
           number: unit,
           note: units[unit]["note"],
           type: units[unit]["type"],
-          status: units[unit]["status"]
+          status: units[unit]["status"],
+          nhcount: units[unit]["nhcount"] || NOT_HOME_STATUS_CODES.DEFAULT
         });
       }
       dataList.push({ floor: floor, units: unitsDetails });
@@ -127,10 +143,21 @@ function Admin({ user, isConductor = false }: adminProps) {
     setAddresses(new Map<String, addressDetails>());
   };
 
-  const handleSelect = (eventKey: String, _: SyntheticEvent<unknown>) => {
-    const territoryDetails = territories.get(eventKey);
+  const processSelectedTerritory = (
+    eventKey: String,
+    territoryData?: any,
+    _?: SyntheticEvent<unknown>
+  ) => {
+    const territoryDetails = territoryData
+      ? territoryData.get(eventKey)
+      : territories.get(eventKey);
     const territoryAddresses = territoryDetails?.addresses;
+    setSelectedTerritory(
+      `${territoryDetails?.code} - ${territoryDetails?.name}`
+    );
+    setSelectedTerritoryCode(territoryDetails?.code);
     refreshAddressState();
+    if (!territoryAddresses) return;
     setIsLoading(true);
     const addressUnsubscribers = [] as Array<Unsubscribe>;
     for (const territoryIndex in territoryAddresses) {
@@ -151,15 +178,51 @@ function Admin({ user, isConductor = false }: adminProps) {
                   existingAddresses.set(postalCode, addressData)
                 )
             );
-            setIsLoading(false);
           }
+          setIsLoading(false);
         })
       );
     }
-    setSelectedTerritory(
-      `${territoryDetails?.code} - ${territoryDetails?.name}`
-    );
     setUnsubscribers([...addressUnsubscribers]);
+  };
+
+  const deleteBlockFloor = async (postalcode: String, floor: String) => {
+    try {
+      await remove(ref(database, `${postalcode}/units/${floor}`));
+    } catch (error) {
+      errorHandler(error);
+    }
+  };
+
+  const deleteBlock = async (postalcode: String) => {
+    try {
+      await remove(ref(database, `${postalcode}`));
+      const addressSnapshot = await get(
+        ref(
+          database,
+          `congregations/${code}/territories/${selectedTerritoryCode}/addresses`
+        )
+      );
+      if (addressSnapshot.exists()) {
+        const addressData = addressSnapshot.val();
+        for (const addkey in addressData) {
+          const units = addressData[addkey];
+          if (units === postalcode) {
+            await remove(
+              ref(
+                database,
+                `congregations/${code}/territories/${selectedTerritoryCode}/addresses/${addkey}`
+              )
+            );
+            break;
+          }
+        }
+      }
+      alert(`Deleted postal address, ${postalcode}.`);
+      await refreshCongregationTerritory(`${selectedTerritoryCode}`);
+    } catch (error) {
+      errorHandler(error);
+    }
   };
 
   const resetBlock = async (postalcode: String) => {
@@ -178,7 +241,8 @@ function Admin({ user, isConductor = false }: adminProps) {
         ] = {
           type: element.type,
           note: element.note,
-          status: currentStatus
+          status: currentStatus,
+          nhcount: NOT_HOME_STATUS_CODES.DEFAULT
         };
       });
     }
@@ -197,6 +261,15 @@ function Admin({ user, isConductor = false }: adminProps) {
       case ADMIN_MODAL_TYPES.LINK:
         setIsLinkRevoke(!isLinkRevoke);
         break;
+      case ADMIN_MODAL_TYPES.CREATE_ADDRESS:
+        setIsCreate(!isCreate);
+        break;
+      case ADMIN_MODAL_TYPES.RENAME_TERRITORY:
+        setIsRename(!isRename);
+        break;
+      case ADMIN_MODAL_TYPES.CREATE_TERRITORY:
+        setIsNewTerritory(!isNewTerritory);
+        break;
       default:
         setIsOpen(!isOpen);
     }
@@ -210,6 +283,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     type: String,
     note: String,
     status: String,
+    nhcount: String,
     maxUnitNumber: number
   ) => {
     setValues({
@@ -221,8 +295,10 @@ function Admin({ user, isConductor = false }: adminProps) {
       type: type,
       note: note,
       postal: postal,
-      status: status
+      status: status,
+      nhcount: nhcount
     });
+    setIsNotHome(status === STATUS_CODES.NOT_HOME);
     toggleModal();
   };
 
@@ -240,7 +316,8 @@ function Admin({ user, isConductor = false }: adminProps) {
         {
           type: details.type,
           note: details.note,
-          status: details.status
+          status: details.status,
+          nhcount: details.nhcount
         }
       );
       toggleModal();
@@ -274,11 +351,120 @@ function Admin({ user, isConductor = false }: adminProps) {
     setIsSaving(true);
     try {
       await set(ref(database, `/${details.postal}/feedback`), details.feedback);
+      toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
     } catch (error) {
       errorHandler(error);
     } finally {
       setIsSaving(false);
-      toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
+    }
+  };
+
+  const handleClickChangeName = (
+    _: MouseEvent<HTMLElement>,
+    postalcode: String,
+    name: String
+  ) => {
+    setValues({ ...values, name: name, postal: postalcode });
+    toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
+  };
+
+  const handleUpdateBlockName = async (event: FormEvent<HTMLElement>) => {
+    event.preventDefault();
+    const details = values as valuesDetails;
+    setIsSaving(true);
+    try {
+      await set(ref(database, `/${details.postal}/name`), details.name);
+      toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
+    } catch (error) {
+      errorHandler(error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const refreshCongregationTerritory = async (selectTerritoryCode: String) => {
+    const updatedTerritory = await get(congregationReference);
+    if (updatedTerritory.exists()) {
+      processSelectedTerritory(
+        selectTerritoryCode,
+        processCongregationTerritories(updatedTerritory.val())
+      );
+    }
+  };
+
+  const handleCreateTerritoryAddress = async (
+    event: FormEvent<HTMLElement>
+  ) => {
+    event.preventDefault();
+    const details = values as valuesDetails;
+    const newPostalCode = details.newPostal;
+    const noOfFloors = details.floors || 1;
+    const unitSequence = details.units;
+    const newPostalName = details.name;
+
+    // Add empty details for 0 floor
+    let floorDetails = [{}];
+    const units = unitSequence?.split(",");
+
+    for (let i = 0; i < noOfFloors; i++) {
+      const floorMap = {} as any;
+      units?.forEach((unitNo) => {
+        floorMap[unitNo] = {
+          status: STATUS_CODES.DEFAULT,
+          type: HOUSEHOLD_TYPES.CHINESE,
+          note: "",
+          nhcount: NOT_HOME_STATUS_CODES.DEFAULT
+        };
+      });
+      floorDetails.push(floorMap);
+    }
+
+    setIsSaving(true);
+    try {
+      await set(
+        push(
+          ref(
+            database,
+            `congregations/${code}/territories/${selectedTerritoryCode}/addresses`
+          )
+        ),
+        newPostalCode
+      );
+      await set(ref(database, `/${newPostalCode}`), {
+        name: newPostalName,
+        feedback: "",
+        units: floorDetails
+      });
+      alert(`Created postal address, ${newPostalCode}.`);
+      await refreshCongregationTerritory(`${selectedTerritoryCode}`);
+      toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS);
+    } catch (error) {
+      errorHandler(error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCreateTerritory = async (event: FormEvent<HTMLElement>) => {
+    event.preventDefault();
+    const details = values as valuesDetails;
+    const newTerritoryCode = details.code;
+    const newTerritoryName = details.name;
+
+    setIsSaving(true);
+    try {
+      await set(
+        ref(database, `congregations/${code}/territories/${newTerritoryCode}`),
+        {
+          name: newTerritoryName
+        }
+      );
+      alert(`Created territory, ${newTerritoryName}.`);
+      window.location.reload();
+    } catch (error) {
+      errorHandler(error);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -300,6 +486,16 @@ function Admin({ user, isConductor = false }: adminProps) {
   const onFormChange = (e: ChangeEvent<HTMLElement>) => {
     const { name, value } = e.target as HTMLInputElement;
     setValues({ ...values, [name]: value });
+  };
+
+  const handleClickCreateAddress = () => {
+    setValues({ ...values, name: "", units: "", floors: 1, newPostal: "" });
+    toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS);
+  };
+
+  const handleClickCreateTerritory = () => {
+    setValues({ ...values, name: "", code: "" });
+    toggleModal(ADMIN_MODAL_TYPES.CREATE_TERRITORY);
   };
 
   const shareTimedLink = async (
@@ -330,33 +526,37 @@ function Admin({ user, isConductor = false }: adminProps) {
     }
   };
 
+  const processCongregationTerritories = (data: any) => {
+    if (!data) return;
+    document.title = `${data["name"]}`;
+    const congregationTerritories = data["territories"];
+    const territoryList = new Map<String, territoryDetails>();
+    for (const territory in congregationTerritories) {
+      const name = congregationTerritories[territory]["name"];
+      const addresses = congregationTerritories[territory]["addresses"];
+      territoryList.set(territory, {
+        code: territory,
+        name: name,
+        addresses: addresses
+      });
+    }
+    setTerritories(territoryList);
+    setName(`${data["name"]}`);
+    return territoryList;
+  };
+
   useEffect(() => {
     setContext("conductor", {
       congregation: code,
       login: user?.email
     });
 
-    const congregationReference = child(ref(database), `congregations/${code}`);
     onValue(
       congregationReference,
       (snapshot) => {
         setIsLoading(false);
         if (snapshot.exists()) {
-          const data = snapshot.val();
-          document.title = `${data["name"]}`;
-          const congregationTerritories = data["territories"];
-          const territoryList = new Map<String, territoryDetails>();
-          for (const territory in congregationTerritories) {
-            const name = congregationTerritories[territory]["name"];
-            const addresses = congregationTerritories[territory]["addresses"];
-            territoryList.set(territory, {
-              code: territory,
-              name: name,
-              addresses: addresses
-            });
-          }
-          setTerritories(territoryList);
-          setName(`${data["name"]}`);
+          processCongregationTerritories(snapshot.val());
         }
       },
       (reason) => {
@@ -410,19 +610,21 @@ function Admin({ user, isConductor = false }: adminProps) {
             id="basic-navbar-nav"
             className="justify-content-end mt-1"
           >
-            <NavDropdown
-              title={
-                selectedTerritory ? `${selectedTerritory}` : "Select Territory"
-              }
-              onSelect={(
-                eventKey: string | null,
-                e: React.SyntheticEvent<unknown>
-              ) => handleSelect(`${eventKey}`, e)}
-              className="m-2 d-inline-block"
-              align={{ lg: "end" }}
-            >
-              {congregationTerritoryList &&
-                congregationTerritoryList.map((element) => (
+            {congregationTerritoryList && (
+              <NavDropdown
+                title={
+                  selectedTerritory
+                    ? `${selectedTerritory}`
+                    : "Select Territory"
+                }
+                onSelect={(
+                  eventKey: string | null,
+                  _: React.SyntheticEvent<unknown>
+                ) => processSelectedTerritory(`${eventKey}`)}
+                className="m-2 d-inline-block"
+                align={{ lg: "end" }}
+              >
+                {congregationTerritoryList.map((element) => (
                   <NavDropdown.Item
                     key={`${element.code}`}
                     eventKey={`${element.code}`}
@@ -430,7 +632,32 @@ function Admin({ user, isConductor = false }: adminProps) {
                     {element.code} - {element.name}
                   </NavDropdown.Item>
                 ))}
-            </NavDropdown>
+              </NavDropdown>
+            )}
+            {!isConductor && !selectedTerritory && (
+              <Button
+                className="m-2"
+                size="sm"
+                variant="outline-primary"
+                onClick={() => {
+                  handleClickCreateTerritory();
+                }}
+              >
+                Create Territory
+              </Button>
+            )}
+            {!isConductor && selectedTerritory && (
+              <Button
+                className="m-2"
+                size="sm"
+                variant="outline-primary"
+                onClick={() => {
+                  handleClickCreateAddress();
+                }}
+              >
+                Create Address
+              </Button>
+            )}
             {!isConductor && (
               <Button
                 className="m-2"
@@ -444,7 +671,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                   toggleModal(ADMIN_MODAL_TYPES.LINK);
                 }}
               >
-                Revoke
+                Revoke Link
               </Button>
             )}
             <Button
@@ -645,6 +872,22 @@ function Admin({ user, isConductor = false }: adminProps) {
                       size="sm"
                       variant="outline-primary"
                       className="me-2"
+                      onClick={(event) => {
+                        handleClickChangeName(
+                          event,
+                          addressElement.postalcode,
+                          addressElement.name
+                        );
+                      }}
+                    >
+                      Rename
+                    </Button>
+                  )}
+                  {!isConductor && (
+                    <Button
+                      size="sm"
+                      variant="outline-primary"
+                      className="me-2"
                       onClick={() =>
                         confirmAlert({
                           customUI: ({ onClose }) => {
@@ -689,6 +932,53 @@ function Admin({ user, isConductor = false }: adminProps) {
                       Reset
                     </Button>
                   )}
+                  {!isConductor && (
+                    <Button
+                      size="sm"
+                      variant="outline-primary"
+                      className="me-2"
+                      onClick={() =>
+                        confirmAlert({
+                          customUI: ({ onClose }) => {
+                            return (
+                              <Container>
+                                <Card bg="warning" className="text-center">
+                                  <Card.Header>Warning ⚠️</Card.Header>
+                                  <Card.Body>
+                                    <Card.Title>Are You Very Sure ?</Card.Title>
+                                    <Card.Text>
+                                      You want to delete {addressElement.name}.
+                                    </Card.Text>
+                                    <Button
+                                      className="me-2"
+                                      variant="primary"
+                                      onClick={() => {
+                                        deleteBlock(addressElement.postalcode);
+                                        onClose();
+                                      }}
+                                    >
+                                      Yes, Delete It.
+                                    </Button>
+                                    <Button
+                                      className="ms-2"
+                                      variant="primary"
+                                      onClick={() => {
+                                        onClose();
+                                      }}
+                                    >
+                                      No
+                                    </Button>
+                                  </Card.Body>
+                                </Card>
+                              </Container>
+                            );
+                          }
+                        })
+                      }
+                    >
+                      Delete
+                    </Button>
+                  )}
                 </Navbar.Collapse>
               </Container>
             </Navbar>
@@ -717,6 +1007,63 @@ function Admin({ user, isConductor = false }: adminProps) {
                         key={`floor-${floorIndex}`}
                         scope="row"
                       >
+                        {!isConductor && (
+                          <Button
+                            size="sm"
+                            variant="outline-warning"
+                            className="me-2"
+                            onClick={() =>
+                              confirmAlert({
+                                customUI: ({ onClose }) => {
+                                  return (
+                                    <Container>
+                                      <Card
+                                        bg="warning"
+                                        className="text-center"
+                                      >
+                                        <Card.Header>Warning ⚠️</Card.Header>
+                                        <Card.Body>
+                                          <Card.Title>
+                                            Are You Very Sure ?
+                                          </Card.Title>
+                                          <Card.Text>
+                                            You want to delete floor{" "}
+                                            {floorElement.floor} of{" "}
+                                            {addressElement.name}.
+                                          </Card.Text>
+                                          <Button
+                                            className="me-2"
+                                            variant="primary"
+                                            onClick={() => {
+                                              deleteBlockFloor(
+                                                addressElement.postalcode,
+                                                floorElement.floor
+                                              );
+                                              onClose();
+                                            }}
+                                          >
+                                            Yes, Delete It.
+                                          </Button>
+                                          <Button
+                                            className="ms-2"
+                                            variant="primary"
+                                            onClick={() => {
+                                              onClose();
+                                            }}
+                                          >
+                                            No
+                                          </Button>
+                                        </Card.Body>
+                                      </Card>
+                                    </Container>
+                                  );
+                                }
+                              })
+                            }
+                          >
+                            🗑️
+                          </Button>
+                        )}
                         {`${ZeroPad(
                           floorElement.floor,
                           DEFAULT_FLOOR_PADDING
@@ -734,6 +1081,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                               detailsElement.type,
                               detailsElement.note,
                               detailsElement.status,
+                              detailsElement.nhcount,
                               maxUnitNumberLength
                             )
                           }
@@ -744,6 +1092,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                             type={detailsElement.type}
                             note={detailsElement.note}
                             status={detailsElement.status}
+                            nhcount={detailsElement.nhcount}
                           />
                         </td>
                       ))}
@@ -795,6 +1144,124 @@ function Admin({ user, isConductor = false }: adminProps) {
           </Form>
         </Modal>
       )}
+      {!isConductor && (
+        <Modal show={isRename}>
+          <Modal.Header>
+            <Modal.Title>Change Block Name</Modal.Title>
+          </Modal.Header>
+          <Form onSubmit={handleUpdateBlockName}>
+            <Modal.Body>
+              <GenericTextField
+                label="Name"
+                name="name"
+                handleChange={onFormChange}
+                changeValue={`${(values as valuesDetails).name}`}
+              />
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                onClick={() => toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY)}
+              >
+                Close
+              </Button>
+              <Button type="submit" variant="primary">
+                Save
+              </Button>
+            </Modal.Footer>
+          </Form>
+        </Modal>
+      )}
+      {!isConductor && (
+        <Modal show={isNewTerritory}>
+          <Modal.Header>
+            <Modal.Title>Create New Territory</Modal.Title>
+          </Modal.Header>
+          <Form onSubmit={handleCreateTerritory}>
+            <Modal.Body>
+              <GenericTextField
+                label="Territory Code"
+                name="code"
+                handleChange={(e: ChangeEvent<HTMLElement>) => {
+                  const { value } = e.target as HTMLInputElement;
+                  setValues({ ...values, code: value });
+                }}
+                changeValue={`${(values as valuesDetails).code}`}
+              />
+              <GenericTextField
+                label="Name"
+                name="name"
+                handleChange={onFormChange}
+                changeValue={`${(values as valuesDetails).name}`}
+              />
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                onClick={() => toggleModal(ADMIN_MODAL_TYPES.CREATE_TERRITORY)}
+              >
+                Close
+              </Button>
+              <Button type="submit" variant="primary">
+                Save
+              </Button>
+            </Modal.Footer>
+          </Form>
+        </Modal>
+      )}
+      {!isConductor && (
+        <Modal show={isCreate}>
+          <Modal.Header>
+            <Modal.Title>Create Territory Address</Modal.Title>
+          </Modal.Header>
+          <Form onSubmit={handleCreateTerritoryAddress}>
+            <Modal.Body>
+              <GenericTextField
+                label="Postal Code"
+                name="postalcode"
+                handleChange={(e: ChangeEvent<HTMLElement>) => {
+                  const { value } = e.target as HTMLInputElement;
+                  setValues({ ...values, newPostal: value });
+                }}
+                changeValue={`${(values as valuesDetails).newPostal}`}
+              />
+              <GenericTextField
+                label="Address Name"
+                name="name"
+                handleChange={onFormChange}
+                changeValue={`${(values as valuesDetails).name}`}
+              />
+              <FloorField
+                handleChange={(e: ChangeEvent<HTMLElement>) => {
+                  const { value } = e.target as HTMLInputElement;
+                  setValues({ ...values, floors: value });
+                }}
+                changeValue={
+                  (values as valuesDetails).floors || MIN_START_FLOOR
+                }
+              />
+              <GenericTextAreaField
+                label="Unit Sequence"
+                name="units"
+                placeholder="Unit sequence with comma seperator. For eg, 301,303,305 ..."
+                handleChange={onFormChange}
+                changeValue={`${(values as valuesDetails).units}`}
+              />
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                onClick={() => toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS)}
+              >
+                Close
+              </Button>
+              <Button type="submit" variant="primary">
+                Save
+              </Button>
+            </Modal.Footer>
+          </Form>
+        </Modal>
+      )}
       <Modal show={isFeedback}>
         <Modal.Header>
           <Modal.Title>{`Feedback on ${
@@ -803,7 +1270,9 @@ function Admin({ user, isConductor = false }: adminProps) {
         </Modal.Header>
         <Form onSubmit={handleSubmitFeedback}>
           <Modal.Body>
-            <FeedbackField
+            <GenericTextAreaField
+              name="feedback"
+              rows={5}
               handleChange={onFormChange}
               changeValue={`${(values as valuesDetails).feedback}`}
             />
@@ -824,15 +1293,36 @@ function Admin({ user, isConductor = false }: adminProps) {
           <Modal.Body>
             <HHStatusField
               handleChange={(toggleValue) => {
-                setValues({ ...values, status: toggleValue });
+                setIsNotHome(false);
+                if (toggleValue.toString() === STATUS_CODES.NOT_HOME) {
+                  setIsNotHome(true);
+                }
+                setValues({
+                  ...values,
+                  nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+                  status: toggleValue
+                });
               }}
               changeValue={`${(values as valuesDetails).status}`}
             />
+            <Collapse in={isNotHome}>
+              <div className="text-center">
+                <HHNotHomeField
+                  changeValue={`${(values as valuesDetails).nhcount}`}
+                  handleChange={(toggleValue) => {
+                    setValues({ ...values, nhcount: toggleValue });
+                  }}
+                />
+              </div>
+            </Collapse>
             <HHTypeField
               handleChange={onFormChange}
               changeValue={`${(values as valuesDetails).type}`}
             />
-            <NoteField
+            <GenericTextAreaField
+              label="Notes"
+              name="note"
+              placeholder="Optional non-personal information. Eg, Renovation, Foreclosed, Friends, etc."
               handleChange={onFormChange}
               changeValue={`${(values as valuesDetails).note}`}
             />

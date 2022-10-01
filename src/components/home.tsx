@@ -1,7 +1,15 @@
 import { MouseEvent, ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { ref, child, onValue, set } from "firebase/database";
 import { database } from "./../firebase";
-import { Button, Container, Form, Modal, Navbar, Table } from "react-bootstrap";
+import {
+  Button,
+  Collapse,
+  Container,
+  Form,
+  Modal,
+  Navbar,
+  Table
+} from "react-bootstrap";
 import Loader from "./loader";
 import { floorDetails, valuesDetails } from "./interface";
 import TableHeader from "./table";
@@ -15,16 +23,18 @@ import {
   Legend,
   ModalUnitTitle,
   NavBarBranding,
+  NOT_HOME_STATUS_CODES,
   RELOAD_CHECK_INTERVAL_MS,
   RELOAD_INACTIVITY_DURATION,
+  STATUS_CODES,
   ZeroPad
 } from "./util";
 import {
-  FeedbackField,
+  GenericTextAreaField,
+  HHNotHomeField,
   HHStatusField,
   HHTypeField,
-  ModalFooter,
-  NoteField
+  ModalFooter
 } from "./form";
 import { useParams } from "react-router-dom";
 import InvalidPage from "./invalidpage";
@@ -43,6 +53,7 @@ function Home() {
   const [isPostalLoading, setIsPostalLoading] = useState<boolean>(true);
   const [postalName, setPostalName] = useState<String>();
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isNotHome, setIsNotHome] = useState<boolean>(false);
 
   const toggleModal = (isModal: boolean) => {
     if (isModal) {
@@ -62,7 +73,8 @@ function Home() {
           number: unit,
           note: units[unit]["note"],
           type: units[unit]["type"],
-          status: units[unit]["status"]
+          status: units[unit]["status"],
+          nhcount: units[unit]["nhcount"]
         });
       }
       dataList.push({ floor: floor, units: unitsDetails });
@@ -83,6 +95,7 @@ function Home() {
   ) => {
     const floorUnits = floors.find((e) => e.floor === floor);
     const unitDetails = floorUnits?.units.find((e) => e.number === unit);
+    const unitStatus = unitDetails?.status;
     setValues({
       ...values,
       floor: floor,
@@ -91,8 +104,10 @@ function Home() {
       unitDisplay: ZeroPad(unit, maxUnitNumber),
       type: unitDetails?.type,
       note: unitDetails?.note,
-      status: unitDetails?.status
+      status: unitDetails?.status,
+      nhcount: unitDetails?.nhcount || NOT_HOME_STATUS_CODES.DEFAULT
     });
+    setIsNotHome(unitStatus === STATUS_CODES.NOT_HOME);
     toggleModal(true);
   };
 
@@ -107,7 +122,8 @@ function Home() {
         {
           type: details.type,
           note: details.note,
-          status: details.status
+          status: details.status,
+          nhcount: details.nhcount
         }
       );
       clearTimeout(timeoutId);
@@ -284,6 +300,7 @@ function Home() {
                       type={element.type}
                       note={element.note}
                       status={element.status}
+                      nhcount={element.nhcount}
                     />
                   </td>
                 ))}
@@ -297,7 +314,9 @@ function Home() {
         </Modal.Header>
         <Form onSubmit={handleSubmitFeedback}>
           <Modal.Body>
-            <FeedbackField
+            <GenericTextAreaField
+              name="feedback"
+              rows={5}
               handleChange={onFormChange}
               changeValue={`${(values as valuesDetails).feedback}`}
             />
@@ -317,15 +336,36 @@ function Home() {
           <Modal.Body>
             <HHStatusField
               handleChange={(toggleValue) => {
-                setValues({ ...values, status: toggleValue });
+                setIsNotHome(false);
+                if (toggleValue.toString() === STATUS_CODES.NOT_HOME) {
+                  setIsNotHome(true);
+                }
+                setValues({
+                  ...values,
+                  nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+                  status: toggleValue
+                });
               }}
               changeValue={`${(values as valuesDetails).status}`}
             />
+            <Collapse in={isNotHome}>
+              <div className="text-center">
+                <HHNotHomeField
+                  changeValue={`${(values as valuesDetails).nhcount}`}
+                  handleChange={(toggleValue) => {
+                    setValues({ ...values, nhcount: toggleValue });
+                  }}
+                />
+              </div>
+            </Collapse>
             <HHTypeField
               handleChange={onFormChange}
               changeValue={`${(values as valuesDetails).type}`}
             />
-            <NoteField
+            <GenericTextAreaField
+              label="Notes"
+              name="note"
+              placeholder="Optional non-personal information. Eg, Renovation, Foreclosed, Friends, etc."
               handleChange={onFormChange}
               changeValue={`${(values as valuesDetails).note}`}
             />

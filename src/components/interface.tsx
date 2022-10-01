@@ -5,6 +5,7 @@ export interface unitDetails {
   note: String;
   type: String;
   status: String;
+  nhcount: String;
 }
 
 export interface floorDetails {
@@ -16,6 +17,7 @@ export interface unitProps {
   type: String;
   note?: String;
   status: String;
+  nhcount?: String;
 }
 
 export interface valuesDetails {
@@ -29,6 +31,12 @@ export interface valuesDetails {
   feedback: String;
   status: String;
   link?: String;
+  nhcount?: String;
+  name?: String;
+  units?: String;
+  floors?: number;
+  newPostal?: String;
+  code?: String;
 }
 
 export interface adminProps {
@@ -53,6 +61,15 @@ export interface addressDetails {
 export interface FormProps {
   handleChange?: (event: React.ChangeEvent<HTMLElement>) => void;
   changeValue: string;
+  name?: string;
+  label?: string;
+  placeholder?: string;
+  rows?: number;
+}
+
+export interface FloorProps {
+  handleChange?: (event: React.ChangeEvent<HTMLElement>) => void;
+  changeValue: number;
 }
 
 export interface TitleProps {
