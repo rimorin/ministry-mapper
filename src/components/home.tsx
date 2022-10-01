@@ -74,7 +74,7 @@ function Home() {
           note: units[unit]["note"],
           type: units[unit]["type"],
           status: units[unit]["status"],
-          nhcount: units[unit]["nhcount"]
+          nhcount: units[unit]["nhcount"] || NOT_HOME_STATUS_CODES.DEFAULT
         });
       }
       dataList.push({ floor: floor, units: unitsDetails });
