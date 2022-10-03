@@ -1166,7 +1166,13 @@ function Admin({ user, isConductor = false }: adminProps) {
                             size="sm"
                             variant="outline-warning"
                             className="me-2"
-                            onClick={() =>
+                            onClick={() => {
+                              const hasOnlyOneFloor =
+                                addressElement.floors.length === 1;
+                              if (hasOnlyOneFloor) {
+                                alert(`Territory requires at least 1 floor.`);
+                                return;
+                              }
                               confirmAlert({
                                 customUI: ({ onClose }) => {
                                   return (
@@ -1212,8 +1218,8 @@ function Admin({ user, isConductor = false }: adminProps) {
                                     </Container>
                                   );
                                 }
-                              })
-                            }
+                              });
+                            }}
                           >
                             🗑️
                           </Button>
