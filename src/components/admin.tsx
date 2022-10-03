@@ -1083,7 +1083,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                           <Button
                             size="sm"
                             variant="outline-warning"
-                            className="me-2"
+                            className="me-1"
                             onClick={() => {
                               const hasOnlyOneUnitNumber =
                                 addressElement.floors[0].units.length === 1;
@@ -1107,8 +1107,8 @@ function Admin({ user, isConductor = false }: adminProps) {
                                             Are You Very Sure ?
                                           </Card.Title>
                                           <Card.Text>
-                                            This action will delete all the data
-                                            of unit, {item.number},{" "}
+                                            This action will delete unit number{" "}
+                                            {item.number} of{" "}
                                             {addressElement.postalcode}.
                                           </Card.Text>
                                           <Button
@@ -1163,7 +1163,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                           <Button
                             size="sm"
                             variant="outline-warning"
-                            className="me-2"
+                            className="me-1"
                             onClick={() => {
                               const hasOnlyOneFloor =
                                 addressElement.floors.length === 1;
@@ -1185,9 +1185,9 @@ function Admin({ user, isConductor = false }: adminProps) {
                                             Are You Very Sure ?
                                           </Card.Title>
                                           <Card.Text>
-                                            This action will delete all the unit
-                                            data of floor {floorElement.floor},{" "}
-                                            {addressElement.name}.
+                                            This action will delete floor{" "}
+                                            {floorElement.floor} of{" "}
+                                            {addressElement.postalcode}.
                                           </Card.Text>
                                           <Button
                                             className="me-2"
