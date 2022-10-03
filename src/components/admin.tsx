@@ -971,9 +971,8 @@ function Admin({ user, isConductor = false }: adminProps) {
                                   <Card.Body>
                                     <Card.Title>Are You Very Sure ?</Card.Title>
                                     <Card.Text>
-                                      You want to reset the data of{" "}
-                                      {addressElement.name}. This will reset all
-                                      Done & Not Home status.
+                                      This action will reset all unit status of{" "}
+                                      {addressElement.name}.
                                     </Card.Text>
                                     <Button
                                       className="me-2"
@@ -1020,7 +1019,8 @@ function Admin({ user, isConductor = false }: adminProps) {
                                   <Card.Body>
                                     <Card.Title>Are You Very Sure ?</Card.Title>
                                     <Card.Text>
-                                      You want to delete {addressElement.name}.
+                                      The action will completely delete,{" "}
+                                      {addressElement.name}.
                                     </Card.Text>
                                     <Button
                                       className="me-2"
@@ -1107,11 +1107,9 @@ function Admin({ user, isConductor = false }: adminProps) {
                                             Are You Very Sure ?
                                           </Card.Title>
                                           <Card.Text>
-                                            You want to delete unit{" "}
-                                            {item.number} of{" "}
-                                            {addressElement.postalcode}. All
-                                            floor data for this unit will be
-                                            deleted.
+                                            This action will delete all the data
+                                            of unit, {item.number},{" "}
+                                            {addressElement.postalcode}.
                                           </Card.Text>
                                           <Button
                                             className="me-2"
@@ -1187,8 +1185,8 @@ function Admin({ user, isConductor = false }: adminProps) {
                                             Are You Very Sure ?
                                           </Card.Title>
                                           <Card.Text>
-                                            You want to delete floor{" "}
-                                            {floorElement.floor} of{" "}
+                                            This action will delete all the unit
+                                            data of floor {floorElement.floor},{" "}
                                             {addressElement.name}.
                                           </Card.Text>
                                           <Button
