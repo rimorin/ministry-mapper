@@ -5,9 +5,6 @@ import { initializeAuth, browserLocalPersistence } from "firebase/auth";
 import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 
 declare global {
-  // var must be used for global scopes
-  // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-4.html#type-checking-for-globalthis
-  // eslint-disable-next-line no-var
   var FIREBASE_APPCHECK_DEBUG_TOKEN: boolean | string | undefined;
 }
 const {
@@ -21,8 +18,8 @@ const {
   REACT_APP_FIREBASE_RECAPTCHA_PUBLIC_KEY,
   REACT_APP_FIREBASE_APPCHECK_DEBUG_TOKEN
 } = process.env;
-
-global.FIREBASE_APPCHECK_DEBUG_TOKEN = REACT_APP_FIREBASE_APPCHECK_DEBUG_TOKEN;
+global.FIREBASE_APPCHECK_DEBUG_TOKEN =
+  REACT_APP_FIREBASE_APPCHECK_DEBUG_TOKEN || false;
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -46,13 +43,11 @@ const auth = initializeAuth(app, {
   // No popupRedirectResolver defined
 });
 
-if (REACT_APP_FIREBASE_RECAPTCHA_PUBLIC_KEY) {
-  initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider(REACT_APP_FIREBASE_RECAPTCHA_PUBLIC_KEY),
-    // Optional argument. If true, the SDK automatically refreshes App Check
-    // tokens as needed.
-    isTokenAutoRefreshEnabled: true
-  });
-}
+initializeAppCheck(app, {
+  provider: new ReCaptchaV3Provider(
+    REACT_APP_FIREBASE_RECAPTCHA_PUBLIC_KEY || ""
+  ),
+  isTokenAutoRefreshEnabled: true
+});
 
 export { database, auth };
