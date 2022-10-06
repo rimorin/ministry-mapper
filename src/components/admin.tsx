@@ -90,6 +90,7 @@ import Welcome from "./welcome";
 import NotFoundPage from "./notfoundpage";
 import UnauthorizedPage from "./unauthorisedpage";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
+import { async } from "@firebase/util";
 function Admin({ user, isConductor = false }: adminProps) {
   const { code } = useParams();
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -105,6 +106,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isNotHome, setIsNotHome] = useState<boolean>(false);
   const [isNewTerritory, setIsNewTerritory] = useState<boolean>(false);
+  const [isNewUnit, setIsNewUnit] = useState<boolean>(false);
   const [name, setName] = useState<String>();
   const [values, setValues] = useState<Object>({});
   const [territories, setTerritories] = useState(
@@ -270,6 +272,9 @@ function Admin({ user, isConductor = false }: adminProps) {
       case ADMIN_MODAL_TYPES.CREATE_TERRITORY:
         setIsNewTerritory(!isNewTerritory);
         break;
+      case ADMIN_MODAL_TYPES.ADD_UNIT:
+        setIsNewUnit(!isNewUnit);
+        break;
       default:
         setIsOpen(!isOpen);
     }
@@ -345,6 +350,15 @@ function Admin({ user, isConductor = false }: adminProps) {
     toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
   };
 
+  const handleClickAddUnit = (
+    _: MouseEvent<HTMLElement>,
+    postalcode: String,
+    floors: number
+  ) => {
+    setValues({ ...values, postal: postalcode, floors: floors, unit: "" });
+    toggleModal(ADMIN_MODAL_TYPES.ADD_UNIT);
+  };
+
   const handleSubmitFeedback = async (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
@@ -390,6 +404,49 @@ function Admin({ user, isConductor = false }: adminProps) {
         processCongregationTerritories(updatedTerritory.val())
       );
     }
+  };
+
+  const processPostalUnitNumber = async (
+    postalCode: String,
+    unitNumber: String,
+    isDelete = false
+  ) => {
+    const blockAddresses = addresses.get(`${postalCode}`);
+    if (!blockAddresses) return;
+
+    const unitUpdates: unitMaps = {};
+    for (const index in blockAddresses.floors) {
+      const floorDetails = blockAddresses.floors[index];
+      floorDetails.units.forEach((_) => {
+        unitUpdates[
+          `/${postalCode}/units/${floorDetails.floor}/${unitNumber}`
+        ] = isDelete
+          ? {}
+          : {
+              type: HOUSEHOLD_TYPES.CHINESE,
+              note: "",
+              status: STATUS_CODES.DEFAULT,
+              nhcount: NOT_HOME_STATUS_CODES.DEFAULT
+            };
+      });
+    }
+    setIsSaving(true);
+    try {
+      await update(ref(database), unitUpdates);
+      await refreshCongregationTerritory(`${selectedTerritoryCode}`);
+    } catch (error) {
+      errorHandler(error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCreateNewUnit = async (event: FormEvent<HTMLElement>) => {
+    event.preventDefault();
+    const details = values as valuesDetails;
+    const postalCode = details.postal;
+    const unitNumber = details.unit;
+    processPostalUnitNumber(`${postalCode}`, unitNumber);
   };
 
   const handleCreateTerritoryAddress = async (
@@ -888,6 +945,22 @@ function Admin({ user, isConductor = false }: adminProps) {
                       size="sm"
                       variant="outline-primary"
                       className="me-2"
+                      onClick={(event) => {
+                        handleClickAddUnit(
+                          event,
+                          addressElement.postalcode,
+                          addressElement.floors.length
+                        );
+                      }}
+                    >
+                      Add Unit
+                    </Button>
+                  )}
+                  {!isConductor && (
+                    <Button
+                      size="sm"
+                      variant="outline-primary"
+                      className="me-2"
                       onClick={() =>
                         confirmAlert({
                           customUI: ({ onClose }) => {
@@ -898,9 +971,8 @@ function Admin({ user, isConductor = false }: adminProps) {
                                   <Card.Body>
                                     <Card.Title>Are You Very Sure ?</Card.Title>
                                     <Card.Text>
-                                      You want to reset the data of{" "}
-                                      {addressElement.name}. This will reset all
-                                      Done & Not Home status.
+                                      This action will reset all unit status of{" "}
+                                      {addressElement.name}.
                                     </Card.Text>
                                     <Button
                                       className="me-2"
@@ -947,7 +1019,8 @@ function Admin({ user, isConductor = false }: adminProps) {
                                   <Card.Body>
                                     <Card.Title>Are You Very Sure ?</Card.Title>
                                     <Card.Text>
-                                      You want to delete {addressElement.name}.
+                                      The action will completely delete,{" "}
+                                      {addressElement.name}.
                                     </Card.Text>
                                     <Button
                                       className="me-2"
@@ -994,25 +1067,32 @@ function Admin({ user, isConductor = false }: adminProps) {
               hover
               responsive="sm"
             >
-              <TableHeader
-                floors={addressElement.floors}
-                maxUnitNumber={maxUnitNumberLength}
-              />
-              <tbody key={`tbody-${addressElement.postalcode}`}>
-                {addressElement.floors &&
-                  addressElement.floors.map((floorElement, floorIndex) => (
-                    <tr key={`row-${floorIndex}`}>
+              <thead>
+                <tr>
+                  <th scope="col" className="text-center align-middle">
+                    lvl/unit
+                  </th>
+                  {addressElement.floors &&
+                    addressElement.floors[0].units.map((item, index) => (
                       <th
-                        className="text-center"
-                        key={`floor-${floorIndex}`}
-                        scope="row"
+                        key={`${index}-${item.number}`}
+                        scope="col"
+                        className="text-center align-middle"
                       >
                         {!isConductor && (
                           <Button
                             size="sm"
                             variant="outline-warning"
-                            className="me-2"
-                            onClick={() =>
+                            className="me-1"
+                            onClick={() => {
+                              const hasOnlyOneUnitNumber =
+                                addressElement.floors[0].units.length === 1;
+                              if (hasOnlyOneUnitNumber) {
+                                alert(
+                                  `Territory requires at least 1 unit number.`
+                                );
+                                return;
+                              }
                               confirmAlert({
                                 customUI: ({ onClose }) => {
                                   return (
@@ -1027,9 +1107,87 @@ function Admin({ user, isConductor = false }: adminProps) {
                                             Are You Very Sure ?
                                           </Card.Title>
                                           <Card.Text>
-                                            You want to delete floor{" "}
+                                            This action will delete unit number{" "}
+                                            {item.number} of{" "}
+                                            {addressElement.postalcode}.
+                                          </Card.Text>
+                                          <Button
+                                            className="me-2"
+                                            variant="primary"
+                                            onClick={() => {
+                                              processPostalUnitNumber(
+                                                addressElement.postalcode,
+                                                item.number,
+                                                true
+                                              );
+                                              onClose();
+                                            }}
+                                          >
+                                            Yes, Delete It.
+                                          </Button>
+                                          <Button
+                                            className="ms-2"
+                                            variant="primary"
+                                            onClick={() => {
+                                              onClose();
+                                            }}
+                                          >
+                                            No
+                                          </Button>
+                                        </Card.Body>
+                                      </Card>
+                                    </Container>
+                                  );
+                                }
+                              });
+                            }}
+                          >
+                            🗑️
+                          </Button>
+                        )}
+                        {ZeroPad(item.number, maxUnitNumberLength)}
+                      </th>
+                    ))}
+                </tr>
+              </thead>
+              <tbody key={`tbody-${addressElement.postalcode}`}>
+                {addressElement.floors &&
+                  addressElement.floors.map((floorElement, floorIndex) => (
+                    <tr key={`row-${floorIndex}`}>
+                      <th
+                        className="text-center"
+                        key={`floor-${floorIndex}`}
+                        scope="row"
+                      >
+                        {!isConductor && (
+                          <Button
+                            size="sm"
+                            variant="outline-warning"
+                            className="me-1"
+                            onClick={() => {
+                              const hasOnlyOneFloor =
+                                addressElement.floors.length === 1;
+                              if (hasOnlyOneFloor) {
+                                alert(`Territory requires at least 1 floor.`);
+                                return;
+                              }
+                              confirmAlert({
+                                customUI: ({ onClose }) => {
+                                  return (
+                                    <Container>
+                                      <Card
+                                        bg="warning"
+                                        className="text-center"
+                                      >
+                                        <Card.Header>Warning ⚠️</Card.Header>
+                                        <Card.Body>
+                                          <Card.Title>
+                                            Are You Very Sure ?
+                                          </Card.Title>
+                                          <Card.Text>
+                                            This action will delete floor{" "}
                                             {floorElement.floor} of{" "}
-                                            {addressElement.name}.
+                                            {addressElement.postalcode}.
                                           </Card.Text>
                                           <Button
                                             className="me-2"
@@ -1058,8 +1216,8 @@ function Admin({ user, isConductor = false }: adminProps) {
                                     </Container>
                                   );
                                 }
-                              })
-                            }
+                              });
+                            }}
                           >
                             🗑️
                           </Button>
@@ -1252,6 +1410,39 @@ function Admin({ user, isConductor = false }: adminProps) {
               <Button
                 variant="secondary"
                 onClick={() => toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS)}
+              >
+                Close
+              </Button>
+              <Button type="submit" variant="primary">
+                Save
+              </Button>
+            </Modal.Footer>
+          </Form>
+        </Modal>
+      )}
+      {!isConductor && (
+        <Modal show={isNewUnit}>
+          <Modal.Header>
+            <Modal.Title>
+              Add Unit To {`${(values as valuesDetails).postal}`}
+            </Modal.Title>
+          </Modal.Header>
+          <Form onSubmit={handleCreateNewUnit}>
+            <Modal.Body>
+              <GenericTextField
+                label="Unit Number"
+                name="unit"
+                handleChange={(e: ChangeEvent<HTMLElement>) => {
+                  const { value } = e.target as HTMLInputElement;
+                  setValues({ ...values, unit: value });
+                }}
+                changeValue={`${(values as valuesDetails).unit}`}
+              />
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                onClick={() => toggleModal(ADMIN_MODAL_TYPES.ADD_UNIT)}
               >
                 Close
               </Button>
