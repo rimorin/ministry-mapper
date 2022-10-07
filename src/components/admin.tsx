@@ -49,7 +49,6 @@ import {
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import {
-  compareSortObjects,
   STATUS_CODES,
   MUTABLE_CODES,
   ZeroPad,
@@ -74,7 +73,6 @@ import {
   MIN_START_FLOOR,
   NOT_HOME_STATUS_CODES
 } from "./util";
-import TableHeader from "./table";
 import { useParams } from "react-router-dom";
 import {
   AdminLinkField,
@@ -90,7 +88,6 @@ import Welcome from "./welcome";
 import NotFoundPage from "./notfoundpage";
 import UnauthorizedPage from "./unauthorisedpage";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
-import { async } from "@firebase/util";
 function Admin({ user, isConductor = false }: adminProps) {
   const { code } = useParams();
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -132,9 +129,8 @@ function Admin({ user, isConductor = false }: adminProps) {
           nhcount: units[unit]["nhcount"] || NOT_HOME_STATUS_CODES.DEFAULT
         });
       }
-      dataList.push({ floor: floor, units: unitsDetails });
+      dataList.unshift({ floor: floor, units: unitsDetails });
     }
-    dataList.sort(compareSortObjects);
     return dataList;
   };
 

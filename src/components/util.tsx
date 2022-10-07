@@ -16,18 +16,6 @@ const errorHandler = (error: any, showAlert = true) => {
   }
 };
 
-const compareSortObjects = (a: any, b: any) => {
-  const a_floor = Number(a.floor);
-  const b_floor = Number(b.floor);
-  if (a_floor < b_floor) {
-    return 1;
-  }
-  if (a_floor > b_floor) {
-    return -1;
-  }
-  return 0;
-};
-
 const STATUS_CODES = {
   DEFAULT: "-1",
   DONE: "1",
@@ -258,7 +246,6 @@ const Legend = ({ showLegend, hideFunction }: LegendProps) => (
 );
 
 export {
-  compareSortObjects,
   ZeroPad,
   ModalUnitTitle,
   assignmentMessage,
