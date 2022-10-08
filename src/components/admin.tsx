@@ -443,6 +443,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     const postalCode = details.postal;
     const unitNumber = details.unit;
     processPostalUnitNumber(`${postalCode}`, unitNumber);
+    toggleModal(ADMIN_MODAL_TYPES.ADD_UNIT);
   };
 
   const handleCreateTerritoryAddress = async (
