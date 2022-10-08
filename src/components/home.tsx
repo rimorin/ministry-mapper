@@ -15,7 +15,6 @@ import { floorDetails, valuesDetails } from "./interface";
 import TableHeader from "./table";
 import UnitStatus from "./unit";
 import {
-  compareSortObjects,
   connectionTimeout,
   DEFAULT_FLOOR_PADDING,
   errorHandler,
@@ -77,9 +76,8 @@ function Home() {
           nhcount: units[unit]["nhcount"] || NOT_HOME_STATUS_CODES.DEFAULT
         });
       }
-      dataList.push({ floor: floor, units: unitsDetails });
+      dataList.unshift({ floor: floor, units: unitsDetails });
     }
-    dataList.sort(compareSortObjects);
     setFloors(dataList);
   };
 

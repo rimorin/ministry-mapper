@@ -16,18 +16,6 @@ const errorHandler = (error: any, showAlert = true) => {
   }
 };
 
-const compareSortObjects = (a: any, b: any) => {
-  const a_floor = Number(a.floor);
-  const b_floor = Number(b.floor);
-  if (a_floor < b_floor) {
-    return 1;
-  }
-  if (a_floor > b_floor) {
-    return -1;
-  }
-  return 0;
-};
-
 const STATUS_CODES = {
   DEFAULT: "-1",
   DONE: "1",
@@ -97,7 +85,7 @@ const IGNORE_HOUSEHOLD_STATUS = [
 ];
 
 const MIN_START_FLOOR = 1;
-const MAX_TOP_FLOOR = 30;
+const MAX_TOP_FLOOR = 40;
 
 const TERRITORY_VIEW_WINDOW_WELCOME_TEXT =
   "<!DOCTYPE html><html><head><title>Loading Territory...</title></<head><body><style> body {display: flex; justify-content: center;align-items: center;}</style><h1>Loading Territory...</h1></body></html>";
@@ -258,7 +246,6 @@ const Legend = ({ showLegend, hideFunction }: LegendProps) => (
 );
 
 export {
-  compareSortObjects,
   ZeroPad,
   ModalUnitTitle,
   assignmentMessage,
