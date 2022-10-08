@@ -85,7 +85,7 @@ const IGNORE_HOUSEHOLD_STATUS = [
 ];
 
 const MIN_START_FLOOR = 1;
-const MAX_TOP_FLOOR = 30;
+const MAX_TOP_FLOOR = 40;
 
 const TERRITORY_VIEW_WINDOW_WELCOME_TEXT =
   "<!DOCTYPE html><html><head><title>Loading Territory...</title></<head><body><style> body {display: flex; justify-content: center;align-items: center;}</style><h1>Loading Territory...</h1></body></html>";
