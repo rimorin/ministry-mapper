@@ -94,7 +94,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   const [isFeedback, setIsFeedback] = useState<boolean>(false);
   const [isLinkRevoke, setIsLinkRevoke] = useState<boolean>(false);
   const [isCreate, setIsCreate] = useState<boolean>(false);
-  const [isRename, setIsRename] = useState<boolean>(false);
+  const [isAddressRename, setIsAddressRename] = useState<boolean>(false);
   const [isSettingAssignLink, setIsSettingAssignLink] =
     useState<boolean>(false);
   const [isSettingViewLink, setIsSettingViewLink] = useState<boolean>(false);
@@ -104,6 +104,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   const [isNotHome, setIsNotHome] = useState<boolean>(false);
   const [isNewTerritory, setIsNewTerritory] = useState<boolean>(false);
   const [isNewUnit, setIsNewUnit] = useState<boolean>(false);
+  const [isTerritoryRename, setIsTerritoryRename] = useState<boolean>(false);
   const [name, setName] = useState<String>();
   const [values, setValues] = useState<Object>({});
   const [territories, setTerritories] = useState(
@@ -111,6 +112,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   );
   const [selectedTerritory, setSelectedTerritory] = useState<String>();
   const [selectedTerritoryCode, setSelectedTerritoryCode] = useState<String>();
+  const [selectedTerritoryName, setSelectedTerritoryName] = useState<String>();
   const [unsubscribers, setUnsubscribers] = useState<Array<Unsubscribe>>([]);
   const [addresses, setAddresses] = useState(new Map<String, addressDetails>());
   const congregationReference = child(ref(database), `congregations/${code}`);
@@ -154,6 +156,7 @@ function Admin({ user, isConductor = false }: adminProps) {
       `${territoryDetails?.code} - ${territoryDetails?.name}`
     );
     setSelectedTerritoryCode(territoryDetails?.code);
+    setSelectedTerritoryName(territoryDetails?.name);
     refreshAddressState();
     if (!territoryAddresses) return;
     setIsLoading(true);
@@ -223,6 +226,27 @@ function Admin({ user, isConductor = false }: adminProps) {
     }
   };
 
+  const addFloorToBlock = async (postalcode: String) => {
+    const blockAddresses = addresses.get(postalcode);
+    if (!blockAddresses) return;
+    const unitUpdates: unitMaps = {};
+    const blockFloorDetails = blockAddresses.floors[0];
+    const newFloor = Number(blockFloorDetails.floor) + 1;
+    blockFloorDetails.units.forEach((element) => {
+      unitUpdates[`/${postalcode}/units/${newFloor}/${element.number}`] = {
+        status: STATUS_CODES.DEFAULT,
+        type: HOUSEHOLD_TYPES.CHINESE,
+        note: "",
+        nhcount: NOT_HOME_STATUS_CODES.DEFAULT
+      };
+    });
+    try {
+      await update(ref(database), unitUpdates);
+    } catch (error) {
+      errorHandler(error);
+    }
+  };
+
   const resetBlock = async (postalcode: String) => {
     const blockAddresses = addresses.get(postalcode);
     if (!blockAddresses) return;
@@ -262,14 +286,17 @@ function Admin({ user, isConductor = false }: adminProps) {
       case ADMIN_MODAL_TYPES.CREATE_ADDRESS:
         setIsCreate(!isCreate);
         break;
-      case ADMIN_MODAL_TYPES.RENAME_TERRITORY:
-        setIsRename(!isRename);
+      case ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME:
+        setIsAddressRename(!isAddressRename);
         break;
       case ADMIN_MODAL_TYPES.CREATE_TERRITORY:
         setIsNewTerritory(!isNewTerritory);
         break;
       case ADMIN_MODAL_TYPES.ADD_UNIT:
         setIsNewUnit(!isNewUnit);
+        break;
+      case ADMIN_MODAL_TYPES.RENAME_TERRITORY:
+        setIsTerritoryRename(!isTerritoryRename);
         break;
       default:
         setIsOpen(!isOpen);
@@ -369,13 +396,37 @@ function Admin({ user, isConductor = false }: adminProps) {
     }
   };
 
-  const handleClickChangeName = (
+  const handleClickChangeAddressName = (
     _: MouseEvent<HTMLElement>,
     postalcode: String,
     name: String
   ) => {
     setValues({ ...values, name: name, postal: postalcode });
-    toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
+    toggleModal(ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME);
+  };
+
+  const handleUpdateTerritoryName = async (event: FormEvent<HTMLElement>) => {
+    event.preventDefault();
+    const details = values as valuesDetails;
+    const territoryName = details.name;
+    setIsSaving(true);
+    try {
+      await set(
+        ref(
+          database,
+          `congregations/${code}/territories/${selectedTerritoryCode}/name`
+        ),
+        territoryName
+      );
+      setSelectedTerritoryName(territoryName);
+      setSelectedTerritory(`${selectedTerritoryCode} - ${territoryName}`);
+      await refreshCongregationTerritory(`${selectedTerritoryCode}`);
+      toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
+    } catch (error) {
+      errorHandler(error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleUpdateBlockName = async (event: FormEvent<HTMLElement>) => {
@@ -384,7 +435,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     setIsSaving(true);
     try {
       await set(ref(database, `/${details.postal}/name`), details.name);
-      toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
+      toggleModal(ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME);
     } catch (error) {
       errorHandler(error);
     } finally {
@@ -542,16 +593,6 @@ function Admin({ user, isConductor = false }: adminProps) {
     setValues({ ...values, [name]: value });
   };
 
-  const handleClickCreateAddress = () => {
-    setValues({ ...values, name: "", units: "", floors: 1, newPostal: "" });
-    toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS);
-  };
-
-  const handleClickCreateTerritory = () => {
-    setValues({ ...values, name: "", code: "" });
-    toggleModal(ADMIN_MODAL_TYPES.CREATE_TERRITORY);
-  };
-
   const shareTimedLink = async (
     linkId: String,
     title: string,
@@ -694,7 +735,8 @@ function Admin({ user, isConductor = false }: adminProps) {
                 size="sm"
                 variant="outline-primary"
                 onClick={() => {
-                  handleClickCreateTerritory();
+                  setValues({ ...values, name: "", code: "" });
+                  toggleModal(ADMIN_MODAL_TYPES.CREATE_TERRITORY);
                 }}
               >
                 Create Territory
@@ -706,10 +748,30 @@ function Admin({ user, isConductor = false }: adminProps) {
                 size="sm"
                 variant="outline-primary"
                 onClick={() => {
-                  handleClickCreateAddress();
+                  setValues({
+                    ...values,
+                    name: "",
+                    units: "",
+                    floors: 1,
+                    newPostal: ""
+                  });
+                  toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS);
                 }}
               >
                 Create Address
+              </Button>
+            )}
+            {!isConductor && selectedTerritory && (
+              <Button
+                className="m-2"
+                size="sm"
+                variant="outline-primary"
+                onClick={() => {
+                  setValues({ ...values, name: selectedTerritoryName });
+                  toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
+                }}
+              >
+                Edit Territory Name
               </Button>
             )}
             {!isConductor && (
@@ -927,7 +989,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                       variant="outline-primary"
                       className="me-2"
                       onClick={(event) => {
-                        handleClickChangeName(
+                        handleClickChangeAddressName(
                           event,
                           addressElement.postalcode,
                           addressElement.name
@@ -951,6 +1013,18 @@ function Admin({ user, isConductor = false }: adminProps) {
                       }}
                     >
                       Add Unit
+                    </Button>
+                  )}
+                  {!isConductor && (
+                    <Button
+                      size="sm"
+                      variant="outline-primary"
+                      className="me-2"
+                      onClick={(event) => {
+                        addFloorToBlock(addressElement.postalcode);
+                      }}
+                    >
+                      Add Floor
                     </Button>
                   )}
                   {!isConductor && (
@@ -1259,6 +1333,34 @@ function Admin({ user, isConductor = false }: adminProps) {
         );
       })}
       {!isConductor && (
+        <Modal show={isTerritoryRename}>
+          <Modal.Header>
+            <Modal.Title>Change Territory Name</Modal.Title>
+          </Modal.Header>
+          <Form onSubmit={handleUpdateTerritoryName}>
+            <Modal.Body>
+              <GenericTextField
+                label="Name"
+                name="name"
+                handleChange={onFormChange}
+                changeValue={`${(values as valuesDetails).name}`}
+              />
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                onClick={() => toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY)}
+              >
+                Close
+              </Button>
+              <Button type="submit" variant="primary">
+                Save
+              </Button>
+            </Modal.Footer>
+          </Form>
+        </Modal>
+      )}
+      {!isConductor && (
         <Modal show={isLinkRevoke}>
           <Modal.Header>
             <Modal.Title>Revoke territory link</Modal.Title>
@@ -1300,7 +1402,7 @@ function Admin({ user, isConductor = false }: adminProps) {
         </Modal>
       )}
       {!isConductor && (
-        <Modal show={isRename}>
+        <Modal show={isAddressRename}>
           <Modal.Header>
             <Modal.Title>Change Block Name</Modal.Title>
           </Modal.Header>
@@ -1316,7 +1418,9 @@ function Admin({ user, isConductor = false }: adminProps) {
             <Modal.Footer>
               <Button
                 variant="secondary"
-                onClick={() => toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY)}
+                onClick={() =>
+                  toggleModal(ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME)
+                }
               >
                 Close
               </Button>
