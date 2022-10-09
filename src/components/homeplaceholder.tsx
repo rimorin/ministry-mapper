@@ -1,14 +1,6 @@
-import {
-  Button,
-  Card,
-  Container,
-  Navbar,
-  Placeholder,
-  Table
-} from "react-bootstrap";
+import { Container, Navbar, Placeholder, Table } from "react-bootstrap";
 
-const HomePlaceHolder = ({ postalCode = "" }) => {
-  const loop = new Array(10);
+const HomePlaceHolder = () => {
   return (
     <>
       <Navbar bg="light" expand="sm">
@@ -75,7 +67,7 @@ const HomePlaceHolder = ({ postalCode = "" }) => {
               ></Placeholder>
             </td>
           </tr>
-          {[...Array(7)].map((x, index) => (
+          {[...Array(8)].map((x, index) => (
             <tr key={`tr-${index}`}>
               <td style={{ width: "10%" }} className="text-center align-middle">
                 <Placeholder
