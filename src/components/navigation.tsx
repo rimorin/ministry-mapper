@@ -9,6 +9,7 @@ import FrontPage from "./frontpage";
 import "bootstrap/dist/css/bootstrap.min.css";
 import NotFoundPage from "./notfoundpage";
 import Dashboard from "./dashboard";
+import HomePlaceHolder from "./homeplaceholder";
 
 function Navigation() {
   const [isMaintenance, setIsMaintenance] = useState<boolean>(false);
@@ -33,6 +34,7 @@ function Navigation() {
           element={<Dashboard isConductor={true} userType="Conductor" />}
         />
         <Route path={"/:postalcode/:id"} element={<Home />} />
+        <Route path="/test" element={<HomePlaceHolder />} />
       </Routes>
     </Container>
   );

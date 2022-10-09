@@ -39,6 +39,7 @@ import { useParams } from "react-router-dom";
 import InvalidPage from "./invalidpage";
 import NotFoundPage from "./notfoundpage";
 import { setContext } from "@sentry/react";
+import HomePlaceHolder from "./homeplaceholder";
 
 function Home() {
   const { id, postalcode } = useParams();
@@ -229,7 +230,7 @@ function Home() {
 
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
   }, [id, postalcode]);
-  if (isLinkLoading || isPostalLoading) return <Loader />;
+  if (isLinkLoading || isPostalLoading) return <HomePlaceHolder />;
   if (floors.length === 0) return <NotFoundPage />;
   if (isLinkExpired) {
     document.title = "Ministry Mapper";
