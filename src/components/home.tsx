@@ -10,7 +10,6 @@ import {
   Navbar,
   Table
 } from "react-bootstrap";
-import Loader from "./loader";
 import { floorDetails, valuesDetails } from "./interface";
 import TableHeader from "./table";
 import UnitStatus from "./unit";
