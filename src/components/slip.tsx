@@ -1,6 +1,6 @@
 import { MouseEvent, ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { ref, child, onValue, set } from "firebase/database";
-import { database } from "./../firebase";
+import { database } from "../firebase";
 import {
   Button,
   Collapse,
@@ -34,25 +34,19 @@ import {
   HHTypeField,
   ModalFooter
 } from "./form";
-import { useParams } from "react-router-dom";
-import InvalidPage from "./invalidpage";
-import NotFoundPage from "./notfoundpage";
 import { setContext } from "@sentry/react";
-import HomePlaceHolder from "./homeplaceholder";
+import Loader from "./loader";
 
-function Home() {
-  const { id, postalcode } = useParams();
-  const [isLinkExpired, setIsLinkExpired] = useState<boolean>(true);
-  const [floors, setFloors] = useState<Array<floorDetails>>([]);
+const Slip = ({ token = "", postalcode = "" }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isFeedback, setIsFeedback] = useState<boolean>(false);
   const [showLegend, setShowLegend] = useState<boolean>(false);
-  const [values, setValues] = useState<Object>({});
-  const [isLinkLoading, setIsLinkLoading] = useState<boolean>(true);
   const [isPostalLoading, setIsPostalLoading] = useState<boolean>(true);
-  const [postalName, setPostalName] = useState<String>();
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isNotHome, setIsNotHome] = useState<boolean>(false);
+  const [floors, setFloors] = useState<Array<floorDetails>>([]);
+  const [postalName, setPostalName] = useState<String>();
+  const [values, setValues] = useState<Object>({});
 
   const toggleModal = (isModal: boolean) => {
     if (isModal) {
@@ -60,6 +54,10 @@ function Home() {
     } else {
       setIsFeedback(!isFeedback);
     }
+  };
+
+  const handleClick = (_: MouseEvent<HTMLElement>, isModal: boolean) => {
+    toggleModal(isModal);
   };
 
   const processData = (data: any) => {
@@ -79,10 +77,6 @@ function Home() {
       dataList.unshift({ floor: floor, units: unitsDetails });
     }
     setFloors(dataList);
-  };
-
-  const handleClick = (_: MouseEvent<HTMLElement>, isModal: boolean) => {
-    toggleModal(isModal);
   };
 
   const handleClickModal = (
@@ -137,6 +131,10 @@ function Home() {
     toggleModal(false);
   };
 
+  const toggleLegend = () => {
+    setShowLegend(!showLegend);
+  };
+
   const handleSubmitFeedback = async (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
@@ -158,13 +156,9 @@ function Home() {
     setValues({ ...values, [name]: value });
   };
 
-  const toggleLegend = () => {
-    setShowLegend(!showLegend);
-  };
-
   useEffect(() => {
     setContext("publisher", {
-      token: id,
+      token: token,
       postalcode: postalcode
     });
     const postalNameReference = child(ref(database), `/${postalcode}/name`);
@@ -173,7 +167,6 @@ function Home() {
       ref(database),
       `/${postalcode}/feedback`
     );
-    const linkReference = child(ref(database), `/links/${id}`);
     onValue(
       postalNameReference,
       (snapshot) => {
@@ -185,17 +178,6 @@ function Home() {
       },
       { onlyOnce: true }
     );
-    onValue(linkReference, (snapshot) => {
-      if (snapshot.exists()) {
-        const currentTimestamp = new Date().getTime();
-        if (currentTimestamp < snapshot.val()) {
-          setIsLinkExpired(false);
-        }
-      } else {
-        setIsLinkExpired(true);
-      }
-      setIsLinkLoading(false);
-    });
     onValue(postalUnitReference, (snapshot) => {
       if (snapshot.exists()) {
         processData(snapshot.val());
@@ -209,7 +191,6 @@ function Home() {
     });
 
     let currentTime = new Date().getTime();
-
     const setActivityTime = () => {
       currentTime = new Date().getTime();
     };
@@ -228,14 +209,9 @@ function Home() {
     document.body.addEventListener("touchstart", setActivityTime);
 
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-  }, [id, postalcode]);
-  if (isLinkLoading || isPostalLoading) return <HomePlaceHolder />;
-  if (floors.length === 0) return <NotFoundPage />;
-  if (isLinkExpired) {
-    document.title = "Ministry Mapper";
-    return <InvalidPage />;
-  }
-  let maxUnitNumberLength = getMaxUnitLength(floors);
+  }, [token, postalcode]);
+  if (isPostalLoading) return <Loader />;
+  const maxUnitNumberLength = getMaxUnitLength(floors);
   return (
     <>
       <Legend showLegend={showLegend} hideFunction={toggleLegend} />
@@ -376,6 +352,6 @@ function Home() {
       </Modal>
     </>
   );
-}
+};
 
-export default Home;
+export default Slip;

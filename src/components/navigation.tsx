@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { database } from "./../firebase";
-import Home from "./../components/home";
 import { ref, child, onValue } from "firebase/database";
 import { Routes, Route } from "react-router-dom";
 import { Container } from "react-bootstrap";
@@ -9,7 +8,7 @@ import FrontPage from "./frontpage";
 import "bootstrap/dist/css/bootstrap.min.css";
 import NotFoundPage from "./notfoundpage";
 import Dashboard from "./dashboard";
-import HomePlaceHolder from "./homeplaceholder";
+import Territory from "./territory";
 
 function Navigation() {
   const [isMaintenance, setIsMaintenance] = useState<boolean>(false);
@@ -33,8 +32,7 @@ function Navigation() {
           path={"conductor/:code"}
           element={<Dashboard isConductor={true} userType="Conductor" />}
         />
-        <Route path={"/:postalcode/:id"} element={<Home />} />
-        <Route path="/test" element={<HomePlaceHolder />} />
+        <Route path={"/:postalcode/:id"} element={<Territory />} />
       </Routes>
     </Container>
   );
