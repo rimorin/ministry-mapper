@@ -514,7 +514,8 @@ function Admin({ user, isConductor = false }: adminProps) {
     for (let i = 0; i < noOfFloors; i++) {
       const floorMap = {} as any;
       units?.forEach((unitNo) => {
-        floorMap[unitNo] = {
+        const removedLeadingZeroUnitNo = parseInt(unitNo).toString();
+        floorMap[removedLeadingZeroUnitNo] = {
           status: STATUS_CODES.DEFAULT,
           type: HOUSEHOLD_TYPES.CHINESE,
           note: "",
