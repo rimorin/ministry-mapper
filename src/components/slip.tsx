@@ -5,6 +5,7 @@ import {
   Button,
   Collapse,
   Container,
+  Fade,
   Form,
   Modal,
   Navbar,
@@ -213,144 +214,152 @@ const Slip = ({ token = "", postalcode = "" }) => {
   if (isPostalLoading) return <Loader />;
   const maxUnitNumberLength = getMaxUnitLength(floors);
   return (
-    <>
-      <Legend showLegend={showLegend} hideFunction={toggleLegend} />
-      <Navbar bg="light" expand="sm">
-        <Container fluid>
-          <NavBarBranding naming={`${postalName}`} />
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse
-            id="basic-navbar-nav"
-            className="justify-content-end mt-1"
-          >
-            <Button className="me-2" onClick={toggleLegend}>
-              Legend
-            </Button>
-            <Button
-              className="me-2"
-              onClick={() => {
-                window.open(
-                  `http://maps.google.com.sg/maps?q=${postalcode}`,
-                  "_blank"
-                );
-              }}
+    <Fade appear={true} in={true}>
+      <div>
+        <Legend showLegend={showLegend} hideFunction={toggleLegend} />
+        <Navbar bg="light" expand="sm">
+          <Container fluid>
+            <NavBarBranding naming={`${postalName}`} />
+            <Navbar.Toggle aria-controls="basic-navbar-nav" />
+            <Navbar.Collapse
+              id="basic-navbar-nav"
+              className="justify-content-end mt-1"
             >
-              Direction
-            </Button>
-            <Button className="me-2" onClick={handleClickFeedback}>
-              Feedback
-            </Button>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
-      <Table bordered striped hover responsive="sm" style={{ height: "75vh" }}>
-        <TableHeader floors={floors} maxUnitNumber={maxUnitNumberLength} />
-        <tbody>
-          {floors &&
-            floors.map((item, index) => (
-              <tr key={`row-${index}`}>
-                <th
-                  className="text-center align-middle"
-                  key={`${index}-${item.floor}`}
-                  scope="row"
-                >
-                  {ZeroPad(item.floor, DEFAULT_FLOOR_PADDING)}
-                </th>
-                {item.units.map((element, _) => (
-                  <td
-                    style={{ whiteSpace: "nowrap" }}
+              <Button className="me-2" onClick={toggleLegend}>
+                Legend
+              </Button>
+              <Button
+                className="me-2"
+                onClick={() => {
+                  window.open(
+                    `http://maps.google.com.sg/maps?q=${postalcode}`,
+                    "_blank"
+                  );
+                }}
+              >
+                Direction
+              </Button>
+              <Button className="me-2" onClick={handleClickFeedback}>
+                Feedback
+              </Button>
+            </Navbar.Collapse>
+          </Container>
+        </Navbar>
+        <Table
+          bordered
+          striped
+          hover
+          responsive="sm"
+          style={{ height: "75vh" }}
+        >
+          <TableHeader floors={floors} maxUnitNumber={maxUnitNumberLength} />
+          <tbody>
+            {floors &&
+              floors.map((item, index) => (
+                <tr key={`row-${index}`}>
+                  <th
                     className="text-center align-middle"
-                    onClick={(event) =>
-                      handleClickModal(
-                        event,
-                        item.floor,
-                        element.number,
-                        maxUnitNumberLength
-                      )
-                    }
-                    key={`${item.floor}-${element.number}`}
+                    key={`${index}-${item.floor}`}
+                    scope="row"
                   >
-                    <UnitStatus
-                      type={element.type}
-                      note={element.note}
-                      status={element.status}
-                      nhcount={element.nhcount}
-                    />
-                  </td>
-                ))}
-              </tr>
-            ))}
-        </tbody>
-      </Table>
-      <Modal show={isFeedback}>
-        <Modal.Header>
-          <Modal.Title>{`Feedback on ${postalName}`}</Modal.Title>
-        </Modal.Header>
-        <Form onSubmit={handleSubmitFeedback}>
-          <Modal.Body>
-            <GenericTextAreaField
-              name="feedback"
-              rows={5}
-              handleChange={onFormChange}
-              changeValue={`${(values as valuesDetails).feedback}`}
+                    {ZeroPad(item.floor, DEFAULT_FLOOR_PADDING)}
+                  </th>
+                  {item.units.map((element, _) => (
+                    <td
+                      style={{ whiteSpace: "nowrap" }}
+                      className="text-center align-middle"
+                      onClick={(event) =>
+                        handleClickModal(
+                          event,
+                          item.floor,
+                          element.number,
+                          maxUnitNumberLength
+                        )
+                      }
+                      key={`${item.floor}-${element.number}`}
+                    >
+                      <UnitStatus
+                        type={element.type}
+                        note={element.note}
+                        status={element.status}
+                        nhcount={element.nhcount}
+                      />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+          </tbody>
+        </Table>
+        <Modal show={isFeedback}>
+          <Modal.Header>
+            <Modal.Title>{`Feedback on ${postalName}`}</Modal.Title>
+          </Modal.Header>
+          <Form onSubmit={handleSubmitFeedback}>
+            <Modal.Body>
+              <GenericTextAreaField
+                name="feedback"
+                rows={5}
+                handleChange={onFormChange}
+                changeValue={`${(values as valuesDetails).feedback}`}
+              />
+            </Modal.Body>
+            <ModalFooter
+              handleClick={(e) => handleClick(e, false)}
+              isSaving={isSaving}
             />
-          </Modal.Body>
-          <ModalFooter
-            handleClick={(e) => handleClick(e, false)}
-            isSaving={isSaving}
+          </Form>
+        </Modal>
+        <Modal show={isOpen}>
+          <ModalUnitTitle
+            unit={`${(values as valuesDetails).unitDisplay}`}
+            floor={`${(values as valuesDetails).floorDisplay}`}
           />
-        </Form>
-      </Modal>
-      <Modal show={isOpen}>
-        <ModalUnitTitle
-          unit={`${(values as valuesDetails).unitDisplay}`}
-          floor={`${(values as valuesDetails).floorDisplay}`}
-        />
-        <Form onSubmit={handleSubmitClick}>
-          <Modal.Body>
-            <HHStatusField
-              handleChange={(toggleValue) => {
-                setIsNotHome(false);
-                if (toggleValue.toString() === STATUS_CODES.NOT_HOME) {
-                  setIsNotHome(true);
-                }
-                setValues({
-                  ...values,
-                  nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
-                  status: toggleValue
-                });
-              }}
-              changeValue={`${(values as valuesDetails).status}`}
+          <Form onSubmit={handleSubmitClick}>
+            <Modal.Body>
+              <HHStatusField
+                handleChange={(toggleValue) => {
+                  setIsNotHome(false);
+                  if (toggleValue.toString() === STATUS_CODES.NOT_HOME) {
+                    setIsNotHome(true);
+                  }
+                  setValues({
+                    ...values,
+                    nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+                    status: toggleValue
+                  });
+                }}
+                changeValue={`${(values as valuesDetails).status}`}
+              />
+              <Collapse in={isNotHome}>
+                <div className="text-center">
+                  <HHNotHomeField
+                    changeValue={`${(values as valuesDetails).nhcount}`}
+                    handleChange={(toggleValue) => {
+                      setValues({ ...values, nhcount: toggleValue });
+                    }}
+                  />
+                </div>
+              </Collapse>
+              <HHTypeField
+                handleChange={onFormChange}
+                changeValue={`${(values as valuesDetails).type}`}
+              />
+              <GenericTextAreaField
+                label="Notes"
+                name="note"
+                placeholder="Optional non-personal information. Eg, Renovation, Foreclosed, Friends, etc."
+                handleChange={onFormChange}
+                changeValue={`${(values as valuesDetails).note}`}
+              />
+            </Modal.Body>
+            <ModalFooter
+              handleClick={(e) => handleClick(e, true)}
+              isSaving={isSaving}
             />
-            <Collapse in={isNotHome}>
-              <div className="text-center">
-                <HHNotHomeField
-                  changeValue={`${(values as valuesDetails).nhcount}`}
-                  handleChange={(toggleValue) => {
-                    setValues({ ...values, nhcount: toggleValue });
-                  }}
-                />
-              </div>
-            </Collapse>
-            <HHTypeField
-              handleChange={onFormChange}
-              changeValue={`${(values as valuesDetails).type}`}
-            />
-            <GenericTextAreaField
-              label="Notes"
-              name="note"
-              placeholder="Optional non-personal information. Eg, Renovation, Foreclosed, Friends, etc."
-              handleChange={onFormChange}
-              changeValue={`${(values as valuesDetails).note}`}
-            />
-          </Modal.Body>
-          <ModalFooter
-            handleClick={(e) => handleClick(e, true)}
-            isSaving={isSaving}
-          />
-        </Form>
-      </Modal>
-    </>
+          </Form>
+        </Modal>
+      </div>
+    </Fade>
   );
 };
 

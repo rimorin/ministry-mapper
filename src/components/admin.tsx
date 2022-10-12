@@ -28,6 +28,7 @@ import {
   Container,
   Dropdown,
   DropdownButton,
+  Fade,
   Form,
   Modal,
   Navbar,
@@ -694,149 +695,201 @@ function Admin({ user, isConductor = false }: adminProps) {
   const congregationTerritoryList = Array.from(territories.values());
 
   return (
-    <>
-      <Navbar bg="light" variant="light" expand="lg">
-        <Container fluid>
-          <NavBarBranding naming={`${name}`} />
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse
-            id="basic-navbar-nav"
-            className="justify-content-end mt-1"
-          >
-            {congregationTerritoryList && (
-              <NavDropdown
-                title={
-                  selectedTerritory
-                    ? `${selectedTerritory}`
-                    : "Select Territory"
-                }
-                onSelect={(
-                  eventKey: string | null,
-                  _: React.SyntheticEvent<unknown>
-                ) => processSelectedTerritory(`${eventKey}`)}
-                className="m-2 d-inline-block"
-                align={{ lg: "end" }}
-              >
-                {congregationTerritoryList.map((element) => (
-                  <NavDropdown.Item
-                    key={`${element.code}`}
-                    eventKey={`${element.code}`}
-                  >
-                    {element.code} - {element.name}
-                  </NavDropdown.Item>
-                ))}
-              </NavDropdown>
-            )}
-            {!isConductor && !selectedTerritory && (
-              <Button
-                className="m-2"
-                size="sm"
-                variant="outline-primary"
-                onClick={() => {
-                  setValues({ ...values, name: "", code: "" });
-                  toggleModal(ADMIN_MODAL_TYPES.CREATE_TERRITORY);
-                }}
-              >
-                Create Territory
-              </Button>
-            )}
-            {!isConductor && selectedTerritory && (
-              <Button
-                className="m-2"
-                size="sm"
-                variant="outline-primary"
-                onClick={() => {
-                  setValues({
-                    ...values,
-                    name: "",
-                    units: "",
-                    floors: 1,
-                    newPostal: ""
-                  });
-                  toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS);
-                }}
-              >
-                Create Address
-              </Button>
-            )}
-            {!isConductor && selectedTerritory && (
-              <Button
-                className="m-2"
-                size="sm"
-                variant="outline-primary"
-                onClick={() => {
-                  setValues({ ...values, name: selectedTerritoryName });
-                  toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
-                }}
-              >
-                Edit Territory Name
-              </Button>
-            )}
-            {!isConductor && (
-              <Button
-                className="m-2"
-                size="sm"
-                variant="outline-primary"
-                onClick={() => {
-                  setValues({
-                    ...values,
-                    link: ""
-                  });
-                  toggleModal(ADMIN_MODAL_TYPES.LINK);
-                }}
-              >
-                Revoke Link
-              </Button>
-            )}
-            <Button
-              className="m-2"
-              size="sm"
-              variant="outline-primary"
-              onClick={() => {
-                signOut(auth);
-              }}
+    <Fade appear={true} in={true}>
+      <div>
+        <Navbar bg="light" variant="light" expand="lg">
+          <Container fluid>
+            <NavBarBranding naming={`${name}`} />
+            <Navbar.Toggle aria-controls="basic-navbar-nav" />
+            <Navbar.Collapse
+              id="basic-navbar-nav"
+              className="justify-content-end mt-1"
             >
-              Log Out
-            </Button>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
-      {!selectedTerritory && (
-        <Welcome
-          loginType={
-            isConductor ? LOGIN_TYPE_CODES.CONDUCTOR : LOGIN_TYPE_CODES.ADMIN
-          }
-        />
-      )}
-      {territoryAddresses.map((addressElement) => {
-        const maxUnitNumberLength = getMaxUnitLength(addressElement.floors);
-        const completedPercent = getCompletedPercent(addressElement.floors);
-        const addressLinkId = nanoid();
-        return (
-          <div key={`div-${addressElement.postalcode}`}>
-            <Navbar
-              bg="light"
-              expand="sm"
-              className="mt-3"
-              key={`navbar-${addressElement.postalcode}`}
-            >
-              <Container fluid>
-                <Navbar.Brand>{addressElement.name}</Navbar.Brand>
-                <Navbar.Toggle aria-controls="navbarScroll" />
-                <Navbar.Collapse
-                  id="navbarScroll"
-                  className="justify-content-end mt-2"
+              {congregationTerritoryList && (
+                <NavDropdown
+                  title={
+                    selectedTerritory
+                      ? `${selectedTerritory}`
+                      : "Select Territory"
+                  }
+                  onSelect={(
+                    eventKey: string | null,
+                    _: React.SyntheticEvent<unknown>
+                  ) => processSelectedTerritory(`${eventKey}`)}
+                  className="m-2 d-inline-block"
+                  align={{ lg: "end" }}
                 >
-                  {!isConductor && (
-                    <DropdownButton
-                      key={`assigndrop-${addressElement.postalcode}`}
-                      size="sm"
-                      variant="outline-primary"
-                      title="Assign"
-                      className="me-2 d-inline-block"
+                  {congregationTerritoryList.map((element) => (
+                    <NavDropdown.Item
+                      key={`${element.code}`}
+                      eventKey={`${element.code}`}
                     >
-                      <Dropdown.Item
-                        onClick={() => {
+                      {element.code} - {element.name}
+                    </NavDropdown.Item>
+                  ))}
+                </NavDropdown>
+              )}
+              {!isConductor && !selectedTerritory && (
+                <Button
+                  className="m-2"
+                  size="sm"
+                  variant="outline-primary"
+                  onClick={() => {
+                    setValues({ ...values, name: "", code: "" });
+                    toggleModal(ADMIN_MODAL_TYPES.CREATE_TERRITORY);
+                  }}
+                >
+                  Create Territory
+                </Button>
+              )}
+              {!isConductor && selectedTerritory && (
+                <Button
+                  className="m-2"
+                  size="sm"
+                  variant="outline-primary"
+                  onClick={() => {
+                    setValues({
+                      ...values,
+                      name: "",
+                      units: "",
+                      floors: 1,
+                      newPostal: ""
+                    });
+                    toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS);
+                  }}
+                >
+                  Create Address
+                </Button>
+              )}
+              {!isConductor && selectedTerritory && (
+                <Button
+                  className="m-2"
+                  size="sm"
+                  variant="outline-primary"
+                  onClick={() => {
+                    setValues({ ...values, name: selectedTerritoryName });
+                    toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
+                  }}
+                >
+                  Edit Territory Name
+                </Button>
+              )}
+              {!isConductor && (
+                <Button
+                  className="m-2"
+                  size="sm"
+                  variant="outline-primary"
+                  onClick={() => {
+                    setValues({
+                      ...values,
+                      link: ""
+                    });
+                    toggleModal(ADMIN_MODAL_TYPES.LINK);
+                  }}
+                >
+                  Revoke Link
+                </Button>
+              )}
+              <Button
+                className="m-2"
+                size="sm"
+                variant="outline-primary"
+                onClick={() => {
+                  signOut(auth);
+                }}
+              >
+                Log Out
+              </Button>
+            </Navbar.Collapse>
+          </Container>
+        </Navbar>
+        {!selectedTerritory && (
+          <Welcome
+            loginType={
+              isConductor ? LOGIN_TYPE_CODES.CONDUCTOR : LOGIN_TYPE_CODES.ADMIN
+            }
+          />
+        )}
+        {territoryAddresses.map((addressElement) => {
+          const maxUnitNumberLength = getMaxUnitLength(addressElement.floors);
+          const completedPercent = getCompletedPercent(addressElement.floors);
+          const addressLinkId = nanoid();
+          return (
+            <div key={`div-${addressElement.postalcode}`}>
+              <Navbar
+                bg="light"
+                expand="sm"
+                className="mt-3"
+                key={`navbar-${addressElement.postalcode}`}
+              >
+                <Container fluid>
+                  <Navbar.Brand>{addressElement.name}</Navbar.Brand>
+                  <Navbar.Toggle aria-controls="navbarScroll" />
+                  <Navbar.Collapse
+                    id="navbarScroll"
+                    className="justify-content-end mt-2"
+                  >
+                    {!isConductor && (
+                      <DropdownButton
+                        key={`assigndrop-${addressElement.postalcode}`}
+                        size="sm"
+                        variant="outline-primary"
+                        title="Assign"
+                        className="me-2 d-inline-block"
+                      >
+                        <Dropdown.Item
+                          onClick={() => {
+                            shareTimedLink(
+                              addressLinkId,
+                              `Units for ${addressElement.name}`,
+                              assignmentMessage(addressElement.name),
+                              `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`
+                            );
+                          }}
+                        >
+                          {isSettingAssignLink && (
+                            <>
+                              <Spinner
+                                as="span"
+                                animation="border"
+                                size="sm"
+                                aria-hidden="true"
+                              />{" "}
+                            </>
+                          )}
+                          House-To-House
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() => {
+                            shareTimedLink(
+                              addressLinkId,
+                              `Units for ${addressElement.name}`,
+                              assignmentMessage(addressElement.name),
+                              `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
+                              DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS
+                            );
+                          }}
+                        >
+                          {isSettingAssignLink && (
+                            <>
+                              <Spinner
+                                as="span"
+                                animation="border"
+                                size="sm"
+                                aria-hidden="true"
+                              />{" "}
+                            </>
+                          )}
+                          Personal
+                        </Dropdown.Item>
+                      </DropdownButton>
+                    )}
+                    {isConductor && (
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        className="me-2"
+                        onClick={(_) => {
                           shareTimedLink(
                             addressLinkId,
                             `Units for ${addressElement.name}`,
@@ -855,20 +908,34 @@ function Admin({ user, isConductor = false }: adminProps) {
                             />{" "}
                           </>
                         )}
-                        House-To-House
-                      </Dropdown.Item>
-                      <Dropdown.Item
-                        onClick={() => {
-                          shareTimedLink(
-                            addressLinkId,
-                            `Units for ${addressElement.name}`,
-                            assignmentMessage(addressElement.name),
-                            `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
-                            DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS
-                          );
+                        Assign
+                      </Button>
+                    )}
+                    {isConductor && (
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        className="me-2"
+                        onClick={async () => {
+                          setIsSettingViewLink(true);
+                          const timeoutId = connectionTimeout();
+                          try {
+                            const territoryWindow = window.open("", "_blank");
+                            if (territoryWindow) {
+                              territoryWindow.document.body.innerHTML =
+                                TERRITORY_VIEW_WINDOW_WELCOME_TEXT;
+                            }
+                            await setTimedLink(addressLinkId);
+                            territoryWindow!.location.href = `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`;
+                          } catch (error) {
+                            errorHandler(error);
+                          } finally {
+                            clearTimeout(timeoutId);
+                            setIsSettingViewLink(false);
+                          }
                         }}
                       >
-                        {isSettingAssignLink && (
+                        {isSettingViewLink && (
                           <>
                             <Spinner
                               as="span"
@@ -878,760 +945,706 @@ function Admin({ user, isConductor = false }: adminProps) {
                             />{" "}
                           </>
                         )}
-                        Personal
-                      </Dropdown.Item>
-                    </DropdownButton>
-                  )}
-                  {isConductor && (
-                    <Button
-                      size="sm"
-                      variant="outline-primary"
-                      className="me-2"
-                      onClick={(_) => {
-                        shareTimedLink(
-                          addressLinkId,
-                          `Units for ${addressElement.name}`,
-                          assignmentMessage(addressElement.name),
-                          `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`
-                        );
-                      }}
-                    >
-                      {isSettingAssignLink && (
-                        <>
-                          <Spinner
-                            as="span"
-                            animation="border"
-                            size="sm"
-                            aria-hidden="true"
-                          />{" "}
-                        </>
-                      )}
-                      Assign
-                    </Button>
-                  )}
-                  {isConductor && (
-                    <Button
-                      size="sm"
-                      variant="outline-primary"
-                      className="me-2"
-                      onClick={async () => {
-                        setIsSettingViewLink(true);
-                        const timeoutId = connectionTimeout();
-                        try {
-                          const territoryWindow = window.open("", "_blank");
-                          if (territoryWindow) {
-                            territoryWindow.document.body.innerHTML =
-                              TERRITORY_VIEW_WINDOW_WELCOME_TEXT;
-                          }
-                          await setTimedLink(addressLinkId);
-                          territoryWindow!.location.href = `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`;
-                        } catch (error) {
-                          errorHandler(error);
-                        } finally {
-                          clearTimeout(timeoutId);
-                          setIsSettingViewLink(false);
-                        }
-                      }}
-                    >
-                      {isSettingViewLink && (
-                        <>
-                          <Spinner
-                            as="span"
-                            animation="border"
-                            size="sm"
-                            aria-hidden="true"
-                          />{" "}
-                        </>
-                      )}
-                      View
-                    </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="outline-primary"
-                    className="me-2"
-                    onClick={(e) => {
-                      window.open(
-                        `http://maps.google.com.sg/maps?q=${addressElement.postalcode}`,
-                        "_blank"
-                      );
-                    }}
-                  >
-                    Direction
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline-primary"
-                    className="me-2"
-                    onClick={(event) => {
-                      handleClickFeedback(
-                        event,
-                        addressElement.postalcode,
-                        addressElement.feedback
-                      );
-                    }}
-                  >
-                    Feedback
-                    {addressElement.feedback && (
-                      <>
-                        {" "}
-                        <Badge pill bg="secondary">
-                          ⭐
-                        </Badge>
-                      </>
+                        View
+                      </Button>
                     )}
-                  </Button>
-                  {!isConductor && (
                     <Button
                       size="sm"
                       variant="outline-primary"
                       className="me-2"
-                      onClick={(event) => {
-                        handleClickChangeAddressName(
-                          event,
-                          addressElement.postalcode,
-                          addressElement.name
+                      onClick={(e) => {
+                        window.open(
+                          `http://maps.google.com.sg/maps?q=${addressElement.postalcode}`,
+                          "_blank"
                         );
                       }}
                     >
-                      Rename
+                      Direction
                     </Button>
-                  )}
-                  {!isConductor && (
                     <Button
                       size="sm"
                       variant="outline-primary"
                       className="me-2"
                       onClick={(event) => {
-                        handleClickAddUnit(
+                        handleClickFeedback(
                           event,
                           addressElement.postalcode,
-                          addressElement.floors.length
+                          addressElement.feedback
                         );
                       }}
                     >
-                      Add Unit
+                      Feedback
+                      {addressElement.feedback && (
+                        <>
+                          {" "}
+                          <Badge pill bg="secondary">
+                            ⭐
+                          </Badge>
+                        </>
+                      )}
                     </Button>
-                  )}
-                  {!isConductor && (
-                    <Button
-                      size="sm"
-                      variant="outline-primary"
-                      className="me-2"
-                      onClick={(event) => {
-                        addFloorToBlock(addressElement.postalcode);
-                      }}
-                    >
-                      Add Floor
-                    </Button>
-                  )}
-                  {!isConductor && (
-                    <Button
-                      size="sm"
-                      variant="outline-primary"
-                      className="me-2"
-                      onClick={() =>
-                        confirmAlert({
-                          customUI: ({ onClose }) => {
-                            return (
-                              <Container>
-                                <Card bg="warning" className="text-center">
-                                  <Card.Header>Warning ⚠️</Card.Header>
-                                  <Card.Body>
-                                    <Card.Title>Are You Very Sure ?</Card.Title>
-                                    <Card.Text>
-                                      This action will reset all unit status of{" "}
-                                      {addressElement.name}.
-                                    </Card.Text>
-                                    <Button
-                                      className="me-2"
-                                      variant="primary"
-                                      onClick={() => {
-                                        resetBlock(addressElement.postalcode);
-                                        onClose();
-                                      }}
-                                    >
-                                      Yes, Reset It.
-                                    </Button>
-                                    <Button
-                                      className="ms-2"
-                                      variant="primary"
-                                      onClick={() => {
-                                        onClose();
-                                      }}
-                                    >
-                                      No
-                                    </Button>
-                                  </Card.Body>
-                                </Card>
-                              </Container>
-                            );
-                          }
-                        })
-                      }
-                    >
-                      Reset
-                    </Button>
-                  )}
-                  {!isConductor && (
-                    <Button
-                      size="sm"
-                      variant="outline-primary"
-                      className="me-2"
-                      onClick={() =>
-                        confirmAlert({
-                          customUI: ({ onClose }) => {
-                            return (
-                              <Container>
-                                <Card bg="warning" className="text-center">
-                                  <Card.Header>Warning ⚠️</Card.Header>
-                                  <Card.Body>
-                                    <Card.Title>Are You Very Sure ?</Card.Title>
-                                    <Card.Text>
-                                      The action will completely delete,{" "}
-                                      {addressElement.name}.
-                                    </Card.Text>
-                                    <Button
-                                      className="me-2"
-                                      variant="primary"
-                                      onClick={() => {
-                                        deleteBlock(addressElement.postalcode);
-                                        onClose();
-                                      }}
-                                    >
-                                      Yes, Delete It.
-                                    </Button>
-                                    <Button
-                                      className="ms-2"
-                                      variant="primary"
-                                      onClick={() => {
-                                        onClose();
-                                      }}
-                                    >
-                                      No
-                                    </Button>
-                                  </Card.Body>
-                                </Card>
-                              </Container>
-                            );
-                          }
-                        })
-                      }
-                    >
-                      Delete
-                    </Button>
-                  )}
-                </Navbar.Collapse>
-              </Container>
-            </Navbar>
-            <ProgressBar
-              style={{ borderRadius: 0 }}
-              now={completedPercent.completedValue}
-              label={completedPercent.completedDisplay}
-            />
-            <Table
-              key={`table-${addressElement.postalcode}`}
-              bordered
-              striped
-              hover
-              responsive="sm"
-            >
-              <thead>
-                <tr>
-                  <th scope="col" className="text-center align-middle">
-                    lvl/unit
-                  </th>
-                  {addressElement.floors &&
-                    addressElement.floors[0].units.map((item, index) => (
-                      <th
-                        key={`${index}-${item.number}`}
-                        scope="col"
-                        className="text-center align-middle"
+                    {!isConductor && (
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        className="me-2"
+                        onClick={(event) => {
+                          handleClickChangeAddressName(
+                            event,
+                            addressElement.postalcode,
+                            addressElement.name
+                          );
+                        }}
                       >
-                        {!isConductor && (
-                          <Button
-                            size="sm"
-                            variant="outline-warning"
-                            className="me-1"
-                            onClick={() => {
-                              const hasOnlyOneUnitNumber =
-                                addressElement.floors[0].units.length === 1;
-                              if (hasOnlyOneUnitNumber) {
-                                alert(
-                                  `Territory requires at least 1 unit number.`
-                                );
-                                return;
-                              }
-                              confirmAlert({
-                                customUI: ({ onClose }) => {
-                                  return (
-                                    <Container>
-                                      <Card
-                                        bg="warning"
-                                        className="text-center"
-                                      >
-                                        <Card.Header>Warning ⚠️</Card.Header>
-                                        <Card.Body>
-                                          <Card.Title>
-                                            Are You Very Sure ?
-                                          </Card.Title>
-                                          <Card.Text>
-                                            This action will delete unit number{" "}
-                                            {item.number} of{" "}
-                                            {addressElement.postalcode}.
-                                          </Card.Text>
-                                          <Button
-                                            className="me-2"
-                                            variant="primary"
-                                            onClick={() => {
-                                              processPostalUnitNumber(
-                                                addressElement.postalcode,
-                                                item.number,
-                                                true
-                                              );
-                                              onClose();
-                                            }}
-                                          >
-                                            Yes, Delete It.
-                                          </Button>
-                                          <Button
-                                            className="ms-2"
-                                            variant="primary"
-                                            onClick={() => {
-                                              onClose();
-                                            }}
-                                          >
-                                            No
-                                          </Button>
-                                        </Card.Body>
-                                      </Card>
-                                    </Container>
-                                  );
-                                }
-                              });
-                            }}
-                          >
-                            🗑️
-                          </Button>
-                        )}
-                        {ZeroPad(item.number, maxUnitNumberLength)}
-                      </th>
-                    ))}
-                </tr>
-              </thead>
-              <tbody key={`tbody-${addressElement.postalcode}`}>
-                {addressElement.floors &&
-                  addressElement.floors.map((floorElement, floorIndex) => (
-                    <tr key={`row-${floorIndex}`}>
-                      <th
-                        className="text-center"
-                        key={`floor-${floorIndex}`}
-                        scope="row"
+                        Rename
+                      </Button>
+                    )}
+                    {!isConductor && (
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        className="me-2"
+                        onClick={(event) => {
+                          handleClickAddUnit(
+                            event,
+                            addressElement.postalcode,
+                            addressElement.floors.length
+                          );
+                        }}
                       >
-                        {!isConductor && (
-                          <Button
-                            size="sm"
-                            variant="outline-warning"
-                            className="me-1"
-                            onClick={() => {
-                              const hasOnlyOneFloor =
-                                addressElement.floors.length === 1;
-                              if (hasOnlyOneFloor) {
-                                alert(`Territory requires at least 1 floor.`);
-                                return;
-                              }
-                              confirmAlert({
-                                customUI: ({ onClose }) => {
-                                  return (
-                                    <Container>
-                                      <Card
-                                        bg="warning"
-                                        className="text-center"
+                        Add Unit
+                      </Button>
+                    )}
+                    {!isConductor && (
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        className="me-2"
+                        onClick={(event) => {
+                          addFloorToBlock(addressElement.postalcode);
+                        }}
+                      >
+                        Add Floor
+                      </Button>
+                    )}
+                    {!isConductor && (
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        className="me-2"
+                        onClick={() =>
+                          confirmAlert({
+                            customUI: ({ onClose }) => {
+                              return (
+                                <Container>
+                                  <Card bg="warning" className="text-center">
+                                    <Card.Header>Warning ⚠️</Card.Header>
+                                    <Card.Body>
+                                      <Card.Title>
+                                        Are You Very Sure ?
+                                      </Card.Title>
+                                      <Card.Text>
+                                        This action will reset all unit status
+                                        of {addressElement.name}.
+                                      </Card.Text>
+                                      <Button
+                                        className="me-2"
+                                        variant="primary"
+                                        onClick={() => {
+                                          resetBlock(addressElement.postalcode);
+                                          onClose();
+                                        }}
                                       >
-                                        <Card.Header>Warning ⚠️</Card.Header>
-                                        <Card.Body>
-                                          <Card.Title>
-                                            Are You Very Sure ?
-                                          </Card.Title>
-                                          <Card.Text>
-                                            This action will delete floor{" "}
-                                            {floorElement.floor} of{" "}
-                                            {addressElement.postalcode}.
-                                          </Card.Text>
-                                          <Button
-                                            className="me-2"
-                                            variant="primary"
-                                            onClick={() => {
-                                              deleteBlockFloor(
-                                                addressElement.postalcode,
-                                                floorElement.floor
-                                              );
-                                              onClose();
-                                            }}
-                                          >
-                                            Yes, Delete It.
-                                          </Button>
-                                          <Button
-                                            className="ms-2"
-                                            variant="primary"
-                                            onClick={() => {
-                                              onClose();
-                                            }}
-                                          >
-                                            No
-                                          </Button>
-                                        </Card.Body>
-                                      </Card>
-                                    </Container>
-                                  );
-                                }
-                              });
-                            }}
-                          >
-                            🗑️
-                          </Button>
-                        )}
-                        {`${ZeroPad(
-                          floorElement.floor,
-                          DEFAULT_FLOOR_PADDING
-                        )}`}
-                      </th>
-                      {floorElement.units.map((detailsElement, index) => (
-                        <td
-                          align="center"
-                          onClick={(event) =>
-                            handleClickModal(
-                              event,
-                              addressElement.postalcode,
-                              floorElement.floor,
-                              detailsElement.number,
-                              detailsElement.type,
-                              detailsElement.note,
-                              detailsElement.status,
-                              detailsElement.nhcount,
-                              maxUnitNumberLength
-                            )
-                          }
-                          key={`${index}-${detailsElement.number}`}
+                                        Yes, Reset It.
+                                      </Button>
+                                      <Button
+                                        className="ms-2"
+                                        variant="primary"
+                                        onClick={() => {
+                                          onClose();
+                                        }}
+                                      >
+                                        No
+                                      </Button>
+                                    </Card.Body>
+                                  </Card>
+                                </Container>
+                              );
+                            }
+                          })
+                        }
+                      >
+                        Reset
+                      </Button>
+                    )}
+                    {!isConductor && (
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        className="me-2"
+                        onClick={() =>
+                          confirmAlert({
+                            customUI: ({ onClose }) => {
+                              return (
+                                <Container>
+                                  <Card bg="warning" className="text-center">
+                                    <Card.Header>Warning ⚠️</Card.Header>
+                                    <Card.Body>
+                                      <Card.Title>
+                                        Are You Very Sure ?
+                                      </Card.Title>
+                                      <Card.Text>
+                                        The action will completely delete,{" "}
+                                        {addressElement.name}.
+                                      </Card.Text>
+                                      <Button
+                                        className="me-2"
+                                        variant="primary"
+                                        onClick={() => {
+                                          deleteBlock(
+                                            addressElement.postalcode
+                                          );
+                                          onClose();
+                                        }}
+                                      >
+                                        Yes, Delete It.
+                                      </Button>
+                                      <Button
+                                        className="ms-2"
+                                        variant="primary"
+                                        onClick={() => {
+                                          onClose();
+                                        }}
+                                      >
+                                        No
+                                      </Button>
+                                    </Card.Body>
+                                  </Card>
+                                </Container>
+                              );
+                            }
+                          })
+                        }
+                      >
+                        Delete
+                      </Button>
+                    )}
+                  </Navbar.Collapse>
+                </Container>
+              </Navbar>
+              <ProgressBar
+                style={{ borderRadius: 0 }}
+                now={completedPercent.completedValue}
+                label={completedPercent.completedDisplay}
+              />
+              <Table
+                key={`table-${addressElement.postalcode}`}
+                bordered
+                striped
+                hover
+                responsive="sm"
+              >
+                <thead>
+                  <tr>
+                    <th scope="col" className="text-center align-middle">
+                      lvl/unit
+                    </th>
+                    {addressElement.floors &&
+                      addressElement.floors[0].units.map((item, index) => (
+                        <th
+                          key={`${index}-${item.number}`}
+                          scope="col"
+                          className="text-center align-middle"
                         >
-                          <UnitStatus
-                            key={`unit-${index}-${detailsElement.number}`}
-                            type={detailsElement.type}
-                            note={detailsElement.note}
-                            status={detailsElement.status}
-                            nhcount={detailsElement.nhcount}
-                          />
-                        </td>
+                          {!isConductor && (
+                            <Button
+                              size="sm"
+                              variant="outline-warning"
+                              className="me-1"
+                              onClick={() => {
+                                const hasOnlyOneUnitNumber =
+                                  addressElement.floors[0].units.length === 1;
+                                if (hasOnlyOneUnitNumber) {
+                                  alert(
+                                    `Territory requires at least 1 unit number.`
+                                  );
+                                  return;
+                                }
+                                confirmAlert({
+                                  customUI: ({ onClose }) => {
+                                    return (
+                                      <Container>
+                                        <Card
+                                          bg="warning"
+                                          className="text-center"
+                                        >
+                                          <Card.Header>Warning ⚠️</Card.Header>
+                                          <Card.Body>
+                                            <Card.Title>
+                                              Are You Very Sure ?
+                                            </Card.Title>
+                                            <Card.Text>
+                                              This action will delete unit
+                                              number {item.number} of{" "}
+                                              {addressElement.postalcode}.
+                                            </Card.Text>
+                                            <Button
+                                              className="me-2"
+                                              variant="primary"
+                                              onClick={() => {
+                                                processPostalUnitNumber(
+                                                  addressElement.postalcode,
+                                                  item.number,
+                                                  true
+                                                );
+                                                onClose();
+                                              }}
+                                            >
+                                              Yes, Delete It.
+                                            </Button>
+                                            <Button
+                                              className="ms-2"
+                                              variant="primary"
+                                              onClick={() => {
+                                                onClose();
+                                              }}
+                                            >
+                                              No
+                                            </Button>
+                                          </Card.Body>
+                                        </Card>
+                                      </Container>
+                                    );
+                                  }
+                                });
+                              }}
+                            >
+                              🗑️
+                            </Button>
+                          )}
+                          {ZeroPad(item.number, maxUnitNumberLength)}
+                        </th>
                       ))}
-                    </tr>
-                  ))}
-              </tbody>
-            </Table>
-          </div>
-        );
-      })}
-      {!isConductor && (
-        <Modal show={isTerritoryRename}>
+                  </tr>
+                </thead>
+                <tbody key={`tbody-${addressElement.postalcode}`}>
+                  {addressElement.floors &&
+                    addressElement.floors.map((floorElement, floorIndex) => (
+                      <tr key={`row-${floorIndex}`}>
+                        <th
+                          className="text-center"
+                          key={`floor-${floorIndex}`}
+                          scope="row"
+                        >
+                          {!isConductor && (
+                            <Button
+                              size="sm"
+                              variant="outline-warning"
+                              className="me-1"
+                              onClick={() => {
+                                const hasOnlyOneFloor =
+                                  addressElement.floors.length === 1;
+                                if (hasOnlyOneFloor) {
+                                  alert(`Territory requires at least 1 floor.`);
+                                  return;
+                                }
+                                confirmAlert({
+                                  customUI: ({ onClose }) => {
+                                    return (
+                                      <Container>
+                                        <Card
+                                          bg="warning"
+                                          className="text-center"
+                                        >
+                                          <Card.Header>Warning ⚠️</Card.Header>
+                                          <Card.Body>
+                                            <Card.Title>
+                                              Are You Very Sure ?
+                                            </Card.Title>
+                                            <Card.Text>
+                                              This action will delete floor{" "}
+                                              {floorElement.floor} of{" "}
+                                              {addressElement.postalcode}.
+                                            </Card.Text>
+                                            <Button
+                                              className="me-2"
+                                              variant="primary"
+                                              onClick={() => {
+                                                deleteBlockFloor(
+                                                  addressElement.postalcode,
+                                                  floorElement.floor
+                                                );
+                                                onClose();
+                                              }}
+                                            >
+                                              Yes, Delete It.
+                                            </Button>
+                                            <Button
+                                              className="ms-2"
+                                              variant="primary"
+                                              onClick={() => {
+                                                onClose();
+                                              }}
+                                            >
+                                              No
+                                            </Button>
+                                          </Card.Body>
+                                        </Card>
+                                      </Container>
+                                    );
+                                  }
+                                });
+                              }}
+                            >
+                              🗑️
+                            </Button>
+                          )}
+                          {`${ZeroPad(
+                            floorElement.floor,
+                            DEFAULT_FLOOR_PADDING
+                          )}`}
+                        </th>
+                        {floorElement.units.map((detailsElement, index) => (
+                          <td
+                            align="center"
+                            onClick={(event) =>
+                              handleClickModal(
+                                event,
+                                addressElement.postalcode,
+                                floorElement.floor,
+                                detailsElement.number,
+                                detailsElement.type,
+                                detailsElement.note,
+                                detailsElement.status,
+                                detailsElement.nhcount,
+                                maxUnitNumberLength
+                              )
+                            }
+                            key={`${index}-${detailsElement.number}`}
+                          >
+                            <UnitStatus
+                              key={`unit-${index}-${detailsElement.number}`}
+                              type={detailsElement.type}
+                              note={detailsElement.note}
+                              status={detailsElement.status}
+                              nhcount={detailsElement.nhcount}
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                </tbody>
+              </Table>
+            </div>
+          );
+        })}
+        {!isConductor && (
+          <Modal show={isTerritoryRename}>
+            <Modal.Header>
+              <Modal.Title>Change Territory Name</Modal.Title>
+            </Modal.Header>
+            <Form onSubmit={handleUpdateTerritoryName}>
+              <Modal.Body>
+                <GenericTextField
+                  label="Name"
+                  name="name"
+                  handleChange={onFormChange}
+                  changeValue={`${(values as valuesDetails).name}`}
+                  required={true}
+                />
+              </Modal.Body>
+              <Modal.Footer>
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY)
+                  }
+                >
+                  Close
+                </Button>
+                <Button type="submit" variant="primary">
+                  Save
+                </Button>
+              </Modal.Footer>
+            </Form>
+          </Modal>
+        )}
+        {!isConductor && (
+          <Modal show={isLinkRevoke}>
+            <Modal.Header>
+              <Modal.Title>Revoke territory link</Modal.Title>
+            </Modal.Header>
+            <Form onSubmit={handleRevokeLink}>
+              <Modal.Body>
+                <AdminLinkField
+                  handleChange={onFormChange}
+                  changeValue={`${(values as valuesDetails).link}`}
+                />
+              </Modal.Body>
+              <Modal.Footer>
+                <Button
+                  variant="secondary"
+                  onClick={() => toggleModal(ADMIN_MODAL_TYPES.LINK)}
+                >
+                  Close
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    navigator.clipboard.readText().then(
+                      (cliptext) => {
+                        setValues({ ...values, link: cliptext });
+                      },
+                      (err) => {
+                        alert(err);
+                      }
+                    );
+                  }}
+                >
+                  Paste Link
+                </Button>
+                <Button type="submit" variant="primary">
+                  Revoke
+                </Button>
+              </Modal.Footer>
+            </Form>
+          </Modal>
+        )}
+        {!isConductor && (
+          <Modal show={isAddressRename}>
+            <Modal.Header>
+              <Modal.Title>Change Block Name</Modal.Title>
+            </Modal.Header>
+            <Form onSubmit={handleUpdateBlockName}>
+              <Modal.Body>
+                <GenericTextField
+                  label="Name"
+                  name="name"
+                  handleChange={onFormChange}
+                  changeValue={`${(values as valuesDetails).name}`}
+                  required={true}
+                />
+              </Modal.Body>
+              <Modal.Footer>
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    toggleModal(ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME)
+                  }
+                >
+                  Close
+                </Button>
+                <Button type="submit" variant="primary">
+                  Save
+                </Button>
+              </Modal.Footer>
+            </Form>
+          </Modal>
+        )}
+        {!isConductor && (
+          <Modal show={isNewTerritory}>
+            <Modal.Header>
+              <Modal.Title>Create New Territory</Modal.Title>
+            </Modal.Header>
+            <Form onSubmit={handleCreateTerritory}>
+              <Modal.Body>
+                <GenericTextField
+                  label="Territory Code"
+                  name="code"
+                  handleChange={(e: ChangeEvent<HTMLElement>) => {
+                    const { value } = e.target as HTMLInputElement;
+                    setValues({ ...values, code: value });
+                  }}
+                  changeValue={`${(values as valuesDetails).code}`}
+                  required={true}
+                />
+                <GenericTextField
+                  label="Name"
+                  name="name"
+                  handleChange={onFormChange}
+                  changeValue={`${(values as valuesDetails).name}`}
+                  required={true}
+                />
+              </Modal.Body>
+              <Modal.Footer>
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    toggleModal(ADMIN_MODAL_TYPES.CREATE_TERRITORY)
+                  }
+                >
+                  Close
+                </Button>
+                <Button type="submit" variant="primary">
+                  Save
+                </Button>
+              </Modal.Footer>
+            </Form>
+          </Modal>
+        )}
+        {!isConductor && (
+          <Modal show={isCreate}>
+            <Modal.Header>
+              <Modal.Title>Create Territory Address</Modal.Title>
+            </Modal.Header>
+            <Form onSubmit={handleCreateTerritoryAddress}>
+              <Modal.Body>
+                <GenericTextField
+                  label="Postal Code"
+                  name="postalcode"
+                  handleChange={(e: ChangeEvent<HTMLElement>) => {
+                    const { value } = e.target as HTMLInputElement;
+                    setValues({ ...values, newPostal: value });
+                  }}
+                  changeValue={`${(values as valuesDetails).newPostal}`}
+                  required={true}
+                />
+                <GenericTextField
+                  label="Address Name"
+                  name="name"
+                  handleChange={onFormChange}
+                  changeValue={`${(values as valuesDetails).name}`}
+                  required={true}
+                />
+                <FloorField
+                  handleChange={(e: ChangeEvent<HTMLElement>) => {
+                    const { value } = e.target as HTMLInputElement;
+                    setValues({ ...values, floors: value });
+                  }}
+                  changeValue={
+                    (values as valuesDetails).floors || MIN_START_FLOOR
+                  }
+                />
+                <GenericTextAreaField
+                  label="Unit Sequence"
+                  name="units"
+                  placeholder="Unit sequence with comma seperator. For eg, 301,303,305 ..."
+                  handleChange={onFormChange}
+                  changeValue={`${(values as valuesDetails).units}`}
+                  required={true}
+                />
+              </Modal.Body>
+              <Modal.Footer>
+                <Button
+                  variant="secondary"
+                  onClick={() => toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS)}
+                >
+                  Close
+                </Button>
+                <Button type="submit" variant="primary">
+                  Save
+                </Button>
+              </Modal.Footer>
+            </Form>
+          </Modal>
+        )}
+        {!isConductor && (
+          <Modal show={isNewUnit}>
+            <Modal.Header>
+              <Modal.Title>
+                Add Unit To {`${(values as valuesDetails).postal}`}
+              </Modal.Title>
+            </Modal.Header>
+            <Form onSubmit={handleCreateNewUnit}>
+              <Modal.Body>
+                <GenericTextField
+                  label="Unit Number"
+                  name="unit"
+                  handleChange={(e: ChangeEvent<HTMLElement>) => {
+                    const { value } = e.target as HTMLInputElement;
+                    setValues({ ...values, unit: value });
+                  }}
+                  changeValue={`${(values as valuesDetails).unit}`}
+                  required={true}
+                />
+              </Modal.Body>
+              <Modal.Footer>
+                <Button
+                  variant="secondary"
+                  onClick={() => toggleModal(ADMIN_MODAL_TYPES.ADD_UNIT)}
+                >
+                  Close
+                </Button>
+                <Button type="submit" variant="primary">
+                  Save
+                </Button>
+              </Modal.Footer>
+            </Form>
+          </Modal>
+        )}
+        <Modal show={isFeedback}>
           <Modal.Header>
-            <Modal.Title>Change Territory Name</Modal.Title>
+            <Modal.Title>{`Feedback on ${
+              (values as valuesDetails).postal
+            }`}</Modal.Title>
           </Modal.Header>
-          <Form onSubmit={handleUpdateTerritoryName}>
+          <Form onSubmit={handleSubmitFeedback}>
             <Modal.Body>
-              <GenericTextField
-                label="Name"
-                name="name"
+              <GenericTextAreaField
+                name="feedback"
+                rows={5}
                 handleChange={onFormChange}
-                changeValue={`${(values as valuesDetails).name}`}
-                required={true}
+                changeValue={`${(values as valuesDetails).feedback}`}
               />
             </Modal.Body>
-            <Modal.Footer>
-              <Button
-                variant="secondary"
-                onClick={() => toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY)}
-              >
-                Close
-              </Button>
-              <Button type="submit" variant="primary">
-                Save
-              </Button>
-            </Modal.Footer>
+            <ModalFooter
+              handleClick={() => toggleModal(ADMIN_MODAL_TYPES.FEEDBACK)}
+              isSaving={isSaving}
+            />
           </Form>
         </Modal>
-      )}
-      {!isConductor && (
-        <Modal show={isLinkRevoke}>
-          <Modal.Header>
-            <Modal.Title>Revoke territory link</Modal.Title>
-          </Modal.Header>
-          <Form onSubmit={handleRevokeLink}>
+        <Modal show={isOpen}>
+          <ModalUnitTitle
+            unit={`${(values as valuesDetails).unitDisplay}`}
+            floor={`${(values as valuesDetails).floorDisplay}`}
+            postal={(values as valuesDetails).postal}
+          />
+          <Form onSubmit={handleSubmitClick}>
             <Modal.Body>
-              <AdminLinkField
-                handleChange={onFormChange}
-                changeValue={`${(values as valuesDetails).link}`}
-              />
-            </Modal.Body>
-            <Modal.Footer>
-              <Button
-                variant="secondary"
-                onClick={() => toggleModal(ADMIN_MODAL_TYPES.LINK)}
-              >
-                Close
-              </Button>
-              <Button
-                variant="primary"
-                onClick={() => {
-                  navigator.clipboard.readText().then(
-                    (cliptext) => {
-                      setValues({ ...values, link: cliptext });
-                    },
-                    (err) => {
-                      alert(err);
-                    }
-                  );
+              <HHStatusField
+                handleChange={(toggleValue) => {
+                  setIsNotHome(false);
+                  if (toggleValue.toString() === STATUS_CODES.NOT_HOME) {
+                    setIsNotHome(true);
+                  }
+                  setValues({
+                    ...values,
+                    nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+                    status: toggleValue
+                  });
                 }}
-              >
-                Paste Link
-              </Button>
-              <Button type="submit" variant="primary">
-                Revoke
-              </Button>
-            </Modal.Footer>
-          </Form>
-        </Modal>
-      )}
-      {!isConductor && (
-        <Modal show={isAddressRename}>
-          <Modal.Header>
-            <Modal.Title>Change Block Name</Modal.Title>
-          </Modal.Header>
-          <Form onSubmit={handleUpdateBlockName}>
-            <Modal.Body>
-              <GenericTextField
-                label="Name"
-                name="name"
+                changeValue={`${(values as valuesDetails).status}`}
+              />
+              <Collapse in={isNotHome}>
+                <div className="text-center">
+                  <HHNotHomeField
+                    changeValue={`${(values as valuesDetails).nhcount}`}
+                    handleChange={(toggleValue) => {
+                      setValues({ ...values, nhcount: toggleValue });
+                    }}
+                  />
+                </div>
+              </Collapse>
+              <HHTypeField
                 handleChange={onFormChange}
-                changeValue={`${(values as valuesDetails).name}`}
-                required={true}
-              />
-            </Modal.Body>
-            <Modal.Footer>
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  toggleModal(ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME)
-                }
-              >
-                Close
-              </Button>
-              <Button type="submit" variant="primary">
-                Save
-              </Button>
-            </Modal.Footer>
-          </Form>
-        </Modal>
-      )}
-      {!isConductor && (
-        <Modal show={isNewTerritory}>
-          <Modal.Header>
-            <Modal.Title>Create New Territory</Modal.Title>
-          </Modal.Header>
-          <Form onSubmit={handleCreateTerritory}>
-            <Modal.Body>
-              <GenericTextField
-                label="Territory Code"
-                name="code"
-                handleChange={(e: ChangeEvent<HTMLElement>) => {
-                  const { value } = e.target as HTMLInputElement;
-                  setValues({ ...values, code: value });
-                }}
-                changeValue={`${(values as valuesDetails).code}`}
-                required={true}
-              />
-              <GenericTextField
-                label="Name"
-                name="name"
-                handleChange={onFormChange}
-                changeValue={`${(values as valuesDetails).name}`}
-                required={true}
-              />
-            </Modal.Body>
-            <Modal.Footer>
-              <Button
-                variant="secondary"
-                onClick={() => toggleModal(ADMIN_MODAL_TYPES.CREATE_TERRITORY)}
-              >
-                Close
-              </Button>
-              <Button type="submit" variant="primary">
-                Save
-              </Button>
-            </Modal.Footer>
-          </Form>
-        </Modal>
-      )}
-      {!isConductor && (
-        <Modal show={isCreate}>
-          <Modal.Header>
-            <Modal.Title>Create Territory Address</Modal.Title>
-          </Modal.Header>
-          <Form onSubmit={handleCreateTerritoryAddress}>
-            <Modal.Body>
-              <GenericTextField
-                label="Postal Code"
-                name="postalcode"
-                handleChange={(e: ChangeEvent<HTMLElement>) => {
-                  const { value } = e.target as HTMLInputElement;
-                  setValues({ ...values, newPostal: value });
-                }}
-                changeValue={`${(values as valuesDetails).newPostal}`}
-                required={true}
-              />
-              <GenericTextField
-                label="Address Name"
-                name="name"
-                handleChange={onFormChange}
-                changeValue={`${(values as valuesDetails).name}`}
-                required={true}
-              />
-              <FloorField
-                handleChange={(e: ChangeEvent<HTMLElement>) => {
-                  const { value } = e.target as HTMLInputElement;
-                  setValues({ ...values, floors: value });
-                }}
-                changeValue={
-                  (values as valuesDetails).floors || MIN_START_FLOOR
-                }
+                changeValue={`${(values as valuesDetails).type}`}
               />
               <GenericTextAreaField
-                label="Unit Sequence"
-                name="units"
-                placeholder="Unit sequence with comma seperator. For eg, 301,303,305 ..."
+                label="Notes"
+                name="note"
+                placeholder="Optional non-personal information. Eg, Renovation, Foreclosed, Friends, etc."
                 handleChange={onFormChange}
-                changeValue={`${(values as valuesDetails).units}`}
-                required={true}
+                changeValue={`${(values as valuesDetails).note}`}
               />
             </Modal.Body>
-            <Modal.Footer>
-              <Button
-                variant="secondary"
-                onClick={() => toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS)}
-              >
-                Close
-              </Button>
-              <Button type="submit" variant="primary">
-                Save
-              </Button>
-            </Modal.Footer>
+            <ModalFooter
+              handleClick={() => toggleModal(ADMIN_MODAL_TYPES.UNIT)}
+              isSaving={isSaving}
+            />
           </Form>
         </Modal>
-      )}
-      {!isConductor && (
-        <Modal show={isNewUnit}>
-          <Modal.Header>
-            <Modal.Title>
-              Add Unit To {`${(values as valuesDetails).postal}`}
-            </Modal.Title>
-          </Modal.Header>
-          <Form onSubmit={handleCreateNewUnit}>
-            <Modal.Body>
-              <GenericTextField
-                label="Unit Number"
-                name="unit"
-                handleChange={(e: ChangeEvent<HTMLElement>) => {
-                  const { value } = e.target as HTMLInputElement;
-                  setValues({ ...values, unit: value });
-                }}
-                changeValue={`${(values as valuesDetails).unit}`}
-                required={true}
-              />
-            </Modal.Body>
-            <Modal.Footer>
-              <Button
-                variant="secondary"
-                onClick={() => toggleModal(ADMIN_MODAL_TYPES.ADD_UNIT)}
-              >
-                Close
-              </Button>
-              <Button type="submit" variant="primary">
-                Save
-              </Button>
-            </Modal.Footer>
-          </Form>
-        </Modal>
-      )}
-      <Modal show={isFeedback}>
-        <Modal.Header>
-          <Modal.Title>{`Feedback on ${
-            (values as valuesDetails).postal
-          }`}</Modal.Title>
-        </Modal.Header>
-        <Form onSubmit={handleSubmitFeedback}>
-          <Modal.Body>
-            <GenericTextAreaField
-              name="feedback"
-              rows={5}
-              handleChange={onFormChange}
-              changeValue={`${(values as valuesDetails).feedback}`}
-            />
-          </Modal.Body>
-          <ModalFooter
-            handleClick={() => toggleModal(ADMIN_MODAL_TYPES.FEEDBACK)}
-            isSaving={isSaving}
-          />
-        </Form>
-      </Modal>
-      <Modal show={isOpen}>
-        <ModalUnitTitle
-          unit={`${(values as valuesDetails).unitDisplay}`}
-          floor={`${(values as valuesDetails).floorDisplay}`}
-          postal={(values as valuesDetails).postal}
-        />
-        <Form onSubmit={handleSubmitClick}>
-          <Modal.Body>
-            <HHStatusField
-              handleChange={(toggleValue) => {
-                setIsNotHome(false);
-                if (toggleValue.toString() === STATUS_CODES.NOT_HOME) {
-                  setIsNotHome(true);
-                }
-                setValues({
-                  ...values,
-                  nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
-                  status: toggleValue
-                });
-              }}
-              changeValue={`${(values as valuesDetails).status}`}
-            />
-            <Collapse in={isNotHome}>
-              <div className="text-center">
-                <HHNotHomeField
-                  changeValue={`${(values as valuesDetails).nhcount}`}
-                  handleChange={(toggleValue) => {
-                    setValues({ ...values, nhcount: toggleValue });
-                  }}
-                />
-              </div>
-            </Collapse>
-            <HHTypeField
-              handleChange={onFormChange}
-              changeValue={`${(values as valuesDetails).type}`}
-            />
-            <GenericTextAreaField
-              label="Notes"
-              name="note"
-              placeholder="Optional non-personal information. Eg, Renovation, Foreclosed, Friends, etc."
-              handleChange={onFormChange}
-              changeValue={`${(values as valuesDetails).note}`}
-            />
-          </Modal.Body>
-          <ModalFooter
-            handleClick={() => toggleModal(ADMIN_MODAL_TYPES.UNIT)}
-            isSaving={isSaving}
-          />
-        </Form>
-      </Modal>
-    </>
+      </div>
+    </Fade>
   );
 }
 
