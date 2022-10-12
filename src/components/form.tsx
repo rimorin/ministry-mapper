@@ -51,12 +51,18 @@ const GenericTextField = ({
   handleChange,
   changeValue,
   name,
-  label
+  label,
+  required = false
 }: FormProps) => {
   return (
     <Form.Group className="mb-3" controlId={`basicForm${name}Text`}>
       <Form.Label>{label}</Form.Label>
-      <Form.Control onChange={handleChange} name={name} value={changeValue} />
+      <Form.Control
+        onChange={handleChange}
+        name={name}
+        value={changeValue}
+        required={required}
+      />
     </Form.Group>
   );
 };
@@ -81,7 +87,8 @@ const GenericTextAreaField = ({
   label,
   name,
   placeholder,
-  rows = 3
+  rows = 3,
+  required = false
 }: FormProps) => {
   return (
     <Form.Group className="mb-3" controlId={`formBasic${name}TextAreaField`}>
@@ -93,6 +100,7 @@ const GenericTextAreaField = ({
         rows={rows}
         placeholder={placeholder}
         value={changeValue}
+        required={required}
       />
     </Form.Group>
   );
@@ -215,6 +223,7 @@ const AdminLinkField = ({ handleChange, changeValue }: FormProps) => {
         aria-label="link"
         name="link"
         value={changeValue}
+        required
       />
     </Form.Group>
   );

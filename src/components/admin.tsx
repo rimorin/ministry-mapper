@@ -1342,6 +1342,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                 name="name"
                 handleChange={onFormChange}
                 changeValue={`${(values as valuesDetails).name}`}
+                required={true}
               />
             </Modal.Body>
             <Modal.Footer>
@@ -1411,6 +1412,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                 name="name"
                 handleChange={onFormChange}
                 changeValue={`${(values as valuesDetails).name}`}
+                required={true}
               />
             </Modal.Body>
             <Modal.Footer>
@@ -1444,12 +1446,14 @@ function Admin({ user, isConductor = false }: adminProps) {
                   setValues({ ...values, code: value });
                 }}
                 changeValue={`${(values as valuesDetails).code}`}
+                required={true}
               />
               <GenericTextField
                 label="Name"
                 name="name"
                 handleChange={onFormChange}
                 changeValue={`${(values as valuesDetails).name}`}
+                required={true}
               />
             </Modal.Body>
             <Modal.Footer>
@@ -1481,12 +1485,14 @@ function Admin({ user, isConductor = false }: adminProps) {
                   setValues({ ...values, newPostal: value });
                 }}
                 changeValue={`${(values as valuesDetails).newPostal}`}
+                required={true}
               />
               <GenericTextField
                 label="Address Name"
                 name="name"
                 handleChange={onFormChange}
                 changeValue={`${(values as valuesDetails).name}`}
+                required={true}
               />
               <FloorField
                 handleChange={(e: ChangeEvent<HTMLElement>) => {
@@ -1503,6 +1509,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                 placeholder="Unit sequence with comma seperator. For eg, 301,303,305 ..."
                 handleChange={onFormChange}
                 changeValue={`${(values as valuesDetails).units}`}
+                required={true}
               />
             </Modal.Body>
             <Modal.Footer>
@@ -1536,6 +1543,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                   setValues({ ...values, unit: value });
                 }}
                 changeValue={`${(values as valuesDetails).unit}`}
+                required={true}
               />
             </Modal.Body>
             <Modal.Footer>

@@ -65,6 +65,7 @@ export interface FormProps {
   label?: string;
   placeholder?: string;
   rows?: number;
+  required?: boolean;
 }
 
 export interface FloorProps {
