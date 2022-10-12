@@ -113,10 +113,8 @@ function Admin({ user, isConductor = false }: adminProps) {
   const [selectedTerritory, setSelectedTerritory] = useState<String>();
   const [selectedTerritoryCode, setSelectedTerritoryCode] = useState<String>();
   const [selectedTerritoryName, setSelectedTerritoryName] = useState<String>();
-  const [unsubscribers, setUnsubscribers] = useState<Array<Unsubscribe>>([]);
   const [addresses, setAddresses] = useState(new Map<String, addressDetails>());
-  const congregationReference = child(ref(database), `congregations/${code}`);
-
+  let unsubscribers = new Array<Unsubscribe>();
   const processData = (data: any) => {
     const dataList = [];
     for (const floor in data) {
@@ -159,11 +157,10 @@ function Admin({ user, isConductor = false }: adminProps) {
     setSelectedTerritoryName(territoryDetails?.name);
     refreshAddressState();
     if (!territoryAddresses) return;
-    setIsLoading(true);
-    const addressUnsubscribers = [] as Array<Unsubscribe>;
+    unsubscribers = [] as Array<Unsubscribe>;
     for (const territoryIndex in territoryAddresses) {
       const postalCode = territoryAddresses[territoryIndex];
-      addressUnsubscribers.push(
+      unsubscribers.push(
         onValue(child(ref(database), `/${postalCode}`), (snapshot) => {
           if (snapshot.exists()) {
             const territoryData = snapshot.val();
@@ -180,11 +177,9 @@ function Admin({ user, isConductor = false }: adminProps) {
                 )
             );
           }
-          setIsLoading(false);
         })
       );
     }
-    setUnsubscribers([...addressUnsubscribers]);
   };
 
   const deleteBlockFloor = async (postalcode: String, floor: String) => {
@@ -444,6 +439,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   };
 
   const refreshCongregationTerritory = async (selectTerritoryCode: String) => {
+    const congregationReference = child(ref(database), `congregations/${code}`);
     const updatedTerritory = await get(congregationReference);
     if (updatedTerritory.exists()) {
       processSelectedTerritory(
@@ -514,7 +510,8 @@ function Admin({ user, isConductor = false }: adminProps) {
     for (let i = 0; i < noOfFloors; i++) {
       const floorMap = {} as any;
       units?.forEach((unitNo) => {
-        floorMap[unitNo] = {
+        const removedLeadingZeroUnitNo = parseInt(unitNo).toString();
+        floorMap[removedLeadingZeroUnitNo] = {
           status: STATUS_CODES.DEFAULT,
           type: HOUSEHOLD_TYPES.CHINESE,
           note: "",
@@ -646,6 +643,7 @@ function Admin({ user, isConductor = false }: adminProps) {
       login: user?.email
     });
 
+    const congregationReference = child(ref(database), `congregations/${code}`);
     onValue(
       congregationReference,
       (snapshot) => {
