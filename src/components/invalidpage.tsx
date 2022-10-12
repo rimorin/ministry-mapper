@@ -12,9 +12,6 @@ const InvalidPage = () => (
         <Card.Title className="text-center">
           This link has expired ⌛
         </Card.Title>
-        <Card.Text className="text-justify">
-          Please proceed to request for a new slip.
-        </Card.Text>
       </Card.Body>
     </Card>
   </Container>

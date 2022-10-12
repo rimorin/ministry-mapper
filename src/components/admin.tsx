@@ -113,10 +113,8 @@ function Admin({ user, isConductor = false }: adminProps) {
   const [selectedTerritory, setSelectedTerritory] = useState<String>();
   const [selectedTerritoryCode, setSelectedTerritoryCode] = useState<String>();
   const [selectedTerritoryName, setSelectedTerritoryName] = useState<String>();
-  const [unsubscribers, setUnsubscribers] = useState<Array<Unsubscribe>>([]);
   const [addresses, setAddresses] = useState(new Map<String, addressDetails>());
-  const congregationReference = child(ref(database), `congregations/${code}`);
-
+  let unsubscribers = new Array<Unsubscribe>();
   const processData = (data: any) => {
     const dataList = [];
     for (const floor in data) {
@@ -159,11 +157,10 @@ function Admin({ user, isConductor = false }: adminProps) {
     setSelectedTerritoryName(territoryDetails?.name);
     refreshAddressState();
     if (!territoryAddresses) return;
-    setIsLoading(true);
-    const addressUnsubscribers = [] as Array<Unsubscribe>;
+    unsubscribers = [] as Array<Unsubscribe>;
     for (const territoryIndex in territoryAddresses) {
       const postalCode = territoryAddresses[territoryIndex];
-      addressUnsubscribers.push(
+      unsubscribers.push(
         onValue(child(ref(database), `/${postalCode}`), (snapshot) => {
           if (snapshot.exists()) {
             const territoryData = snapshot.val();
@@ -180,11 +177,9 @@ function Admin({ user, isConductor = false }: adminProps) {
                 )
             );
           }
-          setIsLoading(false);
         })
       );
     }
-    setUnsubscribers([...addressUnsubscribers]);
   };
 
   const deleteBlockFloor = async (postalcode: String, floor: String) => {
@@ -444,6 +439,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   };
 
   const refreshCongregationTerritory = async (selectTerritoryCode: String) => {
+    const congregationReference = child(ref(database), `congregations/${code}`);
     const updatedTerritory = await get(congregationReference);
     if (updatedTerritory.exists()) {
       processSelectedTerritory(
@@ -514,7 +510,8 @@ function Admin({ user, isConductor = false }: adminProps) {
     for (let i = 0; i < noOfFloors; i++) {
       const floorMap = {} as any;
       units?.forEach((unitNo) => {
-        floorMap[unitNo] = {
+        const removedLeadingZeroUnitNo = parseInt(unitNo).toString();
+        floorMap[removedLeadingZeroUnitNo] = {
           status: STATUS_CODES.DEFAULT,
           type: HOUSEHOLD_TYPES.CHINESE,
           note: "",
@@ -646,6 +643,7 @@ function Admin({ user, isConductor = false }: adminProps) {
       login: user?.email
     });
 
+    const congregationReference = child(ref(database), `congregations/${code}`);
     onValue(
       congregationReference,
       (snapshot) => {
@@ -1344,6 +1342,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                 name="name"
                 handleChange={onFormChange}
                 changeValue={`${(values as valuesDetails).name}`}
+                required={true}
               />
             </Modal.Body>
             <Modal.Footer>
@@ -1413,6 +1412,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                 name="name"
                 handleChange={onFormChange}
                 changeValue={`${(values as valuesDetails).name}`}
+                required={true}
               />
             </Modal.Body>
             <Modal.Footer>
@@ -1446,12 +1446,14 @@ function Admin({ user, isConductor = false }: adminProps) {
                   setValues({ ...values, code: value });
                 }}
                 changeValue={`${(values as valuesDetails).code}`}
+                required={true}
               />
               <GenericTextField
                 label="Name"
                 name="name"
                 handleChange={onFormChange}
                 changeValue={`${(values as valuesDetails).name}`}
+                required={true}
               />
             </Modal.Body>
             <Modal.Footer>
@@ -1483,12 +1485,14 @@ function Admin({ user, isConductor = false }: adminProps) {
                   setValues({ ...values, newPostal: value });
                 }}
                 changeValue={`${(values as valuesDetails).newPostal}`}
+                required={true}
               />
               <GenericTextField
                 label="Address Name"
                 name="name"
                 handleChange={onFormChange}
                 changeValue={`${(values as valuesDetails).name}`}
+                required={true}
               />
               <FloorField
                 handleChange={(e: ChangeEvent<HTMLElement>) => {
@@ -1505,6 +1509,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                 placeholder="Unit sequence with comma seperator. For eg, 301,303,305 ..."
                 handleChange={onFormChange}
                 changeValue={`${(values as valuesDetails).units}`}
+                required={true}
               />
             </Modal.Body>
             <Modal.Footer>
@@ -1538,6 +1543,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                   setValues({ ...values, unit: value });
                 }}
                 changeValue={`${(values as valuesDetails).unit}`}
+                required={true}
               />
             </Modal.Body>
             <Modal.Footer>

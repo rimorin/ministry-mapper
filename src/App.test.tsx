@@ -62,9 +62,6 @@ test("renders invalid page", () => {
   render(<InvalidPage />);
   expect(screen.getByRole("img")).toBeInTheDocument();
   expect(screen.getByText("This link has expired ⌛")).toBeInTheDocument();
-  expect(
-    screen.getByText("Please proceed to request for a new slip.")
-  ).toBeInTheDocument();
 });
 
 test("renders admin welcome page", () => {
