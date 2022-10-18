@@ -119,18 +119,13 @@ test("renders form householder status", () => {
   expect(screen.getByText("Not Home")).toBeInTheDocument();
 });
 
-test("renders form householder type", () => {
-  render(<HHTypeField changeValue={HOUSEHOLD_TYPES.CHINESE} />);
-  expect(screen.getByText("Household")).toBeInTheDocument();
+test("renders form householder languages", () => {
+  render(<HHTypeField changeValues={[]} />);
+  expect(screen.getByText("Languages")).toBeInTheDocument();
   expect(screen.getByText("Chinese")).toBeInTheDocument();
   expect(screen.getByText("Malay")).toBeInTheDocument();
-  expect(screen.getByText("Indian")).toBeInTheDocument();
-  expect(screen.getByText("Indonesian")).toBeInTheDocument();
+  expect(screen.getByText("English")).toBeInTheDocument();
   expect(screen.getByText("Burmese")).toBeInTheDocument();
-  expect(screen.getByText("Filipino")).toBeInTheDocument();
-  expect(screen.getByText("Thai")).toBeInTheDocument();
-  expect(screen.getByText("Vietnamese")).toBeInTheDocument();
-  expect(screen.getByText("Others")).toBeInTheDocument();
 });
 
 test("renders form householder note", () => {

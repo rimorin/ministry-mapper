@@ -5,11 +5,13 @@ import {
   Button,
   Modal,
   Spinner,
-  InputGroup
+  InputGroup,
+  Container
 } from "react-bootstrap";
 import RangeSlider from "react-bootstrap-range-slider";
 import { FloorProps, FooterProps, FormProps } from "./interface";
 import {
+  HOUSEHOLD_LANGUAGES,
   HOUSEHOLD_TYPES,
   MAX_TOP_FLOOR,
   MIN_START_FLOOR,
@@ -106,18 +108,56 @@ const GenericTextAreaField = ({
   );
 };
 
-const HHTypeField = ({ handleChange, changeValue }: FormProps) => {
+const HHTypeField = ({ handleChangeValues, changeValues }: FormProps) => {
   return (
-    <Form.Group className="mb-3" controlId="formBasicSelect">
-      <Form.Label>Household</Form.Label>
-      <Form.Select
-        onChange={handleChange}
-        name="type"
-        aria-label="Default select example"
-        value={changeValue}
-      >
-        <HHType />
-      </Form.Select>
+    <Form.Group controlId="formBasicCheckbox">
+      <Form.Label>Languages</Form.Label>
+      <Container className="text-center">
+        <ToggleButtonGroup
+          name="type"
+          type="checkbox"
+          value={changeValues}
+          onChange={handleChangeValues}
+          size="sm"
+          className="mb-1"
+        >
+          <ToggleButton
+            id="type-cb-0"
+            variant="outline-primary"
+            value={HOUSEHOLD_LANGUAGES.ENGLISH.CODE}
+          >
+            {HOUSEHOLD_LANGUAGES.ENGLISH.DISPLAY}
+          </ToggleButton>
+          <ToggleButton
+            id="type-cb-2"
+            variant="outline-primary"
+            value={HOUSEHOLD_LANGUAGES.CHINESE.CODE}
+          >
+            {HOUSEHOLD_LANGUAGES.CHINESE.DISPLAY}
+          </ToggleButton>
+          <ToggleButton
+            id="type-cb-3"
+            variant="outline-primary"
+            value={HOUSEHOLD_LANGUAGES.TAMIL.CODE}
+          >
+            {HOUSEHOLD_LANGUAGES.TAMIL.DISPLAY}
+          </ToggleButton>
+          <ToggleButton
+            id="type-cb-4"
+            variant="outline-primary"
+            value={HOUSEHOLD_LANGUAGES.BURMESE.CODE}
+          >
+            {HOUSEHOLD_LANGUAGES.BURMESE.DISPLAY}
+          </ToggleButton>
+          <ToggleButton
+            id="type-cb-1"
+            variant="outline-primary"
+            value={HOUSEHOLD_LANGUAGES.MALAY.CODE}
+          >
+            {HOUSEHOLD_LANGUAGES.MALAY.DISPLAY}
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </Container>
     </Form.Group>
   );
 };

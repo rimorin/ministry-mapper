@@ -80,6 +80,10 @@ const Slip = ({ token = "", postalcode = "" }) => {
     setFloors(dataList);
   };
 
+  const onTypeChange = (types: any[]) => {
+    setValues({ ...values, types: types });
+  };
+
   const handleClickModal = (
     _: MouseEvent<HTMLElement>,
     floor: String,
@@ -98,7 +102,8 @@ const Slip = ({ token = "", postalcode = "" }) => {
       type: unitDetails?.type,
       note: unitDetails?.note,
       status: unitDetails?.status,
-      nhcount: unitDetails?.nhcount || NOT_HOME_STATUS_CODES.DEFAULT
+      nhcount: unitDetails?.nhcount || NOT_HOME_STATUS_CODES.DEFAULT,
+      types: unitDetails?.type.split(",")
     });
     setIsNotHome(unitStatus === STATUS_CODES.NOT_HOME);
     toggleModal(true);
@@ -113,7 +118,7 @@ const Slip = ({ token = "", postalcode = "" }) => {
       await set(
         ref(database, `/${postalcode}/units/${details.floor}/${details.unit}`),
         {
-          type: details.type,
+          type: details.types.join(),
           note: details.note,
           status: details.status,
           nhcount: details.nhcount
@@ -341,8 +346,8 @@ const Slip = ({ token = "", postalcode = "" }) => {
                 </div>
               </Collapse>
               <HHTypeField
-                handleChange={onFormChange}
-                changeValue={`${(values as valuesDetails).type}`}
+                handleChangeValues={onTypeChange}
+                changeValues={(values as valuesDetails).types}
               />
               <GenericTextAreaField
                 label="Notes"

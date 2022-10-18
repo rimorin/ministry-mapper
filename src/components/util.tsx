@@ -43,6 +43,14 @@ const HOUSEHOLD_TYPES = {
   OTHER: "ot"
 };
 
+const HOUSEHOLD_LANGUAGES = {
+  ENGLISH: { CODE: "en", DISPLAY: "English" },
+  CHINESE: { CODE: "cn", DISPLAY: "Chinese" },
+  BURMESE: { CODE: "bm", DISPLAY: "Burmese" },
+  TAMIL: { CODE: "tm", DISPLAY: "Tamil" },
+  MALAY: { CODE: "ml", DISPLAY: "Malay" }
+};
+
 const MUTABLE_CODES = [
   STATUS_CODES.DONE,
   STATUS_CODES.NOT_HOME,
@@ -167,7 +175,7 @@ const getCompletedPercent = (floors: floorDetails[]) => {
       const unitNotHomeCount = uElement.nhcount;
       const isCountable =
         !IGNORE_HOUSEHOLD_STATUS.includes(unitStatus.toString()) &&
-        unitType !== HOUSEHOLD_TYPES.MALAY;
+        !unitType.includes(HOUSEHOLD_LANGUAGES.MALAY.CODE);
 
       if (isCountable) totalUnits++;
       if (
@@ -273,5 +281,6 @@ export {
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   NOT_HOME_STATUS_CODES,
   MIN_START_FLOOR,
-  MAX_TOP_FLOOR
+  MAX_TOP_FLOOR,
+  HOUSEHOLD_LANGUAGES
 };

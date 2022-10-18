@@ -6,6 +6,7 @@ export interface unitDetails {
   type: String;
   status: String;
   nhcount: String;
+  types?: any[];
 }
 
 export interface floorDetails {
@@ -37,6 +38,7 @@ export interface valuesDetails {
   floors?: number;
   newPostal?: String;
   code?: String;
+  types: any[];
 }
 
 export interface adminProps {
@@ -60,12 +62,14 @@ export interface addressDetails {
 
 export interface FormProps {
   handleChange?: (event: React.ChangeEvent<HTMLElement>) => void;
-  changeValue: string;
+  changeValue?: string;
   name?: string;
   label?: string;
   placeholder?: string;
   rows?: number;
   required?: boolean;
+  changeValues?: string[];
+  handleChangeValues?: (values: any[]) => void;
 }
 
 export interface FloorProps {

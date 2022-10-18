@@ -1,9 +1,9 @@
 import { Badge } from "react-bootstrap";
 import { unitProps } from "./interface";
-import { HOUSEHOLD_TYPES, STATUS_CODES } from "./util";
+import { STATUS_CODES } from "./util";
 
 const UnitStatus = (props: unitProps) => {
-  const otherType = props.type;
+  const hhTypes = props.type;
   const note = props.note;
   const currentStatus = props.status;
   const nhcount = props.nhcount;
@@ -36,9 +36,9 @@ const UnitStatus = (props: unitProps) => {
         </Badge>
       )}
       {note && <>🗒️ </>}
-      {otherType !== HOUSEHOLD_TYPES.CHINESE && (
+      {hhTypes !== "" && (
         <Badge bg="secondary" pill>
-          {otherType}
+          {hhTypes}
         </Badge>
       )}
     </>

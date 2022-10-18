@@ -231,7 +231,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     blockFloorDetails.units.forEach((element) => {
       unitUpdates[`/${postalcode}/units/${newFloor}/${element.number}`] = {
         status: STATUS_CODES.DEFAULT,
-        type: HOUSEHOLD_TYPES.CHINESE,
+        type: "",
         note: "",
         nhcount: NOT_HOME_STATUS_CODES.DEFAULT
       };
@@ -320,7 +320,8 @@ function Admin({ user, isConductor = false }: adminProps) {
       note: note,
       postal: postal,
       status: status,
-      nhcount: nhcount
+      nhcount: nhcount,
+      types: type.split(",")
     });
     setIsNotHome(status === STATUS_CODES.NOT_HOME);
     toggleModal();
@@ -338,7 +339,7 @@ function Admin({ user, isConductor = false }: adminProps) {
           `/${details.postal}/units/${details.floor}/${details.unit}`
         ),
         {
-          type: details.type,
+          type: details.types.join(),
           note: details.note,
           status: details.status,
           nhcount: details.nhcount
@@ -514,7 +515,7 @@ function Admin({ user, isConductor = false }: adminProps) {
         const removedLeadingZeroUnitNo = parseInt(unitNo).toString();
         floorMap[removedLeadingZeroUnitNo] = {
           status: STATUS_CODES.DEFAULT,
-          type: HOUSEHOLD_TYPES.CHINESE,
+          type: "",
           note: "",
           nhcount: NOT_HOME_STATUS_CODES.DEFAULT
         };
@@ -589,6 +590,11 @@ function Admin({ user, isConductor = false }: adminProps) {
   const onFormChange = (e: ChangeEvent<HTMLElement>) => {
     const { name, value } = e.target as HTMLInputElement;
     setValues({ ...values, [name]: value });
+  };
+
+  const onTypeChange = (types: any[]) => {
+    console.log(types);
+    setValues({ ...values, types: types });
   };
 
   const shareTimedLink = async (
@@ -1324,7 +1330,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                           >
                             <UnitStatus
                               key={`unit-${index}-${detailsElement.number}`}
-                              type={detailsElement.type}
+                              type={detailsElement.type || ""}
                               note={detailsElement.note}
                               status={detailsElement.status}
                               nhcount={detailsElement.nhcount}
@@ -1626,8 +1632,8 @@ function Admin({ user, isConductor = false }: adminProps) {
                 </div>
               </Collapse>
               <HHTypeField
-                handleChange={onFormChange}
-                changeValue={`${(values as valuesDetails).type}`}
+                handleChangeValues={onTypeChange}
+                changeValues={(values as valuesDetails).types}
               />
               <GenericTextAreaField
                 label="Notes"
