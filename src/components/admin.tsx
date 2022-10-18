@@ -729,7 +729,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                   ))}
                 </NavDropdown>
               )}
-              {!isConductor && !selectedTerritory && (
+              {!isConductor && (
                 <Button
                   className="m-2"
                   size="sm"
@@ -740,6 +740,19 @@ function Admin({ user, isConductor = false }: adminProps) {
                   }}
                 >
                   Create Territory
+                </Button>
+              )}
+              {!isConductor && selectedTerritory && (
+                <Button
+                  className="m-2"
+                  size="sm"
+                  variant="outline-primary"
+                  onClick={() => {
+                    setValues({ ...values, name: selectedTerritoryName });
+                    toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
+                  }}
+                >
+                  Edit Territory Name
                 </Button>
               )}
               {!isConductor && selectedTerritory && (
@@ -759,19 +772,6 @@ function Admin({ user, isConductor = false }: adminProps) {
                   }}
                 >
                   Create Address
-                </Button>
-              )}
-              {!isConductor && selectedTerritory && (
-                <Button
-                  className="m-2"
-                  size="sm"
-                  variant="outline-primary"
-                  onClick={() => {
-                    setValues({ ...values, name: selectedTerritoryName });
-                    toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
-                  }}
-                >
-                  Edit Territory Name
                 </Button>
               )}
               {!isConductor && (
