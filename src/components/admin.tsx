@@ -70,7 +70,6 @@ import {
   errorHandler,
   connectionTimeout,
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
-  HOUSEHOLD_TYPES,
   MIN_START_FLOOR,
   NOT_HOME_STATUS_CODES
 } from "./util";
@@ -321,7 +320,7 @@ function Admin({ user, isConductor = false }: adminProps) {
       postal: postal,
       status: status,
       nhcount: nhcount,
-      types: type.split(",")
+      types: type ? type.split(",") : []
     });
     setIsNotHome(status === STATUS_CODES.NOT_HOME);
     toggleModal();
@@ -468,7 +467,7 @@ function Admin({ user, isConductor = false }: adminProps) {
         ] = isDelete
           ? {}
           : {
-              type: HOUSEHOLD_TYPES.CHINESE,
+              type: "",
               note: "",
               status: STATUS_CODES.DEFAULT,
               nhcount: NOT_HOME_STATUS_CODES.DEFAULT
@@ -593,7 +592,6 @@ function Admin({ user, isConductor = false }: adminProps) {
   };
 
   const onTypeChange = (types: any[]) => {
-    console.log(types);
     setValues({ ...values, types: types });
   };
 

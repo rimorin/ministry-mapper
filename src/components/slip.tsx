@@ -103,7 +103,7 @@ const Slip = ({ token = "", postalcode = "" }) => {
       note: unitDetails?.note,
       status: unitDetails?.status,
       nhcount: unitDetails?.nhcount || NOT_HOME_STATUS_CODES.DEFAULT,
-      types: unitDetails?.type.split(",")
+      types: unitDetails?.type ? unitDetails?.type.split(",") : []
     });
     setIsNotHome(unitStatus === STATUS_CODES.NOT_HOME);
     toggleModal(true);
