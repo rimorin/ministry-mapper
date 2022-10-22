@@ -23,6 +23,8 @@ import {
   ModalUnitTitle,
   NavBarBranding,
   NOT_HOME_STATUS_CODES,
+  parseHHLanguages,
+  processHHLanguages,
   RELOAD_CHECK_INTERVAL_MS,
   RELOAD_INACTIVITY_DURATION,
   STATUS_CODES,
@@ -164,7 +166,7 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
   };
 
   const onLanguageChange = (languages: any[]) => {
-    setValues({ ...values, languages: languages.join() });
+    setValues({ ...values, languages: processHHLanguages(languages) });
   };
 
   useEffect(() => {
@@ -386,7 +388,9 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
               {trackLanguages && (
                 <HHLangField
                   handleChangeValues={onLanguageChange}
-                  changeValues={(values as valuesDetails).languages?.split(",")}
+                  changeValues={parseHHLanguages(
+                    `${(values as valuesDetails).languages}`
+                  )}
                 />
               )}
               <GenericTextAreaField

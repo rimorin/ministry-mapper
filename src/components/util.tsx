@@ -153,6 +153,17 @@ const getMaxUnitLength = (floors: floorDetails[]) => {
   return maxUnitNumberLength;
 };
 
+const parseHHLanguages = (languages: String) => {
+  if (!languages) return [];
+  return languages.split(",");
+};
+
+const processHHLanguages = (languages: string[]) => {
+  if (!languages) return "";
+
+  return languages.join();
+};
+
 const getCompletedPercent = (floors: floorDetails[]) => {
   let totalUnits = 0;
   let completedUnits = 0;
@@ -263,6 +274,8 @@ export {
   Legend,
   errorHandler,
   connectionTimeout,
+  parseHHLanguages,
+  processHHLanguages,
   STATUS_CODES,
   MUTABLE_CODES,
   LOGIN_TYPE_CODES,

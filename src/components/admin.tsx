@@ -72,7 +72,9 @@ import {
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   HOUSEHOLD_TYPES,
   MIN_START_FLOOR,
-  NOT_HOME_STATUS_CODES
+  NOT_HOME_STATUS_CODES,
+  parseHHLanguages,
+  processHHLanguages
 } from "./util";
 import { useParams } from "react-router-dom";
 import {
@@ -276,7 +278,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   };
 
   const onLanguageChange = (languages: any[]) => {
-    setValues({ ...values, languages: languages.join() });
+    setValues({ ...values, languages: processHHLanguages(languages) });
   };
 
   const toggleModal = (modalType = ADMIN_MODAL_TYPES.UNIT) => {
@@ -1674,7 +1676,9 @@ function Admin({ user, isConductor = false }: adminProps) {
               {trackLanguages && (
                 <HHLangField
                   handleChangeValues={onLanguageChange}
-                  changeValues={(values as valuesDetails).languages?.split(",")}
+                  changeValues={parseHHLanguages(
+                    `${(values as valuesDetails).languages}`
+                  )}
                 />
               )}
               <GenericTextAreaField
