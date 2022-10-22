@@ -117,6 +117,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   const [selectedTerritoryCode, setSelectedTerritoryCode] = useState<String>();
   const [selectedTerritoryName, setSelectedTerritoryName] = useState<String>();
   const [addresses, setAddresses] = useState(new Map<String, addressDetails>());
+  const domain = process.env.PUBLIC_URL;
   let unsubscribers = new Array<Unsubscribe>();
   const processData = (data: any) => {
     const dataList = [];
@@ -880,7 +881,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                               addressLinkId,
                               `Units for ${addressElement.name}`,
                               assignmentMessage(addressElement.name),
-                              `${window.location.origin}/${addressElement.postalcode}/${code}/${addressLinkId}`
+                              `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`
                             );
                           }}
                         >
@@ -902,7 +903,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                               addressLinkId,
                               `Units for ${addressElement.name}`,
                               assignmentMessage(addressElement.name),
-                              `${window.location.origin}/${addressElement.postalcode}/${code}/${addressLinkId}`,
+                              `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`,
                               DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS
                             );
                           }}
@@ -931,7 +932,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                             addressLinkId,
                             `Units for ${addressElement.name}`,
                             assignmentMessage(addressElement.name),
-                            `${window.location.origin}/${addressElement.postalcode}/${code}/${addressLinkId}`
+                            `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`
                           );
                         }}
                       >
@@ -963,7 +964,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                                 TERRITORY_VIEW_WINDOW_WELCOME_TEXT;
                             }
                             await setTimedLink(addressLinkId);
-                            territoryWindow!.location.href = `${window.location.origin}/${addressElement.postalcode}/${code}/${addressLinkId}`;
+                            territoryWindow!.location.href = `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`;
                           } catch (error) {
                             errorHandler(error);
                           } finally {
