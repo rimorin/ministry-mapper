@@ -1370,6 +1370,8 @@ function Admin({ user, isConductor = false }: adminProps) {
                               status={detailsElement.status}
                               nhcount={detailsElement.nhcount}
                               languages={detailsElement.languages}
+                              trackRace={trackRace}
+                              trackLanguages={trackLanguages}
                             />
                           </td>
                         ))}

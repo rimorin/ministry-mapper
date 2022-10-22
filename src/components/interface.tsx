@@ -20,6 +20,8 @@ export interface unitProps {
   status: String;
   nhcount?: String;
   languages?: String;
+  trackRace?: boolean;
+  trackLanguages?: boolean;
 }
 
 export interface valuesDetails {

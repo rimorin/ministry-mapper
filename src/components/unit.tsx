@@ -3,11 +3,13 @@ import { unitProps } from "./interface";
 import { HOUSEHOLD_TYPES, STATUS_CODES } from "./util";
 
 const UnitStatus = (props: unitProps) => {
-  const otherType = props.type;
+  const householdRace = props.type;
   const note = props.note;
   const currentStatus = props.status;
   const nhcount = props.nhcount;
   const languages = props.languages;
+  const isTrackRace = props.trackRace || false;
+  const isTrackLanguages = props.trackLanguages || false;
   let status = "";
 
   if (currentStatus === STATUS_CODES.INVALID) {
@@ -37,12 +39,12 @@ const UnitStatus = (props: unitProps) => {
         </Badge>
       )}
       {note && <>🗒️ </>}
-      {otherType !== HOUSEHOLD_TYPES.CHINESE && (
+      {isTrackRace && householdRace !== HOUSEHOLD_TYPES.CHINESE && (
         <Badge bg="secondary" className="me-1" pill>
-          {otherType}
+          {householdRace}
         </Badge>
       )}
-      {languages && (
+      {isTrackLanguages && languages && (
         <Badge bg="secondary" className="me-1" pill>
           {languages}
         </Badge>

@@ -322,6 +322,8 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
                         status={element.status}
                         nhcount={element.nhcount}
                         languages={element.languages}
+                        trackRace={trackRace}
+                        trackLanguages={trackLanguages}
                       />
                     </td>
                   ))}
