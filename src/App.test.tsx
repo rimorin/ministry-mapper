@@ -1,4 +1,3 @@
-import React from "react";
 import { render, screen } from "@testing-library/react";
 import FrontPage from "./components/frontpage";
 import MaintenanceMode from "./components/maintenance";
@@ -7,8 +6,10 @@ import UnauthorizedPage from "./components/unauthorisedpage";
 import InvalidPage from "./components/invalidpage";
 import Welcome from "./components/welcome";
 import {
+  HOUSEHOLD_LANGUAGES,
   HOUSEHOLD_TYPES,
   LOGIN_TYPE_CODES,
+  NOT_HOME_STATUS_CODES,
   STATUS_CODES
 } from "./components/util";
 import Loader from "./components/loader";
@@ -16,6 +17,7 @@ import Login from "./components/login";
 import {
   GenericTextAreaField,
   HHLangField,
+  HHNotHomeField,
   HHStatusField,
   HHTypeField
 } from "./components/form";
@@ -134,6 +136,14 @@ test("renders form householder type", () => {
   expect(screen.getByText("Others")).toBeInTheDocument();
 });
 
+test("renders form householder not home count", () => {
+  render(<HHNotHomeField changeValue={NOT_HOME_STATUS_CODES.DEFAULT} />);
+  expect(screen.getByText("Number of tries")).toBeInTheDocument();
+  expect(screen.getByText("1st")).toBeInTheDocument();
+  expect(screen.getByText("2nd")).toBeInTheDocument();
+  expect(screen.getByText("3rd")).toBeInTheDocument();
+});
+
 test("renders form householder languages", () => {
   render(<HHLangField changeValues={[]} />);
   expect(screen.getByText("Languages")).toBeInTheDocument();
@@ -218,4 +228,173 @@ test("renders invalid status", () => {
     />
   );
   expect(screen.getByText("✖️")).toBeInTheDocument();
+});
+
+test("renders done status with notes", () => {
+  const testNote = "I am testing notes";
+  render(
+    <UnitStatus
+      type={HOUSEHOLD_TYPES.CHINESE}
+      note={testNote}
+      status={STATUS_CODES.DONE}
+    />
+  );
+  expect(screen.getByText("🗒️", { exact: false })).toBeInTheDocument();
+  expect(screen.getByText("✅", { exact: false })).toBeInTheDocument();
+});
+
+test("renders 2nd try not home status", () => {
+  render(
+    <UnitStatus
+      type={HOUSEHOLD_TYPES.CHINESE}
+      note=""
+      nhcount={NOT_HOME_STATUS_CODES.SECOND_TRY}
+      status={STATUS_CODES.NOT_HOME}
+    />
+  );
+  expect(screen.getByText("📬", { exact: false })).toBeInTheDocument();
+  expect(
+    screen.getByText(NOT_HOME_STATUS_CODES.SECOND_TRY, { exact: false })
+  ).toBeInTheDocument();
+});
+
+test("renders 3rd try not home status", () => {
+  render(
+    <UnitStatus
+      type={HOUSEHOLD_TYPES.CHINESE}
+      note=""
+      nhcount={NOT_HOME_STATUS_CODES.THIRD_TRY}
+      status={STATUS_CODES.NOT_HOME}
+    />
+  );
+  expect(screen.getByText("📬", { exact: false })).toBeInTheDocument();
+  expect(
+    screen.getByText(NOT_HOME_STATUS_CODES.THIRD_TRY, { exact: false })
+  ).toBeInTheDocument();
+});
+
+test("renders malay household", () => {
+  render(
+    <UnitStatus
+      type={HOUSEHOLD_TYPES.MALAY}
+      note=""
+      status={STATUS_CODES.DEFAULT}
+      trackRace={true}
+    />
+  );
+  expect(screen.getByText(HOUSEHOLD_TYPES.MALAY)).toBeInTheDocument();
+});
+
+test("renders indian household", () => {
+  render(
+    <UnitStatus
+      type={HOUSEHOLD_TYPES.INDIAN}
+      note=""
+      status={STATUS_CODES.DEFAULT}
+      trackRace={true}
+    />
+  );
+  expect(screen.getByText(HOUSEHOLD_TYPES.INDIAN)).toBeInTheDocument();
+});
+
+test("renders burmese household", () => {
+  render(
+    <UnitStatus
+      type={HOUSEHOLD_TYPES.BURMESE}
+      note=""
+      status={STATUS_CODES.DEFAULT}
+      trackRace={true}
+    />
+  );
+  expect(screen.getByText(HOUSEHOLD_TYPES.BURMESE)).toBeInTheDocument();
+});
+
+test("renders filipino household", () => {
+  render(
+    <UnitStatus
+      type={HOUSEHOLD_TYPES.FILIPINO}
+      note=""
+      status={STATUS_CODES.DEFAULT}
+      trackRace={true}
+    />
+  );
+  expect(screen.getByText(HOUSEHOLD_TYPES.FILIPINO)).toBeInTheDocument();
+});
+
+test("renders indonesian household", () => {
+  render(
+    <UnitStatus
+      type={HOUSEHOLD_TYPES.INDONESIAN}
+      note=""
+      status={STATUS_CODES.DEFAULT}
+      trackRace={true}
+    />
+  );
+  expect(screen.getByText(HOUSEHOLD_TYPES.INDONESIAN)).toBeInTheDocument();
+});
+
+test("renders thai household", () => {
+  render(
+    <UnitStatus
+      type={HOUSEHOLD_TYPES.THAI}
+      note=""
+      status={STATUS_CODES.DEFAULT}
+      trackRace={true}
+    />
+  );
+  expect(screen.getByText(HOUSEHOLD_TYPES.THAI)).toBeInTheDocument();
+});
+
+test("renders vietnamese household", () => {
+  render(
+    <UnitStatus
+      type={HOUSEHOLD_TYPES.VIETNAMESE}
+      note=""
+      status={STATUS_CODES.DEFAULT}
+      trackRace={true}
+    />
+  );
+  expect(screen.getByText(HOUSEHOLD_TYPES.VIETNAMESE)).toBeInTheDocument();
+});
+
+test("renders languages household", () => {
+  const langs = [
+    HOUSEHOLD_LANGUAGES.CHINESE,
+    HOUSEHOLD_LANGUAGES.ENGLISH,
+    HOUSEHOLD_LANGUAGES.BURMESE,
+    HOUSEHOLD_LANGUAGES.TAMIL,
+    HOUSEHOLD_LANGUAGES.MALAY
+  ].join();
+  render(
+    <UnitStatus
+      type={HOUSEHOLD_TYPES.CHINESE}
+      note=""
+      status={STATUS_CODES.DEFAULT}
+      trackLanguages={true}
+      languages={langs}
+    />
+  );
+  expect(screen.getByText(langs)).toBeInTheDocument();
+});
+
+test("renders languages household with done status and notes", () => {
+  const langs = [
+    HOUSEHOLD_LANGUAGES.CHINESE,
+    HOUSEHOLD_LANGUAGES.ENGLISH,
+    HOUSEHOLD_LANGUAGES.BURMESE,
+    HOUSEHOLD_LANGUAGES.TAMIL,
+    HOUSEHOLD_LANGUAGES.MALAY
+  ].join();
+  render(
+    <UnitStatus
+      type={HOUSEHOLD_TYPES.CHINESE}
+      note="test"
+      status={STATUS_CODES.DONE}
+      trackLanguages={true}
+      languages={langs}
+    />
+  );
+  expect(screen.getByText(langs)).toBeInTheDocument();
+  expect(screen.getByText("🗒️", { exact: false })).toBeInTheDocument();
+  expect(screen.getByText("✅", { exact: false })).toBeInTheDocument();
 });
