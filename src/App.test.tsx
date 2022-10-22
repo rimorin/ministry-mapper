@@ -15,6 +15,7 @@ import Loader from "./components/loader";
 import Login from "./components/login";
 import {
   GenericTextAreaField,
+  HHLangField,
   HHStatusField,
   HHTypeField
 } from "./components/form";
@@ -131,6 +132,16 @@ test("renders form householder type", () => {
   expect(screen.getByText("Thai")).toBeInTheDocument();
   expect(screen.getByText("Vietnamese")).toBeInTheDocument();
   expect(screen.getByText("Others")).toBeInTheDocument();
+});
+
+test("renders form householder languages", () => {
+  render(<HHLangField changeValues={[]} />);
+  expect(screen.getByText("Languages")).toBeInTheDocument();
+  expect(screen.getByText("Chinese")).toBeInTheDocument();
+  expect(screen.getByText("Malay")).toBeInTheDocument();
+  expect(screen.getByText("Tamil")).toBeInTheDocument();
+  expect(screen.getByText("Burmese")).toBeInTheDocument();
+  expect(screen.getByText("English")).toBeInTheDocument();
 });
 
 test("renders form householder note", () => {

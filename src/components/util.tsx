@@ -80,10 +80,7 @@ const RELOAD_INACTIVITY_DURATION = 600000;
 // 3 secs
 const FIREBASE_FUNCTION_TIMEOUT = 3000;
 
-const IGNORE_HOUSEHOLD_STATUS = [
-  STATUS_CODES.DO_NOT_CALL,
-  STATUS_CODES.INVALID
-];
+const COUNTABLE_HOUSEHOLD_STATUS = [STATUS_CODES.DONE];
 
 const MIN_START_FLOOR = 1;
 const MAX_TOP_FLOOR = 40;
@@ -156,17 +153,28 @@ const getMaxUnitLength = (floors: floorDetails[]) => {
   return maxUnitNumberLength;
 };
 
+const parseHHLanguages = (languages: String) => {
+  if (!languages) return [];
+  return languages.split(",");
+};
+
+const processHHLanguages = (languages: string[]) => {
+  if (!languages) return "";
+
+  return languages.join();
+};
+
 const getCompletedPercent = (floors: floorDetails[]) => {
   let totalUnits = 0;
   let completedUnits = 0;
 
   floors.forEach((element) => {
     element.units.forEach((uElement) => {
-      const unitStatus = uElement.status;
+      const unitStatus = uElement.status.toString();
       const unitType = uElement.type;
       const unitNotHomeCount = uElement.nhcount;
       const isCountable =
-        !IGNORE_HOUSEHOLD_STATUS.includes(unitStatus.toString()) &&
+        COUNTABLE_HOUSEHOLD_STATUS.includes(unitStatus) &&
         unitType !== HOUSEHOLD_TYPES.MALAY;
 
       if (isCountable) totalUnits++;
@@ -246,6 +254,14 @@ const Legend = ({ showLegend, hideFunction }: LegendProps) => (
   </Offcanvas>
 );
 
+const HOUSEHOLD_LANGUAGES = {
+  ENGLISH: { CODE: "en", DISPLAY: "English" },
+  CHINESE: { CODE: "cn", DISPLAY: "Chinese" },
+  BURMESE: { CODE: "bm", DISPLAY: "Burmese" },
+  TAMIL: { CODE: "tm", DISPLAY: "Tamil" },
+  MALAY: { CODE: "ml", DISPLAY: "Malay" }
+};
+
 export {
   ZeroPad,
   ModalUnitTitle,
@@ -258,6 +274,8 @@ export {
   Legend,
   errorHandler,
   connectionTimeout,
+  parseHHLanguages,
+  processHHLanguages,
   STATUS_CODES,
   MUTABLE_CODES,
   LOGIN_TYPE_CODES,
@@ -273,5 +291,6 @@ export {
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   NOT_HOME_STATUS_CODES,
   MIN_START_FLOOR,
-  MAX_TOP_FLOOR
+  MAX_TOP_FLOOR,
+  HOUSEHOLD_LANGUAGES
 };
