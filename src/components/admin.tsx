@@ -87,7 +87,6 @@ import {
   ModalFooter
 } from "./form";
 import Welcome from "./welcome";
-import NotFoundPage from "./notfoundpage";
 import UnauthorizedPage from "./unauthorisedpage";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 function Admin({ user, isConductor = false }: adminProps) {
@@ -725,11 +724,8 @@ function Admin({ user, isConductor = false }: adminProps) {
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
   }, [user, code]);
 
-  const noSuchTerritory = territories.size === 0;
-
   if (isLoading) return <Loader />;
   if (isUnauthorised) return <UnauthorizedPage />;
-  if (noSuchTerritory) return <NotFoundPage />;
 
   const territoryAddresses = Array.from(addresses.values());
   const congregationTerritoryList = Array.from(territories.values());
@@ -745,30 +741,31 @@ function Admin({ user, isConductor = false }: adminProps) {
               id="basic-navbar-nav"
               className="justify-content-end mt-1"
             >
-              {congregationTerritoryList && (
-                <NavDropdown
-                  title={
-                    selectedTerritory
-                      ? `${selectedTerritory}`
-                      : "Select Territory"
-                  }
-                  onSelect={(
-                    eventKey: string | null,
-                    _: React.SyntheticEvent<unknown>
-                  ) => processSelectedTerritory(`${eventKey}`)}
-                  className="m-2 d-inline-block"
-                  align={{ lg: "end" }}
-                >
-                  {congregationTerritoryList.map((element) => (
-                    <NavDropdown.Item
-                      key={`${element.code}`}
-                      eventKey={`${element.code}`}
-                    >
-                      {element.code} - {element.name}
-                    </NavDropdown.Item>
-                  ))}
-                </NavDropdown>
-              )}
+              {congregationTerritoryList &&
+                congregationTerritoryList.length > 0 && (
+                  <NavDropdown
+                    title={
+                      selectedTerritory
+                        ? `${selectedTerritory}`
+                        : "Select Territory"
+                    }
+                    onSelect={(
+                      eventKey: string | null,
+                      _: React.SyntheticEvent<unknown>
+                    ) => processSelectedTerritory(`${eventKey}`)}
+                    className="m-2 d-inline-block"
+                    align={{ lg: "end" }}
+                  >
+                    {congregationTerritoryList.map((element) => (
+                      <NavDropdown.Item
+                        key={`${element.code}`}
+                        eventKey={`${element.code}`}
+                      >
+                        {element.code} - {element.name}
+                      </NavDropdown.Item>
+                    ))}
+                  </NavDropdown>
+                )}
               {!isConductor && (
                 <Button
                   className="m-2"
