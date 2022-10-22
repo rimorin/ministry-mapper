@@ -80,6 +80,7 @@ import {
   FloorField,
   GenericTextAreaField,
   GenericTextField,
+  HHLangField,
   HHNotHomeField,
   HHStatusField,
   HHTypeField,
@@ -106,6 +107,8 @@ function Admin({ user, isConductor = false }: adminProps) {
   const [isNewTerritory, setIsNewTerritory] = useState<boolean>(false);
   const [isNewUnit, setIsNewUnit] = useState<boolean>(false);
   const [isTerritoryRename, setIsTerritoryRename] = useState<boolean>(false);
+  const [trackRace, setTrackRace] = useState<boolean>(true);
+  const [trackLanguages, setTrackLanguages] = useState<boolean>(true);
   const [name, setName] = useState<String>();
   const [values, setValues] = useState<Object>({});
   const [territories, setTerritories] = useState(
@@ -125,9 +128,10 @@ function Admin({ user, isConductor = false }: adminProps) {
         unitsDetails.push({
           number: unit,
           note: units[unit]["note"],
-          type: units[unit]["type"],
+          type: units[unit]["type"] || "",
           status: units[unit]["status"],
-          nhcount: units[unit]["nhcount"] || NOT_HOME_STATUS_CODES.DEFAULT
+          nhcount: units[unit]["nhcount"] || NOT_HOME_STATUS_CODES.DEFAULT,
+          languages: units[unit]["languages"] || ""
         });
       }
       dataList.unshift({ floor: floor, units: unitsDetails });
@@ -271,6 +275,10 @@ function Admin({ user, isConductor = false }: adminProps) {
     }
   };
 
+  const onLanguageChange = (languages: any[]) => {
+    setValues({ ...values, languages: languages.join() });
+  };
+
   const toggleModal = (modalType = ADMIN_MODAL_TYPES.UNIT) => {
     switch (modalType) {
       case ADMIN_MODAL_TYPES.FEEDBACK:
@@ -308,6 +316,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     note: String,
     status: String,
     nhcount: String,
+    languages: String,
     maxUnitNumber: number
   ) => {
     setValues({
@@ -320,7 +329,8 @@ function Admin({ user, isConductor = false }: adminProps) {
       note: note,
       postal: postal,
       status: status,
-      nhcount: nhcount
+      nhcount: nhcount,
+      languages: languages
     });
     setIsNotHome(status === STATUS_CODES.NOT_HOME);
     toggleModal();
@@ -341,7 +351,8 @@ function Admin({ user, isConductor = false }: adminProps) {
           type: details.type,
           note: details.note,
           status: details.status,
-          nhcount: details.nhcount
+          nhcount: details.nhcount,
+          languages: details.languages
         }
       );
       toggleModal();
@@ -470,7 +481,8 @@ function Admin({ user, isConductor = false }: adminProps) {
               type: HOUSEHOLD_TYPES.CHINESE,
               note: "",
               status: STATUS_CODES.DEFAULT,
-              nhcount: NOT_HOME_STATUS_CODES.DEFAULT
+              nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+              languages: ""
             };
       });
     }
@@ -516,7 +528,8 @@ function Admin({ user, isConductor = false }: adminProps) {
           status: STATUS_CODES.DEFAULT,
           type: HOUSEHOLD_TYPES.CHINESE,
           note: "",
-          nhcount: NOT_HOME_STATUS_CODES.DEFAULT
+          nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+          languages: ""
         };
       });
       floorDetails.push(floorMap);
@@ -643,6 +656,33 @@ function Admin({ user, isConductor = false }: adminProps) {
       congregation: code,
       login: user?.email
     });
+
+    const trackRaceReference = child(
+      ref(database),
+      `congregations/${code}/trackRace`
+    );
+    const trackLanguagesReference = child(
+      ref(database),
+      `congregations/${code}/trackLanguages`
+    );
+    onValue(
+      trackRaceReference,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          setTrackRace(snapshot.val());
+        }
+      },
+      { onlyOnce: true }
+    );
+    onValue(
+      trackLanguagesReference,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          setTrackLanguages(snapshot.val());
+        }
+      },
+      { onlyOnce: true }
+    );
 
     const congregationReference = child(ref(database), `congregations/${code}`);
     onValue(
@@ -843,7 +883,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                               addressLinkId,
                               `Units for ${addressElement.name}`,
                               assignmentMessage(addressElement.name),
-                              `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`
+                              `${window.location.origin}/${addressElement.postalcode}/${code}/${addressLinkId}`
                             );
                           }}
                         >
@@ -865,7 +905,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                               addressLinkId,
                               `Units for ${addressElement.name}`,
                               assignmentMessage(addressElement.name),
-                              `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
+                              `${window.location.origin}/${addressElement.postalcode}/${code}/${addressLinkId}`,
                               DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS
                             );
                           }}
@@ -894,7 +934,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                             addressLinkId,
                             `Units for ${addressElement.name}`,
                             assignmentMessage(addressElement.name),
-                            `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`
+                            `${window.location.origin}/${addressElement.postalcode}/${code}/${addressLinkId}`
                           );
                         }}
                       >
@@ -926,7 +966,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                                 TERRITORY_VIEW_WINDOW_WELCOME_TEXT;
                             }
                             await setTimedLink(addressLinkId);
-                            territoryWindow!.location.href = `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`;
+                            territoryWindow!.location.href = `${window.location.origin}/${addressElement.postalcode}/${code}/${addressLinkId}`;
                           } catch (error) {
                             errorHandler(error);
                           } finally {
@@ -1317,6 +1357,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                                 detailsElement.note,
                                 detailsElement.status,
                                 detailsElement.nhcount,
+                                detailsElement.languages,
                                 maxUnitNumberLength
                               )
                             }
@@ -1328,6 +1369,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                               note={detailsElement.note}
                               status={detailsElement.status}
                               nhcount={detailsElement.nhcount}
+                              languages={detailsElement.languages}
                             />
                           </td>
                         ))}
@@ -1625,10 +1667,18 @@ function Admin({ user, isConductor = false }: adminProps) {
                   />
                 </div>
               </Collapse>
-              <HHTypeField
-                handleChange={onFormChange}
-                changeValue={`${(values as valuesDetails).type}`}
-              />
+              {trackRace && (
+                <HHTypeField
+                  handleChange={onFormChange}
+                  changeValue={`${(values as valuesDetails).type}`}
+                />
+              )}
+              {trackLanguages && (
+                <HHLangField
+                  handleChangeValues={onLanguageChange}
+                  changeValues={(values as valuesDetails).languages?.split(",")}
+                />
+              )}
               <GenericTextAreaField
                 label="Notes"
                 name="note"

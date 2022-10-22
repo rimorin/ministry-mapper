@@ -30,6 +30,7 @@ import {
 } from "./util";
 import {
   GenericTextAreaField,
+  HHLangField,
   HHNotHomeField,
   HHStatusField,
   HHTypeField,
@@ -38,13 +39,15 @@ import {
 import { setContext } from "@sentry/react";
 import Loader from "./loader";
 
-const Slip = ({ token = "", postalcode = "" }) => {
+const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isFeedback, setIsFeedback] = useState<boolean>(false);
   const [showLegend, setShowLegend] = useState<boolean>(false);
   const [isPostalLoading, setIsPostalLoading] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isNotHome, setIsNotHome] = useState<boolean>(false);
+  const [trackRace, setTrackRace] = useState<boolean>(true);
+  const [trackLanguages, setTrackLanguages] = useState<boolean>(true);
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
   const [postalName, setPostalName] = useState<String>();
   const [values, setValues] = useState<Object>({});
@@ -70,9 +73,10 @@ const Slip = ({ token = "", postalcode = "" }) => {
         unitsDetails.push({
           number: unit,
           note: units[unit]["note"],
-          type: units[unit]["type"],
+          type: units[unit]["type"] || "",
           status: units[unit]["status"],
-          nhcount: units[unit]["nhcount"] || NOT_HOME_STATUS_CODES.DEFAULT
+          nhcount: units[unit]["nhcount"] || NOT_HOME_STATUS_CODES.DEFAULT,
+          languages: units[unit]["languages"] || ""
         });
       }
       dataList.unshift({ floor: floor, units: unitsDetails });
@@ -98,7 +102,8 @@ const Slip = ({ token = "", postalcode = "" }) => {
       type: unitDetails?.type,
       note: unitDetails?.note,
       status: unitDetails?.status,
-      nhcount: unitDetails?.nhcount || NOT_HOME_STATUS_CODES.DEFAULT
+      nhcount: unitDetails?.nhcount || NOT_HOME_STATUS_CODES.DEFAULT,
+      languages: unitDetails?.languages
     });
     setIsNotHome(unitStatus === STATUS_CODES.NOT_HOME);
     toggleModal(true);
@@ -116,7 +121,8 @@ const Slip = ({ token = "", postalcode = "" }) => {
           type: details.type,
           note: details.note,
           status: details.status,
-          nhcount: details.nhcount
+          nhcount: details.nhcount,
+          languages: details.languages
         }
       );
       clearTimeout(timeoutId);
@@ -157,6 +163,10 @@ const Slip = ({ token = "", postalcode = "" }) => {
     setValues({ ...values, [name]: value });
   };
 
+  const onLanguageChange = (languages: any[]) => {
+    setValues({ ...values, languages: languages.join() });
+  };
+
   useEffect(() => {
     setContext("publisher", {
       token: token,
@@ -167,6 +177,32 @@ const Slip = ({ token = "", postalcode = "" }) => {
     const postalFeedbackReference = child(
       ref(database),
       `/${postalcode}/feedback`
+    );
+    const trackRaceReference = child(
+      ref(database),
+      `congregations/${congregationcode}/trackRace`
+    );
+    const trackLanguagesReference = child(
+      ref(database),
+      `congregations/${congregationcode}/trackLanguages`
+    );
+    onValue(
+      trackRaceReference,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          setTrackRace(snapshot.val());
+        }
+      },
+      { onlyOnce: true }
+    );
+    onValue(
+      trackLanguagesReference,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          setTrackLanguages(snapshot.val());
+        }
+      },
+      { onlyOnce: true }
     );
     onValue(
       postalNameReference,
@@ -210,7 +246,7 @@ const Slip = ({ token = "", postalcode = "" }) => {
     document.body.addEventListener("touchstart", setActivityTime);
 
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-  }, [token, postalcode]);
+  }, [token, postalcode, congregationcode]);
   if (isPostalLoading) return <Loader />;
   const maxUnitNumberLength = getMaxUnitLength(floors);
   return (
@@ -283,6 +319,7 @@ const Slip = ({ token = "", postalcode = "" }) => {
                         note={element.note}
                         status={element.status}
                         nhcount={element.nhcount}
+                        languages={element.languages}
                       />
                     </td>
                   ))}
@@ -340,10 +377,18 @@ const Slip = ({ token = "", postalcode = "" }) => {
                   />
                 </div>
               </Collapse>
-              <HHTypeField
-                handleChange={onFormChange}
-                changeValue={`${(values as valuesDetails).type}`}
-              />
+              {trackRace && (
+                <HHTypeField
+                  handleChange={onFormChange}
+                  changeValue={`${(values as valuesDetails).type}`}
+                />
+              )}
+              {trackLanguages && (
+                <HHLangField
+                  handleChangeValues={onLanguageChange}
+                  changeValues={(values as valuesDetails).languages?.split(",")}
+                />
+              )}
               <GenericTextAreaField
                 label="Notes"
                 name="note"

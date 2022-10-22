@@ -7,6 +7,7 @@ const UnitStatus = (props: unitProps) => {
   const note = props.note;
   const currentStatus = props.status;
   const nhcount = props.nhcount;
+  const languages = props.languages;
   let status = "";
 
   if (currentStatus === STATUS_CODES.INVALID) {
@@ -37,8 +38,13 @@ const UnitStatus = (props: unitProps) => {
       )}
       {note && <>🗒️ </>}
       {otherType !== HOUSEHOLD_TYPES.CHINESE && (
-        <Badge bg="secondary" pill>
+        <Badge bg="secondary" className="me-1" pill>
           {otherType}
+        </Badge>
+      )}
+      {languages && (
+        <Badge bg="secondary" className="me-1" pill>
+          {languages}
         </Badge>
       )}
     </>

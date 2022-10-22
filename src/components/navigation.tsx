@@ -32,7 +32,10 @@ function Navigation() {
           path={"conductor/:code"}
           element={<Dashboard isConductor={true} userType="Conductor" />}
         />
-        <Route path={"/:postalcode/:id"} element={<Territory />} />
+        <Route
+          path={"/:postalcode/:congregationcode/:id"}
+          element={<Territory />}
+        />
       </Routes>
     </Container>
   );
