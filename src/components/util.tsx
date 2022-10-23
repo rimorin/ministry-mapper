@@ -1,12 +1,13 @@
 import { captureException } from "@sentry/react";
 import { goOffline, goOnline } from "firebase/database";
-import { Modal, Navbar, Offcanvas, Table } from "react-bootstrap";
+import { ListGroup, Modal, Navbar, Offcanvas, Table } from "react-bootstrap";
 import { database } from "../firebase";
 import {
   TitleProps,
   BrandingProps,
   LegendProps,
-  floorDetails
+  floorDetails,
+  TerritoryListingProps
 } from "./interface";
 
 const errorHandler = (error: any, showAlert = true) => {
@@ -258,6 +259,35 @@ const Legend = ({ showLegend, hideFunction }: LegendProps) => (
   </Offcanvas>
 );
 
+const TerritoryListing = ({
+  showListing,
+  hideFunction,
+  selectedTerritory,
+  handleSelect,
+  territories
+}: TerritoryListingProps) => (
+  <Offcanvas placement={"bottom"} show={showListing} onHide={hideFunction}>
+    <Offcanvas.Header closeButton>
+      <Offcanvas.Title>Select Territory</Offcanvas.Title>
+    </Offcanvas.Header>
+    <Offcanvas.Body>
+      <ListGroup onSelect={handleSelect}>
+        {territories &&
+          territories.map((element) => (
+            <ListGroup.Item
+              action
+              key={`listgroup-item-${element.code}`}
+              eventKey={`${element.code}`}
+              active={selectedTerritory === element.code}
+            >
+              {element.code} - {element.name}
+            </ListGroup.Item>
+          ))}
+      </ListGroup>
+    </Offcanvas.Body>
+  </Offcanvas>
+);
+
 const HOUSEHOLD_LANGUAGES = {
   ENGLISH: { CODE: "en", DISPLAY: "English" },
   CHINESE: { CODE: "cn", DISPLAY: "Chinese" },
@@ -280,6 +310,7 @@ export {
   connectionTimeout,
   parseHHLanguages,
   processHHLanguages,
+  TerritoryListing,
   STATUS_CODES,
   MUTABLE_CODES,
   LOGIN_TYPE_CODES,

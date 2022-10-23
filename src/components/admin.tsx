@@ -74,7 +74,8 @@ import {
   MIN_START_FLOOR,
   NOT_HOME_STATUS_CODES,
   parseHHLanguages,
-  processHHLanguages
+  processHHLanguages,
+  TerritoryListing
 } from "./util";
 import { useParams } from "react-router-dom";
 import {
@@ -108,6 +109,8 @@ function Admin({ user, isConductor = false }: adminProps) {
   const [isNewTerritory, setIsNewTerritory] = useState<boolean>(false);
   const [isNewUnit, setIsNewUnit] = useState<boolean>(false);
   const [isTerritoryRename, setIsTerritoryRename] = useState<boolean>(false);
+  const [showTerritoryListing, setShowTerritoryListing] =
+    useState<boolean>(false);
   const [trackRace, setTrackRace] = useState<boolean>(true);
   const [trackLanguages, setTrackLanguages] = useState<boolean>(true);
   const [name, setName] = useState<String>();
@@ -653,6 +656,10 @@ function Admin({ user, isConductor = false }: adminProps) {
     return territoryList;
   };
 
+  const toggleTerritoryListing = () => {
+    setShowTerritoryListing(!showTerritoryListing);
+  };
+
   useEffect(() => {
     setContext("conductor", {
       congregation: code,
@@ -736,6 +743,16 @@ function Admin({ user, isConductor = false }: adminProps) {
   return (
     <Fade appear={true} in={true}>
       <div>
+        <TerritoryListing
+          showListing={showTerritoryListing}
+          hideFunction={toggleTerritoryListing}
+          territories={congregationTerritoryList}
+          selectedTerritory={selectedTerritoryCode}
+          handleSelect={(eventKey, e) => {
+            processSelectedTerritory(`${eventKey}`);
+            toggleTerritoryListing();
+          }}
+        />
         <Navbar bg="light" variant="light" expand="lg">
           <Container fluid>
             <NavBarBranding naming={`${name}`} />
@@ -746,28 +763,16 @@ function Admin({ user, isConductor = false }: adminProps) {
             >
               {congregationTerritoryList &&
                 congregationTerritoryList.length > 0 && (
-                  <NavDropdown
-                    title={
-                      selectedTerritory
-                        ? `${selectedTerritory}`
-                        : "Select Territory"
-                    }
-                    onSelect={(
-                      eventKey: string | null,
-                      _: React.SyntheticEvent<unknown>
-                    ) => processSelectedTerritory(`${eventKey}`)}
-                    className="m-2 d-inline-block"
-                    align={{ lg: "end" }}
+                  <Button
+                    className="me-2"
+                    size="sm"
+                    variant="outline-primary"
+                    onClick={toggleTerritoryListing}
                   >
-                    {congregationTerritoryList.map((element) => (
-                      <NavDropdown.Item
-                        key={`${element.code}`}
-                        eventKey={`${element.code}`}
-                      >
-                        {element.code} - {element.name}
-                      </NavDropdown.Item>
-                    ))}
-                  </NavDropdown>
+                    {selectedTerritory
+                      ? `${selectedTerritory}`
+                      : "Select Territory"}
+                  </Button>
                 )}
               {!isConductor && (
                 <Button
