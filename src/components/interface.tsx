@@ -100,6 +100,17 @@ export interface LegendProps {
   hideFunction: any;
 }
 
+export interface TerritoryListingProps {
+  showListing: boolean;
+  hideFunction: any;
+  selectedTerritory?: String;
+  handleSelect?: (
+    eventKey: string | null,
+    e: React.SyntheticEvent<unknown>
+  ) => void;
+  territories?: territoryDetails[];
+}
+
 export interface LoginProps {
   loginType: String;
 }
