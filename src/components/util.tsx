@@ -289,11 +289,11 @@ const TerritoryListing = ({
 );
 
 const HOUSEHOLD_LANGUAGES = {
-  ENGLISH: { CODE: "en", DISPLAY: "English" },
-  CHINESE: { CODE: "cn", DISPLAY: "Chinese" },
-  BURMESE: { CODE: "bm", DISPLAY: "Burmese" },
-  TAMIL: { CODE: "tm", DISPLAY: "Tamil" },
-  MALAY: { CODE: "ml", DISPLAY: "Malay" }
+  ENGLISH: { CODE: "e", DISPLAY: "English" },
+  CHINESE: { CODE: "c", DISPLAY: "Chinese" },
+  BURMESE: { CODE: "b", DISPLAY: "Burmese" },
+  TAMIL: { CODE: "t", DISPLAY: "Tamil" },
+  MALAY: { CODE: "m", DISPLAY: "Malay" }
 };
 
 export {
