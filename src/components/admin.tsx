@@ -72,7 +72,10 @@ import {
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   HOUSEHOLD_TYPES,
   MIN_START_FLOOR,
-  NOT_HOME_STATUS_CODES
+  NOT_HOME_STATUS_CODES,
+  parseHHLanguages,
+  processHHLanguages,
+  TerritoryListing
 } from "./util";
 import { useParams } from "react-router-dom";
 import {
@@ -80,13 +83,13 @@ import {
   FloorField,
   GenericTextAreaField,
   GenericTextField,
+  HHLangField,
   HHNotHomeField,
   HHStatusField,
   HHTypeField,
   ModalFooter
 } from "./form";
 import Welcome from "./welcome";
-import NotFoundPage from "./notfoundpage";
 import UnauthorizedPage from "./unauthorisedpage";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 function Admin({ user, isConductor = false }: adminProps) {
@@ -106,6 +109,10 @@ function Admin({ user, isConductor = false }: adminProps) {
   const [isNewTerritory, setIsNewTerritory] = useState<boolean>(false);
   const [isNewUnit, setIsNewUnit] = useState<boolean>(false);
   const [isTerritoryRename, setIsTerritoryRename] = useState<boolean>(false);
+  const [showTerritoryListing, setShowTerritoryListing] =
+    useState<boolean>(false);
+  const [trackRace, setTrackRace] = useState<boolean>(true);
+  const [trackLanguages, setTrackLanguages] = useState<boolean>(true);
   const [name, setName] = useState<String>();
   const [values, setValues] = useState<Object>({});
   const [territories, setTerritories] = useState(
@@ -115,6 +122,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   const [selectedTerritoryCode, setSelectedTerritoryCode] = useState<String>();
   const [selectedTerritoryName, setSelectedTerritoryName] = useState<String>();
   const [addresses, setAddresses] = useState(new Map<String, addressDetails>());
+  const domain = process.env.PUBLIC_URL;
   let unsubscribers = new Array<Unsubscribe>();
   const processData = (data: any) => {
     const dataList = [];
@@ -125,9 +133,10 @@ function Admin({ user, isConductor = false }: adminProps) {
         unitsDetails.push({
           number: unit,
           note: units[unit]["note"],
-          type: units[unit]["type"],
+          type: units[unit]["type"] || "",
           status: units[unit]["status"],
-          nhcount: units[unit]["nhcount"] || NOT_HOME_STATUS_CODES.DEFAULT
+          nhcount: units[unit]["nhcount"] || NOT_HOME_STATUS_CODES.DEFAULT,
+          languages: units[unit]["languages"] || ""
         });
       }
       dataList.unshift({ floor: floor, units: unitsDetails });
@@ -271,6 +280,10 @@ function Admin({ user, isConductor = false }: adminProps) {
     }
   };
 
+  const onLanguageChange = (languages: any[]) => {
+    setValues({ ...values, languages: processHHLanguages(languages) });
+  };
+
   const toggleModal = (modalType = ADMIN_MODAL_TYPES.UNIT) => {
     switch (modalType) {
       case ADMIN_MODAL_TYPES.FEEDBACK:
@@ -308,6 +321,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     note: String,
     status: String,
     nhcount: String,
+    languages: String,
     maxUnitNumber: number
   ) => {
     setValues({
@@ -320,7 +334,8 @@ function Admin({ user, isConductor = false }: adminProps) {
       note: note,
       postal: postal,
       status: status,
-      nhcount: nhcount
+      nhcount: nhcount,
+      languages: languages
     });
     setIsNotHome(status === STATUS_CODES.NOT_HOME);
     toggleModal();
@@ -341,7 +356,8 @@ function Admin({ user, isConductor = false }: adminProps) {
           type: details.type,
           note: details.note,
           status: details.status,
-          nhcount: details.nhcount
+          nhcount: details.nhcount,
+          languages: details.languages
         }
       );
       toggleModal();
@@ -470,7 +486,8 @@ function Admin({ user, isConductor = false }: adminProps) {
               type: HOUSEHOLD_TYPES.CHINESE,
               note: "",
               status: STATUS_CODES.DEFAULT,
-              nhcount: NOT_HOME_STATUS_CODES.DEFAULT
+              nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+              languages: ""
             };
       });
     }
@@ -516,7 +533,8 @@ function Admin({ user, isConductor = false }: adminProps) {
           status: STATUS_CODES.DEFAULT,
           type: HOUSEHOLD_TYPES.CHINESE,
           note: "",
-          nhcount: NOT_HOME_STATUS_CODES.DEFAULT
+          nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+          languages: ""
         };
       });
       floorDetails.push(floorMap);
@@ -638,11 +656,42 @@ function Admin({ user, isConductor = false }: adminProps) {
     return territoryList;
   };
 
+  const toggleTerritoryListing = () => {
+    setShowTerritoryListing(!showTerritoryListing);
+  };
+
   useEffect(() => {
     setContext("conductor", {
       congregation: code,
       login: user?.email
     });
+
+    const trackRaceReference = child(
+      ref(database),
+      `congregations/${code}/trackRace`
+    );
+    const trackLanguagesReference = child(
+      ref(database),
+      `congregations/${code}/trackLanguages`
+    );
+    onValue(
+      trackRaceReference,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          setTrackRace(snapshot.val());
+        }
+      },
+      { onlyOnce: true }
+    );
+    onValue(
+      trackLanguagesReference,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          setTrackLanguages(snapshot.val());
+        }
+      },
+      { onlyOnce: true }
+    );
 
     const congregationReference = child(ref(database), `congregations/${code}`);
     onValue(
@@ -685,11 +734,8 @@ function Admin({ user, isConductor = false }: adminProps) {
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
   }, [user, code]);
 
-  const noSuchTerritory = territories.size === 0;
-
   if (isLoading) return <Loader />;
   if (isUnauthorised) return <UnauthorizedPage />;
-  if (noSuchTerritory) return <NotFoundPage />;
 
   const territoryAddresses = Array.from(addresses.values());
   const congregationTerritoryList = Array.from(territories.values());
@@ -697,6 +743,16 @@ function Admin({ user, isConductor = false }: adminProps) {
   return (
     <Fade appear={true} in={true}>
       <div>
+        <TerritoryListing
+          showListing={showTerritoryListing}
+          hideFunction={toggleTerritoryListing}
+          territories={congregationTerritoryList}
+          selectedTerritory={selectedTerritoryCode}
+          handleSelect={(eventKey, e) => {
+            processSelectedTerritory(`${eventKey}`);
+            toggleTerritoryListing();
+          }}
+        />
         <Navbar bg="light" variant="light" expand="lg">
           <Container fluid>
             <NavBarBranding naming={`${name}`} />
@@ -705,30 +761,19 @@ function Admin({ user, isConductor = false }: adminProps) {
               id="basic-navbar-nav"
               className="justify-content-end mt-1"
             >
-              {congregationTerritoryList && (
-                <NavDropdown
-                  title={
-                    selectedTerritory
+              {congregationTerritoryList &&
+                congregationTerritoryList.length > 0 && (
+                  <Button
+                    className="me-2"
+                    size="sm"
+                    variant="outline-primary"
+                    onClick={toggleTerritoryListing}
+                  >
+                    {selectedTerritory
                       ? `${selectedTerritory}`
-                      : "Select Territory"
-                  }
-                  onSelect={(
-                    eventKey: string | null,
-                    _: React.SyntheticEvent<unknown>
-                  ) => processSelectedTerritory(`${eventKey}`)}
-                  className="m-2 d-inline-block"
-                  align={{ lg: "end" }}
-                >
-                  {congregationTerritoryList.map((element) => (
-                    <NavDropdown.Item
-                      key={`${element.code}`}
-                      eventKey={`${element.code}`}
-                    >
-                      {element.code} - {element.name}
-                    </NavDropdown.Item>
-                  ))}
-                </NavDropdown>
-              )}
+                      : "Select Territory"}
+                  </Button>
+                )}
               {!isConductor && (
                 <Button
                   className="m-2"
@@ -843,7 +888,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                               addressLinkId,
                               `Units for ${addressElement.name}`,
                               assignmentMessage(addressElement.name),
-                              `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`
+                              `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`
                             );
                           }}
                         >
@@ -865,7 +910,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                               addressLinkId,
                               `Units for ${addressElement.name}`,
                               assignmentMessage(addressElement.name),
-                              `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`,
+                              `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`,
                               DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS
                             );
                           }}
@@ -894,7 +939,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                             addressLinkId,
                             `Units for ${addressElement.name}`,
                             assignmentMessage(addressElement.name),
-                            `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`
+                            `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`
                           );
                         }}
                       >
@@ -926,7 +971,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                                 TERRITORY_VIEW_WINDOW_WELCOME_TEXT;
                             }
                             await setTimedLink(addressLinkId);
-                            territoryWindow!.location.href = `${window.location.origin}/${addressElement.postalcode}/${addressLinkId}`;
+                            territoryWindow!.location.href = `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`;
                           } catch (error) {
                             errorHandler(error);
                           } finally {
@@ -1317,6 +1362,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                                 detailsElement.note,
                                 detailsElement.status,
                                 detailsElement.nhcount,
+                                detailsElement.languages,
                                 maxUnitNumberLength
                               )
                             }
@@ -1328,6 +1374,9 @@ function Admin({ user, isConductor = false }: adminProps) {
                               note={detailsElement.note}
                               status={detailsElement.status}
                               nhcount={detailsElement.nhcount}
+                              languages={detailsElement.languages}
+                              trackRace={trackRace}
+                              trackLanguages={trackLanguages}
                             />
                           </td>
                         ))}
@@ -1625,10 +1674,20 @@ function Admin({ user, isConductor = false }: adminProps) {
                   />
                 </div>
               </Collapse>
-              <HHTypeField
-                handleChange={onFormChange}
-                changeValue={`${(values as valuesDetails).type}`}
-              />
+              {trackRace && (
+                <HHTypeField
+                  handleChange={onFormChange}
+                  changeValue={`${(values as valuesDetails).type}`}
+                />
+              )}
+              {trackLanguages && (
+                <HHLangField
+                  handleChangeValues={onLanguageChange}
+                  changeValues={parseHHLanguages(
+                    `${(values as valuesDetails).languages}`
+                  )}
+                />
+              )}
               <GenericTextAreaField
                 label="Notes"
                 name="note"

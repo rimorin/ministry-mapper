@@ -9,7 +9,7 @@ import NotFoundPage from "./notfoundpage";
 import Slip from "./slip";
 
 function Territory() {
-  const { id, postalcode } = useParams();
+  const { id, postalcode, congregationcode } = useParams();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLinkExpired, setIsLinkExpired] = useState<boolean>(false);
   const [isValidPostalcode, setIsValidPostalcode] = useState<boolean>(true);
@@ -44,7 +44,13 @@ function Territory() {
     document.title = "Ministry Mapper";
     return <InvalidPage />;
   }
-  return <Slip token={id} postalcode={postalcode}></Slip>;
+  return (
+    <Slip
+      token={id}
+      postalcode={postalcode}
+      congregationcode={congregationcode}
+    ></Slip>
+  );
 }
 
 export default Territory;

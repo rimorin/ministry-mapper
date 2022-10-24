@@ -5,7 +5,7 @@ import { BrowserRouter } from "react-router-dom";
 import { StrictMode } from "react";
 import { init } from "@sentry/react";
 import { BrowserTracing } from "@sentry/tracing";
-const { REACT_APP_SENTRY_LOGGING_DSN } = process.env;
+const { REACT_APP_SENTRY_LOGGING_DSN, REACT_APP_DOMAIN_BASENAME } = process.env;
 
 init({
   dsn: REACT_APP_SENTRY_LOGGING_DSN,
@@ -16,7 +16,11 @@ init({
 const root = createRoot(document.getElementById("root") as HTMLElement);
 root.render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter
+      basename={
+        REACT_APP_DOMAIN_BASENAME ? REACT_APP_DOMAIN_BASENAME : undefined
+      }
+    >
       <App />
     </BrowserRouter>
   </StrictMode>

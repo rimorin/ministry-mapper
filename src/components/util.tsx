@@ -1,12 +1,13 @@
 import { captureException } from "@sentry/react";
 import { goOffline, goOnline } from "firebase/database";
-import { Modal, Navbar, Offcanvas, Table } from "react-bootstrap";
+import { ListGroup, Modal, Navbar, Offcanvas, Table } from "react-bootstrap";
 import { database } from "../firebase";
 import {
   TitleProps,
   BrandingProps,
   LegendProps,
-  floorDetails
+  floorDetails,
+  TerritoryListingProps
 } from "./interface";
 
 const errorHandler = (error: any, showAlert = true) => {
@@ -80,9 +81,10 @@ const RELOAD_INACTIVITY_DURATION = 600000;
 // 3 secs
 const FIREBASE_FUNCTION_TIMEOUT = 3000;
 
-const IGNORE_HOUSEHOLD_STATUS = [
-  STATUS_CODES.DO_NOT_CALL,
-  STATUS_CODES.INVALID
+const COUNTABLE_HOUSEHOLD_STATUS = [
+  STATUS_CODES.DONE,
+  STATUS_CODES.DEFAULT,
+  STATUS_CODES.NOT_HOME
 ];
 
 const MIN_START_FLOOR = 1;
@@ -156,17 +158,28 @@ const getMaxUnitLength = (floors: floorDetails[]) => {
   return maxUnitNumberLength;
 };
 
+const parseHHLanguages = (languages: String) => {
+  if (!languages) return [];
+  return languages.split(",");
+};
+
+const processHHLanguages = (languages: string[]) => {
+  if (!languages) return "";
+
+  return languages.join();
+};
+
 const getCompletedPercent = (floors: floorDetails[]) => {
   let totalUnits = 0;
   let completedUnits = 0;
 
   floors.forEach((element) => {
     element.units.forEach((uElement) => {
-      const unitStatus = uElement.status;
+      const unitStatus = uElement.status.toString();
       const unitType = uElement.type;
       const unitNotHomeCount = uElement.nhcount;
       const isCountable =
-        !IGNORE_HOUSEHOLD_STATUS.includes(unitStatus.toString()) &&
+        COUNTABLE_HOUSEHOLD_STATUS.includes(unitStatus) &&
         unitType !== HOUSEHOLD_TYPES.MALAY;
 
       if (isCountable) totalUnits++;
@@ -246,6 +259,43 @@ const Legend = ({ showLegend, hideFunction }: LegendProps) => (
   </Offcanvas>
 );
 
+const TerritoryListing = ({
+  showListing,
+  hideFunction,
+  selectedTerritory,
+  handleSelect,
+  territories
+}: TerritoryListingProps) => (
+  <Offcanvas placement={"bottom"} show={showListing} onHide={hideFunction}>
+    <Offcanvas.Header closeButton>
+      <Offcanvas.Title>Select Territory</Offcanvas.Title>
+    </Offcanvas.Header>
+    <Offcanvas.Body>
+      <ListGroup onSelect={handleSelect}>
+        {territories &&
+          territories.map((element) => (
+            <ListGroup.Item
+              action
+              key={`listgroup-item-${element.code}`}
+              eventKey={`${element.code}`}
+              active={selectedTerritory === element.code}
+            >
+              {element.code} - {element.name}
+            </ListGroup.Item>
+          ))}
+      </ListGroup>
+    </Offcanvas.Body>
+  </Offcanvas>
+);
+
+const HOUSEHOLD_LANGUAGES = {
+  ENGLISH: { CODE: "e", DISPLAY: "English" },
+  CHINESE: { CODE: "c", DISPLAY: "Chinese" },
+  BURMESE: { CODE: "b", DISPLAY: "Burmese" },
+  TAMIL: { CODE: "t", DISPLAY: "Tamil" },
+  MALAY: { CODE: "m", DISPLAY: "Malay" }
+};
+
 export {
   ZeroPad,
   ModalUnitTitle,
@@ -258,6 +308,9 @@ export {
   Legend,
   errorHandler,
   connectionTimeout,
+  parseHHLanguages,
+  processHHLanguages,
+  TerritoryListing,
   STATUS_CODES,
   MUTABLE_CODES,
   LOGIN_TYPE_CODES,
@@ -273,5 +326,6 @@ export {
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   NOT_HOME_STATUS_CODES,
   MIN_START_FLOOR,
-  MAX_TOP_FLOOR
+  MAX_TOP_FLOOR,
+  HOUSEHOLD_LANGUAGES
 };
