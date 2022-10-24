@@ -83,3 +83,4 @@ Disadvantages of Ministry Mapper
 3. Typescript - Javascript typed implementation library
 4. Firebase Real-time database - Cloud based database with real time synchronization across all clients.
 5. Firebase Authentication - Cloud based authentication service.
+6. Firebase Appcheck - Protects your app from abuse by attesting that incoming traffic and blocking traffic without valid credentials.
