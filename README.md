@@ -63,6 +63,13 @@ Disadvantages of Ministry Mapper
   5. Build package
   6. For local developement, generate a token from Appcheck and copy key to environment variable, `REACT_APP_FIREBASE_APPCHECK_DEBUG_TOKEN`.
 
+- Sentry setup
+
+  1. Create [Sentry](https://sentry.io) account
+  2. Create a React project
+  3. Go to setting and retrieve client keys DSN.
+  4. Copy DSN to environment variable, `REACT_APP_SENTRY_LOGGING_DSN` when building for production.
+
 - Local deployment
   1. Setup .env with the following environment variables and their values.
      - REACT_APP_FIREBASE_API_KEY=key_from_firebase_account
@@ -85,12 +92,14 @@ Disadvantages of Ministry Mapper
      - REACT_APP_FIREBASE_BUCKET=bucket_from_firebase_account
      - REACT_APP_FIREBASE_SENDER_ID=sender_id_from_firebase_account
      - REACT_APP_FIREBASE_APP_ID=app_id_from_firebase_account
+     - REACT_APP_SENTRY_LOGGING_DSN=DSN from Sentry account
 
 ### Technologies Used
 
 1. Bootstrap - CSS Framework
 2. ReactJs - Javascript UI Framework
 3. Typescript - Javascript typed implementation library
+4. Sentry - App error tracking and monitoring
 5. Firebase Real-time database - Cloud based database with real time synchronization across all clients.
 6. Firebase Authentication - Cloud based authentication service.
 7. Firebase Appcheck - Protects your app from abuse by attesting that incoming traffic and blocking traffic without valid credentials.
