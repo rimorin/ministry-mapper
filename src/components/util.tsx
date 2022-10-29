@@ -1,6 +1,6 @@
-import { captureException } from "@sentry/react";
 import { goOffline, goOnline } from "firebase/database";
 import { ListGroup, Modal, Navbar, Offcanvas, Table } from "react-bootstrap";
+import Rollbar from "rollbar";
 import { database } from "../firebase";
 import {
   TitleProps,
@@ -10,8 +10,8 @@ import {
   TerritoryListingProps
 } from "./interface";
 
-const errorHandler = (error: any, showAlert = true) => {
-  captureException(error);
+const errorHandler = (error: any, rollbar: Rollbar, showAlert = true) => {
+  rollbar.error(error);
   if (showAlert) {
     alert(error);
   }

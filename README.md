@@ -54,6 +54,22 @@ Disadvantages of Ministry Mapper
   2. Configure email/password authentication type
   3. Add email/password credentials
 
+- Firebase Appcheck setup (Recommend to setup once app domain is active)
+
+  1. Register domain in Google [Recaptcha](https://www.google.com/recaptcha/about/) v3 (Not enterprise).
+  2. Copy public key to environment variable, `REACT_APP_FIREBASE_RECAPTCHA_PUBLIC_KEY`.
+  3. Copy secret key to Firebase appcheck
+  4. Enforce
+  5. Build package
+  6. For local developement, generate a token from Appcheck and copy key to environment variable, `REACT_APP_FIREBASE_APPCHECK_DEBUG_TOKEN`.
+
+- Sentry setup
+
+  1. Create [Sentry](https://sentry.io) account
+  2. Create a React project
+  3. Go to setting and retrieve client keys DSN.
+  4. Copy DSN to environment variable, `REACT_APP_SENTRY_LOGGING_DSN` when building for production.
+
 - Local deployment
   1. Setup .env with the following environment variables and their values.
      - REACT_APP_FIREBASE_API_KEY=key_from_firebase_account
@@ -63,6 +79,7 @@ Disadvantages of Ministry Mapper
      - REACT_APP_FIREBASE_BUCKET=bucket_from_firebase_account
      - REACT_APP_FIREBASE_SENDER_ID=sender_id_from_firebase_account
      - REACT_APP_FIREBASE_APP_ID=app_id_from_firebase_account
+     - REACT_APP_FIREBASE_APPCHECK_DEBUG_TOKEN=token generated from appcheck
   2. Restart shell and run `npm start`
 - Production deployment
   1. Run `npm run build`
@@ -75,11 +92,14 @@ Disadvantages of Ministry Mapper
      - REACT_APP_FIREBASE_BUCKET=bucket_from_firebase_account
      - REACT_APP_FIREBASE_SENDER_ID=sender_id_from_firebase_account
      - REACT_APP_FIREBASE_APP_ID=app_id_from_firebase_account
+     - REACT_APP_SENTRY_LOGGING_DSN=DSN from Sentry account
 
 ### Technologies Used
 
 1. Bootstrap - CSS Framework
 2. ReactJs - Javascript UI Framework
 3. Typescript - Javascript typed implementation library
-4. Firebase Real-time database - Cloud based database with real time synchronization across all clients.
-5. Firebase Authentication - Cloud based authentication service.
+4. Sentry - App error tracking and monitoring
+5. Firebase Real-time database - Cloud based database with real time synchronization across all clients.
+6. Firebase Authentication - Cloud based authentication service.
+7. Firebase Appcheck - Protects your app from abuse by attesting that incoming traffic and blocking traffic without valid credentials.

@@ -22,6 +22,26 @@ import {
   HHTypeField
 } from "./components/form";
 import UnitStatus from "./components/unit";
+import { Provider } from "@rollbar/react";
+
+const mockRollbarConfig = {
+  accessToken: "",
+  captureUncaught: true,
+  captureUnhandledRejections: true,
+  payload: {
+    client: {
+      javascript: {
+        code_version: "1.0.0",
+        source_map_enabled: true
+      }
+    }
+  }
+};
+
+// Mock provider for components that requires rollbar hooks
+const rollbarRender = (ui: any) => {
+  return render(<Provider config={mockRollbarConfig}>{ui}</Provider>);
+};
 
 test("renders frontpage", () => {
   render(<FrontPage />);
@@ -96,7 +116,7 @@ test("renders loading indicator", () => {
 
 test("renders admin login screen", () => {
   const headerText = "Admin";
-  render(<Login loginType={headerText} />);
+  rollbarRender(<Login loginType={headerText} />);
   expect(screen.getByText(`${headerText} Login`)).toBeInTheDocument();
   expect(screen.getByText("Login")).toBeInTheDocument();
   expect(screen.getByText("Clear")).toBeInTheDocument();
@@ -106,7 +126,7 @@ test("renders admin login screen", () => {
 
 test("renders conductor login screen", () => {
   const headerText = "Conductor";
-  render(<Login loginType={headerText} />);
+  rollbarRender(<Login loginType={headerText} />);
   expect(screen.getByText(`${headerText} Login`)).toBeInTheDocument();
   expect(screen.getByText("Login")).toBeInTheDocument();
   expect(screen.getByText("Clear")).toBeInTheDocument();

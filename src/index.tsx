@@ -3,26 +3,36 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter } from "react-router-dom";
 import { StrictMode } from "react";
-import { init } from "@sentry/react";
-import { BrowserTracing } from "@sentry/tracing";
-const { REACT_APP_SENTRY_LOGGING_DSN, REACT_APP_DOMAIN_BASENAME } = process.env;
+import { Provider } from "@rollbar/react";
+const {
+  REACT_APP_ROLLBAR_ACCESS_TOKEN,
+  REACT_APP_ROLLBAR_ENVIRONMENT,
+  REACT_APP_DOMAIN_BASENAME
+} = process.env;
 
-init({
-  dsn: REACT_APP_SENTRY_LOGGING_DSN,
-  integrations: [new BrowserTracing()],
-  tracesSampleRate: 0.2
-});
+const DEFEAULT_ROLLBAR_ENVIRONMENT = "staging";
+
+const rollbarConfig = {
+  accessToken: REACT_APP_ROLLBAR_ACCESS_TOKEN,
+  captureUncaught: true,
+  captureUnhandledRejections: true,
+  payload: {
+    environment: REACT_APP_ROLLBAR_ENVIRONMENT || DEFEAULT_ROLLBAR_ENVIRONMENT
+  }
+};
 
 const root = createRoot(document.getElementById("root") as HTMLElement);
 root.render(
   <StrictMode>
-    <BrowserRouter
-      basename={
-        REACT_APP_DOMAIN_BASENAME ? REACT_APP_DOMAIN_BASENAME : undefined
-      }
-    >
-      <App />
-    </BrowserRouter>
+    <Provider config={rollbarConfig}>
+      <BrowserRouter
+        basename={
+          REACT_APP_DOMAIN_BASENAME ? REACT_APP_DOMAIN_BASENAME : undefined
+        }
+      >
+        <App />
+      </BrowserRouter>
+    </Provider>
   </StrictMode>
 );
 
