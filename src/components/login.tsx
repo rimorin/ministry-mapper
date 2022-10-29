@@ -5,12 +5,14 @@ import { auth } from "../firebase";
 import { LoginProps } from "./interface";
 import { FirebaseError } from "firebase/app";
 import { errorHandler, errorMessage } from "./util";
+import { useRollbar } from "@rollbar/react";
 
 const Login = ({ loginType }: LoginProps) => {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [validated, setValidated] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
+  const rollbar = useRollbar();
 
   const loginInWithEmailAndPassword = async (
     email: string,
@@ -21,7 +23,7 @@ const Login = ({ loginType }: LoginProps) => {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
       setValidated(false);
-      errorHandler(errorMessage((err as FirebaseError).code));
+      errorHandler(errorMessage((err as FirebaseError).code), rollbar);
     } finally {
       setIsLogin(false);
     }

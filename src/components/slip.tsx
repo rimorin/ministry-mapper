@@ -38,8 +38,8 @@ import {
   HHTypeField,
   ModalFooter
 } from "./form";
-import { setContext } from "@sentry/react";
 import Loader from "./loader";
+import { useRollbar } from "@rollbar/react";
 
 const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -53,6 +53,7 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
   const [postalName, setPostalName] = useState<String>();
   const [values, setValues] = useState<Object>({});
+  const rollbar = useRollbar();
 
   const toggleModal = (isModal: boolean) => {
     if (isModal) {
@@ -130,7 +131,7 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
       clearTimeout(timeoutId);
       toggleModal(true);
     } catch (error) {
-      errorHandler(error);
+      errorHandler(error, rollbar);
     } finally {
       setIsSaving(false);
     }
@@ -153,7 +154,7 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
       await set(ref(database, `/${postalcode}/feedback`), details.feedback);
       toggleModal(false);
     } catch (error) {
-      errorHandler(error);
+      errorHandler(error, rollbar);
     } finally {
       clearTimeout(timeoutId);
       setIsSaving(false);
@@ -170,10 +171,6 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
   };
 
   useEffect(() => {
-    setContext("publisher", {
-      token: token,
-      postalcode: postalcode
-    });
     const postalNameReference = child(ref(database), `/${postalcode}/name`);
     const postalUnitReference = child(ref(database), `/${postalcode}/units`);
     const postalFeedbackReference = child(
