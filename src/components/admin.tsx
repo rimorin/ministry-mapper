@@ -9,7 +9,6 @@ import {
   push,
   get
 } from "firebase/database";
-import { setContext } from "@sentry/react";
 import { signOut } from "firebase/auth";
 import { nanoid } from "nanoid";
 import {
@@ -32,7 +31,6 @@ import {
   Form,
   Modal,
   Navbar,
-  NavDropdown,
   ProgressBar,
   Spinner,
   Table
@@ -92,6 +90,7 @@ import {
 import Welcome from "./welcome";
 import UnauthorizedPage from "./unauthorisedpage";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
+import { useRollbar } from "@rollbar/react";
 function Admin({ user, isConductor = false }: adminProps) {
   const { code } = useParams();
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -123,6 +122,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   const [selectedTerritoryName, setSelectedTerritoryName] = useState<String>();
   const [addresses, setAddresses] = useState(new Map<String, addressDetails>());
   const domain = process.env.PUBLIC_URL;
+  const rollbar = useRollbar();
   let unsubscribers = new Array<Unsubscribe>();
   const processData = (data: any) => {
     const dataList = [];
@@ -196,7 +196,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     try {
       await remove(ref(database, `${postalcode}/units/${floor}`));
     } catch (error) {
-      errorHandler(error);
+      errorHandler(error, rollbar);
     }
   };
 
@@ -227,7 +227,7 @@ function Admin({ user, isConductor = false }: adminProps) {
       alert(`Deleted postal address, ${postalcode}.`);
       await refreshCongregationTerritory(`${selectedTerritoryCode}`);
     } catch (error) {
-      errorHandler(error);
+      errorHandler(error, rollbar);
     }
   };
 
@@ -248,7 +248,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     try {
       await update(ref(database), unitUpdates);
     } catch (error) {
-      errorHandler(error);
+      errorHandler(error, rollbar);
     }
   };
 
@@ -276,7 +276,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     try {
       await update(ref(database), unitUpdates);
     } catch (error) {
-      errorHandler(error);
+      errorHandler(error, rollbar);
     }
   };
 
@@ -362,7 +362,7 @@ function Admin({ user, isConductor = false }: adminProps) {
       );
       toggleModal();
     } catch (error) {
-      errorHandler(error);
+      errorHandler(error, rollbar);
     } finally {
       clearTimeout(timeoutId);
       setIsSaving(false);
@@ -402,7 +402,7 @@ function Admin({ user, isConductor = false }: adminProps) {
       await set(ref(database, `/${details.postal}/feedback`), details.feedback);
       toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
     } catch (error) {
-      errorHandler(error);
+      errorHandler(error, rollbar);
     } finally {
       setIsSaving(false);
     }
@@ -435,7 +435,7 @@ function Admin({ user, isConductor = false }: adminProps) {
       await refreshCongregationTerritory(`${selectedTerritoryCode}`);
       toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
     } catch (error) {
-      errorHandler(error);
+      errorHandler(error, rollbar);
     } finally {
       setIsSaving(false);
     }
@@ -449,7 +449,7 @@ function Admin({ user, isConductor = false }: adminProps) {
       await set(ref(database, `/${details.postal}/name`), details.name);
       toggleModal(ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME);
     } catch (error) {
-      errorHandler(error);
+      errorHandler(error, rollbar);
     } finally {
       setIsSaving(false);
     }
@@ -496,7 +496,7 @@ function Admin({ user, isConductor = false }: adminProps) {
       await update(ref(database), unitUpdates);
       await refreshCongregationTerritory(`${selectedTerritoryCode}`);
     } catch (error) {
-      errorHandler(error);
+      errorHandler(error, rollbar);
     } finally {
       setIsSaving(false);
     }
@@ -560,7 +560,7 @@ function Admin({ user, isConductor = false }: adminProps) {
       await refreshCongregationTerritory(`${selectedTerritoryCode}`);
       toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS);
     } catch (error) {
-      errorHandler(error);
+      errorHandler(error, rollbar);
     } finally {
       setIsSaving(false);
     }
@@ -583,7 +583,7 @@ function Admin({ user, isConductor = false }: adminProps) {
       alert(`Created territory, ${newTerritoryName}.`);
       window.location.reload();
     } catch (error) {
-      errorHandler(error);
+      errorHandler(error, rollbar);
     } finally {
       setIsSaving(false);
     }
@@ -598,7 +598,7 @@ function Admin({ user, isConductor = false }: adminProps) {
       await remove(ref(database, `links/${linkId}`));
       alert(`Revoked territory link token, ${linkId}.`);
     } catch (error) {
-      errorHandler(error);
+      errorHandler(error, rollbar);
       return;
     }
     toggleModal(ADMIN_MODAL_TYPES.LINK);
@@ -627,7 +627,7 @@ function Admin({ user, isConductor = false }: adminProps) {
           url: url
         });
       } catch (error) {
-        errorHandler(error);
+        errorHandler(error, rollbar);
       } finally {
         clearTimeout(timeoutId);
         setIsSettingAssignLink(false);
@@ -661,11 +661,6 @@ function Admin({ user, isConductor = false }: adminProps) {
   };
 
   useEffect(() => {
-    setContext("conductor", {
-      congregation: code,
-      login: user?.email
-    });
-
     const trackRaceReference = child(
       ref(database),
       `congregations/${code}/trackRace`
@@ -707,7 +702,7 @@ function Admin({ user, isConductor = false }: adminProps) {
           reason.message.includes(FIREBASE_AUTH_UNAUTHORISED_MSG)
         );
         setIsLoading(false);
-        errorHandler(reason, false);
+        errorHandler(reason, rollbar, false);
       },
       { onlyOnce: true }
     );
@@ -973,7 +968,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                             await setTimedLink(addressLinkId);
                             territoryWindow!.location.href = `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`;
                           } catch (error) {
-                            errorHandler(error);
+                            errorHandler(error, rollbar);
                           } finally {
                             clearTimeout(timeoutId);
                             setIsSettingViewLink(false);
