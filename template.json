@@ -5,19 +5,16 @@
       "territories": {
         "<territory-code>": {
           "name": "Territory name",
-          "addresses": [
-            "postalcode 1",
-            "postalcode 2"
-          ]
+          "addresses": ["postalcode 1", "postalcode 2"]
         }
       }
     }
   },
   "<postalcode>": {
-    "name" : "Postal address name here",
+    "name": "Postal address name here",
     "feedback": "Leave it empty",
     "units": [
-      null, 
+      null,
       {
         "Individual floor unit number here.": {
           "status": "-1",
@@ -25,6 +22,6 @@
           "type": "cn"
         }
       }
-    ]    
+    ]
   }
 }
