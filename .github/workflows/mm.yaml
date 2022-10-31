@@ -32,13 +32,12 @@ jobs:
               "text": "Initiating pull request verification",
               "attachments": [
                 {
-                  "pretext": "Verification started",
                   "color": "dbab09",
                   "fields": [
                     {
-                      "title": "Status",
+                      "title": "PR Link",
                       "short": true,
-                      "value": "In Progress"
+                      "value": "https://github.com/rimorin/ministry-mapper/pull/${{ github.event.number }}"
                     }
                   ]
                 }
@@ -60,7 +59,15 @@ jobs:
           update-ts: ${{ steps.slack.outputs.ts }}
           payload: |
             {
-              "text": "Code formatting checked"
+              "attachments": [
+                {
+                  "color": "good",
+                  "fields": [
+                    {
+                      "value": "Code formatting checked"
+                    }
+                  ]
+                }
             }
       - name: Run application test cases
         run: npm run test
@@ -71,7 +78,15 @@ jobs:
           update-ts: ${{ steps.slack.outputs.ts }}
           payload: |
             {
-              "text": "Completed application tests"
+              "attachments": [
+                {
+                  "color": "good",
+                  "fields": [
+                    {
+                      "value": "Completed application tests"
+                    }
+                  ]
+                }
             }
       - name: Run application build
         run: npm run build
@@ -82,7 +97,15 @@ jobs:
           update-ts: ${{ steps.slack.outputs.ts }}
           payload: |
             {
-              "text": "Completed build test"
+              "attachments": [
+                {
+                  "color": "good",
+                  "fields": [
+                    {
+                      "value": "Completed build test"
+                    }
+                  ]
+                }
             }
       - name: Notify passed verification
         if: success()
