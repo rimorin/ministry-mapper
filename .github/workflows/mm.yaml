@@ -35,7 +35,7 @@ jobs:
                   "color": "dbab09",
                   "fields": [
                     {
-                      "title": "PR Link",
+                      "title": "Link",
                       "short": true,
                       "value": "https://github.com/rimorin/ministry-mapper/pull/${{ github.event.number }}"
                     }
@@ -64,7 +64,7 @@ jobs:
                   "color": "good",
                   "fields": [
                     {
-                      "title": "Code formatting"
+                      "title": "Code formatting",
                       "value": "Passed"
                     }
                   ]
@@ -84,7 +84,7 @@ jobs:
                   "color": "good",
                   "fields": [
                     {
-                      "title": "Application tests
+                      "title": "Application tests",
                       "value": "Passed"
                     }
                   ]
@@ -104,7 +104,7 @@ jobs:
                   "color": "good",
                   "fields": [
                     {
-                      "title": "Build test"
+                      "title": "Build test",
                       "value": "Passed"
                     }
                   ]
