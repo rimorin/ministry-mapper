@@ -7,6 +7,7 @@ env:
   REACT_APP_FIREBASE_BUCKET: ${{ secrets.REACT_APP_FIREBASE_BUCKET }}
   REACT_APP_FIREBASE_SENDER_ID: ${{ secrets.REACT_APP_FIREBASE_SENDER_ID }}
   REACT_APP_FIREBASE_APP_ID: ${{ secrets.REACT_APP_FIREBASE_APP_ID }}
+  SLACK_BOT_TOKEN: ${{ secrets.SLACK_API_TOKEN}}
 on:
   pull_request:
     branches:
@@ -22,6 +23,34 @@ jobs:
     if: github.event_name  == 'pull_request'
     runs-on: ubuntu-latest
     steps:
+      - name: Notify pull request
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
+          payload: |
+            {
+              "blocks" : [{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*Initiating pull request verification*"
+                }
+              },{
+                "type": "divider"
+              },{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "${{ github.event.pull_request.title }}"
+                }
+              },{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "<https://github.com/rimorin/ministry-mapper/pull/${{ github.event.number }}|Link>"
+                }
+              }]
+            }
       - name: Checkout repository
         uses: actions/checkout@v2
       - uses: actions/setup-node@v2
@@ -31,23 +60,198 @@ jobs:
         run: npm ci
       - name: Check code formatting
         run: npm run prettier
+      - name: passed formatting check
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
+          update-ts: ${{ steps.slack.outputs.ts }}
+          payload: |
+            {
+              "attachments": [
+                {
+                  "color": "good",
+                  "fields": [
+                    {
+                      "title": "Code formatting",
+                      "value": "Passed"
+                    }
+                  ]
+                }
+              ]
+            }
       - name: Run application test cases
         run: npm run test
+      - name: passed app test
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
+          update-ts: ${{ steps.slack.outputs.ts }}
+          payload: |
+            {
+              "attachments": [
+                {
+                  "color": "good",
+                  "fields": [
+                    {
+                      "title": "Application tests",
+                      "value": "Passed"
+                    }
+                  ]
+                }
+              ]
+            }
       - name: Run application build
         run: npm run build
-  deploy:
-    if: github.event_name  == 'push'
+      - name: passed app build
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
+          update-ts: ${{ steps.slack.outputs.ts }}
+          payload: |
+            {
+              "attachments": [
+                {
+                  "color": "good",
+                  "fields": [
+                    {
+                      "title": "Build test",
+                      "value": "Passed"
+                    }
+                  ]
+                }
+              ]
+            }
+      - name: Notify passed verification
+        if: success()
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
+          update-ts: ${{ steps.slack.outputs.ts }}
+          payload: |
+            {
+              "attachments": [
+                {
+                  "color": "good",
+                  "fields": [
+                    {
+                      "title": "*Passed Verification*",
+                      "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
+      - name: Notify failed verification
+        if: failure()
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
+          update-ts: ${{ steps.slack.outputs.ts }}
+          payload: |
+            {
+              "attachments": [
+                {
+                  "color": "danger",
+                  "fields": [
+                    {
+                      "title": "*Failed Verification*",
+                      "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
+  staging_deployment:
+    if: contains(github.event_name, 'push') && contains(github.ref, 'refs/heads/staging')
     runs-on: ubuntu-latest
     steps:
       - name: Deploy on staging
-        if: github.ref == 'refs/heads/staging'
         uses: fjogeleit/http-request-action@v1
         with:
           url: ${{ secrets.STAGING_DEPLOY_HOOK }}
           method: "POST"
+      - name: Failed staging deployment notification
+        if: failure()
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
+          payload: |
+            {
+              "attachments": [
+                {
+                  "color": "danger",
+                  "fields": [
+                    {
+                      "title": "*Failed to trigger staging cloudflare deployment job*",
+                      "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
+      - name: Success staging deployment notification
+        if: success()
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
+          payload: |
+            {
+              "attachments": [
+                {
+                  "color": "good",
+                  "fields": [
+                    {
+                      "title": "*Triggered staging cloudflare deployment job*",
+                      "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
+  production_deployment:
+    if: contains(github.event_name, 'push') && contains(github.ref, 'refs/heads/master')
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy on production
-        if: github.ref == 'refs/heads/master'
         uses: fjogeleit/http-request-action@v1
         with:
           url: ${{ secrets.PRODUCTION_DEPLOY_HOOK }}
           method: "POST"
+      - name: Failed prod deployment notification
+        if: failure()
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
+          payload: |
+            {
+              "attachments": [
+                {
+                  "color": "danger",
+                  "fields": [
+                    {
+                      "title": "*Failed to trigger production cloudflare deployment job*",
+                      "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
+      - name: Success prod deployment notification
+        if: success()
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
+          payload: |
+            {
+              "attachments": [
+                {
+                  "color": "good",
+                  "fields": [
+                    {
+                      "title": "*Triggered production cloudflare deployment job*",
+                      "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
