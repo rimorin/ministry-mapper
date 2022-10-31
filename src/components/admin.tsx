@@ -727,7 +727,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     };
 
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-  }, [user, code]);
+  }, [user, code, rollbar]);
 
   if (isLoading) return <Loader />;
   if (isUnauthorised) return <UnauthorizedPage />;
