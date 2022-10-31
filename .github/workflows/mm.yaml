@@ -30,10 +30,10 @@ jobs:
           payload: |
             {
               "blocks" : [{
-                "type": "header",
+                "type": "section",
                 "text": {
-                  "type": "plain_text",
-                  "text": "Initiating pull request verification"
+                  "type": "mrkdwn",
+                  "text": "*Initiating pull request verification*"
                 }
               },{
                 "type": "divider"
@@ -41,7 +41,7 @@ jobs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "*<https://github.com/rimorin/ministry-mapper/pull/${{ github.event.number }}|${{ github.event.pull_request.title }}>*"
+                  "text": "<https://github.com/rimorin/ministry-mapper/pull/${{ github.event.number }}|${{ github.event.pull_request.title }}>"
                 }
               }]
             }
@@ -123,13 +123,12 @@ jobs:
           update-ts: ${{ steps.slack.outputs.ts }}
           payload: |
             {
-              "text": "*Passed Verification*",
               "attachments": [
                 {
                   "color": "good",
                   "fields": [
                     {
-                      "title": "Logs",
+                      "title": "*Passed Verification*",
                       "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                     }
                   ]
@@ -144,13 +143,12 @@ jobs:
           update-ts: ${{ steps.slack.outputs.ts }}
           payload: |
             {
-              "text": "*Failed Verification*",
               "attachments": [
                 {
                   "color": "danger",
                   "fields": [
                     {
-                      "title": "Logs",
+                      "title": "*Failed Verification*",
                       "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                     }
                   ]
@@ -166,40 +164,38 @@ jobs:
         with:
           url: ${{ secrets.STAGING_DEPLOY_HOOK }}
           method: "POST"
-      - name: Failed deployment notification
+      - name: Failed staging deployment notification
         if: failure()
         uses: slackapi/slack-github-action@v1.23.0
         with:
           channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
           payload: |
             {
-              "text": "*Failed to trigger staging cloudflare deployment job*",
               "attachments": [
                 {
                   "color": "danger",
                   "fields": [
                     {
-                      "title": "Logs",
+                      "title": "*Failed to trigger staging cloudflare deployment job*",
                       "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                     }
                   ]
                 }
               ]
             }
-      - name: Success deployment notification
+      - name: Success staging deployment notification
         if: success()
         uses: slackapi/slack-github-action@v1.23.0
         with:
           channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
           payload: |
             {
-              "text": "*Triggered staging cloudflare deployment job*",
               "attachments": [
                 {
                   "color": "good",
                   "fields": [
                     {
-                      "title": "Logs",
+                      "title": "*Triggered staging cloudflare deployment job*",
                       "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                     }
                   ]
@@ -215,40 +211,38 @@ jobs:
         with:
           url: ${{ secrets.PRODUCTION_DEPLOY_HOOK }}
           method: "POST"
-      - name: Failed deployment notification
+      - name: Failed prod deployment notification
         if: failure()
         uses: slackapi/slack-github-action@v1.23.0
         with:
           channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
           payload: |
             {
-              "text": "*Failed to trigger production cloudflare deployment job*",
               "attachments": [
                 {
                   "color": "danger",
                   "fields": [
                     {
-                      "title": "Logs",
+                      "title": "*Failed to trigger production cloudflare deployment job*",
                       "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                     }
                   ]
                 }
               ]
             }
-      - name: Success deployment notification
+      - name: Success prod deployment notification
         if: success()
         uses: slackapi/slack-github-action@v1.23.0
         with:
           channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
           payload: |
             {
-              "text": "*Triggered production cloudflare deployment job*",
               "attachments": [
                 {
                   "color": "good",
                   "fields": [
                     {
-                      "title": "Logs",
+                      "title": "*Triggered production cloudflare deployment job*",
                       "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                     }
                   ]
