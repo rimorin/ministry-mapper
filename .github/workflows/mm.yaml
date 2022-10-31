@@ -64,7 +64,8 @@ jobs:
                   "color": "good",
                   "fields": [
                     {
-                      "value": "Code formatting checked"
+                      "title": "Code formatting"
+                      "value": "Passed"
                     }
                   ]
                 }
@@ -83,7 +84,8 @@ jobs:
                   "color": "good",
                   "fields": [
                     {
-                      "value": "Completed application tests"
+                      "title": "Application tests
+                      "value": "Passed"
                     }
                   ]
                 }
@@ -102,7 +104,8 @@ jobs:
                   "color": "good",
                   "fields": [
                     {
-                      "value": "Completed build test"
+                      "title": "Build test"
+                      "value": "Passed"
                     }
                   ]
                 }
@@ -115,10 +118,10 @@ jobs:
           update-ts: ${{ steps.slack.outputs.ts }}
           payload: |
             {
-              "text": "Verification finished (Passed)",
+              "text": "Verification Passed",
               "attachments": [
                 {
-                  "pretext": "Verification finished",
+                  "pretext": "Passed",
                   "color": "good",
                   "fields": [
                     {
@@ -137,10 +140,9 @@ jobs:
           update-ts: ${{ steps.slack.outputs.ts }}
           payload: |
             {
-              "text": "Verification finished (Failed)",
+              "text": "Verification Failed",
               "attachments": [
                 {
-                  "pretext": "Verification finished",
                   "color": "danger",
                   "fields": [
                     {
