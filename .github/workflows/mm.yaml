@@ -7,6 +7,7 @@ env:
   REACT_APP_FIREBASE_BUCKET: ${{ secrets.REACT_APP_FIREBASE_BUCKET }}
   REACT_APP_FIREBASE_SENDER_ID: ${{ secrets.REACT_APP_FIREBASE_SENDER_ID }}
   REACT_APP_FIREBASE_APP_ID: ${{ secrets.REACT_APP_FIREBASE_APP_ID }}
+  SLACK_BOT_TOKEN: ${{ secrets.SLACK_API_TOKEN}}
 on:
   pull_request:
     branches:
@@ -22,6 +23,27 @@ jobs:
     if: github.event_name  == 'pull_request'
     runs-on: ubuntu-latest
     steps:
+      - name: Notify pull request
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ secrets.SLACK_API_CHANNEL}}
+          payload: |
+            {
+              "text": "PR verification started (In Progress)",
+              "attachments": [
+                {
+                  "pretext": "Verification started",
+                  "color": "dbab09",
+                  "fields": [
+                    {
+                      "title": "Status",
+                      "short": true,
+                      "value": "In Progress"
+                    }
+                  ]
+                }
+              ]
+            }
       - name: Checkout repository
         uses: actions/checkout@v2
       - uses: actions/setup-node@v2
@@ -35,6 +57,50 @@ jobs:
         run: npm run test
       - name: Run application build
         run: npm run build
+      - name: Notify passed verification
+        if: success()
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ secrets.SLACK_API_CHANNEL}}
+          update-ts: ${{ steps.slack.outputs.ts }}
+          payload: |
+            {
+              "text": "Verification finished (Passed)",
+              "attachments": [
+                {
+                  "pretext": "Verification finished",
+                  "color": "good",
+                  "fields": [
+                    {
+                      "title": "Status",
+                      "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
+      - name: Notify failed verification
+        if: failure()
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ secrets.SLACK_API_CHANNEL}}
+          update-ts: ${{ steps.slack.outputs.ts }}
+          payload: |
+            {
+              "text": "Verification finished (Failed)",
+              "attachments": [
+                {
+                  "pretext": "Verification finished",
+                  "color": "danger",
+                  "fields": [
+                    {
+                      "title": "Status",
+                      "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
   deploy:
     if: github.event_name  == 'push'
     runs-on: ubuntu-latest
