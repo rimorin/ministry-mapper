@@ -41,7 +41,13 @@ jobs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "<https://github.com/rimorin/ministry-mapper/pull/${{ github.event.number }}|${{ github.event.pull_request.title }}>"
+                  "text": "${{ github.event.pull_request.title }}"
+                }
+              },{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "<https://github.com/rimorin/ministry-mapper/pull/${{ github.event.number }}|Link>"
                 }
               }]
             }
