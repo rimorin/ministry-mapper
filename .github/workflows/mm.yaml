@@ -29,18 +29,21 @@ jobs:
           channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
           payload: |
             {
-              "text": "Initiating pull request verification",
-              "attachments": [
-                {
-                  "color": "dbab09",
-                  "fields": [
-                    {
-                      "title": "${{ github.event.pull_request.title }}",
-                      "value": "https://github.com/rimorin/ministry-mapper/pull/${{ github.event.number }}"
-                    }
-                  ]
+              "blocks" : [{
+                "type": "header",
+                "text": {
+                  "type": "plain_text",
+                  "text": "Initiating pull request verification"
                 }
-              ]
+              },{
+                "type": "divider"
+              },{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*<https://github.com/rimorin/ministry-mapper/pull/${{ github.event.number }}|${{ github.event.pull_request.title }}>*"
+                }
+              }]
             }
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -120,10 +123,9 @@ jobs:
           update-ts: ${{ steps.slack.outputs.ts }}
           payload: |
             {
-              "text": "Verification Passed",
+              "text": "*Passed Verification*",
               "attachments": [
                 {
-                  "pretext": "Passed",
                   "color": "good",
                   "fields": [
                     {
@@ -142,7 +144,7 @@ jobs:
           update-ts: ${{ steps.slack.outputs.ts }}
           payload: |
             {
-              "text": "Verification Failed",
+              "text": "*Failed Verification*",
               "attachments": [
                 {
                   "color": "danger",
@@ -171,7 +173,7 @@ jobs:
           channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
           payload: |
             {
-              "text": "Failed to trigger staging cloudflare deployment job",
+              "text": "*Failed to trigger staging cloudflare deployment job*",
               "attachments": [
                 {
                   "color": "danger",
@@ -191,7 +193,7 @@ jobs:
           channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
           payload: |
             {
-              "text": "Triggered staging cloudflare deployment job",
+              "text": "*Triggered staging cloudflare deployment job*",
               "attachments": [
                 {
                   "color": "good",
@@ -220,7 +222,7 @@ jobs:
           channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
           payload: |
             {
-              "text": "Failed to trigger production cloudflare deployment job",
+              "text": "*Failed to trigger production cloudflare deployment job*",
               "attachments": [
                 {
                   "color": "danger",
@@ -240,7 +242,7 @@ jobs:
           channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
           payload: |
             {
-              "text": "Triggered production cloudflare deployment job",
+              "text": "*Triggered production cloudflare deployment job*",
               "attachments": [
                 {
                   "color": "good",
