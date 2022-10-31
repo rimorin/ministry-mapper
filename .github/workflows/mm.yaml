@@ -8,6 +8,10 @@ env:
   REACT_APP_FIREBASE_SENDER_ID: ${{ secrets.REACT_APP_FIREBASE_SENDER_ID }}
   REACT_APP_FIREBASE_APP_ID: ${{ secrets.REACT_APP_FIREBASE_APP_ID }}
 on:
+  pull_request:
+    branches:
+      - staging
+      - master
   push:
     branches:
       - staging
@@ -33,7 +37,6 @@ jobs:
         run: npm run build
   deploy:
     if: github.event_name  == 'push'
-    needs: [verify]
     runs-on: ubuntu-latest
     steps:
       - name: Deploy on staging
