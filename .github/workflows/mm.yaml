@@ -35,8 +35,7 @@ jobs:
                   "color": "dbab09",
                   "fields": [
                     {
-                      "title": "Link",
-                      "short": true,
+                      "title": "${{ github.event.pull_request.title }}",
                       "value": "https://github.com/rimorin/ministry-mapper/pull/${{ github.event.number }}"
                     }
                   ]
@@ -69,6 +68,7 @@ jobs:
                     }
                   ]
                 }
+              ]
             }
       - name: Run application test cases
         run: npm run test
@@ -89,6 +89,7 @@ jobs:
                     }
                   ]
                 }
+              ]
             }
       - name: Run application build
         run: npm run build
@@ -109,6 +110,7 @@ jobs:
                     }
                   ]
                 }
+              ]
             }
       - name: Notify passed verification
         if: success()
