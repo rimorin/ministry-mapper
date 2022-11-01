@@ -37,19 +37,18 @@ jobs:
                 }
               },{
                 "type": "divider"
-              },{
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "${{ github.event.pull_request.title }}"
+              }],
+              "attachments": [
+                {
+                  "color": "good",
+                  "fields": [
+                    {
+                      "title": "${{ github.event.pull_request.title }}",
+                      "value": "https://github.com/rimorin/ministry-mapper/pull/${{ github.event.number }}"
+                    }
+                  ]
                 }
-              },{
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "<https://github.com/rimorin/ministry-mapper/pull/${{ github.event.number }}|Link>"
-                }
-              }]
+              ]
             }
       - name: Checkout repository
         uses: actions/checkout@v2
