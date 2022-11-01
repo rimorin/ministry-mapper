@@ -171,11 +171,6 @@ jobs:
         with:
           url: ${{ secrets.STAGING_DEPLOY_HOOK }}
           method: "POST"
-      - name: Show Response
-        run: |
-          echo ${{ steps.cloudflareRequest.outputs.response }}
-          echo ${{ steps.cloudflareRequest.outputs.headers }}
-          echo ${{ fromJson(steps.cloudflareRequest.outputs.response).result.id }}
       - name: Failed staging deployment notification
         if: failure()
         uses: slackapi/slack-github-action@v1.23.0
@@ -208,7 +203,7 @@ jobs:
                   "fields": [
                     {
                       "title": "*Triggered staging cloudflare deployment job*",
-                      "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                      "value": "{{ secrets.CLOUDFLARE_PAGES_PROJECT_PATH }}/${{ fromJson(steps.cloudflareRequest.outputs.response).result.id }}"
                     }
                   ]
                 }
@@ -219,6 +214,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy on production
+        id: cloudflareRequest
         uses: fjogeleit/http-request-action@v1
         with:
           url: ${{ secrets.PRODUCTION_DEPLOY_HOOK }}
@@ -255,7 +251,7 @@ jobs:
                   "fields": [
                     {
                       "title": "*Triggered production cloudflare deployment job*",
-                      "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                      "value": "{{ secrets.CLOUDFLARE_PAGES_PROJECT_PATH }}/${{ fromJson(steps.cloudflareRequest.outputs.response).result.id }}"
                     }
                   ]
                 }
