@@ -203,7 +203,7 @@ jobs:
                   "fields": [
                     {
                       "title": "*Triggered staging cloudflare deployment job*",
-                      "value": "{{ secrets.CLOUDFLARE_PAGES_PROJECT_PATH }}/${{ fromJson(steps.cloudflareRequest.outputs.response).result.id }}"
+                      "value": "${{ secrets.CLOUDFLARE_PAGES_PROJECT_PATH }}/${{ fromJson(steps.cloudflareRequest.outputs.response).result.id }}"
                     }
                   ]
                 }
@@ -251,7 +251,7 @@ jobs:
                   "fields": [
                     {
                       "title": "*Triggered production cloudflare deployment job*",
-                      "value": "{{ secrets.CLOUDFLARE_PAGES_PROJECT_PATH }}/${{ fromJson(steps.cloudflareRequest.outputs.response).result.id }}"
+                      "value": "${{ secrets.CLOUDFLARE_PAGES_PROJECT_PATH }}/${{ fromJson(steps.cloudflareRequest.outputs.response).result.id }}"
                     }
                   ]
                 }
