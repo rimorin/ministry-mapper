@@ -37,19 +37,18 @@ jobs:
                 }
               },{
                 "type": "divider"
-              },{
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "${{ github.event.pull_request.title }}"
+              }],
+              "attachments": [
+                {
+                  "color": "good",
+                  "fields": [
+                    {
+                      "title": "${{ github.event.pull_request.title }}",
+                      "value": "https://github.com/rimorin/ministry-mapper/pull/${{ github.event.number }}"
+                    }
+                  ]
                 }
-              },{
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "<https://github.com/rimorin/ministry-mapper/pull/${{ github.event.number }}|Link>"
-                }
-              }]
+              ]
             }
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -166,6 +165,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy on staging
+        id: cloudflareRequest
         uses: fjogeleit/http-request-action@v1
         with:
           url: ${{ secrets.STAGING_DEPLOY_HOOK }}
@@ -202,7 +202,7 @@ jobs:
                   "fields": [
                     {
                       "title": "*Triggered staging cloudflare deployment job*",
-                      "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                      "value": "${{ secrets.CLOUDFLARE_PAGES_PROJECT_PATH }}/${{ fromJson(steps.cloudflareRequest.outputs.response).result.id }}"
                     }
                   ]
                 }
@@ -213,6 +213,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy on production
+        id: cloudflareRequest
         uses: fjogeleit/http-request-action@v1
         with:
           url: ${{ secrets.PRODUCTION_DEPLOY_HOOK }}
@@ -249,7 +250,7 @@ jobs:
                   "fields": [
                     {
                       "title": "*Triggered production cloudflare deployment job*",
-                      "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                      "value": "${{ secrets.CLOUDFLARE_PAGES_PROJECT_PATH }}/${{ fromJson(steps.cloudflareRequest.outputs.response).result.id }}"
                     }
                   ]
                 }
