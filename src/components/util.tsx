@@ -90,6 +90,8 @@ const COUNTABLE_HOUSEHOLD_STATUS = [
 const MIN_START_FLOOR = 1;
 const MAX_TOP_FLOOR = 40;
 
+const TERRITORY_SELECTOR_VIEWPORT_HEIGHT = "75vh";
+
 const TERRITORY_VIEW_WINDOW_WELCOME_TEXT =
   "<!DOCTYPE html><html><head><title>Loading Territory...</title></<head><body><style> body {display: flex; justify-content: center;align-items: center;}</style><h1>Loading Territory...</h1></body></html>";
 
@@ -266,7 +268,12 @@ const TerritoryListing = ({
   handleSelect,
   territories
 }: TerritoryListingProps) => (
-  <Offcanvas placement={"bottom"} show={showListing} onHide={hideFunction}>
+  <Offcanvas
+    placement={"bottom"}
+    show={showListing}
+    onHide={hideFunction}
+    style={{ height: TERRITORY_SELECTOR_VIEWPORT_HEIGHT }}
+  >
     <Offcanvas.Header closeButton>
       <Offcanvas.Title>Select Territory</Offcanvas.Title>
     </Offcanvas.Header>
