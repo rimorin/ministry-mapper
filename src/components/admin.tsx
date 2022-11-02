@@ -542,6 +542,12 @@ function Admin({ user, isConductor = false }: adminProps) {
 
     setIsSaving(true);
     try {
+      const addressReference = child(ref(database), `${newPostalCode}`);
+      const existingAddress = await get(addressReference);
+      if (existingAddress.exists()) {
+        alert(`Postal address, ${newPostalCode} already exist.`);
+        return;
+      }
       await set(
         push(
           ref(
@@ -574,12 +580,18 @@ function Admin({ user, isConductor = false }: adminProps) {
 
     setIsSaving(true);
     try {
-      await set(
-        ref(database, `congregations/${code}/territories/${newTerritoryCode}`),
-        {
-          name: newTerritoryName
-        }
+      const territoryCodeReference = child(
+        ref(database),
+        `congregations/${code}/territories/${newTerritoryCode}`
       );
+      const existingTerritory = await get(territoryCodeReference);
+      if (existingTerritory.exists()) {
+        alert(`Territory code, ${newTerritoryCode} already exist.`);
+        return;
+      }
+      await set(territoryCodeReference, {
+        name: newTerritoryName
+      });
       alert(`Created territory, ${newTerritoryName}.`);
       window.location.reload();
     } catch (error) {
