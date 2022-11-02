@@ -542,7 +542,7 @@ function Admin({ user, isConductor = false }: adminProps) {
 
     setIsSaving(true);
     try {
-      const addressReference = child(ref(database), `${newPostalCode}`);
+      const addressReference = ref(database, `${newPostalCode}`);
       const existingAddress = await get(addressReference);
       if (existingAddress.exists()) {
         alert(`Postal address, ${newPostalCode} already exist.`);
@@ -557,7 +557,7 @@ function Admin({ user, isConductor = false }: adminProps) {
         ),
         newPostalCode
       );
-      await set(ref(database, `/${newPostalCode}`), {
+      await set(addressReference, {
         name: newPostalName,
         feedback: "",
         units: floorDetails
