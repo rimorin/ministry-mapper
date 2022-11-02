@@ -66,14 +66,14 @@ import {
   RELOAD_INACTIVITY_DURATION,
   RELOAD_CHECK_INTERVAL_MS,
   errorHandler,
-  connectionTimeout,
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   HOUSEHOLD_TYPES,
   MIN_START_FLOOR,
   NOT_HOME_STATUS_CODES,
   parseHHLanguages,
   processHHLanguages,
-  TerritoryListing
+  TerritoryListing,
+  pollingFunction
 } from "./util";
 import { useParams } from "react-router-dom";
 import {
@@ -194,7 +194,9 @@ function Admin({ user, isConductor = false }: adminProps) {
 
   const deleteBlockFloor = async (postalcode: String, floor: String) => {
     try {
-      await remove(ref(database, `${postalcode}/units/${floor}`));
+      await pollingFunction(() =>
+        remove(ref(database, `${postalcode}/units/${floor}`))
+      );
     } catch (error) {
       errorHandler(error, rollbar);
     }
@@ -203,10 +205,12 @@ function Admin({ user, isConductor = false }: adminProps) {
   const deleteBlock = async (postalcode: String) => {
     try {
       await remove(ref(database, `${postalcode}`));
-      const addressSnapshot = await get(
-        ref(
-          database,
-          `congregations/${code}/territories/${selectedTerritoryCode}/addresses`
+      const addressSnapshot = await pollingFunction(() =>
+        get(
+          ref(
+            database,
+            `congregations/${code}/territories/${selectedTerritoryCode}/addresses`
+          )
         )
       );
       if (addressSnapshot.exists()) {
@@ -214,10 +218,12 @@ function Admin({ user, isConductor = false }: adminProps) {
         for (const addkey in addressData) {
           const units = addressData[addkey];
           if (units === postalcode) {
-            await remove(
-              ref(
-                database,
-                `congregations/${code}/territories/${selectedTerritoryCode}/addresses/${addkey}`
+            await pollingFunction(() =>
+              remove(
+                ref(
+                  database,
+                  `congregations/${code}/territories/${selectedTerritoryCode}/addresses/${addkey}`
+                )
               )
             );
             break;
@@ -246,7 +252,7 @@ function Admin({ user, isConductor = false }: adminProps) {
       };
     });
     try {
-      await update(ref(database), unitUpdates);
+      await pollingFunction(() => update(ref(database), unitUpdates));
     } catch (error) {
       errorHandler(error, rollbar);
     }
@@ -274,7 +280,7 @@ function Admin({ user, isConductor = false }: adminProps) {
       });
     }
     try {
-      await update(ref(database), unitUpdates);
+      await pollingFunction(() => update(ref(database), unitUpdates));
     } catch (error) {
       errorHandler(error, rollbar);
     }
@@ -345,26 +351,26 @@ function Admin({ user, isConductor = false }: adminProps) {
     event.preventDefault();
     const details = values as valuesDetails;
     setIsSaving(true);
-    const timeoutId = connectionTimeout();
     try {
-      await set(
-        ref(
-          database,
-          `/${details.postal}/units/${details.floor}/${details.unit}`
-        ),
-        {
-          type: details.type,
-          note: details.note,
-          status: details.status,
-          nhcount: details.nhcount,
-          languages: details.languages
-        }
+      await pollingFunction(() =>
+        set(
+          ref(
+            database,
+            `/${details.postal}/units/${details.floor}/${details.unit}`
+          ),
+          {
+            type: details.type,
+            note: details.note,
+            status: details.status,
+            nhcount: details.nhcount,
+            languages: details.languages
+          }
+        )
       );
       toggleModal();
     } catch (error) {
       errorHandler(error, rollbar);
     } finally {
-      clearTimeout(timeoutId);
       setIsSaving(false);
     }
   };
@@ -373,7 +379,9 @@ function Admin({ user, isConductor = false }: adminProps) {
     addressLinkId: String,
     hours = DEFAULT_SELF_DESTRUCT_HOURS
   ) => {
-    return set(ref(database, `links/${addressLinkId}`), addHours(hours));
+    return pollingFunction(() =>
+      set(ref(database, `links/${addressLinkId}`), addHours(hours))
+    );
   };
 
   const handleClickFeedback = (
@@ -399,7 +407,9 @@ function Admin({ user, isConductor = false }: adminProps) {
     const details = values as valuesDetails;
     setIsSaving(true);
     try {
-      await set(ref(database, `/${details.postal}/feedback`), details.feedback);
+      await pollingFunction(() =>
+        set(ref(database, `/${details.postal}/feedback`), details.feedback)
+      );
       toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
     } catch (error) {
       errorHandler(error, rollbar);
@@ -423,12 +433,14 @@ function Admin({ user, isConductor = false }: adminProps) {
     const territoryName = details.name;
     setIsSaving(true);
     try {
-      await set(
-        ref(
-          database,
-          `congregations/${code}/territories/${selectedTerritoryCode}/name`
-        ),
-        territoryName
+      await pollingFunction(() =>
+        set(
+          ref(
+            database,
+            `congregations/${code}/territories/${selectedTerritoryCode}/name`
+          ),
+          territoryName
+        )
       );
       setSelectedTerritoryName(territoryName);
       setSelectedTerritory(`${selectedTerritoryCode} - ${territoryName}`);
@@ -446,7 +458,9 @@ function Admin({ user, isConductor = false }: adminProps) {
     const details = values as valuesDetails;
     setIsSaving(true);
     try {
-      await set(ref(database, `/${details.postal}/name`), details.name);
+      await pollingFunction(() =>
+        set(ref(database, `/${details.postal}/name`), details.name)
+      );
       toggleModal(ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME);
     } catch (error) {
       errorHandler(error, rollbar);
@@ -457,7 +471,9 @@ function Admin({ user, isConductor = false }: adminProps) {
 
   const refreshCongregationTerritory = async (selectTerritoryCode: String) => {
     const congregationReference = child(ref(database), `congregations/${code}`);
-    const updatedTerritory = await get(congregationReference);
+    const updatedTerritory = await pollingFunction(() =>
+      get(congregationReference)
+    );
     if (updatedTerritory.exists()) {
       processSelectedTerritory(
         selectTerritoryCode,
@@ -493,7 +509,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     }
     setIsSaving(true);
     try {
-      await update(ref(database), unitUpdates);
+      await pollingFunction(() => update(ref(database), unitUpdates));
       await refreshCongregationTerritory(`${selectedTerritoryCode}`);
     } catch (error) {
       errorHandler(error, rollbar);
@@ -548,20 +564,24 @@ function Admin({ user, isConductor = false }: adminProps) {
         alert(`Postal address, ${newPostalCode} already exist.`);
         return;
       }
-      await set(
-        push(
-          ref(
-            database,
-            `congregations/${code}/territories/${selectedTerritoryCode}/addresses`
-          )
-        ),
-        newPostalCode
+      await pollingFunction(() =>
+        set(
+          push(
+            ref(
+              database,
+              `congregations/${code}/territories/${selectedTerritoryCode}/addresses`
+            )
+          ),
+          newPostalCode
+        )
       );
-      await set(addressReference, {
-        name: newPostalName,
-        feedback: "",
-        units: floorDetails
-      });
+      await pollingFunction(() =>
+        set(addressReference, {
+          name: newPostalName,
+          feedback: "",
+          units: floorDetails
+        })
+      );
       alert(`Created postal address, ${newPostalCode}.`);
       await refreshCongregationTerritory(`${selectedTerritoryCode}`);
       toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS);
@@ -584,14 +604,18 @@ function Admin({ user, isConductor = false }: adminProps) {
         ref(database),
         `congregations/${code}/territories/${newTerritoryCode}`
       );
-      const existingTerritory = await get(territoryCodeReference);
+      const existingTerritory = await pollingFunction(() =>
+        get(territoryCodeReference)
+      );
       if (existingTerritory.exists()) {
         alert(`Territory code, ${newTerritoryCode} already exist.`);
         return;
       }
-      await set(territoryCodeReference, {
-        name: newTerritoryName
-      });
+      await pollingFunction(() =>
+        set(territoryCodeReference, {
+          name: newTerritoryName
+        })
+      );
       alert(`Created territory, ${newTerritoryName}.`);
       window.location.reload();
     } catch (error) {
@@ -607,7 +631,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     const link = details.link || "";
     try {
       const linkId = link.substring(link.lastIndexOf("/") + 1);
-      await remove(ref(database, `links/${linkId}`));
+      await pollingFunction(() => remove(ref(database, `links/${linkId}`)));
       alert(`Revoked territory link token, ${linkId}.`);
     } catch (error) {
       errorHandler(error, rollbar);
@@ -630,7 +654,6 @@ function Admin({ user, isConductor = false }: adminProps) {
   ) => {
     if (navigator.share) {
       setIsSettingAssignLink(true);
-      const timeoutId = connectionTimeout();
       try {
         await setTimedLink(linkId, hours);
         navigator.share({
@@ -641,7 +664,6 @@ function Admin({ user, isConductor = false }: adminProps) {
       } catch (error) {
         errorHandler(error, rollbar);
       } finally {
-        clearTimeout(timeoutId);
         setIsSettingAssignLink(false);
       }
     } else {
@@ -970,7 +992,6 @@ function Admin({ user, isConductor = false }: adminProps) {
                         className="me-2"
                         onClick={async () => {
                           setIsSettingViewLink(true);
-                          const timeoutId = connectionTimeout();
                           try {
                             const territoryWindow = window.open("", "_blank");
                             if (territoryWindow) {
@@ -982,7 +1003,6 @@ function Admin({ user, isConductor = false }: adminProps) {
                           } catch (error) {
                             errorHandler(error, rollbar);
                           } finally {
-                            clearTimeout(timeoutId);
                             setIsSettingViewLink(false);
                           }
                         }}

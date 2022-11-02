@@ -90,6 +90,8 @@ const COUNTABLE_HOUSEHOLD_STATUS = [
 const MIN_START_FLOOR = 1;
 const MAX_TOP_FLOOR = 40;
 
+const TERRITORY_SELECTOR_VIEWPORT_HEIGHT = "75vh";
+
 const TERRITORY_VIEW_WINDOW_WELCOME_TEXT =
   "<!DOCTYPE html><html><head><title>Loading Territory...</title></<head><body><style> body {display: flex; justify-content: center;align-items: center;}</style><h1>Loading Territory...</h1></body></html>";
 
@@ -104,19 +106,6 @@ const ModalUnitTitle = ({ unit, floor, postal }: TitleProps) => {
       <Modal.Title>{titleString}</Modal.Title>
     </Modal.Header>
   );
-};
-
-const connectionTimeout = (
-  alertMesage = "",
-  timeout = FIREBASE_FUNCTION_TIMEOUT
-) => {
-  return setTimeout(function () {
-    goOffline(database);
-    goOnline(database);
-    if (alertMesage) {
-      alert(alertMesage);
-    }
-  }, timeout);
 };
 
 const errorMessage = (code: String) => {
@@ -204,6 +193,21 @@ const addHours = (numOfHours: number, date = new Date()) => {
   return date.getTime();
 };
 
+const pollingFunction = async (
+  callback: () => any,
+  intervalMs = FIREBASE_FUNCTION_TIMEOUT
+) => {
+  const reconnectRtdbInterval = setInterval(() => {
+    goOffline(database);
+    goOnline(database);
+  }, intervalMs);
+  try {
+    return await callback();
+  } finally {
+    clearInterval(reconnectRtdbInterval);
+  }
+};
+
 const NavBarBranding = ({ naming }: BrandingProps) => {
   return (
     <Navbar.Brand>
@@ -266,7 +270,12 @@ const TerritoryListing = ({
   handleSelect,
   territories
 }: TerritoryListingProps) => (
-  <Offcanvas placement={"bottom"} show={showListing} onHide={hideFunction}>
+  <Offcanvas
+    placement={"bottom"}
+    show={showListing}
+    onHide={hideFunction}
+    style={{ height: TERRITORY_SELECTOR_VIEWPORT_HEIGHT }}
+  >
     <Offcanvas.Header closeButton>
       <Offcanvas.Title>Select Territory</Offcanvas.Title>
     </Offcanvas.Header>
@@ -307,10 +316,10 @@ export {
   NavBarBranding,
   Legend,
   errorHandler,
-  connectionTimeout,
   parseHHLanguages,
   processHHLanguages,
   TerritoryListing,
+  pollingFunction,
   STATUS_CODES,
   MUTABLE_CODES,
   LOGIN_TYPE_CODES,
@@ -322,7 +331,6 @@ export {
   ADMIN_MODAL_TYPES,
   RELOAD_CHECK_INTERVAL_MS,
   RELOAD_INACTIVITY_DURATION,
-  FIREBASE_FUNCTION_TIMEOUT,
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   NOT_HOME_STATUS_CODES,
   MIN_START_FLOOR,
