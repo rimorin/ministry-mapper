@@ -108,19 +108,6 @@ const ModalUnitTitle = ({ unit, floor, postal }: TitleProps) => {
   );
 };
 
-const connectionTimeout = (
-  alertMesage = "",
-  timeout = FIREBASE_FUNCTION_TIMEOUT
-) => {
-  return setTimeout(function () {
-    goOffline(database);
-    goOnline(database);
-    if (alertMesage) {
-      alert(alertMesage);
-    }
-  }, timeout);
-};
-
 const errorMessage = (code: String) => {
   if (code === "auth/too-many-requests")
     return "Device has been blocked temporarily. Please try again later.";
@@ -204,6 +191,21 @@ const getCompletedPercent = (floors: floorDetails[]) => {
 const addHours = (numOfHours: number, date = new Date()) => {
   date.setTime(date.getTime() + numOfHours * 60 * 60 * 1000);
   return date.getTime();
+};
+
+const pollingFunction = async (
+  callback: () => any,
+  intervalMs = FIREBASE_FUNCTION_TIMEOUT
+) => {
+  const reconnectRtdbInterval = setInterval(() => {
+    goOffline(database);
+    goOnline(database);
+  }, intervalMs);
+  try {
+    return await callback();
+  } finally {
+    clearInterval(reconnectRtdbInterval);
+  }
 };
 
 const NavBarBranding = ({ naming }: BrandingProps) => {
@@ -314,10 +316,10 @@ export {
   NavBarBranding,
   Legend,
   errorHandler,
-  connectionTimeout,
   parseHHLanguages,
   processHHLanguages,
   TerritoryListing,
+  pollingFunction,
   STATUS_CODES,
   MUTABLE_CODES,
   LOGIN_TYPE_CODES,
@@ -329,7 +331,6 @@ export {
   ADMIN_MODAL_TYPES,
   RELOAD_CHECK_INTERVAL_MS,
   RELOAD_INACTIVITY_DURATION,
-  FIREBASE_FUNCTION_TIMEOUT,
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   NOT_HOME_STATUS_CODES,
   MIN_START_FLOOR,

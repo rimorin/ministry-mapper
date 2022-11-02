@@ -15,7 +15,7 @@ import { floorDetails, valuesDetails } from "./interface";
 import TableHeader from "./table";
 import UnitStatus from "./unit";
 import {
-  connectionTimeout,
+  pollingFunction,
   DEFAULT_FLOOR_PADDING,
   errorHandler,
   getMaxUnitLength,
@@ -117,18 +117,21 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
     const details = values as valuesDetails;
     setIsSaving(true);
     try {
-      const timeoutId = connectionTimeout();
-      await set(
-        ref(database, `/${postalcode}/units/${details.floor}/${details.unit}`),
-        {
-          type: details.type,
-          note: details.note,
-          status: details.status,
-          nhcount: details.nhcount,
-          languages: details.languages
-        }
+      await pollingFunction(() =>
+        set(
+          ref(
+            database,
+            `/${postalcode}/units/${details.floor}/${details.unit}`
+          ),
+          {
+            type: details.type,
+            note: details.note,
+            status: details.status,
+            nhcount: details.nhcount,
+            languages: details.languages
+          }
+        )
       );
-      clearTimeout(timeoutId);
       toggleModal(true);
     } catch (error) {
       errorHandler(error, rollbar);
@@ -149,14 +152,14 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
     event.preventDefault();
     const details = values as valuesDetails;
     setIsSaving(true);
-    const timeoutId = connectionTimeout();
     try {
-      await set(ref(database, `/${postalcode}/feedback`), details.feedback);
+      await pollingFunction(() =>
+        set(ref(database, `/${postalcode}/feedback`), details.feedback)
+      );
       toggleModal(false);
     } catch (error) {
       errorHandler(error, rollbar);
     } finally {
-      clearTimeout(timeoutId);
       setIsSaving(false);
     }
   };
