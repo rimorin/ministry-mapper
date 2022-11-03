@@ -7,6 +7,7 @@ export interface unitDetails {
   status: String;
   nhcount: String;
   languages: String;
+  dnctime: number;
 }
 
 export interface floorDetails {
@@ -42,6 +43,7 @@ export interface valuesDetails {
   floors?: number;
   newPostal?: String;
   code?: String;
+  dnctime?: number;
 }
 
 export interface adminProps {
@@ -66,6 +68,8 @@ export interface addressDetails {
 export interface FormProps {
   handleChange?: (event: React.ChangeEvent<HTMLElement>) => void;
   handleChangeValues?: (values: any[]) => void;
+  handleDateChange?: (date: Date) => void;
+  changeDate?: number;
   changeValue?: string;
   changeValues?: string[];
   name?: string;

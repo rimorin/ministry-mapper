@@ -78,6 +78,7 @@ import {
 import { useParams } from "react-router-dom";
 import {
   AdminLinkField,
+  DncDateField,
   FloorField,
   GenericTextAreaField,
   GenericTextField,
@@ -108,6 +109,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   const [isNewTerritory, setIsNewTerritory] = useState<boolean>(false);
   const [isNewUnit, setIsNewUnit] = useState<boolean>(false);
   const [isTerritoryRename, setIsTerritoryRename] = useState<boolean>(false);
+  const [isDnc, setIsDnc] = useState<boolean>(false);
   const [showTerritoryListing, setShowTerritoryListing] =
     useState<boolean>(false);
   const [trackRace, setTrackRace] = useState<boolean>(true);
@@ -136,7 +138,8 @@ function Admin({ user, isConductor = false }: adminProps) {
           type: units[unit]["type"] || "",
           status: units[unit]["status"],
           nhcount: units[unit]["nhcount"] || NOT_HOME_STATUS_CODES.DEFAULT,
-          languages: units[unit]["languages"] || ""
+          languages: units[unit]["languages"] || "",
+          dnctime: units[unit]["dnctime"] || null
         });
       }
       dataList.unshift({ floor: floor, units: unitsDetails });
@@ -328,6 +331,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     status: String,
     nhcount: String,
     languages: String,
+    dnctime: number,
     maxUnitNumber: number
   ) => {
     setValues({
@@ -341,9 +345,11 @@ function Admin({ user, isConductor = false }: adminProps) {
       postal: postal,
       status: status,
       nhcount: nhcount,
-      languages: languages
+      languages: languages,
+      dnctime: dnctime
     });
     setIsNotHome(status === STATUS_CODES.NOT_HOME);
+    setIsDnc(status === STATUS_CODES.DO_NOT_CALL);
     toggleModal();
   };
 
@@ -363,7 +369,8 @@ function Admin({ user, isConductor = false }: adminProps) {
             note: details.note,
             status: details.status,
             nhcount: details.nhcount,
-            languages: details.languages
+            languages: details.languages,
+            dnctime: details.dnctime
           }
         )
       );
@@ -1390,6 +1397,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                                 detailsElement.status,
                                 detailsElement.nhcount,
                                 detailsElement.languages,
+                                detailsElement.dnctime,
                                 maxUnitNumberLength
                               )
                             }
@@ -1679,18 +1687,36 @@ function Admin({ user, isConductor = false }: adminProps) {
             <Modal.Body>
               <HHStatusField
                 handleChange={(toggleValue) => {
+                  let dnctime = null;
                   setIsNotHome(false);
+                  setIsDnc(false);
                   if (toggleValue.toString() === STATUS_CODES.NOT_HOME) {
                     setIsNotHome(true);
+                  } else if (
+                    toggleValue.toString() === STATUS_CODES.DO_NOT_CALL
+                  ) {
+                    setIsDnc(true);
+                    dnctime = new Date().getTime();
                   }
                   setValues({
                     ...values,
                     nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+                    dnctime: dnctime,
                     status: toggleValue
                   });
                 }}
                 changeValue={`${(values as valuesDetails).status}`}
               />
+              <Collapse in={isDnc}>
+                <div className="text-center">
+                  <DncDateField
+                    changeDate={(values as valuesDetails).dnctime}
+                    handleDateChange={(date) => {
+                      setValues({ ...values, dnctime: date.getTime() });
+                    }}
+                  />
+                </div>
+              </Collapse>
               <Collapse in={isNotHome}>
                 <div className="text-center">
                   <HHNotHomeField
