@@ -31,6 +31,7 @@ import {
   ZeroPad
 } from "./util";
 import {
+  DncDateField,
   GenericTextAreaField,
   HHLangField,
   HHNotHomeField,
@@ -40,6 +41,7 @@ import {
 } from "./form";
 import Loader from "./loader";
 import { useRollbar } from "@rollbar/react";
+import "react-calendar/dist/Calendar.css";
 
 const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -48,6 +50,7 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
   const [isPostalLoading, setIsPostalLoading] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isNotHome, setIsNotHome] = useState<boolean>(false);
+  const [isDnc, setIsDnc] = useState<boolean>(false);
   const [trackRace, setTrackRace] = useState<boolean>(true);
   const [trackLanguages, setTrackLanguages] = useState<boolean>(true);
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
@@ -79,7 +82,8 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
           type: units[unit]["type"] || "",
           status: units[unit]["status"],
           nhcount: units[unit]["nhcount"] || NOT_HOME_STATUS_CODES.DEFAULT,
-          languages: units[unit]["languages"] || ""
+          languages: units[unit]["languages"] || "",
+          dnctime: units[unit]["dnctime"] || null
         });
       }
       dataList.unshift({ floor: floor, units: unitsDetails });
@@ -106,9 +110,11 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
       note: unitDetails?.note,
       status: unitDetails?.status,
       nhcount: unitDetails?.nhcount || NOT_HOME_STATUS_CODES.DEFAULT,
-      languages: unitDetails?.languages
+      languages: unitDetails?.languages,
+      dnctime: unitDetails?.dnctime
     });
     setIsNotHome(unitStatus === STATUS_CODES.NOT_HOME);
+    setIsDnc(unitStatus === STATUS_CODES.DO_NOT_CALL);
     toggleModal(true);
   };
 
@@ -128,7 +134,8 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
             note: details.note,
             status: details.status,
             nhcount: details.nhcount,
-            languages: details.languages
+            languages: details.languages,
+            dnctime: details.dnctime
           }
         )
       );
@@ -359,18 +366,36 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
             <Modal.Body>
               <HHStatusField
                 handleChange={(toggleValue) => {
+                  let dnctime = null;
                   setIsNotHome(false);
+                  setIsDnc(false);
                   if (toggleValue.toString() === STATUS_CODES.NOT_HOME) {
                     setIsNotHome(true);
+                  } else if (
+                    toggleValue.toString() === STATUS_CODES.DO_NOT_CALL
+                  ) {
+                    setIsDnc(true);
+                    dnctime = new Date().getTime();
                   }
                   setValues({
                     ...values,
                     nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+                    dnctime: dnctime,
                     status: toggleValue
                   });
                 }}
                 changeValue={`${(values as valuesDetails).status}`}
               />
+              <Collapse in={isDnc}>
+                <div className="text-center">
+                  <DncDateField
+                    changeDate={(values as valuesDetails).dnctime}
+                    handleDateChange={(date) => {
+                      setValues({ ...values, dnctime: date.getTime() });
+                    }}
+                  />
+                </div>
+              </Collapse>
               <Collapse in={isNotHome}>
                 <div className="text-center">
                   <HHNotHomeField

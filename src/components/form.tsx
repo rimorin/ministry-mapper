@@ -19,6 +19,8 @@ import {
   STATUS_CODES
 } from "./util";
 
+import Calendar from "react-calendar";
+
 const ModalFooter = ({ handleClick, isSaving = false }: FooterProps) => {
   return (
     <Modal.Footer className="justify-content-around">
@@ -285,12 +287,27 @@ const AdminLinkField = ({ handleChange, changeValue }: FormProps) => {
   );
 };
 
+const DncDateField = ({ handleDateChange, changeDate }: FormProps) => {
+  const dateValue = changeDate ? new Date(changeDate) : new Date();
+  return (
+    <Form.Group className="mb-1" controlId="formBasicDncCalendar">
+      <Form.Label>Date of DNC</Form.Label>
+      <Calendar
+        onChange={handleDateChange}
+        className="w-100 mb-3"
+        value={dateValue}
+      />
+    </Form.Group>
+  );
+};
+
 export {
   HHType,
   HHTypeField,
   HHStatusField,
   AdminLinkField,
   HHNotHomeField,
+  DncDateField,
   HHLangField,
   FloorField,
   GenericTextField,
