@@ -278,7 +278,9 @@ function Admin({ user, isConductor = false }: adminProps) {
           type: element.type,
           note: element.note,
           status: currentStatus,
-          nhcount: NOT_HOME_STATUS_CODES.DEFAULT
+          nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+          languages: element.languages,
+          dnctime: element.dnctime
         };
       });
     }
