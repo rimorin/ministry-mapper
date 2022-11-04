@@ -240,18 +240,31 @@ function Admin({ user, isConductor = false }: adminProps) {
     }
   };
 
-  const addFloorToBlock = async (postalcode: String) => {
+  const addFloorToBlock = async (postalcode: String, lowerFloor = false) => {
     const blockAddresses = addresses.get(postalcode);
     if (!blockAddresses) return;
     const unitUpdates: unitMaps = {};
-    const blockFloorDetails = blockAddresses.floors[0];
-    const newFloor = Number(blockFloorDetails.floor) + 1;
+    let floorIndex = 0;
+    if (lowerFloor) {
+      floorIndex = blockAddresses.floors.length - 1;
+    }
+    const blockFloorDetails = blockAddresses.floors[floorIndex];
+    const currentFloor = Number(blockFloorDetails.floor);
+    let newFloor = currentFloor + 1;
+    if (lowerFloor) {
+      if (currentFloor === 1) {
+        alert("Unable to add further lower floor.");
+        return;
+      }
+      newFloor = currentFloor - 1;
+    }
     blockFloorDetails.units.forEach((element) => {
       unitUpdates[`/${postalcode}/units/${newFloor}/${element.number}`] = {
         status: STATUS_CODES.DEFAULT,
         type: HOUSEHOLD_TYPES.CHINESE,
         note: "",
-        nhcount: NOT_HOME_STATUS_CODES.DEFAULT
+        nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+        languages: ""
       };
     });
     try {
@@ -1105,7 +1118,19 @@ function Admin({ user, isConductor = false }: adminProps) {
                           addFloorToBlock(addressElement.postalcode);
                         }}
                       >
-                        Add Floor
+                        Add Higher Floor
+                      </Button>
+                    )}
+                    {!isConductor && (
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        className="me-2"
+                        onClick={(event) => {
+                          addFloorToBlock(addressElement.postalcode, true);
+                        }}
+                      >
+                        Add Lower Floor
                       </Button>
                     )}
                     {!isConductor && (
