@@ -51,8 +51,8 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isNotHome, setIsNotHome] = useState<boolean>(false);
   const [isDnc, setIsDnc] = useState<boolean>(false);
-  const [trackRace, setTrackRace] = useState<boolean>(false);
-  const [trackLanguages, setTrackLanguages] = useState<boolean>(false);
+  const [trackRace, setTrackRace] = useState<boolean>(true);
+  const [trackLanguages, setTrackLanguages] = useState<boolean>(true);
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
   const [postalName, setPostalName] = useState<String>();
   const [values, setValues] = useState<Object>({});
@@ -258,22 +258,6 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
   }, [token, postalcode, congregationcode]);
   if (isPostalLoading) return <Loader />;
   const maxUnitNumberLength = getMaxUnitLength(floors);
-  const languageTracker = trackLanguages ? (
-    <HHLangField
-      handleChangeValues={onLanguageChange}
-      changeValues={parseHHLanguages(`${(values as valuesDetails).languages}`)}
-    />
-  ) : (
-    <></>
-  );
-  const raceTracker = trackRace ? (
-    <HHTypeField
-      handleChange={onFormChange}
-      changeValue={`${(values as valuesDetails).type}`}
-    />
-  ) : (
-    <></>
-  );
   return (
     <Fade appear={true} in={true}>
       <div>
@@ -422,8 +406,20 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
                   />
                 </div>
               </Collapse>
-              {raceTracker}
-              {languageTracker}
+              {trackRace && (
+                <HHTypeField
+                  handleChange={onFormChange}
+                  changeValue={`${(values as valuesDetails).type}`}
+                />
+              )}
+              {trackLanguages && (
+                <HHLangField
+                  handleChangeValues={onLanguageChange}
+                  changeValues={parseHHLanguages(
+                    `${(values as valuesDetails).languages}`
+                  )}
+                />
+              )}
               <GenericTextAreaField
                 label="Notes"
                 name="note"
