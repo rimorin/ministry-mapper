@@ -725,24 +725,16 @@ function Admin({ user, isConductor = false }: adminProps) {
       ref(database),
       `congregations/${code}/trackLanguages`
     );
-    onValue(
-      trackRaceReference,
-      (snapshot) => {
-        if (snapshot.exists()) {
-          setTrackRace(snapshot.val());
-        }
-      },
-      { onlyOnce: true }
-    );
-    onValue(
-      trackLanguagesReference,
-      (snapshot) => {
-        if (snapshot.exists()) {
-          setTrackLanguages(snapshot.val());
-        }
-      },
-      { onlyOnce: true }
-    );
+    onValue(trackRaceReference, (snapshot) => {
+      if (snapshot.exists()) {
+        setTrackRace(snapshot.val());
+      }
+    });
+    onValue(trackLanguagesReference, (snapshot) => {
+      if (snapshot.exists()) {
+        setTrackLanguages(snapshot.val());
+      }
+    });
 
     const congregationReference = child(ref(database), `congregations/${code}`);
     onValue(

@@ -195,24 +195,16 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
       ref(database),
       `congregations/${congregationcode}/trackLanguages`
     );
-    onValue(
-      trackRaceReference,
-      (snapshot) => {
-        if (snapshot.exists()) {
-          setTrackRace(snapshot.val());
-        }
-      },
-      { onlyOnce: true }
-    );
-    onValue(
-      trackLanguagesReference,
-      (snapshot) => {
-        if (snapshot.exists()) {
-          setTrackLanguages(snapshot.val());
-        }
-      },
-      { onlyOnce: true }
-    );
+    onValue(trackRaceReference, (snapshot) => {
+      if (snapshot.exists()) {
+        setTrackRace(snapshot.val());
+      }
+    });
+    onValue(trackLanguagesReference, (snapshot) => {
+      if (snapshot.exists()) {
+        setTrackLanguages(snapshot.val());
+      }
+    });
     onValue(
       postalNameReference,
       (snapshot) => {
