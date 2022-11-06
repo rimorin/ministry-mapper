@@ -790,6 +790,22 @@ function Admin({ user, isConductor = false }: adminProps) {
 
   const territoryAddresses = Array.from(addresses.values());
   const congregationTerritoryList = Array.from(territories.values());
+  const languageTracker = trackLanguages ? (
+    <HHLangField
+      handleChangeValues={onLanguageChange}
+      changeValues={parseHHLanguages(`${(values as valuesDetails).languages}`)}
+    />
+  ) : (
+    <></>
+  );
+  const raceTracker = trackRace ? (
+    <HHTypeField
+      handleChange={onFormChange}
+      changeValue={`${(values as valuesDetails).type}`}
+    />
+  ) : (
+    <></>
+  );
 
   return (
     <Fade appear={true} in={true}>
@@ -1754,20 +1770,8 @@ function Admin({ user, isConductor = false }: adminProps) {
                   />
                 </div>
               </Collapse>
-              {trackRace && (
-                <HHTypeField
-                  handleChange={onFormChange}
-                  changeValue={`${(values as valuesDetails).type}`}
-                />
-              )}
-              {trackLanguages && (
-                <HHLangField
-                  handleChangeValues={onLanguageChange}
-                  changeValues={parseHHLanguages(
-                    `${(values as valuesDetails).languages}`
-                  )}
-                />
-              )}
+              {raceTracker}
+              {languageTracker}
               <GenericTextAreaField
                 label="Notes"
                 name="note"
