@@ -73,7 +73,9 @@ import {
   parseHHLanguages,
   processHHLanguages,
   TerritoryListing,
-  pollingFunction
+  pollingFunction,
+  checkTraceLangStatus,
+  checkTraceRaceStatus
 } from "./util";
 import { useParams } from "react-router-dom";
 import {
@@ -717,24 +719,12 @@ function Admin({ user, isConductor = false }: adminProps) {
   };
 
   useEffect(() => {
-    const trackRaceReference = child(
-      ref(database),
-      `congregations/${code}/trackRace`
+    checkTraceLangStatus(`${code}`).then((snapshot) =>
+      setTrackLanguages(snapshot.val())
     );
-    const trackLanguagesReference = child(
-      ref(database),
-      `congregations/${code}/trackLanguages`
+    checkTraceRaceStatus(`${code}`).then((snapshot) =>
+      setTrackRace(snapshot.val())
     );
-    onValue(trackRaceReference, (snapshot) => {
-      if (snapshot.exists()) {
-        setTrackRace(snapshot.val());
-      }
-    });
-    onValue(trackLanguagesReference, (snapshot) => {
-      if (snapshot.exists()) {
-        setTrackLanguages(snapshot.val());
-      }
-    });
 
     const congregationReference = child(ref(database), `congregations/${code}`);
     onValue(
@@ -751,8 +741,7 @@ function Admin({ user, isConductor = false }: adminProps) {
         );
         setIsLoading(false);
         errorHandler(reason, rollbar, false);
-      },
-      { onlyOnce: true }
+      }
     );
 
     let currentTime = new Date().getTime();

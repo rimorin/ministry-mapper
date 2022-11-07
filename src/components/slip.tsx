@@ -1,5 +1,5 @@
 import { MouseEvent, ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { ref, child, onValue, set } from "firebase/database";
+import { ref, child, onValue, set, get } from "firebase/database";
 import { database } from "../firebase";
 import {
   Button,
@@ -28,7 +28,9 @@ import {
   RELOAD_CHECK_INTERVAL_MS,
   RELOAD_INACTIVITY_DURATION,
   STATUS_CODES,
-  ZeroPad
+  ZeroPad,
+  checkTraceLangStatus,
+  checkTraceRaceStatus
 } from "./util";
 import {
   DncDateField,
@@ -187,24 +189,13 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
       ref(database),
       `/${postalcode}/feedback`
     );
-    const trackRaceReference = child(
-      ref(database),
-      `congregations/${congregationcode}/trackRace`
+
+    checkTraceLangStatus(congregationcode).then((snapshot) =>
+      setTrackLanguages(snapshot.val())
     );
-    const trackLanguagesReference = child(
-      ref(database),
-      `congregations/${congregationcode}/trackLanguages`
+    checkTraceRaceStatus(congregationcode).then((snapshot) =>
+      setTrackRace(snapshot.val())
     );
-    onValue(trackRaceReference, (snapshot) => {
-      if (snapshot.exists()) {
-        setTrackRace(snapshot.val());
-      }
-    });
-    onValue(trackLanguagesReference, (snapshot) => {
-      if (snapshot.exists()) {
-        setTrackLanguages(snapshot.val());
-      }
-    });
     onValue(
       postalNameReference,
       (snapshot) => {
