@@ -28,7 +28,9 @@ import {
   RELOAD_CHECK_INTERVAL_MS,
   RELOAD_INACTIVITY_DURATION,
   STATUS_CODES,
-  ZeroPad
+  ZeroPad,
+  checkTraceLangStatus,
+  checkTraceRaceStatus
 } from "./util";
 import {
   DncDateField,
@@ -187,31 +189,12 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
       ref(database),
       `/${postalcode}/feedback`
     );
-    const trackRaceReference = child(
-      ref(database),
-      `congregations/${congregationcode}/trackRace`
+
+    checkTraceLangStatus(congregationcode).then((snapshot) =>
+      setTrackLanguages(snapshot.val())
     );
-    const trackLanguagesReference = child(
-      ref(database),
-      `congregations/${congregationcode}/trackLanguages`
-    );
-    onValue(
-      trackRaceReference,
-      (snapshot) => {
-        if (snapshot.exists()) {
-          setTrackRace(snapshot.val());
-        }
-      },
-      { onlyOnce: true }
-    );
-    onValue(
-      trackLanguagesReference,
-      (snapshot) => {
-        if (snapshot.exists()) {
-          setTrackLanguages(snapshot.val());
-        }
-      },
-      { onlyOnce: true }
+    checkTraceRaceStatus(congregationcode).then((snapshot) =>
+      setTrackRace(snapshot.val())
     );
     onValue(
       postalNameReference,

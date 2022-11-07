@@ -1,4 +1,4 @@
-import { goOffline, goOnline } from "firebase/database";
+import { child, get, goOffline, goOnline, ref } from "firebase/database";
 import { ListGroup, Modal, Navbar, Offcanvas, Table } from "react-bootstrap";
 import Rollbar from "rollbar";
 import { database } from "../firebase";
@@ -208,6 +208,18 @@ const pollingFunction = async (
   }
 };
 
+const checkTraceRaceStatus = async (code: string) => {
+  return await pollingFunction(() =>
+    get(child(ref(database), `congregations/${code}/trackRace`))
+  );
+};
+
+const checkTraceLangStatus = async (code: string) => {
+  return await pollingFunction(() =>
+    get(child(ref(database), `congregations/${code}/trackLanguages`))
+  );
+};
+
 const NavBarBranding = ({ naming }: BrandingProps) => {
   return (
     <Navbar.Brand>
@@ -320,6 +332,8 @@ export {
   processHHLanguages,
   TerritoryListing,
   pollingFunction,
+  checkTraceLangStatus,
+  checkTraceRaceStatus,
   STATUS_CODES,
   MUTABLE_CODES,
   LOGIN_TYPE_CODES,
