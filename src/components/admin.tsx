@@ -754,9 +754,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   if (isLoading) return <Loader />;
   if (isUnauthorised) return <UnauthorizedPage />;
 
-  const territoryAddresses = Array.from(addresses.values()).sort((a, b) =>
-    a.name > b.name ? 1 : b.name > a.name ? -1 : 0
-  );
+  const territoryAddresses = Array.from(addresses.values());
   const congregationTerritoryList = Array.from(territories.values());
 
   return (
