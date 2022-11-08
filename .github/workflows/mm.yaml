@@ -61,13 +61,15 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ~/.npm
+          path: node_modules
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
       - name: Install dependencies
+        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
+        # 👆 check if cache-hit happened then do not execute npm ci
         run: npm ci
       - name: Check code formatting
         run: npm run prettier
