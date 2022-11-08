@@ -75,7 +75,8 @@ import {
   TerritoryListing,
   pollingFunction,
   checkTraceLangStatus,
-  checkTraceRaceStatus
+  checkTraceRaceStatus,
+  processAddressData
 } from "./util";
 import { useParams } from "react-router-dom";
 import {
@@ -128,26 +129,6 @@ function Admin({ user, isConductor = false }: adminProps) {
   const domain = process.env.PUBLIC_URL;
   const rollbar = useRollbar();
   let unsubscribers = new Array<Unsubscribe>();
-  const processData = (data: any) => {
-    const dataList = [];
-    for (const floor in data) {
-      const unitsDetails = [];
-      const units = data[floor];
-      for (const unit in units) {
-        unitsDetails.push({
-          number: unit,
-          note: units[unit]["note"],
-          type: units[unit]["type"] || "",
-          status: units[unit]["status"],
-          nhcount: units[unit]["nhcount"] || NOT_HOME_STATUS_CODES.DEFAULT,
-          languages: units[unit]["languages"] || "",
-          dnctime: units[unit]["dnctime"] || null
-        });
-      }
-      dataList.unshift({ floor: floor, units: unitsDetails });
-    }
-    return dataList;
-  };
 
   const refreshAddressState = () => {
     unsubscribers.forEach((unsubFunction) => {
@@ -176,13 +157,17 @@ function Admin({ user, isConductor = false }: adminProps) {
     for (const territoryIndex in territoryAddresses) {
       const postalCode = territoryAddresses[territoryIndex];
       unsubscribers.push(
-        onValue(child(ref(database), `/${postalCode}`), (snapshot) => {
+        onValue(child(ref(database), `/${postalCode}`), async (snapshot) => {
           if (snapshot.exists()) {
             const territoryData = snapshot.val();
+            const floorData = await processAddressData(
+              postalCode,
+              territoryData.units
+            );
             const addressData = {
               name: territoryData.name,
-              postalcode: `${postalCode}`,
-              floors: processData(territoryData.units),
+              postalcode: postalCode,
+              floors: floorData,
               feedback: territoryData.feedback
             };
             setAddresses(
