@@ -30,7 +30,8 @@ import {
   STATUS_CODES,
   ZeroPad,
   checkTraceLangStatus,
-  checkTraceRaceStatus
+  checkTraceRaceStatus,
+  processAddressData
 } from "./util";
 import {
   DncDateField,
@@ -70,27 +71,6 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
 
   const handleClick = (_: MouseEvent<HTMLElement>, isModal: boolean) => {
     toggleModal(isModal);
-  };
-
-  const processData = (data: any) => {
-    const dataList = [];
-    for (const floor in data) {
-      const unitsDetails = [];
-      const units = data[floor];
-      for (const unit in units) {
-        unitsDetails.push({
-          number: unit,
-          note: units[unit]["note"],
-          type: units[unit]["type"] || "",
-          status: units[unit]["status"],
-          nhcount: units[unit]["nhcount"] || NOT_HOME_STATUS_CODES.DEFAULT,
-          languages: units[unit]["languages"] || "",
-          dnctime: units[unit]["dnctime"] || null
-        });
-      }
-      dataList.unshift({ floor: floor, units: unitsDetails });
-    }
-    setFloors(dataList);
   };
 
   const handleClickModal = (
@@ -189,6 +169,10 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
       ref(database),
       `/${postalcode}/feedback`
     );
+
+    const processData = async (data: any) => {
+      setFloors(await processAddressData(postalcode, data));
+    };
 
     checkTraceLangStatus(congregationcode).then((snapshot) =>
       setTrackLanguages(snapshot.val())

@@ -1,4 +1,12 @@
-import { child, get, goOffline, goOnline, ref } from "firebase/database";
+import {
+  child,
+  get,
+  goOffline,
+  goOnline,
+  orderByChild,
+  query,
+  ref
+} from "firebase/database";
 import { ListGroup, Modal, Navbar, Offcanvas, Table } from "react-bootstrap";
 import Rollbar from "rollbar";
 import { database } from "../firebase";
@@ -7,7 +15,8 @@ import {
   BrandingProps,
   LegendProps,
   floorDetails,
-  TerritoryListingProps
+  TerritoryListingProps,
+  unitDetails
 } from "./interface";
 
 const errorHandler = (error: any, rollbar: Rollbar, showAlert = true) => {
@@ -220,6 +229,36 @@ const checkTraceLangStatus = async (code: string) => {
   );
 };
 
+const processAddressData = async (postal: String, data: any) => {
+  const dataList = [];
+  for (const floor in data) {
+    const unitsDetails: unitDetails[] = [];
+    const addressSnapshot = await pollingFunction(() =>
+      get(
+        query(
+          ref(database, `/${postal}/units/${floor}`),
+          orderByChild("sequence")
+        )
+      )
+    );
+    addressSnapshot.forEach((element: any) => {
+      const unitValues = element.val();
+      const unitNumber = element.key;
+      unitsDetails.push({
+        number: unitNumber,
+        note: unitValues.note,
+        type: unitValues.type || "",
+        status: unitValues.status,
+        nhcount: unitValues.nhcount || NOT_HOME_STATUS_CODES.DEFAULT,
+        languages: unitValues.languages || "",
+        dnctime: unitValues.dnctime || null
+      });
+    });
+    dataList.unshift({ floor: floor, units: unitsDetails });
+  }
+  return dataList;
+};
+
 const NavBarBranding = ({ naming }: BrandingProps) => {
   return (
     <Navbar.Brand>
@@ -334,6 +373,7 @@ export {
   pollingFunction,
   checkTraceLangStatus,
   checkTraceRaceStatus,
+  processAddressData,
   STATUS_CODES,
   MUTABLE_CODES,
   LOGIN_TYPE_CODES,
