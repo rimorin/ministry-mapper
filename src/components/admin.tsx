@@ -7,18 +7,13 @@ import {
   remove,
   Unsubscribe,
   push,
-  get
+  get,
+  query,
+  orderByValue
 } from "firebase/database";
 import { signOut } from "firebase/auth";
 import { nanoid } from "nanoid";
-import {
-  MouseEvent,
-  ChangeEvent,
-  FormEvent,
-  useEffect,
-  useState,
-  SyntheticEvent
-} from "react";
+import { MouseEvent, ChangeEvent, FormEvent, useEffect, useState } from "react";
 import {
   Badge,
   Button,
@@ -137,25 +132,42 @@ function Admin({ user, isConductor = false }: adminProps) {
     setAddresses(new Map<String, addressDetails>());
   };
 
-  const processSelectedTerritory = (
-    eventKey: String,
-    territoryData?: any,
-    _?: SyntheticEvent<unknown>
-  ) => {
-    const territoryDetails = territoryData
-      ? territoryData.get(eventKey)
-      : territories.get(eventKey);
-    const territoryAddresses = territoryDetails?.addresses;
-    setSelectedTerritory(
-      `${territoryDetails?.code} - ${territoryDetails?.name}`
+  const processSelectedTerritory = async (selectedTerritoryCode: String) => {
+    const territoryAddsResult = await pollingFunction(() =>
+      get(
+        query(
+          ref(
+            database,
+            `congregations/${code}/territories/${selectedTerritoryCode}/addresses`
+          ),
+          orderByValue()
+        )
+      )
     );
-    setSelectedTerritoryCode(territoryDetails?.code);
-    setSelectedTerritoryName(territoryDetails?.name);
+
+    const territoryNameResult = await pollingFunction(() =>
+      get(
+        child(
+          ref(database),
+          `congregations/${code}/territories/${selectedTerritoryCode}/name`
+        )
+      )
+    );
+
+    if (!territoryAddsResult.exists() || !territoryNameResult.exists()) return;
+    const territoryName = territoryNameResult.val();
+    setSelectedTerritory(`${selectedTerritoryCode} - ${territoryName}`);
+    setSelectedTerritoryCode(selectedTerritoryCode);
+    setSelectedTerritoryName(territoryName);
+    // detach unsub listeners first then clear
     refreshAddressState();
-    if (!territoryAddresses) return;
     unsubscribers = [] as Array<Unsubscribe>;
-    for (const territoryIndex in territoryAddresses) {
-      const postalCode = territoryAddresses[territoryIndex];
+    let postalCodeListing = [] as Array<string>;
+    territoryAddsResult.forEach((addElement: any) => {
+      postalCodeListing.push(addElement.val());
+      return false;
+    });
+    for (const postalCode of postalCodeListing) {
       unsubscribers.push(
         onValue(child(ref(database), `/${postalCode}`), async (snapshot) => {
           if (snapshot.exists()) {
@@ -453,7 +465,6 @@ function Admin({ user, isConductor = false }: adminProps) {
       );
       setSelectedTerritoryName(territoryName);
       setSelectedTerritory(`${selectedTerritoryCode} - ${territoryName}`);
-      await refreshCongregationTerritory(`${selectedTerritoryCode}`);
       toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
     } catch (error) {
       errorHandler(error, rollbar);
@@ -479,16 +490,8 @@ function Admin({ user, isConductor = false }: adminProps) {
   };
 
   const refreshCongregationTerritory = async (selectTerritoryCode: String) => {
-    const congregationReference = child(ref(database), `congregations/${code}`);
-    const updatedTerritory = await pollingFunction(() =>
-      get(congregationReference)
-    );
-    if (updatedTerritory.exists()) {
-      processSelectedTerritory(
-        selectTerritoryCode,
-        processCongregationTerritories(updatedTerritory.val())
-      );
-    }
+    if (!selectTerritoryCode) return;
+    processSelectedTerritory(selectTerritoryCode);
   };
 
   const processPostalUnitNumber = async (
@@ -765,7 +768,7 @@ function Admin({ user, isConductor = false }: adminProps) {
           hideFunction={toggleTerritoryListing}
           territories={congregationTerritoryList}
           selectedTerritory={selectedTerritoryCode}
-          handleSelect={(eventKey, e) => {
+          handleSelect={(eventKey, _) => {
             processSelectedTerritory(`${eventKey}`);
             toggleTerritoryListing();
           }}
