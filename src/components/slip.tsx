@@ -259,7 +259,7 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
         </Navbar>
         <div
           style={{
-            height: "80vh",
+            height: "75vh",
             overflowY: "auto"
           }}
         >
