@@ -263,7 +263,12 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
             overflowY: "auto"
           }}
         >
-          <Table bordered striped hover>
+          <Table
+            bordered
+            striped
+            hover
+            style={{ borderCollapse: "separate", borderSpacing: 0 }}
+          >
             <TableHeader floors={floors} maxUnitNumber={maxUnitNumberLength} />
             <tbody>
               {floors &&
