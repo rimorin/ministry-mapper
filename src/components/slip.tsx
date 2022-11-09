@@ -257,54 +257,55 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
             </Navbar.Collapse>
           </Container>
         </Navbar>
-        <Table
-          bordered
-          striped
-          hover
-          responsive="sm"
-          style={{ height: "75vh" }}
+        <div
+          style={{
+            height: "80vh",
+            overflowY: "auto"
+          }}
         >
-          <TableHeader floors={floors} maxUnitNumber={maxUnitNumberLength} />
-          <tbody>
-            {floors &&
-              floors.map((item, index) => (
-                <tr key={`row-${index}`}>
-                  <th
-                    className="text-center align-middle"
-                    key={`${index}-${item.floor}`}
-                    scope="row"
-                  >
-                    {ZeroPad(item.floor, DEFAULT_FLOOR_PADDING)}
-                  </th>
-                  {item.units.map((element, _) => (
-                    <td
-                      style={{ whiteSpace: "nowrap" }}
+          <Table bordered striped hover>
+            <TableHeader floors={floors} maxUnitNumber={maxUnitNumberLength} />
+            <tbody>
+              {floors &&
+                floors.map((item, index) => (
+                  <tr key={`row-${index}`}>
+                    <th
                       className="text-center align-middle"
-                      onClick={(event) =>
-                        handleClickModal(
-                          event,
-                          item.floor,
-                          element.number,
-                          maxUnitNumberLength
-                        )
-                      }
-                      key={`${item.floor}-${element.number}`}
+                      key={`${index}-${item.floor}`}
+                      scope="row"
                     >
-                      <UnitStatus
-                        type={element.type}
-                        note={element.note}
-                        status={element.status}
-                        nhcount={element.nhcount}
-                        languages={element.languages}
-                        trackRace={trackRace}
-                        trackLanguages={trackLanguages}
-                      />
-                    </td>
-                  ))}
-                </tr>
-              ))}
-          </tbody>
-        </Table>
+                      {ZeroPad(item.floor, DEFAULT_FLOOR_PADDING)}
+                    </th>
+                    {item.units.map((element, _) => (
+                      <td
+                        style={{ whiteSpace: "nowrap" }}
+                        className="text-center align-middle"
+                        onClick={(event) =>
+                          handleClickModal(
+                            event,
+                            item.floor,
+                            element.number,
+                            maxUnitNumberLength
+                          )
+                        }
+                        key={`${item.floor}-${element.number}`}
+                      >
+                        <UnitStatus
+                          type={element.type}
+                          note={element.note}
+                          status={element.status}
+                          nhcount={element.nhcount}
+                          languages={element.languages}
+                          trackRace={trackRace}
+                          trackLanguages={trackLanguages}
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+            </tbody>
+          </Table>
+        </div>
         <Modal show={isFeedback}>
           <Modal.Header>
             <Modal.Title>{`Feedback on ${postalName}`}</Modal.Title>
