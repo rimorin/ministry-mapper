@@ -275,6 +275,12 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
                 floors.map((item, index) => (
                   <tr key={`row-${index}`}>
                     <th
+                      style={{
+                        position: "sticky",
+                        left: 0,
+                        margin: "0 0 0 0",
+                        backgroundColor: "white"
+                      }}
                       className="text-center align-middle"
                       key={`${index}-${item.floor}`}
                       scope="row"

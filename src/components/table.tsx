@@ -14,7 +14,8 @@ function TableHeader({ floors, maxUnitNumber = 2 }: tableHeaderProp) {
           position: "sticky",
           top: 0,
           margin: "0 0 0 0",
-          backgroundColor: "white"
+          backgroundColor: "white",
+          zIndex: 1
         }}
       >
         <tr>
