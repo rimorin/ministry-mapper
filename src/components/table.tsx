@@ -9,7 +9,15 @@ interface tableHeaderProp {
 function TableHeader({ floors, maxUnitNumber = 2 }: tableHeaderProp) {
   return (
     <>
-      <thead>
+      <thead
+        style={{
+          position: "sticky",
+          top: 0,
+          margin: "0 0 0 0",
+          backgroundColor: "white",
+          zIndex: 1
+        }}
+      >
         <tr>
           <th scope="col" className="text-center align-middle">
             lvl/unit
