@@ -22,6 +22,7 @@
     "react-bootstrap-range-slider": "^3.0.8",
     "react-calendar": "^3.9.0",
     "react-confirm-alert": "^3.0.6",
+    "react-countdown": "^2.3.3",
     "react-dom": "^18.2.0",
     "react-helmet-async": "^1.3.0",
     "react-router-dom": "^6.3.0",

@@ -9,6 +9,7 @@ import {
   Form,
   Modal,
   Navbar,
+  OverlayTrigger,
   Table
 } from "react-bootstrap";
 import { floorDetails, valuesDetails } from "./interface";
@@ -31,7 +32,8 @@ import {
   ZeroPad,
   checkTraceLangStatus,
   checkTraceRaceStatus,
-  processAddressData
+  processAddressData,
+  ExpiryTimePopover
 } from "./util";
 import {
   DncDateField,
@@ -46,7 +48,11 @@ import Loader from "./loader";
 import { useRollbar } from "@rollbar/react";
 import "react-calendar/dist/Calendar.css";
 
-const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
+const Slip = ({
+  tokenEndtime = -1,
+  postalcode = "",
+  congregationcode = ""
+}) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isFeedback, setIsFeedback] = useState<boolean>(false);
   const [showLegend, setShowLegend] = useState<boolean>(false);
@@ -222,7 +228,7 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
     document.body.addEventListener("touchstart", setActivityTime);
 
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-  }, [token, postalcode, congregationcode]);
+  }, [tokenEndtime, postalcode, congregationcode]);
   if (isPostalLoading) return <Loader />;
   const maxUnitNumberLength = getMaxUnitLength(floors);
   return (
@@ -237,11 +243,19 @@ const Slip = ({ token = "", postalcode = "", congregationcode = "" }) => {
               id="basic-navbar-nav"
               className="justify-content-end mt-1"
             >
-              <Button className="me-2" onClick={toggleLegend}>
+              <OverlayTrigger
+                trigger="click"
+                placement="auto"
+                overlay={ExpiryTimePopover(tokenEndtime)}
+                rootClose={true}
+              >
+                <Button className="me-2 mb-1">Time</Button>
+              </OverlayTrigger>
+              <Button className="me-2 mb-1" onClick={toggleLegend}>
                 Legend
               </Button>
               <Button
-                className="me-2"
+                className="me-2 mb-1"
                 onClick={() => {
                   window.open(
                     `http://maps.google.com.sg/maps?q=${postalcode}`,
