@@ -11,18 +11,21 @@ import Slip from "./slip";
 function Territory() {
   const { id, postalcode, congregationcode } = useParams();
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isTokenLoading, setIsTokenLoading] = useState<boolean>(true);
   const [isLinkExpired, setIsLinkExpired] = useState<boolean>(false);
   const [isValidPostalcode, setIsValidPostalcode] = useState<boolean>(true);
+  const [tokenEndTime, setTokenEndTime] = useState<number>(0);
 
   useEffect(() => {
     const linkReference = child(ref(database), `/links/${id}`);
     const postalData = child(ref(database), `/${postalcode}`);
     onValue(linkReference, (snapshot) => {
+      setIsTokenLoading(false);
       if (snapshot.exists()) {
+        const tokenEndtime = snapshot.val();
         const currentTimestamp = new Date().getTime();
-        if (currentTimestamp < snapshot.val()) {
-          setIsLinkExpired(false);
-        }
+        setTokenEndTime(tokenEndtime);
+        setIsLinkExpired(currentTimestamp > tokenEndtime);
       } else {
         setIsLinkExpired(true);
       }
@@ -38,7 +41,7 @@ function Territory() {
       { onlyOnce: true }
     );
   }, [id, postalcode]);
-  if (isLoading) return <Loader />;
+  if (isLoading || isTokenLoading) return <Loader />;
   if (!isValidPostalcode) return <NotFoundPage />;
   if (isLinkExpired) {
     document.title = "Ministry Mapper";
@@ -46,7 +49,7 @@ function Territory() {
   }
   return (
     <Slip
-      token={id}
+      tokenEndtime={tokenEndTime}
       postalcode={postalcode}
       congregationcode={congregationcode}
     ></Slip>
