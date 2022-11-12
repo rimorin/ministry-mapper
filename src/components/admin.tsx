@@ -9,7 +9,8 @@ import {
   push,
   get,
   query,
-  orderByValue
+  orderByValue,
+  off
 } from "firebase/database";
 import { signOut } from "firebase/auth";
 import { nanoid } from "nanoid";
@@ -73,7 +74,7 @@ import {
   checkTraceRaceStatus,
   processAddressData
 } from "./util";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import {
   AdminLinkField,
   DncDateField,
@@ -123,7 +124,6 @@ function Admin({ user, isConductor = false }: adminProps) {
   const [addresses, setAddresses] = useState(new Map<String, addressDetails>());
   const domain = process.env.PUBLIC_URL;
   const rollbar = useRollbar();
-  const routerNavigator = useNavigate();
   let unsubscribers = new Array<Unsubscribe>();
 
   const refreshAddressState = () => {
@@ -131,6 +131,12 @@ function Admin({ user, isConductor = false }: adminProps) {
       unsubFunction();
     });
     setAddresses(new Map<String, addressDetails>());
+  };
+
+  const clearAdminState = () => {
+    refreshAddressState();
+    const congregationReference = child(ref(database), `congregations/${code}`);
+    off(congregationReference);
   };
 
   const processSelectedTerritory = async (selectedTerritoryCode: String) => {
@@ -861,9 +867,8 @@ function Admin({ user, isConductor = false }: adminProps) {
                 size="sm"
                 variant="outline-primary"
                 onClick={async () => {
+                  clearAdminState();
                   await signOut(auth);
-                  // Rerender current page after signing out
-                  routerNavigator(0);
                 }}
               >
                 Log Out
