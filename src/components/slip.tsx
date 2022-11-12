@@ -48,11 +48,7 @@ import Loader from "./loader";
 import { useRollbar } from "@rollbar/react";
 import "react-calendar/dist/Calendar.css";
 
-const Slip = ({
-  tokenEndtime = -1,
-  postalcode = "",
-  congregationcode = ""
-}) => {
+const Slip = ({ tokenEndtime = 0, postalcode = "", congregationcode = "" }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isFeedback, setIsFeedback] = useState<boolean>(false);
   const [showLegend, setShowLegend] = useState<boolean>(false);

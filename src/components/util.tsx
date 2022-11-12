@@ -243,7 +243,7 @@ const ExpiryTimePopover = (endtime: number) => {
       <Popover.Header as="h3" className="text-center">
         Expiry Details
       </Popover.Header>
-      <Popover.Body className="text-justify">
+      <Popover.Body>
         Territory slip will expire in{" "}
         <Countdown
           date={endtime}

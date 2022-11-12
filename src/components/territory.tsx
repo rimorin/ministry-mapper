@@ -25,9 +25,7 @@ function Territory() {
         const tokenEndtime = snapshot.val();
         const currentTimestamp = new Date().getTime();
         setTokenEndTime(tokenEndtime);
-        if (currentTimestamp < tokenEndtime) {
-          setIsLinkExpired(false);
-        }
+        setIsLinkExpired(currentTimestamp > tokenEndtime);
       } else {
         setIsLinkExpired(true);
       }
