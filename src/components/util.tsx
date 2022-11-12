@@ -7,7 +7,14 @@ import {
   query,
   ref
 } from "firebase/database";
-import { ListGroup, Modal, Navbar, Offcanvas, Table } from "react-bootstrap";
+import {
+  ListGroup,
+  Modal,
+  Navbar,
+  Offcanvas,
+  Popover,
+  Table
+} from "react-bootstrap";
 import Rollbar from "rollbar";
 import { database } from "../firebase";
 import {
@@ -18,6 +25,7 @@ import {
   TerritoryListingProps,
   unitDetails
 } from "./interface";
+import Countdown from "react-countdown";
 
 const errorHandler = (error: any, rollbar: Rollbar, showAlert = true) => {
   rollbar.error(error);
@@ -229,6 +237,40 @@ const checkTraceLangStatus = async (code: string) => {
   );
 };
 
+const ExpiryTimePopover = (endtime: number) => {
+  return (
+    <Popover id="expiry-time-popover-basic">
+      <Popover.Header as="h3" className="text-center">
+        Expiry Details
+      </Popover.Header>
+      <Popover.Body>
+        Territory slip will expire in{" "}
+        <Countdown
+          date={endtime}
+          daysInHours={true}
+          intervalDelay={100}
+          precision={3}
+          renderer={(props) => {
+            const daysDisplay = props.days !== 0 ? <>{props.days}d </> : <></>;
+            const hoursDisplay =
+              props.hours !== 0 ? <>{props.hours}h </> : <></>;
+            const minsDisplay =
+              props.minutes !== 0 ? <>{props.minutes}m </> : <></>;
+            return (
+              <div>
+                {daysDisplay}
+                {hoursDisplay}
+                {minsDisplay}
+                {props.formatted.seconds}s
+              </div>
+            );
+          }}
+        />
+      </Popover.Body>
+    </Popover>
+  );
+};
+
 const processAddressData = async (postal: String, data: any) => {
   const dataList = [];
   for (const floor in data) {
@@ -374,6 +416,7 @@ export {
   checkTraceLangStatus,
   checkTraceRaceStatus,
   processAddressData,
+  ExpiryTimePopover,
   STATUS_CODES,
   MUTABLE_CODES,
   LOGIN_TYPE_CODES,
