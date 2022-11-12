@@ -73,7 +73,7 @@ import {
   checkTraceRaceStatus,
   processAddressData
 } from "./util";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   AdminLinkField,
   DncDateField,
@@ -123,6 +123,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   const [addresses, setAddresses] = useState(new Map<String, addressDetails>());
   const domain = process.env.PUBLIC_URL;
   const rollbar = useRollbar();
+  const routerNavigator = useNavigate();
   let unsubscribers = new Array<Unsubscribe>();
 
   const refreshAddressState = () => {
@@ -859,8 +860,10 @@ function Admin({ user, isConductor = false }: adminProps) {
                 className="m-2"
                 size="sm"
                 variant="outline-primary"
-                onClick={() => {
-                  signOut(auth);
+                onClick={async () => {
+                  await signOut(auth);
+                  // Rerender current page after signing out
+                  routerNavigator(0);
                 }}
               >
                 Log Out
