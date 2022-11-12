@@ -41,7 +41,7 @@ function Territory() {
       { onlyOnce: true }
     );
   }, [id, postalcode]);
-  if (isLoading && isTokenLoading) return <Loader />;
+  if (isLoading || isTokenLoading) return <Loader />;
   if (!isValidPostalcode) return <NotFoundPage />;
   if (isLinkExpired) {
     document.title = "Ministry Mapper";
