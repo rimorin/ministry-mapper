@@ -1,0 +1,26 @@
+.sticky-body {
+    height: 75vh;
+    overflow-y: auto;
+}
+
+.sticky-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.sticky-left-cell {
+    position: sticky;
+    left: 0;
+    background-color: white !important;
+}
+
+.sticky-top-cell {
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 1;
+}
+
+.inline-cell {
+    white-space: nowrap;
+}
