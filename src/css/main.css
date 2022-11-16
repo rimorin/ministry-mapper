@@ -1,21 +1,21 @@
 .mm-logo {
-    width: 30% !important;
+  width: 30% !important;
 }
 
 .mm-main-image {
-    width: 50% !important;
-    border-radius: 0 !important;
+  width: 50% !important;
+  border-radius: 0 !important;
 }
 
 .container-main {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
 }
 
 .card-main {
-    border: 0 !important;
-    align-items: center;
-    width: 80%;
+  border: 0 !important;
+  align-items: center;
+  width: 80%;
 }
