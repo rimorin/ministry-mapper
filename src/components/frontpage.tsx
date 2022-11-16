@@ -1,7 +1,7 @@
 import { Container, Image } from "react-bootstrap";
 
 const FrontPage = () => (
-  <Container className="container-main vh-100">
+  <Container className="container-main">
     <Image
       width={"60%"}
       alt="Ministry Mapper small logo"

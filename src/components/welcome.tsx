@@ -11,7 +11,7 @@ const Welcome = ({ loginType = LOGIN_TYPE_CODES.CONDUCTOR }) => {
   }
   return (
     <Container className="container-main" style={{ height: "80vh" }}>
-      <Card className="border-0 align-items-center">
+      <Card className="card-main" style={{ width: "100%" }}>
         <Card.Img
           alt="Ministry Mapper main logo"
           className="mm-main-image"

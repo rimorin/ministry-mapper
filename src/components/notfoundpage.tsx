@@ -1,8 +1,8 @@
 import { Card, Container } from "react-bootstrap";
 import "../css/main.css";
 const NotFoundPage = () => (
-  <Container className="d-flex align-items-center justify-content-center vh-100">
-    <Card className="border-0 align-items-center" style={{ width: "80%" }}>
+  <Container className="container-main">
+    <Card className="card-main">
       <Card.Img
         alt="Ministry Mapper logo"
         className="mm-logo"
