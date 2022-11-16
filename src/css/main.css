@@ -1,0 +1,14 @@
+.mm-logo {
+    width: 30% !important;
+}
+
+.mm-main-image {
+    width: 50% !important;
+    border-radius: 0 !important;
+}
+
+.container-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
