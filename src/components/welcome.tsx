@@ -10,18 +10,11 @@ const Welcome = ({ loginType = LOGIN_TYPE_CODES.CONDUCTOR }) => {
       "Please select a territory from the above listing to begin administration.";
   }
   return (
-    <Container
-      className="d-flex align-items-center justify-content-center"
-      style={{ height: "80vh" }}
-    >
-      <Card className="border-0 align-items-center">
+    <Container className="container-main" style={{ height: "80vh" }}>
+      <Card className="card-main" style={{ width: "100%" }}>
         <Card.Img
           alt="Ministry Mapper main logo"
-          style={{
-            width: "50%",
-            borderTopLeftRadius: "0",
-            borderTopRightRadius: "0"
-          }}
+          className="mm-main-image"
           src={`${process.env.PUBLIC_URL}/logo.png`}
         />
         <Card.Body>

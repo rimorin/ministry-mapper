@@ -47,6 +47,7 @@ import {
 import Loader from "./loader";
 import { useRollbar } from "@rollbar/react";
 import "react-calendar/dist/Calendar.css";
+import "../css/slip.css";
 
 const Slip = ({ tokenEndtime = 0, postalcode = "", congregationcode = "" }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -267,31 +268,15 @@ const Slip = ({ tokenEndtime = 0, postalcode = "", congregationcode = "" }) => {
             </Navbar.Collapse>
           </Container>
         </Navbar>
-        <div
-          style={{
-            height: "75vh",
-            overflowY: "auto"
-          }}
-        >
-          <Table
-            bordered
-            striped
-            hover
-            style={{ borderCollapse: "separate", borderSpacing: 0 }}
-          >
+        <div className="sticky-body">
+          <Table bordered striped hover className="sticky-table">
             <TableHeader floors={floors} maxUnitNumber={maxUnitNumberLength} />
             <tbody>
               {floors &&
                 floors.map((item, index) => (
                   <tr key={`row-${index}`}>
                     <th
-                      style={{
-                        position: "sticky",
-                        left: 0,
-                        margin: "0 0 0 0",
-                        backgroundColor: "white"
-                      }}
-                      className="text-center align-middle"
+                      className="sticky-left-cell text-center align-middle"
                       key={`${index}-${item.floor}`}
                       scope="row"
                     >
@@ -299,8 +284,7 @@ const Slip = ({ tokenEndtime = 0, postalcode = "", congregationcode = "" }) => {
                     </th>
                     {item.units.map((element, _) => (
                       <td
-                        style={{ whiteSpace: "nowrap" }}
-                        className="text-center align-middle"
+                        className="text-center align-middle inline-cell"
                         onClick={(event) =>
                           handleClickModal(
                             event,

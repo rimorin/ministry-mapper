@@ -1,11 +1,12 @@
 import { Card, Container } from "react-bootstrap";
+import "../css/main.css";
 
 const UnauthorizedPage = () => (
-  <Container className="d-flex align-items-center justify-content-center vh-100">
-    <Card className="border-0 align-items-center" style={{ width: "80%" }}>
+  <Container className="container-main">
+    <Card className="card-main">
       <Card.Img
         alt="Ministry Mapper logo"
-        style={{ width: "30%" }}
+        className="mm-logo"
         src={`${process.env.PUBLIC_URL}/android-chrome-192x192.png`}
       />
       <Card.Body>

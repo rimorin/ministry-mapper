@@ -1,12 +1,12 @@
 import { Card, Container, Fade } from "react-bootstrap";
-
+import "../css/main.css";
 const InvalidPage = () => (
-  <Container className="d-flex align-items-center justify-content-center vh-100">
+  <Container className="container-main">
     <Fade appear={true} in={true}>
-      <Card className="border-0 align-items-center" style={{ width: "80%" }}>
+      <Card className="card-main">
         <Card.Img
           alt="Ministry Mapper logo"
-          style={{ width: "30%" }}
+          className="mm-logo"
           src={`${process.env.PUBLIC_URL}/android-chrome-192x192.png`}
         />
         <Card.Body>
