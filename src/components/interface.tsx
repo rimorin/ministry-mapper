@@ -59,6 +59,7 @@ export interface territoryDetails {
 }
 
 export interface addressDetails {
+  x_zip: String;
   name: String;
   postalcode: String;
   floors: Array<floorDetails>;

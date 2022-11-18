@@ -184,6 +184,7 @@ function Admin({ user, isConductor = false }: adminProps) {
               territoryData.units
             );
             const addressData = {
+              x_zip: territoryData.x_zip,
               name: territoryData.name,
               postalcode: postalCode,
               floors: floorData,
@@ -380,7 +381,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     setIsSaving(true);
     try {
       await pollingFunction(() =>
-        set(
+        update(
           ref(
             database,
             `/${details.postal}/units/${details.floor}/${details.unit}`
@@ -887,6 +888,7 @@ function Admin({ user, isConductor = false }: adminProps) {
           const maxUnitNumberLength = getMaxUnitLength(addressElement.floors);
           const completedPercent = getCompletedPercent(addressElement.floors);
           const addressLinkId = nanoid();
+          const zipcode = addressElement.x_zip == null ? addressElement.postalcode : addressElement.x_zip;
           return (
             <div key={`div-${addressElement.postalcode}`}>
               <Navbar
@@ -1025,7 +1027,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                       className="me-2"
                       onClick={(e) => {
                         window.open(
-                          `http://maps.google.com.sg/maps?q=${addressElement.postalcode}`,
+                          `http://maps.google.com.sg/maps?q=${zipcode}`,
                           "_blank"
                         );
                       }}
