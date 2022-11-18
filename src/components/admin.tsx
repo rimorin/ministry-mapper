@@ -888,7 +888,10 @@ function Admin({ user, isConductor = false }: adminProps) {
           const maxUnitNumberLength = getMaxUnitLength(addressElement.floors);
           const completedPercent = getCompletedPercent(addressElement.floors);
           const addressLinkId = nanoid();
-          const zipcode = addressElement.x_zip == null ? addressElement.postalcode : addressElement.x_zip;
+          const zipcode =
+            addressElement.x_zip == null
+              ? addressElement.postalcode
+              : addressElement.x_zip;
           return (
             <div key={`div-${addressElement.postalcode}`}>
               <Navbar
