@@ -2,7 +2,7 @@ import { Badge } from "react-bootstrap";
 import { unitProps } from "./interface";
 import { HOUSEHOLD_TYPES, STATUS_CODES } from "./util";
 import envsvg from "../assets/env.svg";
-import Image from 'react-bootstrap/Image';
+import Image from "react-bootstrap/Image";
 
 const UnitStatus = (props: unitProps) => {
   const householdRace = props.type;
@@ -49,11 +49,7 @@ const UnitStatus = (props: unitProps) => {
           {householdRace}
         </Badge>
       )}
-      {isTrackLanguages && languages && (
-        <span>
-          {languages.toUpperCase()}
-        </span>
-      )}
+      {isTrackLanguages && languages && <span>{languages.toUpperCase()}</span>}
     </>
   );
 };
