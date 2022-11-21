@@ -12,15 +12,33 @@
   position: sticky;
   left: 0;
   background-color: white !important;
+  z-index: 2;
 }
 
 .sticky-top-cell {
   position: sticky;
   top: 0;
   background-color: white;
-  z-index: 1;
+  z-index: 3;
 }
 
 .inline-cell {
   white-space: nowrap;
+}
+
+.badge-nothome {
+  color: black;
+  background-color: #FFFFFF80;
+  position: absolute;
+  top: 20%;
+  left: 0%;
+  font-size: 0.8em;
+}
+
+.container-nothome {
+  position: relative;
+  height: 0.75em;
+  width: 1.5em;
+  z-index: 1;
+  display: inline-block;
 }
