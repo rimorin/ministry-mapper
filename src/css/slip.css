@@ -31,8 +31,9 @@
   background-color: #ffffff80;
   position: absolute;
   top: 20%;
-  left: 0%;
+  left: 20%;
   font-size: 0.8em;
+  width: 1em;
 }
 
 .container-nothome {

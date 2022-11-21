@@ -1,7 +1,7 @@
 import { Badge } from "react-bootstrap";
 import { unitProps } from "./interface";
 import { HOUSEHOLD_TYPES, STATUS_CODES } from "./util";
-import envsvg from "../assets/env.svg";
+import envelopeImage from "../assets/envelope.svg";
 import Image from "react-bootstrap/Image";
 
 const UnitStatus = (props: unitProps) => {
@@ -36,11 +36,9 @@ const UnitStatus = (props: unitProps) => {
     <>
       {currentStatus !== STATUS_CODES.NOT_HOME && <>{status}</>}
       {currentStatus === STATUS_CODES.NOT_HOME && (
-        <span className="container-nothome">
-          <Image fluid src={envsvg} />
-          <Badge bg="none" className="badge-nothome" pill>
-            {nhcount}
-          </Badge>
+        <span className="container-nothome me-1">
+          <Image fluid src={envelopeImage} />
+          <div className="badge-nothome">{nhcount}</div>
         </span>
       )}
       {note && <>🗒️ </>}
