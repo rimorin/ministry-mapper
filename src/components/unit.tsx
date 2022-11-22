@@ -37,7 +37,7 @@ const UnitStatus = (props: unitProps) => {
       {currentStatus !== STATUS_CODES.NOT_HOME && <>{status}</>}
       {currentStatus === STATUS_CODES.NOT_HOME && (
         <span className="container-nothome me-1">
-          <Image fluid src={envelopeImage} />
+          <Image fluid src={envelopeImage} className="nothome-envelope" />
           <div className="badge-nothome">{nhcount}</div>
         </span>
       )}

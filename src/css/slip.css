@@ -28,11 +28,11 @@
 
 .badge-nothome {
   color: black;
-  background-color: #ffffff80;
   position: absolute;
-  top: 20%;
+  top: 30%;
   left: 20%;
   font-size: 0.8em;
+  font-weight: bold;
   width: 1em;
 }
 
@@ -42,4 +42,8 @@
   width: 1.5em;
   z-index: 1;
   display: inline-block;
+}
+
+.nothome-envelope {
+  opacity: 0.4;
 }
