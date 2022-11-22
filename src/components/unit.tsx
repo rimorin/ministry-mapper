@@ -1,6 +1,8 @@
 import { Badge } from "react-bootstrap";
 import { unitProps } from "./interface";
 import { HOUSEHOLD_TYPES, STATUS_CODES } from "./util";
+import envelopeImage from "../assets/envelope.svg";
+import Image from "react-bootstrap/Image";
 
 const UnitStatus = (props: unitProps) => {
   const householdRace = props.type;
@@ -34,9 +36,10 @@ const UnitStatus = (props: unitProps) => {
     <>
       {currentStatus !== STATUS_CODES.NOT_HOME && <>{status}</>}
       {currentStatus === STATUS_CODES.NOT_HOME && (
-        <Badge bg="secondary" text="light" className="me-1">
-          {status} {nhcount}
-        </Badge>
+        <span className="container-nothome me-1">
+          <Image fluid src={envelopeImage} className="nothome-envelope" />
+          <div className="badge-nothome">{nhcount}</div>
+        </span>
       )}
       {note && <>🗒️ </>}
       {isTrackRace && householdRace !== HOUSEHOLD_TYPES.CHINESE && (
@@ -44,11 +47,7 @@ const UnitStatus = (props: unitProps) => {
           {householdRace}
         </Badge>
       )}
-      {isTrackLanguages && languages && (
-        <Badge bg="secondary" className="me-1" pill>
-          {languages}
-        </Badge>
-      )}
+      {isTrackLanguages && languages && <span>{languages.toUpperCase()}</span>}
     </>
   );
 };

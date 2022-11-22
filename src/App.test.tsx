@@ -211,10 +211,11 @@ test("renders not home status", () => {
     <UnitStatus
       type={HOUSEHOLD_TYPES.CHINESE}
       note={""}
+      nhcount={NOT_HOME_STATUS_CODES.DEFAULT}
       status={STATUS_CODES.NOT_HOME}
     />
   );
-  expect(screen.getByText("📬")).toBeInTheDocument();
+  expect(screen.getByText("1")).toBeInTheDocument();
 });
 
 test("renders done status", () => {
@@ -272,7 +273,7 @@ test("renders 2nd try not home status", () => {
       status={STATUS_CODES.NOT_HOME}
     />
   );
-  expect(screen.getByText("📬", { exact: false })).toBeInTheDocument();
+  expect(screen.getByText("2", { exact: false })).toBeInTheDocument();
   expect(
     screen.getByText(NOT_HOME_STATUS_CODES.SECOND_TRY, { exact: false })
   ).toBeInTheDocument();
@@ -287,7 +288,7 @@ test("renders 3rd try not home status", () => {
       status={STATUS_CODES.NOT_HOME}
     />
   );
-  expect(screen.getByText("📬", { exact: false })).toBeInTheDocument();
+  expect(screen.getByText("3", { exact: false })).toBeInTheDocument();
   expect(
     screen.getByText(NOT_HOME_STATUS_CODES.THIRD_TRY, { exact: false })
   ).toBeInTheDocument();
@@ -394,7 +395,7 @@ test("renders languages household", () => {
       languages={langs}
     />
   );
-  expect(screen.getByText(langs)).toBeInTheDocument();
+  expect(screen.getByText(langs.toUpperCase())).toBeInTheDocument();
 });
 
 test("renders languages household with done status and notes", () => {
@@ -414,7 +415,7 @@ test("renders languages household with done status and notes", () => {
       languages={langs}
     />
   );
-  expect(screen.getByText(langs)).toBeInTheDocument();
+  expect(screen.getByText(langs.toUpperCase())).toBeInTheDocument();
   expect(screen.getByText("🗒️", { exact: false })).toBeInTheDocument();
   expect(screen.getByText("✅", { exact: false })).toBeInTheDocument();
 });
