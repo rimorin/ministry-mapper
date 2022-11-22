@@ -1550,6 +1550,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                   }}
                   changeValue={`${(values as valuesDetails).code}`}
                   required={true}
+                  placeholder={"Territory code. For eg, M01, W12, etc."}
                 />
                 <GenericTextField
                   label="Name"
@@ -1557,6 +1558,9 @@ function Admin({ user, isConductor = false }: adminProps) {
                   handleChange={onFormChange}
                   changeValue={`${(values as valuesDetails).name}`}
                   required={true}
+                  placeholder={
+                    "Name of the territory. For eg, 801-810, Woodlands Drive."
+                  }
                 />
               </Modal.Body>
               <Modal.Footer>
@@ -1591,6 +1595,9 @@ function Admin({ user, isConductor = false }: adminProps) {
                   }}
                   changeValue={`${(values as valuesDetails).newPostal}`}
                   required={true}
+                  placeholder={
+                    "Block/Building postal code. Eg, 730801, 752367, etc"
+                  }
                 />
                 <GenericTextField
                   label="Address Name"
@@ -1598,6 +1605,9 @@ function Admin({ user, isConductor = false }: adminProps) {
                   handleChange={onFormChange}
                   changeValue={`${(values as valuesDetails).name}`}
                   required={true}
+                  placeholder={
+                    "Block/Building name. Eg, 367, Sembawang Star Crescent"
+                  }
                 />
                 <FloorField
                   handleChange={(e: ChangeEvent<HTMLElement>) => {
