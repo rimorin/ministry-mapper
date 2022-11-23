@@ -13,7 +13,8 @@ import {
   Navbar,
   Offcanvas,
   Popover,
-  Table
+  Table,
+  Image
 } from "react-bootstrap";
 import Rollbar from "rollbar";
 import { database } from "../firebase";
@@ -23,9 +24,11 @@ import {
   LegendProps,
   floorDetails,
   TerritoryListingProps,
-  unitDetails
+  unitDetails,
+  nothomeprops
 } from "./interface";
 import Countdown from "react-countdown";
+import envelopeImage from "../assets/envelope.svg";
 
 const errorHandler = (error: any, rollbar: Rollbar, showAlert = true) => {
   rollbar.error(error);
@@ -339,8 +342,13 @@ const Legend = ({ showLegend, hideFunction }: LegendProps) => (
             <td>Do not call or write letter.</td>
           </tr>
           <tr>
-            <td className="text-center align-middle">📬</td>
-            <td>Householder is not at home.</td>
+            <td className="text-center align-middle">
+              <NotHomeIcon />
+            </td>
+            <td>
+              Householder is not at home. Option to write a letter after a few
+              tries.
+            </td>
           </tr>
           <tr>
             <td className="text-center align-middle">✖️</td>
@@ -348,7 +356,7 @@ const Legend = ({ showLegend, hideFunction }: LegendProps) => (
           </tr>
           <tr>
             <td className="text-center align-middle">🗒️</td>
-            <td>Optional information about the unit. No personal data.</td>
+            <td>Optional information about the unit. Avoid personal data.</td>
           </tr>
         </tbody>
       </Table>
@@ -398,6 +406,17 @@ const HOUSEHOLD_LANGUAGES = {
   MALAY: { CODE: "m", DISPLAY: "Malay" }
 };
 
+const NotHomeIcon = ({ nhcount, classProp }: nothomeprops) => {
+  let containerClass = "container-nothome";
+  if (classProp) containerClass += ` ${classProp}`;
+  return (
+    <span className={containerClass}>
+      <Image fluid src={envelopeImage} className="nothome-envelope" />
+      {nhcount && <div className="badge-nothome">{nhcount}</div>}
+    </span>
+  );
+};
+
 export {
   ZeroPad,
   ModalUnitTitle,
@@ -417,6 +436,7 @@ export {
   checkTraceRaceStatus,
   processAddressData,
   ExpiryTimePopover,
+  NotHomeIcon,
   STATUS_CODES,
   MUTABLE_CODES,
   LOGIN_TYPE_CODES,
