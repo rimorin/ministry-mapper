@@ -8,6 +8,7 @@ import Welcome from "./components/welcome";
 import {
   HOUSEHOLD_LANGUAGES,
   HOUSEHOLD_TYPES,
+  Legend,
   LOGIN_TYPE_CODES,
   NOT_HOME_STATUS_CODES,
   STATUS_CODES
@@ -418,4 +419,16 @@ test("renders languages household with done status and notes", () => {
   expect(screen.getByText(langs.toUpperCase())).toBeInTheDocument();
   expect(screen.getByText("🗒️", { exact: false })).toBeInTheDocument();
   expect(screen.getByText("✅", { exact: false })).toBeInTheDocument();
+});
+
+test("renders slip legend", () => {
+  render(<Legend showLegend={true} />);
+  expect(screen.getByText("Legend")).toBeInTheDocument();
+  expect(screen.getByText("✅")).toBeInTheDocument();
+  expect(screen.getByText("🚫")).toBeInTheDocument();
+  expect(screen.getByText("🗒️")).toBeInTheDocument();
+  expect(screen.getByText("✖️")).toBeInTheDocument();
+  const svgImg = screen.getByRole("img");
+  expect(svgImg).toBeInTheDocument();
+  expect(svgImg).toHaveClass("nothome-envelope img-fluid");
 });

@@ -10,6 +10,11 @@ export interface unitDetails {
   dnctime: number;
 }
 
+export interface nothomeprops {
+  nhcount?: String;
+  classProp?: String;
+}
+
 export interface floorDetails {
   floor: String;
   units: Array<unitDetails>;
@@ -102,7 +107,7 @@ export interface FooterProps {
 
 export interface LegendProps {
   showLegend: boolean;
-  hideFunction: any;
+  hideFunction?: any;
 }
 
 export interface TerritoryListingProps {
