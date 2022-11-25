@@ -161,7 +161,7 @@ function Admin({ user, isConductor = false }: adminProps) {
       )
     );
 
-    if (!territoryAddsResult.exists() || !territoryNameResult.exists()) return;
+    if (!territoryNameResult.exists()) return;
     const territoryName = territoryNameResult.val();
     setSelectedTerritory(`${selectedTerritoryCode} - ${territoryName}`);
     setSelectedTerritoryCode(selectedTerritoryCode);
