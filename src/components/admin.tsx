@@ -959,9 +959,9 @@ function Admin({ user, isConductor = false }: adminProps) {
           />
         )}
         <Accordion
-          activeKey={accordingKeys}
+          activeKey={isConductor ? accordingKeys : undefined}
           onSelect={(eventKeys) => {
-            if (Array.isArray(eventKeys)) {
+            if (isConductor && Array.isArray(eventKeys)) {
               setAccordionKeys(
                 eventKeys.map((key) => {
                   return key.toString();
@@ -969,7 +969,7 @@ function Admin({ user, isConductor = false }: adminProps) {
               );
             }
           }}
-          alwaysOpen
+          alwaysOpen={isConductor}
           flush
         >
           {territoryAddresses.map((addressElement) => {
