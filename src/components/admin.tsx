@@ -12,6 +12,7 @@ import {
   orderByValue,
   off
 } from "firebase/database";
+import "../css/admin.css";
 import { signOut } from "firebase/auth";
 import { nanoid } from "nanoid";
 import { MouseEvent, ChangeEvent, FormEvent, useEffect, useState } from "react";
@@ -92,6 +93,7 @@ import Welcome from "./welcome";
 import UnauthorizedPage from "./unauthorisedpage";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
+import { zeroPad } from "react-countdown";
 function Admin({ user, isConductor = false }: adminProps) {
   const { code } = useParams();
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -110,6 +112,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   const [isNewUnit, setIsNewUnit] = useState<boolean>(false);
   const [isTerritoryRename, setIsTerritoryRename] = useState<boolean>(false);
   const [isDnc, setIsDnc] = useState<boolean>(false);
+  const [isUnitDetails, setIsUnitDetails] = useState<boolean>(false);
   const [showTerritoryListing, setShowTerritoryListing] =
     useState<boolean>(false);
   const [trackRace, setTrackRace] = useState<boolean>(true);
@@ -342,6 +345,9 @@ function Admin({ user, isConductor = false }: adminProps) {
       case ADMIN_MODAL_TYPES.RENAME_TERRITORY:
         setIsTerritoryRename(!isTerritoryRename);
         break;
+      case ADMIN_MODAL_TYPES.UPDATE_UNIT:
+        setIsUnitDetails(!isUnitDetails);
+        break;
       default:
         setIsOpen(!isOpen);
     }
@@ -433,6 +439,24 @@ function Admin({ user, isConductor = false }: adminProps) {
   ) => {
     setValues({ ...values, postal: postalcode, floors: floors, unit: "" });
     toggleModal(ADMIN_MODAL_TYPES.ADD_UNIT);
+  };
+
+  const handleClickUpdateUnit = (
+    postalcode: String,
+    unitlength: number,
+    unitseq: number | undefined,
+    unit: String,
+    maxUnitNumber: number
+  ) => {
+    setValues({
+      ...values,
+      postal: postalcode,
+      unit: unit,
+      unitDisplay: zeroPad(`${unit}`, maxUnitNumber),
+      unitlength: unitlength,
+      sequence: unitseq || ""
+    });
+    toggleModal(ADMIN_MODAL_TYPES.UPDATE_UNIT);
   };
 
   const handleSubmitFeedback = async (event: FormEvent<HTMLElement>) => {
@@ -542,6 +566,35 @@ function Admin({ user, isConductor = false }: adminProps) {
     }
   };
 
+  const processPostalUnitSequence = async (
+    postalCode: String,
+    unitNumber: String,
+    sequence: number | undefined
+  ) => {
+    const blockAddresses = addresses.get(`${postalCode}`);
+    if (!blockAddresses) return;
+
+    const unitUpdates: unitMaps = {};
+    for (const index in blockAddresses.floors) {
+      const floorDetails = blockAddresses.floors[index];
+      floorDetails.units.forEach((_) => {
+        unitUpdates[
+          `/${postalCode}/units/${floorDetails.floor}/${unitNumber}/sequence`
+        ] = sequence || {};
+      });
+    }
+    setIsSaving(true);
+    console.log(unitUpdates);
+    try {
+      await pollingFunction(() => update(ref(database), unitUpdates));
+      await refreshCongregationTerritory(`${selectedTerritoryCode}`);
+    } catch (error) {
+      errorHandler(error, rollbar);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleCreateNewUnit = async (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
@@ -549,6 +602,16 @@ function Admin({ user, isConductor = false }: adminProps) {
     const unitNumber = details.unit;
     processPostalUnitNumber(`${postalCode}`, unitNumber);
     toggleModal(ADMIN_MODAL_TYPES.ADD_UNIT);
+  };
+
+  const handleUpdateUnit = async (event: FormEvent<HTMLElement>) => {
+    event.preventDefault();
+    const details = values as valuesDetails;
+    const postalCode = details.postal;
+    const unitNumber = details.unit;
+    const unitSeq = details.sequence;
+    processPostalUnitSequence(`${postalCode}`, unitNumber, unitSeq);
+    toggleModal(ADMIN_MODAL_TYPES.UPDATE_UNIT);
   };
 
   const handleCreateTerritoryAddress = async (
@@ -1280,81 +1343,20 @@ function Admin({ user, isConductor = false }: adminProps) {
                                 <th
                                   key={`${index}-${item.number}`}
                                   scope="col"
-                                  className="text-center align-middle"
+                                  className={`${
+                                    !isConductor ? "admin-unit-header " : ""
+                                  }text-center align-middle`}
+                                  onClick={() => {
+                                    if (isConductor) return;
+                                    handleClickUpdateUnit(
+                                      addressElement.postalcode,
+                                      addressElement.floors[0].units.length,
+                                      item.sequence,
+                                      item.number,
+                                      maxUnitNumberLength
+                                    );
+                                  }}
                                 >
-                                  {!isConductor && (
-                                    <Button
-                                      size="sm"
-                                      variant="outline-warning"
-                                      className="me-1"
-                                      onClick={() => {
-                                        const hasOnlyOneUnitNumber =
-                                          addressElement.floors[0].units
-                                            .length === 1;
-                                        if (hasOnlyOneUnitNumber) {
-                                          alert(
-                                            `Territory requires at least 1 unit number.`
-                                          );
-                                          return;
-                                        }
-                                        confirmAlert({
-                                          customUI: ({ onClose }) => {
-                                            return (
-                                              <Container>
-                                                <Card
-                                                  bg="warning"
-                                                  className="text-center"
-                                                >
-                                                  <Card.Header>
-                                                    Warning ⚠️
-                                                  </Card.Header>
-                                                  <Card.Body>
-                                                    <Card.Title>
-                                                      Are You Very Sure ?
-                                                    </Card.Title>
-                                                    <Card.Text>
-                                                      This action will delete
-                                                      unit number {item.number}{" "}
-                                                      of{" "}
-                                                      {
-                                                        addressElement.postalcode
-                                                      }
-                                                      .
-                                                    </Card.Text>
-                                                    <Button
-                                                      className="m-1"
-                                                      variant="primary"
-                                                      onClick={() => {
-                                                        processPostalUnitNumber(
-                                                          addressElement.postalcode,
-                                                          item.number,
-                                                          true
-                                                        );
-                                                        onClose();
-                                                      }}
-                                                    >
-                                                      Yes, Delete It.
-                                                    </Button>
-                                                    <Button
-                                                      className="ms-2"
-                                                      variant="primary"
-                                                      onClick={() => {
-                                                        onClose();
-                                                      }}
-                                                    >
-                                                      No
-                                                    </Button>
-                                                  </Card.Body>
-                                                </Card>
-                                              </Container>
-                                            );
-                                          }
-                                        });
-                                      }}
-                                    >
-                                      🗑️
-                                    </Button>
-                                  )}
                                   {ZeroPad(item.number, maxUnitNumberLength)}
                                 </th>
                               )
@@ -1728,6 +1730,96 @@ function Admin({ user, isConductor = false }: adminProps) {
                   onClick={() => toggleModal(ADMIN_MODAL_TYPES.ADD_UNIT)}
                 >
                   Close
+                </Button>
+                <Button type="submit" variant="primary">
+                  Save
+                </Button>
+              </Modal.Footer>
+            </Form>
+          </Modal>
+        )}
+        {!isConductor && (
+          <Modal show={isUnitDetails}>
+            <Modal.Header>
+              <Modal.Title>
+                Unit {`${(values as valuesDetails).unitDisplay}`}
+              </Modal.Title>
+            </Modal.Header>
+            <Form onSubmit={handleUpdateUnit}>
+              <Modal.Body>
+                <GenericTextField
+                  label="Sequence Number"
+                  name="sequence"
+                  placeholder="Optional unit row sequence number"
+                  handleChange={(e: ChangeEvent<HTMLElement>) => {
+                    const { value } = e.target as HTMLInputElement;
+                    setValues({ ...values, sequence: value });
+                  }}
+                  changeValue={`${(values as valuesDetails).sequence}`}
+                />
+              </Modal.Body>
+              <Modal.Footer>
+                <Button
+                  variant="secondary"
+                  onClick={() => toggleModal(ADMIN_MODAL_TYPES.UPDATE_UNIT)}
+                >
+                  Close
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    const hasOnlyOneUnitNumber =
+                      (values as valuesDetails).unitlength === 1;
+                    if (hasOnlyOneUnitNumber) {
+                      alert(`Territory requires at least 1 unit number.`);
+                      return;
+                    }
+                    toggleModal(ADMIN_MODAL_TYPES.UPDATE_UNIT);
+                    confirmAlert({
+                      customUI: ({ onClose }) => {
+                        return (
+                          <Container>
+                            <Card bg="warning" className="text-center">
+                              <Card.Header>Warning ⚠️</Card.Header>
+                              <Card.Body>
+                                <Card.Title>Are You Very Sure ?</Card.Title>
+                                <Card.Text>
+                                  This action will delete unit number{" "}
+                                  {(values as valuesDetails).unit} of{" "}
+                                  {(values as valuesDetails).postal}.
+                                </Card.Text>
+                                <Button
+                                  className="m-1"
+                                  variant="primary"
+                                  onClick={() => {
+                                    processPostalUnitNumber(
+                                      `${(values as valuesDetails).postal}`,
+                                      `${(values as valuesDetails).unit}`,
+                                      true
+                                    );
+                                    onClose();
+                                  }}
+                                >
+                                  Yes, Delete It.
+                                </Button>
+                                <Button
+                                  className="ms-2"
+                                  variant="primary"
+                                  onClick={() => {
+                                    onClose();
+                                  }}
+                                >
+                                  No
+                                </Button>
+                              </Card.Body>
+                            </Card>
+                          </Container>
+                        );
+                      }
+                    });
+                  }}
+                >
+                  Delete Unit
                 </Button>
                 <Button type="submit" variant="primary">
                   Save
