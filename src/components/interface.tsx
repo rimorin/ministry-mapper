@@ -8,6 +8,7 @@ export interface unitDetails {
   nhcount: String;
   languages: String;
   dnctime: number;
+  sequence?: number;
 }
 
 export interface nothomeprops {
@@ -49,6 +50,8 @@ export interface valuesDetails {
   newPostal?: String;
   code?: String;
   dnctime?: number;
+  sequence?: number;
+  unitlength?: number;
 }
 
 export interface adminProps {

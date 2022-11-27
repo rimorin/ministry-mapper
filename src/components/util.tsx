@@ -83,7 +83,8 @@ const ADMIN_MODAL_TYPES = {
   CREATE_ADDRESS: 4,
   CREATE_TERRITORY: 5,
   ADD_UNIT: 6,
-  RENAME_ADDRESS_NAME: 7
+  RENAME_ADDRESS_NAME: 7,
+  UPDATE_UNIT: 8
 };
 
 const DEFAULT_FLOOR_PADDING = 2;
@@ -296,7 +297,8 @@ const processAddressData = async (postal: String, data: any) => {
         status: unitValues.status,
         nhcount: unitValues.nhcount || NOT_HOME_STATUS_CODES.DEFAULT,
         languages: unitValues.languages || "",
-        dnctime: unitValues.dnctime || null
+        dnctime: unitValues.dnctime || null,
+        sequence: unitValues.sequence
       });
     });
     dataList.unshift({ floor: floor, units: unitsDetails });
