@@ -36,6 +36,7 @@ import { database, auth } from "./../firebase";
 import Loader from "./loader";
 import UnitStatus from "./unit";
 import {
+  Policy,
   valuesDetails,
   territoryDetails,
   addressDetails,
@@ -92,6 +93,7 @@ import Welcome from "./welcome";
 import UnauthorizedPage from "./unauthorisedpage";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
+import { RacePolicy, LanguagePolicy } from "./policies";
 function Admin({ user, isConductor = false }: adminProps) {
   const { code } = useParams();
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -127,6 +129,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   const domain = process.env.PUBLIC_URL;
   const rollbar = useRollbar();
   let unsubscribers = new Array<Unsubscribe>();
+  const [policy, setPolicy] = useState<Policy>();
 
   const refreshAddressState = () => {
     unsubscribers.forEach((unsubFunction) => {
@@ -725,12 +728,18 @@ function Admin({ user, isConductor = false }: adminProps) {
   };
 
   useEffect(() => {
-    checkTraceLangStatus(`${code}`).then((snapshot) =>
-      setTrackLanguages(snapshot.val())
-    );
-    checkTraceRaceStatus(`${code}`).then((snapshot) =>
-      setTrackRace(snapshot.val())
-    );
+    checkTraceLangStatus(`${code}`).then((snapshot) => {
+      setTrackLanguages(snapshot.val());
+      if (trackLanguages) {
+        setPolicy(new LanguagePolicy(2, "e"));
+      }
+    });
+    checkTraceRaceStatus(`${code}`).then((snapshot) => {
+      setTrackRace(snapshot.val());
+      if (trackRace) {
+        setPolicy(new RacePolicy());
+      }
+    });
 
     const congregationReference = child(ref(database), `congregations/${code}`);
     onValue(
@@ -770,7 +779,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     };
 
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-  }, [user, code, rollbar]);
+  }, [user, code, rollbar, trackLanguages, trackRace]);
 
   if (isLoading) return <Loader />;
   if (isUnauthorised) return <UnauthorizedPage />;
@@ -910,7 +919,10 @@ function Admin({ user, isConductor = false }: adminProps) {
         >
           {territoryAddresses.map((addressElement) => {
             const maxUnitNumberLength = getMaxUnitLength(addressElement.floors);
-            const completedPercent = getCompletedPercent(addressElement.floors);
+            const completedPercent = getCompletedPercent(
+              policy as Policy,
+              addressElement.floors
+            );
             const addressLinkId = nanoid();
             const zipcode =
               addressElement.x_zip == null

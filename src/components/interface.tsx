@@ -133,3 +133,8 @@ export interface RouteDetails {
   postalCode: String;
   name: String;
 }
+
+export interface Policy {
+  isCountable(unit: unitDetails): boolean;
+  isCompleted(unit: unitDetails): boolean;
+}

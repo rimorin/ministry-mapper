@@ -19,6 +19,7 @@ import {
 import Rollbar from "rollbar";
 import { database } from "../firebase";
 import {
+  Policy,
   TitleProps,
   BrandingProps,
   LegendProps,
@@ -178,7 +179,7 @@ const processHHLanguages = (languages: string[]) => {
   return languages.join();
 };
 
-const getCompletedPercent = (floors: floorDetails[]) => {
+const getCompletedPercent = (policy: Policy, floors: floorDetails[]) => {
   let totalUnits = 0;
   let completedUnits = 0;
 
@@ -187,17 +188,10 @@ const getCompletedPercent = (floors: floorDetails[]) => {
       const unitStatus = uElement.status.toString();
       const unitType = uElement.type;
       const unitNotHomeCount = uElement.nhcount;
-      const isCountable =
-        COUNTABLE_HOUSEHOLD_STATUS.includes(unitStatus) &&
-        unitType !== HOUSEHOLD_TYPES.MALAY;
+      const isCountable = policy.isCountable(uElement);
 
       if (isCountable) totalUnits++;
-      if (
-        unitStatus === STATUS_CODES.DONE ||
-        (unitStatus === STATUS_CODES.NOT_HOME &&
-          (unitNotHomeCount === NOT_HOME_STATUS_CODES.SECOND_TRY ||
-            unitNotHomeCount === NOT_HOME_STATUS_CODES.THIRD_TRY))
-      ) {
+      if (policy.isCompleted(uElement)) {
         completedUnits++;
       }
     });
@@ -452,5 +446,6 @@ export {
   NOT_HOME_STATUS_CODES,
   MIN_START_FLOOR,
   MAX_TOP_FLOOR,
+  COUNTABLE_HOUSEHOLD_STATUS,
   HOUSEHOLD_LANGUAGES
 };
