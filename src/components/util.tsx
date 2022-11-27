@@ -185,9 +185,6 @@ const getCompletedPercent = (policy: Policy, floors: floorDetails[]) => {
 
   floors.forEach((element) => {
     element.units.forEach((uElement) => {
-      const unitStatus = uElement.status.toString();
-      const unitType = uElement.type;
-      const unitNotHomeCount = uElement.nhcount;
       const isCountable = policy.isCountable(uElement);
 
       if (isCountable) totalUnits++;
