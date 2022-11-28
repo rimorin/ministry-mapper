@@ -793,14 +793,16 @@ function Admin({ user, isConductor = false }: adminProps) {
 
   useEffect(() => {
     checkTraceLangStatus(`${code}`).then((snapshot) => {
-      setTrackLanguages(snapshot.val());
-      if (snapshot.val()) {
+      const isTrackLanguages = snapshot.val();
+      setTrackLanguages(isTrackLanguages);
+      if (isTrackLanguages) {
         setPolicy(new LanguagePolicy());
       }
     });
     checkTraceRaceStatus(`${code}`).then((snapshot) => {
-      setTrackRace(snapshot.val());
-      if (snapshot.val()) {
+      const isTrackRace = snapshot.val();
+      setTrackRace(isTrackRace);
+      if (isTrackRace) {
         setPolicy(new RacePolicy());
       }
     });
