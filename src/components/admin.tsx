@@ -794,13 +794,13 @@ function Admin({ user, isConductor = false }: adminProps) {
   useEffect(() => {
     checkTraceLangStatus(`${code}`).then((snapshot) => {
       setTrackLanguages(snapshot.val());
-      if (trackLanguages) {
+      if (snapshot.val()) {
         setPolicy(new LanguagePolicy(2, "e"));
       }
     });
     checkTraceRaceStatus(`${code}`).then((snapshot) => {
       setTrackRace(snapshot.val());
-      if (trackRace) {
+      if (snapshot.val()) {
         setPolicy(new RacePolicy());
       }
     });
@@ -843,7 +843,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     };
 
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-  }, [user, code, rollbar, trackLanguages, trackRace]);
+  }, [user, code, rollbar]);
 
   if (isLoading) return <Loader />;
   if (isUnauthorised) return <UnauthorizedPage />;
