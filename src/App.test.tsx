@@ -8,6 +8,7 @@ import Welcome from "./components/welcome";
 import {
   HOUSEHOLD_LANGUAGES,
   HOUSEHOLD_TYPES,
+  Legend,
   LOGIN_TYPE_CODES,
   NOT_HOME_STATUS_CODES,
   STATUS_CODES
@@ -23,6 +24,7 @@ import {
 } from "./components/form";
 import UnitStatus from "./components/unit";
 import { Provider } from "@rollbar/react";
+import { LanguagePolicy, RacePolicy } from "./components/policies";
 
 const mockRollbarConfig = {
   accessToken: "",
@@ -211,10 +213,11 @@ test("renders not home status", () => {
     <UnitStatus
       type={HOUSEHOLD_TYPES.CHINESE}
       note={""}
+      nhcount={NOT_HOME_STATUS_CODES.DEFAULT}
       status={STATUS_CODES.NOT_HOME}
     />
   );
-  expect(screen.getByText("📬")).toBeInTheDocument();
+  expect(screen.getByText("1")).toBeInTheDocument();
 });
 
 test("renders done status", () => {
@@ -272,7 +275,7 @@ test("renders 2nd try not home status", () => {
       status={STATUS_CODES.NOT_HOME}
     />
   );
-  expect(screen.getByText("📬", { exact: false })).toBeInTheDocument();
+  expect(screen.getByText("2", { exact: false })).toBeInTheDocument();
   expect(
     screen.getByText(NOT_HOME_STATUS_CODES.SECOND_TRY, { exact: false })
   ).toBeInTheDocument();
@@ -287,7 +290,7 @@ test("renders 3rd try not home status", () => {
       status={STATUS_CODES.NOT_HOME}
     />
   );
-  expect(screen.getByText("📬", { exact: false })).toBeInTheDocument();
+  expect(screen.getByText("3", { exact: false })).toBeInTheDocument();
   expect(
     screen.getByText(NOT_HOME_STATUS_CODES.THIRD_TRY, { exact: false })
   ).toBeInTheDocument();
@@ -394,7 +397,7 @@ test("renders languages household", () => {
       languages={langs}
     />
   );
-  expect(screen.getByText(langs)).toBeInTheDocument();
+  expect(screen.getByText(langs.toUpperCase())).toBeInTheDocument();
 });
 
 test("renders languages household with done status and notes", () => {
@@ -414,7 +417,467 @@ test("renders languages household with done status and notes", () => {
       languages={langs}
     />
   );
-  expect(screen.getByText(langs)).toBeInTheDocument();
+  expect(screen.getByText(langs.toUpperCase())).toBeInTheDocument();
   expect(screen.getByText("🗒️", { exact: false })).toBeInTheDocument();
   expect(screen.getByText("✅", { exact: false })).toBeInTheDocument();
+});
+
+test("renders slip legend", () => {
+  render(<Legend showLegend={true} />);
+  expect(screen.getByText("Legend")).toBeInTheDocument();
+  expect(screen.getByText("✅")).toBeInTheDocument();
+  expect(screen.getByText("🚫")).toBeInTheDocument();
+  expect(screen.getByText("🗒️")).toBeInTheDocument();
+  expect(screen.getByText("✖️")).toBeInTheDocument();
+  const svgImg = screen.getByRole("img");
+  expect(svgImg).toBeInTheDocument();
+  expect(svgImg).toHaveClass("nothome-envelope img-fluid");
+});
+
+test("language policy countable empty", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.DEFAULT,
+    nhcount: "",
+    languages: "",
+    dnctime: 0
+  };
+  expect(policy.isCountable(unit)).toBe(true);
+});
+
+test("language policy countable e", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.DEFAULT,
+    nhcount: "",
+    languages: HOUSEHOLD_LANGUAGES.ENGLISH.CODE,
+    dnctime: 0
+  };
+  expect(policy.isCountable(unit)).toBe(true);
+});
+
+test("language policy countable c", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.DEFAULT,
+    nhcount: "",
+    languages: HOUSEHOLD_LANGUAGES.CHINESE.CODE,
+    dnctime: 0
+  };
+  expect(policy.isCountable(unit)).toBe(false);
+});
+
+test("language policy countable e done", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.DONE,
+    nhcount: "",
+    languages: HOUSEHOLD_LANGUAGES.ENGLISH.CODE,
+    dnctime: 0
+  };
+  expect(policy.isCountable(unit)).toBe(true);
+});
+
+test("language policy countable e not home", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.NOT_HOME,
+    nhcount: "",
+    languages: HOUSEHOLD_LANGUAGES.ENGLISH.CODE,
+    dnctime: 0
+  };
+  expect(policy.isCountable(unit)).toBe(true);
+});
+
+test("language policy countable e dnc", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.DO_NOT_CALL,
+    nhcount: "",
+    languages: HOUSEHOLD_LANGUAGES.ENGLISH.CODE,
+    dnctime: 0
+  };
+  expect(policy.isCountable(unit)).toBe(false);
+});
+
+test("language policy countable e invalid", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.INVALID,
+    nhcount: "",
+    languages: HOUSEHOLD_LANGUAGES.ENGLISH.CODE,
+    dnctime: 0
+  };
+  expect(policy.isCountable(unit)).toBe(false);
+});
+
+test("language policy completed empty", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.DEFAULT,
+    nhcount: "",
+    languages: "",
+    dnctime: 0
+  };
+  expect(policy.isCompleted(unit)).toBe(false);
+});
+
+test("language policy completed done", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.DONE,
+    nhcount: "",
+    languages: "",
+    dnctime: 0
+  };
+  expect(policy.isCompleted(unit)).toBe(true);
+});
+
+test("language policy completed not home 1", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.NOT_HOME,
+    nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+    languages: "",
+    dnctime: 0
+  };
+  expect(policy.isCompleted(unit)).toBe(false);
+});
+
+test("language policy completed not home 2", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.NOT_HOME,
+    nhcount: NOT_HOME_STATUS_CODES.SECOND_TRY,
+    languages: "",
+    dnctime: 0
+  };
+  expect(policy.isCompleted(unit)).toBe(true);
+});
+
+test("language policy completed not home 3", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.NOT_HOME,
+    nhcount: NOT_HOME_STATUS_CODES.THIRD_TRY,
+    languages: "",
+    dnctime: 0
+  };
+  expect(policy.isCompleted(unit)).toBe(true);
+});
+
+test("language policy completed empty e", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.DEFAULT,
+    nhcount: "",
+    languages: HOUSEHOLD_LANGUAGES.ENGLISH.CODE,
+    dnctime: 0
+  };
+  expect(policy.isCompleted(unit)).toBe(false);
+});
+
+test("language policy completed done e", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.DONE,
+    nhcount: "",
+    languages: HOUSEHOLD_LANGUAGES.ENGLISH.CODE,
+    dnctime: 0
+  };
+  expect(policy.isCompleted(unit)).toBe(true);
+});
+
+test("language policy completed e not home 1", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.NOT_HOME,
+    nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+    languages: HOUSEHOLD_LANGUAGES.ENGLISH.CODE,
+    dnctime: 0
+  };
+  expect(policy.isCompleted(unit)).toBe(false);
+});
+
+test("language policy completed e not home 2", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.NOT_HOME,
+    nhcount: NOT_HOME_STATUS_CODES.SECOND_TRY,
+    languages: HOUSEHOLD_LANGUAGES.ENGLISH.CODE,
+    dnctime: 0
+  };
+  expect(policy.isCompleted(unit)).toBe(true);
+});
+
+test("language policy completed e not home 3", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.NOT_HOME,
+    nhcount: NOT_HOME_STATUS_CODES.THIRD_TRY,
+    languages: HOUSEHOLD_LANGUAGES.ENGLISH.CODE,
+    dnctime: 0
+  };
+  expect(policy.isCompleted(unit)).toBe(true);
+});
+
+test("language policy completed empty c", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.DEFAULT,
+    nhcount: "",
+    languages: HOUSEHOLD_LANGUAGES.CHINESE.CODE,
+    dnctime: 0
+  };
+  expect(policy.isCompleted(unit)).toBe(false);
+});
+
+test("language policy completed done c", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.DONE,
+    nhcount: "",
+    languages: HOUSEHOLD_LANGUAGES.CHINESE.CODE,
+    dnctime: 0
+  };
+  expect(policy.isCompleted(unit)).toBe(false);
+});
+
+test("language policy completed c not home 1", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.NOT_HOME,
+    nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+    languages: HOUSEHOLD_LANGUAGES.CHINESE.CODE,
+    dnctime: 0
+  };
+  expect(policy.isCompleted(unit)).toBe(false);
+});
+
+test("language policy completed c not home 2", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.NOT_HOME,
+    nhcount: NOT_HOME_STATUS_CODES.SECOND_TRY,
+    languages: HOUSEHOLD_LANGUAGES.CHINESE.CODE,
+    dnctime: 0
+  };
+  expect(policy.isCompleted(unit)).toBe(false);
+});
+
+test("language policy completed c not home 3", () => {
+  const policy = new LanguagePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: "",
+    status: STATUS_CODES.NOT_HOME,
+    nhcount: NOT_HOME_STATUS_CODES.THIRD_TRY,
+    languages: HOUSEHOLD_LANGUAGES.CHINESE.CODE,
+    dnctime: 0
+  };
+  expect(policy.isCompleted(unit)).toBe(false);
+});
+
+test("race policy empty", () => {
+  const policy = new RacePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: HOUSEHOLD_TYPES.CHINESE,
+    status: STATUS_CODES.DEFAULT,
+    nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+    languages: "",
+    dnctime: 0
+  };
+  expect(policy.isCountable(unit)).toBe(true);
+});
+
+test("race policy c done", () => {
+  const policy = new RacePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: HOUSEHOLD_TYPES.CHINESE,
+    status: STATUS_CODES.DONE,
+    nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+    languages: "",
+    dnctime: 0
+  };
+  expect(policy.isCountable(unit)).toBe(true);
+});
+
+test("race policy c not home", () => {
+  const policy = new RacePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: HOUSEHOLD_TYPES.CHINESE,
+    status: STATUS_CODES.NOT_HOME,
+    nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+    languages: "",
+    dnctime: 0
+  };
+  expect(policy.isCountable(unit)).toBe(true);
+});
+
+test("race policy c dnc", () => {
+  const policy = new RacePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: HOUSEHOLD_TYPES.CHINESE,
+    status: STATUS_CODES.DO_NOT_CALL,
+    nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+    languages: "",
+    dnctime: 0
+  };
+  expect(policy.isCountable(unit)).toBe(false);
+});
+
+test("race policy c invalid", () => {
+  const policy = new RacePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: HOUSEHOLD_TYPES.CHINESE,
+    status: STATUS_CODES.INVALID,
+    nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+    languages: "",
+    dnctime: 0
+  };
+  expect(policy.isCountable(unit)).toBe(false);
+});
+
+test("race policy m empty", () => {
+  const policy = new RacePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: HOUSEHOLD_TYPES.MALAY,
+    status: STATUS_CODES.DEFAULT,
+    nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+    languages: "",
+    dnctime: 0
+  };
+  expect(policy.isCountable(unit)).toBe(false);
+});
+
+test("race policy m done", () => {
+  const policy = new RacePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: HOUSEHOLD_TYPES.MALAY,
+    status: STATUS_CODES.DONE,
+    nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+    languages: "",
+    dnctime: 0
+  };
+  expect(policy.isCountable(unit)).toBe(false);
+});
+
+test("race policy m not home", () => {
+  const policy = new RacePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: HOUSEHOLD_TYPES.MALAY,
+    status: STATUS_CODES.NOT_HOME,
+    nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+    languages: "",
+    dnctime: 0
+  };
+  expect(policy.isCountable(unit)).toBe(false);
+});
+
+test("race policy m dnc", () => {
+  const policy = new RacePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: HOUSEHOLD_TYPES.MALAY,
+    status: STATUS_CODES.DO_NOT_CALL,
+    nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+    languages: "",
+    dnctime: 0
+  };
+  expect(policy.isCountable(unit)).toBe(false);
+});
+
+test("race policy m invalid", () => {
+  const policy = new RacePolicy();
+  const unit = {
+    number: "",
+    note: "",
+    type: HOUSEHOLD_TYPES.MALAY,
+    status: STATUS_CODES.INVALID,
+    nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+    languages: "",
+    dnctime: 0
+  };
+  expect(policy.isCountable(unit)).toBe(false);
 });

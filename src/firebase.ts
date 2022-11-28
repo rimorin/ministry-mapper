@@ -43,11 +43,13 @@ const auth = initializeAuth(app, {
   // No popupRedirectResolver defined
 });
 
-initializeAppCheck(app, {
-  provider: new ReCaptchaV3Provider(
-    REACT_APP_FIREBASE_RECAPTCHA_PUBLIC_KEY || ""
-  ),
-  isTokenAutoRefreshEnabled: true
-});
+if (REACT_APP_FIREBASE_RECAPTCHA_PUBLIC_KEY !== undefined) {
+  initializeAppCheck(app, {
+    provider: new ReCaptchaV3Provider(
+      REACT_APP_FIREBASE_RECAPTCHA_PUBLIC_KEY || ""
+    ),
+    isTokenAutoRefreshEnabled: true
+  });
+}
 
 export { database, auth };

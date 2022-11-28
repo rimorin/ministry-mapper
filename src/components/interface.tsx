@@ -8,6 +8,12 @@ export interface unitDetails {
   nhcount: String;
   languages: String;
   dnctime: number;
+  sequence?: number;
+}
+
+export interface nothomeprops {
+  nhcount?: String;
+  classProp?: String;
 }
 
 export interface floorDetails {
@@ -44,6 +50,8 @@ export interface valuesDetails {
   newPostal?: String;
   code?: String;
   dnctime?: number;
+  sequence?: number;
+  unitlength?: number;
 }
 
 export interface adminProps {
@@ -59,6 +67,7 @@ export interface territoryDetails {
 }
 
 export interface addressDetails {
+  x_zip: String;
   name: String;
   postalcode: String;
   floors: Array<floorDetails>;
@@ -101,7 +110,7 @@ export interface FooterProps {
 
 export interface LegendProps {
   showLegend: boolean;
-  hideFunction: any;
+  hideFunction?: any;
 }
 
 export interface TerritoryListingProps {
@@ -126,4 +135,9 @@ export interface unitMaps {
 export interface RouteDetails {
   postalCode: String;
   name: String;
+}
+
+export interface Policy {
+  isCountable(unit: unitDetails): boolean;
+  isCompleted(unit: unitDetails): boolean;
 }

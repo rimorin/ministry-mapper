@@ -1,5 +1,5 @@
 import { MouseEvent, ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { ref, child, onValue, set } from "firebase/database";
+import { ref, child, onValue, set, update } from "firebase/database";
 import { database } from "../firebase";
 import {
   Button,
@@ -61,6 +61,7 @@ const Slip = ({ tokenEndtime = 0, postalcode = "", congregationcode = "" }) => {
   const [trackLanguages, setTrackLanguages] = useState<boolean>(true);
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
   const [postalName, setPostalName] = useState<String>();
+  const [postalZip, setPostalZip] = useState<String>();
   const [values, setValues] = useState<Object>({});
   const rollbar = useRollbar();
 
@@ -109,7 +110,7 @@ const Slip = ({ tokenEndtime = 0, postalcode = "", congregationcode = "" }) => {
     setIsSaving(true);
     try {
       await pollingFunction(() =>
-        set(
+        update(
           ref(
             database,
             `/${postalcode}/units/${details.floor}/${details.unit}`
@@ -168,6 +169,7 @@ const Slip = ({ tokenEndtime = 0, postalcode = "", congregationcode = "" }) => {
   useEffect(() => {
     const postalNameReference = child(ref(database), `/${postalcode}/name`);
     const postalUnitReference = child(ref(database), `/${postalcode}/units`);
+    const postalZipReference = child(ref(database), `/${postalcode}/x_zip`);
     const postalFeedbackReference = child(
       ref(database),
       `/${postalcode}/feedback`
@@ -205,6 +207,16 @@ const Slip = ({ tokenEndtime = 0, postalcode = "", congregationcode = "" }) => {
         setValues((values) => ({ ...values, feedback: snapshot.val() }));
       }
     });
+    onValue(
+      postalZipReference,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const postalZip = snapshot.val();
+          setPostalZip(postalZip);
+        }
+      },
+      { onlyOnce: true }
+    );
 
     let currentTime = new Date().getTime();
     const setActivityTime = () => {
@@ -228,6 +240,7 @@ const Slip = ({ tokenEndtime = 0, postalcode = "", congregationcode = "" }) => {
   }, [tokenEndtime, postalcode, congregationcode]);
   if (isPostalLoading) return <Loader />;
   const maxUnitNumberLength = getMaxUnitLength(floors);
+  const zipcode = postalZip == null ? postalcode : postalZip;
   return (
     <Fade appear={true} in={true}>
       <div>
@@ -255,7 +268,7 @@ const Slip = ({ tokenEndtime = 0, postalcode = "", congregationcode = "" }) => {
                 className="me-2 mb-1"
                 onClick={() => {
                   window.open(
-                    `http://maps.google.com.sg/maps?q=${postalcode}`,
+                    `http://maps.google.com.sg/maps?q=${zipcode}`,
                     "_blank"
                   );
                 }}

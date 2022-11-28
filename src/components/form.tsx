@@ -56,7 +56,8 @@ const GenericTextField = ({
   changeValue,
   name,
   label,
-  required = false
+  required = false,
+  placeholder = ""
 }: FormProps) => {
   return (
     <Form.Group className="mb-3" controlId={`basicForm${name}Text`}>
@@ -66,6 +67,7 @@ const GenericTextField = ({
         name={name}
         value={changeValue}
         required={required}
+        placeholder={placeholder}
       />
     </Form.Group>
   );

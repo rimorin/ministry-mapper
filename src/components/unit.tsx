@@ -1,6 +1,6 @@
 import { Badge } from "react-bootstrap";
 import { unitProps } from "./interface";
-import { HOUSEHOLD_TYPES, STATUS_CODES } from "./util";
+import { HOUSEHOLD_TYPES, NotHomeIcon, STATUS_CODES } from "./util";
 
 const UnitStatus = (props: unitProps) => {
   const householdRace = props.type;
@@ -34,9 +34,7 @@ const UnitStatus = (props: unitProps) => {
     <>
       {currentStatus !== STATUS_CODES.NOT_HOME && <>{status}</>}
       {currentStatus === STATUS_CODES.NOT_HOME && (
-        <Badge bg="secondary" text="light" className="me-1">
-          {status} {nhcount}
-        </Badge>
+        <NotHomeIcon nhcount={nhcount} classProp={"me-1"} />
       )}
       {note && <>🗒️ </>}
       {isTrackRace && householdRace !== HOUSEHOLD_TYPES.CHINESE && (
@@ -44,11 +42,7 @@ const UnitStatus = (props: unitProps) => {
           {householdRace}
         </Badge>
       )}
-      {isTrackLanguages && languages && (
-        <Badge bg="secondary" className="me-1" pill>
-          {languages}
-        </Badge>
-      )}
+      {isTrackLanguages && languages && <span>{languages.toUpperCase()}</span>}
     </>
   );
 };

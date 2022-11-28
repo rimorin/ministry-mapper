@@ -12,10 +12,12 @@ import {
   orderByValue,
   off
 } from "firebase/database";
+import "../css/admin.css";
 import { signOut } from "firebase/auth";
 import { nanoid } from "nanoid";
 import { MouseEvent, ChangeEvent, FormEvent, useEffect, useState } from "react";
 import {
+  Accordion,
   Badge,
   Button,
   Card,
@@ -35,6 +37,7 @@ import { database, auth } from "./../firebase";
 import Loader from "./loader";
 import UnitStatus from "./unit";
 import {
+  Policy,
   valuesDetails,
   territoryDetails,
   addressDetails,
@@ -91,6 +94,8 @@ import Welcome from "./welcome";
 import UnauthorizedPage from "./unauthorisedpage";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
+import { RacePolicy, LanguagePolicy } from "./policies";
+import { zeroPad } from "react-countdown";
 function Admin({ user, isConductor = false }: adminProps) {
   const { code } = useParams();
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -109,6 +114,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   const [isNewUnit, setIsNewUnit] = useState<boolean>(false);
   const [isTerritoryRename, setIsTerritoryRename] = useState<boolean>(false);
   const [isDnc, setIsDnc] = useState<boolean>(false);
+  const [isUnitDetails, setIsUnitDetails] = useState<boolean>(false);
   const [showTerritoryListing, setShowTerritoryListing] =
     useState<boolean>(false);
   const [trackRace, setTrackRace] = useState<boolean>(true);
@@ -122,9 +128,11 @@ function Admin({ user, isConductor = false }: adminProps) {
   const [selectedTerritoryCode, setSelectedTerritoryCode] = useState<String>();
   const [selectedTerritoryName, setSelectedTerritoryName] = useState<String>();
   const [addresses, setAddresses] = useState(new Map<String, addressDetails>());
+  const [accordingKeys, setAccordionKeys] = useState<Array<string>>([]);
   const domain = process.env.PUBLIC_URL;
   const rollbar = useRollbar();
   let unsubscribers = new Array<Unsubscribe>();
+  const [policy, setPolicy] = useState<Policy>();
 
   const refreshAddressState = () => {
     unsubscribers.forEach((unsubFunction) => {
@@ -184,11 +192,14 @@ function Admin({ user, isConductor = false }: adminProps) {
               territoryData.units
             );
             const addressData = {
+              x_zip: territoryData.x_zip,
               name: territoryData.name,
               postalcode: postalCode,
               floors: floorData,
               feedback: territoryData.feedback
             };
+            if (isConductor)
+              setAccordionKeys((existingKeys) => [...existingKeys, postalCode]);
             setAddresses(
               (existingAddresses) =>
                 new Map<String, addressDetails>(
@@ -337,6 +348,9 @@ function Admin({ user, isConductor = false }: adminProps) {
       case ADMIN_MODAL_TYPES.RENAME_TERRITORY:
         setIsTerritoryRename(!isTerritoryRename);
         break;
+      case ADMIN_MODAL_TYPES.UPDATE_UNIT:
+        setIsUnitDetails(!isUnitDetails);
+        break;
       default:
         setIsOpen(!isOpen);
     }
@@ -380,7 +394,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     setIsSaving(true);
     try {
       await pollingFunction(() =>
-        set(
+        update(
           ref(
             database,
             `/${details.postal}/units/${details.floor}/${details.unit}`
@@ -428,6 +442,24 @@ function Admin({ user, isConductor = false }: adminProps) {
   ) => {
     setValues({ ...values, postal: postalcode, floors: floors, unit: "" });
     toggleModal(ADMIN_MODAL_TYPES.ADD_UNIT);
+  };
+
+  const handleClickUpdateUnit = (
+    postalcode: String,
+    unitlength: number,
+    unitseq: number | undefined,
+    unit: String,
+    maxUnitNumber: number
+  ) => {
+    setValues({
+      ...values,
+      postal: postalcode,
+      unit: unit,
+      unitDisplay: zeroPad(`${unit}`, maxUnitNumber),
+      unitlength: unitlength,
+      sequence: unitseq || ""
+    });
+    toggleModal(ADMIN_MODAL_TYPES.UPDATE_UNIT);
   };
 
   const handleSubmitFeedback = async (event: FormEvent<HTMLElement>) => {
@@ -537,6 +569,35 @@ function Admin({ user, isConductor = false }: adminProps) {
     }
   };
 
+  const processPostalUnitSequence = async (
+    postalCode: String,
+    unitNumber: String,
+    sequence: number | undefined
+  ) => {
+    const blockAddresses = addresses.get(`${postalCode}`);
+    if (!blockAddresses) return;
+
+    const unitUpdates: unitMaps = {};
+    for (const index in blockAddresses.floors) {
+      const floorDetails = blockAddresses.floors[index];
+      floorDetails.units.forEach((_) => {
+        unitUpdates[
+          `/${postalCode}/units/${floorDetails.floor}/${unitNumber}/sequence`
+        ] = sequence || {};
+      });
+    }
+    setIsSaving(true);
+    console.log(unitUpdates);
+    try {
+      await pollingFunction(() => update(ref(database), unitUpdates));
+      await refreshCongregationTerritory(`${selectedTerritoryCode}`);
+    } catch (error) {
+      errorHandler(error, rollbar);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleCreateNewUnit = async (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
@@ -544,6 +605,16 @@ function Admin({ user, isConductor = false }: adminProps) {
     const unitNumber = details.unit;
     processPostalUnitNumber(`${postalCode}`, unitNumber);
     toggleModal(ADMIN_MODAL_TYPES.ADD_UNIT);
+  };
+
+  const handleUpdateUnit = async (event: FormEvent<HTMLElement>) => {
+    event.preventDefault();
+    const details = values as valuesDetails;
+    const postalCode = details.postal;
+    const unitNumber = details.unit;
+    const unitSeq = details.sequence;
+    processPostalUnitSequence(`${postalCode}`, unitNumber, unitSeq);
+    toggleModal(ADMIN_MODAL_TYPES.UPDATE_UNIT);
   };
 
   const handleCreateTerritoryAddress = async (
@@ -665,6 +736,7 @@ function Admin({ user, isConductor = false }: adminProps) {
   };
 
   const shareTimedLink = async (
+    postalcode: String,
     linkId: String,
     title: string,
     body: string,
@@ -675,11 +747,17 @@ function Admin({ user, isConductor = false }: adminProps) {
       setIsSettingAssignLink(true);
       try {
         await setTimedLink(linkId, hours);
-        navigator.share({
-          title: title,
-          text: body,
-          url: url
-        });
+        navigator
+          .share({
+            title: title,
+            text: body,
+            url: url
+          })
+          .then((_) => {
+            setAccordionKeys((existingKeys) =>
+              existingKeys.filter((key) => key !== postalcode)
+            );
+          });
       } catch (error) {
         errorHandler(error, rollbar);
       } finally {
@@ -714,12 +792,20 @@ function Admin({ user, isConductor = false }: adminProps) {
   };
 
   useEffect(() => {
-    checkTraceLangStatus(`${code}`).then((snapshot) =>
-      setTrackLanguages(snapshot.val())
-    );
-    checkTraceRaceStatus(`${code}`).then((snapshot) =>
-      setTrackRace(snapshot.val())
-    );
+    checkTraceLangStatus(`${code}`).then((snapshot) => {
+      const isTrackLanguages = snapshot.val();
+      setTrackLanguages(isTrackLanguages);
+      if (isTrackLanguages) {
+        setPolicy(new LanguagePolicy());
+      }
+    });
+    checkTraceRaceStatus(`${code}`).then((snapshot) => {
+      const isTrackRace = snapshot.val();
+      setTrackRace(isTrackRace);
+      if (isTrackRace) {
+        setPolicy(new RacePolicy());
+      }
+    });
 
     const congregationReference = child(ref(database), `congregations/${code}`);
     onValue(
@@ -791,7 +877,7 @@ function Admin({ user, isConductor = false }: adminProps) {
               {congregationTerritoryList &&
                 congregationTerritoryList.length > 0 && (
                   <Button
-                    className="me-2"
+                    className="m-1"
                     size="sm"
                     variant="outline-primary"
                     onClick={toggleTerritoryListing}
@@ -803,7 +889,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                 )}
               {!isConductor && (
                 <Button
-                  className="m-2"
+                  className="m-1"
                   size="sm"
                   variant="outline-primary"
                   onClick={() => {
@@ -816,7 +902,7 @@ function Admin({ user, isConductor = false }: adminProps) {
               )}
               {!isConductor && selectedTerritory && (
                 <Button
-                  className="m-2"
+                  className="m-1"
                   size="sm"
                   variant="outline-primary"
                   onClick={() => {
@@ -829,7 +915,7 @@ function Admin({ user, isConductor = false }: adminProps) {
               )}
               {!isConductor && selectedTerritory && (
                 <Button
-                  className="m-2"
+                  className="m-1"
                   size="sm"
                   variant="outline-primary"
                   onClick={() => {
@@ -848,7 +934,7 @@ function Admin({ user, isConductor = false }: adminProps) {
               )}
               {!isConductor && (
                 <Button
-                  className="m-2"
+                  className="m-1"
                   size="sm"
                   variant="outline-primary"
                   onClick={() => {
@@ -863,7 +949,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                 </Button>
               )}
               <Button
-                className="m-2"
+                className="m-1"
                 size="sm"
                 variant="outline-primary"
                 onClick={async () => {
@@ -883,549 +969,545 @@ function Admin({ user, isConductor = false }: adminProps) {
             }
           />
         )}
-        {territoryAddresses.map((addressElement) => {
-          const maxUnitNumberLength = getMaxUnitLength(addressElement.floors);
-          const completedPercent = getCompletedPercent(addressElement.floors);
-          const addressLinkId = nanoid();
-          return (
-            <div key={`div-${addressElement.postalcode}`}>
-              <Navbar
-                bg="light"
-                expand="sm"
-                className="mt-3"
-                key={`navbar-${addressElement.postalcode}`}
+        <Accordion
+          activeKey={isConductor ? accordingKeys : undefined}
+          onSelect={(eventKeys) => {
+            if (isConductor && Array.isArray(eventKeys)) {
+              setAccordionKeys(
+                eventKeys.map((key) => {
+                  return key.toString();
+                })
+              );
+            }
+          }}
+          alwaysOpen={isConductor}
+          flush
+        >
+          {territoryAddresses.map((addressElement) => {
+            const maxUnitNumberLength = getMaxUnitLength(addressElement.floors);
+            const completedPercent = getCompletedPercent(
+              policy as Policy,
+              addressElement.floors
+            );
+            const addressLinkId = nanoid();
+            const zipcode =
+              addressElement.x_zip == null
+                ? addressElement.postalcode
+                : addressElement.x_zip;
+            return (
+              <Accordion.Item
+                key={`accordion-${addressElement.postalcode}`}
+                eventKey={`${addressElement.postalcode}`}
               >
-                <Container fluid>
-                  <Navbar.Brand>{addressElement.name}</Navbar.Brand>
-                  <Navbar.Toggle aria-controls="navbarScroll" />
-                  <Navbar.Collapse
-                    id="navbarScroll"
-                    className="justify-content-end mt-2"
-                  >
-                    {!isConductor && (
-                      <DropdownButton
-                        key={`assigndrop-${addressElement.postalcode}`}
-                        size="sm"
-                        variant="outline-primary"
-                        title="Assign"
-                        className="me-2 d-inline-block"
-                      >
-                        <Dropdown.Item
-                          onClick={() => {
-                            shareTimedLink(
-                              addressLinkId,
-                              `Units for ${addressElement.name}`,
-                              assignmentMessage(addressElement.name),
-                              `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`
+                <Accordion.Header>{addressElement.name}</Accordion.Header>
+                <Accordion.Body className="p-0">
+                  <ProgressBar
+                    style={{ borderRadius: 0 }}
+                    now={completedPercent.completedValue}
+                    label={completedPercent.completedDisplay}
+                  />
+                  <div key={`div-${addressElement.postalcode}`}>
+                    <Navbar
+                      bg="light"
+                      expand="lg"
+                      key={`navbar-${addressElement.postalcode}`}
+                    >
+                      <Container fluid className="justify-content-end">
+                        {!isConductor && (
+                          <DropdownButton
+                            key={`assigndrop-${addressElement.postalcode}`}
+                            size="sm"
+                            variant="outline-primary"
+                            title="Assign"
+                            className="m-1 d-inline-block"
+                          >
+                            <Dropdown.Item
+                              onClick={() => {
+                                shareTimedLink(
+                                  `${addressElement.postalcode}`,
+                                  addressLinkId,
+                                  `Units for ${addressElement.name}`,
+                                  assignmentMessage(addressElement.name),
+                                  `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`
+                                );
+                              }}
+                            >
+                              {isSettingAssignLink && (
+                                <>
+                                  <Spinner
+                                    as="span"
+                                    animation="border"
+                                    size="sm"
+                                    aria-hidden="true"
+                                  />{" "}
+                                </>
+                              )}
+                              House-To-House
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              onClick={() => {
+                                shareTimedLink(
+                                  `${addressElement.postalcode}`,
+                                  addressLinkId,
+                                  `Units for ${addressElement.name}`,
+                                  assignmentMessage(addressElement.name),
+                                  `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`,
+                                  DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS
+                                );
+                              }}
+                            >
+                              {isSettingAssignLink && (
+                                <>
+                                  <Spinner
+                                    as="span"
+                                    animation="border"
+                                    size="sm"
+                                    aria-hidden="true"
+                                  />{" "}
+                                </>
+                              )}
+                              Personal
+                            </Dropdown.Item>
+                          </DropdownButton>
+                        )}
+                        {isConductor && (
+                          <Button
+                            size="sm"
+                            variant="outline-primary"
+                            className="m-1"
+                            onClick={(_) => {
+                              shareTimedLink(
+                                `${addressElement.postalcode}`,
+                                addressLinkId,
+                                `Units for ${addressElement.name}`,
+                                assignmentMessage(addressElement.name),
+                                `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`
+                              );
+                            }}
+                          >
+                            {isSettingAssignLink && (
+                              <>
+                                <Spinner
+                                  as="span"
+                                  animation="border"
+                                  size="sm"
+                                  aria-hidden="true"
+                                />{" "}
+                              </>
+                            )}
+                            Assign
+                          </Button>
+                        )}
+                        {isConductor && (
+                          <Button
+                            size="sm"
+                            variant="outline-primary"
+                            className="m-1"
+                            onClick={async () => {
+                              setIsSettingViewLink(true);
+                              try {
+                                const territoryWindow = window.open(
+                                  "",
+                                  "_blank"
+                                );
+                                if (territoryWindow) {
+                                  territoryWindow.document.body.innerHTML =
+                                    TERRITORY_VIEW_WINDOW_WELCOME_TEXT;
+                                }
+                                await setTimedLink(addressLinkId);
+                                territoryWindow!.location.href = `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`;
+                              } catch (error) {
+                                errorHandler(error, rollbar);
+                              } finally {
+                                setIsSettingViewLink(false);
+                              }
+                            }}
+                          >
+                            {isSettingViewLink && (
+                              <>
+                                <Spinner
+                                  as="span"
+                                  animation="border"
+                                  size="sm"
+                                  aria-hidden="true"
+                                />{" "}
+                              </>
+                            )}
+                            View
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="outline-primary"
+                          className="m-1"
+                          onClick={(e) => {
+                            window.open(
+                              `http://maps.google.com.sg/maps?q=${zipcode}`,
+                              "_blank"
                             );
                           }}
                         >
-                          {isSettingAssignLink && (
-                            <>
-                              <Spinner
-                                as="span"
-                                animation="border"
-                                size="sm"
-                                aria-hidden="true"
-                              />{" "}
-                            </>
-                          )}
-                          House-To-House
-                        </Dropdown.Item>
-                        <Dropdown.Item
-                          onClick={() => {
-                            shareTimedLink(
-                              addressLinkId,
-                              `Units for ${addressElement.name}`,
-                              assignmentMessage(addressElement.name),
-                              `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`,
-                              DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS
+                          Direction
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline-primary"
+                          className="m-1"
+                          onClick={(event) => {
+                            handleClickFeedback(
+                              event,
+                              addressElement.postalcode,
+                              addressElement.feedback
                             );
                           }}
                         >
-                          {isSettingAssignLink && (
+                          Feedback
+                          {addressElement.feedback && (
                             <>
-                              <Spinner
-                                as="span"
-                                animation="border"
-                                size="sm"
-                                aria-hidden="true"
-                              />{" "}
+                              {" "}
+                              <Badge pill bg="secondary">
+                                ⭐
+                              </Badge>
                             </>
                           )}
-                          Personal
-                        </Dropdown.Item>
-                      </DropdownButton>
-                    )}
-                    {isConductor && (
-                      <Button
-                        size="sm"
-                        variant="outline-primary"
-                        className="me-2"
-                        onClick={(_) => {
-                          shareTimedLink(
-                            addressLinkId,
-                            `Units for ${addressElement.name}`,
-                            assignmentMessage(addressElement.name),
-                            `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`
-                          );
-                        }}
-                      >
-                        {isSettingAssignLink && (
-                          <>
-                            <Spinner
-                              as="span"
-                              animation="border"
-                              size="sm"
-                              aria-hidden="true"
-                            />{" "}
-                          </>
-                        )}
-                        Assign
-                      </Button>
-                    )}
-                    {isConductor && (
-                      <Button
-                        size="sm"
-                        variant="outline-primary"
-                        className="me-2"
-                        onClick={async () => {
-                          setIsSettingViewLink(true);
-                          try {
-                            const territoryWindow = window.open("", "_blank");
-                            if (territoryWindow) {
-                              territoryWindow.document.body.innerHTML =
-                                TERRITORY_VIEW_WINDOW_WELCOME_TEXT;
-                            }
-                            await setTimedLink(addressLinkId);
-                            territoryWindow!.location.href = `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`;
-                          } catch (error) {
-                            errorHandler(error, rollbar);
-                          } finally {
-                            setIsSettingViewLink(false);
-                          }
-                        }}
-                      >
-                        {isSettingViewLink && (
-                          <>
-                            <Spinner
-                              as="span"
-                              animation="border"
-                              size="sm"
-                              aria-hidden="true"
-                            />{" "}
-                          </>
-                        )}
-                        View
-                      </Button>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="outline-primary"
-                      className="me-2"
-                      onClick={(e) => {
-                        window.open(
-                          `http://maps.google.com.sg/maps?q=${addressElement.postalcode}`,
-                          "_blank"
-                        );
-                      }}
-                    >
-                      Direction
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline-primary"
-                      className="me-2"
-                      onClick={(event) => {
-                        handleClickFeedback(
-                          event,
-                          addressElement.postalcode,
-                          addressElement.feedback
-                        );
-                      }}
-                    >
-                      Feedback
-                      {addressElement.feedback && (
-                        <>
-                          {" "}
-                          <Badge pill bg="secondary">
-                            ⭐
-                          </Badge>
-                        </>
-                      )}
-                    </Button>
-                    {!isConductor && (
-                      <Button
-                        size="sm"
-                        variant="outline-primary"
-                        className="me-2"
-                        onClick={(event) => {
-                          handleClickChangeAddressName(
-                            event,
-                            addressElement.postalcode,
-                            addressElement.name
-                          );
-                        }}
-                      >
-                        Rename
-                      </Button>
-                    )}
-                    {!isConductor && (
-                      <Button
-                        size="sm"
-                        variant="outline-primary"
-                        className="me-2"
-                        onClick={(event) => {
-                          handleClickAddUnit(
-                            event,
-                            addressElement.postalcode,
-                            addressElement.floors.length
-                          );
-                        }}
-                      >
-                        Add Unit
-                      </Button>
-                    )}
-                    {!isConductor && (
-                      <Button
-                        size="sm"
-                        variant="outline-primary"
-                        className="me-2"
-                        onClick={(event) => {
-                          addFloorToBlock(addressElement.postalcode);
-                        }}
-                      >
-                        Add Higher Floor
-                      </Button>
-                    )}
-                    {!isConductor && (
-                      <Button
-                        size="sm"
-                        variant="outline-primary"
-                        className="me-2"
-                        onClick={(event) => {
-                          addFloorToBlock(addressElement.postalcode, true);
-                        }}
-                      >
-                        Add Lower Floor
-                      </Button>
-                    )}
-                    {!isConductor && (
-                      <Button
-                        size="sm"
-                        variant="outline-primary"
-                        className="me-2"
-                        onClick={() =>
-                          confirmAlert({
-                            customUI: ({ onClose }) => {
-                              return (
-                                <Container>
-                                  <Card bg="warning" className="text-center">
-                                    <Card.Header>Warning ⚠️</Card.Header>
-                                    <Card.Body>
-                                      <Card.Title>
-                                        Are You Very Sure ?
-                                      </Card.Title>
-                                      <Card.Text>
-                                        This action will reset all unit status
-                                        of {addressElement.name}.
-                                      </Card.Text>
-                                      <Button
-                                        className="me-2"
-                                        variant="primary"
-                                        onClick={() => {
-                                          resetBlock(addressElement.postalcode);
-                                          onClose();
-                                        }}
-                                      >
-                                        Yes, Reset It.
-                                      </Button>
-                                      <Button
-                                        className="ms-2"
-                                        variant="primary"
-                                        onClick={() => {
-                                          onClose();
-                                        }}
-                                      >
-                                        No
-                                      </Button>
-                                    </Card.Body>
-                                  </Card>
-                                </Container>
-                              );
-                            }
-                          })
-                        }
-                      >
-                        Reset
-                      </Button>
-                    )}
-                    {!isConductor && (
-                      <Button
-                        size="sm"
-                        variant="outline-primary"
-                        className="me-2"
-                        onClick={() =>
-                          confirmAlert({
-                            customUI: ({ onClose }) => {
-                              return (
-                                <Container>
-                                  <Card bg="warning" className="text-center">
-                                    <Card.Header>Warning ⚠️</Card.Header>
-                                    <Card.Body>
-                                      <Card.Title>
-                                        Are You Very Sure ?
-                                      </Card.Title>
-                                      <Card.Text>
-                                        The action will completely delete,{" "}
-                                        {addressElement.name}.
-                                      </Card.Text>
-                                      <Button
-                                        className="me-2"
-                                        variant="primary"
-                                        onClick={() => {
-                                          deleteBlock(
-                                            addressElement.postalcode
-                                          );
-                                          onClose();
-                                        }}
-                                      >
-                                        Yes, Delete It.
-                                      </Button>
-                                      <Button
-                                        className="ms-2"
-                                        variant="primary"
-                                        onClick={() => {
-                                          onClose();
-                                        }}
-                                      >
-                                        No
-                                      </Button>
-                                    </Card.Body>
-                                  </Card>
-                                </Container>
-                              );
-                            }
-                          })
-                        }
-                      >
-                        Delete
-                      </Button>
-                    )}
-                  </Navbar.Collapse>
-                </Container>
-              </Navbar>
-              <ProgressBar
-                style={{ borderRadius: 0 }}
-                now={completedPercent.completedValue}
-                label={completedPercent.completedDisplay}
-              />
-              <Table
-                key={`table-${addressElement.postalcode}`}
-                bordered
-                striped
-                hover
-                responsive="sm"
-              >
-                <thead>
-                  <tr>
-                    <th scope="col" className="text-center align-middle">
-                      lvl/unit
-                    </th>
-                    {addressElement.floors &&
-                      addressElement.floors[0].units.map((item, index) => (
-                        <th
-                          key={`${index}-${item.number}`}
-                          scope="col"
-                          className="text-center align-middle"
-                        >
-                          {!isConductor && (
-                            <Button
-                              size="sm"
-                              variant="outline-warning"
-                              className="me-1"
-                              onClick={() => {
-                                const hasOnlyOneUnitNumber =
-                                  addressElement.floors[0].units.length === 1;
-                                if (hasOnlyOneUnitNumber) {
-                                  alert(
-                                    `Territory requires at least 1 unit number.`
-                                  );
-                                  return;
-                                }
-                                confirmAlert({
-                                  customUI: ({ onClose }) => {
-                                    return (
-                                      <Container>
-                                        <Card
-                                          bg="warning"
-                                          className="text-center"
-                                        >
-                                          <Card.Header>Warning ⚠️</Card.Header>
-                                          <Card.Body>
-                                            <Card.Title>
-                                              Are You Very Sure ?
-                                            </Card.Title>
-                                            <Card.Text>
-                                              This action will delete unit
-                                              number {item.number} of{" "}
-                                              {addressElement.postalcode}.
-                                            </Card.Text>
-                                            <Button
-                                              className="me-2"
-                                              variant="primary"
-                                              onClick={() => {
-                                                processPostalUnitNumber(
-                                                  addressElement.postalcode,
-                                                  item.number,
-                                                  true
-                                                );
-                                                onClose();
-                                              }}
-                                            >
-                                              Yes, Delete It.
-                                            </Button>
-                                            <Button
-                                              className="ms-2"
-                                              variant="primary"
-                                              onClick={() => {
-                                                onClose();
-                                              }}
-                                            >
-                                              No
-                                            </Button>
-                                          </Card.Body>
-                                        </Card>
-                                      </Container>
-                                    );
-                                  }
-                                });
-                              }}
-                            >
-                              🗑️
-                            </Button>
-                          )}
-                          {ZeroPad(item.number, maxUnitNumberLength)}
-                        </th>
-                      ))}
-                  </tr>
-                </thead>
-                <tbody key={`tbody-${addressElement.postalcode}`}>
-                  {addressElement.floors &&
-                    addressElement.floors.map((floorElement, floorIndex) => (
-                      <tr key={`row-${floorIndex}`}>
-                        <th
-                          className="text-center"
-                          key={`floor-${floorIndex}`}
-                          scope="row"
-                        >
-                          {!isConductor && (
-                            <Button
-                              size="sm"
-                              variant="outline-warning"
-                              className="me-1"
-                              onClick={() => {
-                                const hasOnlyOneFloor =
-                                  addressElement.floors.length === 1;
-                                if (hasOnlyOneFloor) {
-                                  alert(`Territory requires at least 1 floor.`);
-                                  return;
-                                }
-                                confirmAlert({
-                                  customUI: ({ onClose }) => {
-                                    return (
-                                      <Container>
-                                        <Card
-                                          bg="warning"
-                                          className="text-center"
-                                        >
-                                          <Card.Header>Warning ⚠️</Card.Header>
-                                          <Card.Body>
-                                            <Card.Title>
-                                              Are You Very Sure ?
-                                            </Card.Title>
-                                            <Card.Text>
-                                              This action will delete floor{" "}
-                                              {floorElement.floor} of{" "}
-                                              {addressElement.postalcode}.
-                                            </Card.Text>
-                                            <Button
-                                              className="me-2"
-                                              variant="primary"
-                                              onClick={() => {
-                                                deleteBlockFloor(
-                                                  addressElement.postalcode,
-                                                  floorElement.floor
-                                                );
-                                                onClose();
-                                              }}
-                                            >
-                                              Yes, Delete It.
-                                            </Button>
-                                            <Button
-                                              className="ms-2"
-                                              variant="primary"
-                                              onClick={() => {
-                                                onClose();
-                                              }}
-                                            >
-                                              No
-                                            </Button>
-                                          </Card.Body>
-                                        </Card>
-                                      </Container>
-                                    );
-                                  }
-                                });
-                              }}
-                            >
-                              🗑️
-                            </Button>
-                          )}
-                          {`${ZeroPad(
-                            floorElement.floor,
-                            DEFAULT_FLOOR_PADDING
-                          )}`}
-                        </th>
-                        {floorElement.units.map((detailsElement, index) => (
-                          <td
-                            align="center"
-                            onClick={(event) =>
-                              handleClickModal(
+                        </Button>
+                        {!isConductor && (
+                          <Button
+                            size="sm"
+                            variant="outline-primary"
+                            className="m-1"
+                            onClick={(event) => {
+                              handleClickChangeAddressName(
                                 event,
                                 addressElement.postalcode,
-                                floorElement.floor,
-                                detailsElement.number,
-                                detailsElement.type,
-                                detailsElement.note,
-                                detailsElement.status,
-                                detailsElement.nhcount,
-                                detailsElement.languages,
-                                detailsElement.dnctime,
-                                maxUnitNumberLength
-                              )
-                            }
-                            key={`${index}-${detailsElement.number}`}
+                                addressElement.name
+                              );
+                            }}
                           >
-                            <UnitStatus
-                              key={`unit-${index}-${detailsElement.number}`}
-                              type={detailsElement.type}
-                              note={detailsElement.note}
-                              status={detailsElement.status}
-                              nhcount={detailsElement.nhcount}
-                              languages={detailsElement.languages}
-                              trackRace={trackRace}
-                              trackLanguages={trackLanguages}
-                            />
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                </tbody>
-              </Table>
-            </div>
-          );
-        })}
+                            Rename
+                          </Button>
+                        )}
+                        {!isConductor && (
+                          <Button
+                            size="sm"
+                            variant="outline-primary"
+                            className="m-1"
+                            onClick={(event) => {
+                              handleClickAddUnit(
+                                event,
+                                addressElement.postalcode,
+                                addressElement.floors.length
+                              );
+                            }}
+                          >
+                            Add Unit
+                          </Button>
+                        )}
+                        {!isConductor && (
+                          <Button
+                            size="sm"
+                            variant="outline-primary"
+                            className="m-1"
+                            onClick={(event) => {
+                              addFloorToBlock(addressElement.postalcode);
+                            }}
+                          >
+                            Add Higher Floor
+                          </Button>
+                        )}
+                        {!isConductor && (
+                          <Button
+                            size="sm"
+                            variant="outline-primary"
+                            className="m-1"
+                            onClick={(event) => {
+                              addFloorToBlock(addressElement.postalcode, true);
+                            }}
+                          >
+                            Add Lower Floor
+                          </Button>
+                        )}
+                        {!isConductor && (
+                          <Button
+                            size="sm"
+                            variant="outline-primary"
+                            className="m-1"
+                            onClick={() =>
+                              confirmAlert({
+                                customUI: ({ onClose }) => {
+                                  return (
+                                    <Container>
+                                      <Card
+                                        bg="warning"
+                                        className="text-center"
+                                      >
+                                        <Card.Header>Warning ⚠️</Card.Header>
+                                        <Card.Body>
+                                          <Card.Title>
+                                            Are You Very Sure ?
+                                          </Card.Title>
+                                          <Card.Text>
+                                            This action will reset all unit
+                                            status of {addressElement.name}.
+                                          </Card.Text>
+                                          <Button
+                                            className="m-1"
+                                            variant="primary"
+                                            onClick={() => {
+                                              resetBlock(
+                                                addressElement.postalcode
+                                              );
+                                              onClose();
+                                            }}
+                                          >
+                                            Yes, Reset It.
+                                          </Button>
+                                          <Button
+                                            className="ms-2"
+                                            variant="primary"
+                                            onClick={() => {
+                                              onClose();
+                                            }}
+                                          >
+                                            No
+                                          </Button>
+                                        </Card.Body>
+                                      </Card>
+                                    </Container>
+                                  );
+                                }
+                              })
+                            }
+                          >
+                            Reset
+                          </Button>
+                        )}
+                        {!isConductor && (
+                          <Button
+                            size="sm"
+                            variant="outline-primary"
+                            className="m-1"
+                            onClick={() =>
+                              confirmAlert({
+                                customUI: ({ onClose }) => {
+                                  return (
+                                    <Container>
+                                      <Card
+                                        bg="warning"
+                                        className="text-center"
+                                      >
+                                        <Card.Header>Warning ⚠️</Card.Header>
+                                        <Card.Body>
+                                          <Card.Title>
+                                            Are You Very Sure ?
+                                          </Card.Title>
+                                          <Card.Text>
+                                            The action will completely delete,{" "}
+                                            {addressElement.name}.
+                                          </Card.Text>
+                                          <Button
+                                            className="m-1"
+                                            variant="primary"
+                                            onClick={() => {
+                                              deleteBlock(
+                                                addressElement.postalcode
+                                              );
+                                              onClose();
+                                            }}
+                                          >
+                                            Yes, Delete It.
+                                          </Button>
+                                          <Button
+                                            className="ms-2"
+                                            variant="primary"
+                                            onClick={() => {
+                                              onClose();
+                                            }}
+                                          >
+                                            No
+                                          </Button>
+                                        </Card.Body>
+                                      </Card>
+                                    </Container>
+                                  );
+                                }
+                              })
+                            }
+                          >
+                            Delete
+                          </Button>
+                        )}
+                      </Container>
+                    </Navbar>
+                    <Table
+                      key={`table-${addressElement.postalcode}`}
+                      bordered
+                      striped
+                      hover
+                      responsive="sm"
+                    >
+                      <thead>
+                        <tr>
+                          <th scope="col" className="text-center align-middle">
+                            lvl/unit
+                          </th>
+                          {addressElement.floors &&
+                            addressElement.floors[0].units.map(
+                              (item, index) => (
+                                <th
+                                  key={`${index}-${item.number}`}
+                                  scope="col"
+                                  className={`${
+                                    !isConductor ? "admin-unit-header " : ""
+                                  }text-center align-middle`}
+                                  onClick={() => {
+                                    if (isConductor) return;
+                                    handleClickUpdateUnit(
+                                      addressElement.postalcode,
+                                      addressElement.floors[0].units.length,
+                                      item.sequence,
+                                      item.number,
+                                      maxUnitNumberLength
+                                    );
+                                  }}
+                                >
+                                  {ZeroPad(item.number, maxUnitNumberLength)}
+                                </th>
+                              )
+                            )}
+                        </tr>
+                      </thead>
+                      <tbody key={`tbody-${addressElement.postalcode}`}>
+                        {addressElement.floors &&
+                          addressElement.floors.map(
+                            (floorElement, floorIndex) => (
+                              <tr key={`row-${floorIndex}`}>
+                                <th
+                                  className="text-center"
+                                  key={`floor-${floorIndex}`}
+                                  scope="row"
+                                >
+                                  {!isConductor && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline-warning"
+                                      className="me-1"
+                                      onClick={() => {
+                                        const hasOnlyOneFloor =
+                                          addressElement.floors.length === 1;
+                                        if (hasOnlyOneFloor) {
+                                          alert(
+                                            `Territory requires at least 1 floor.`
+                                          );
+                                          return;
+                                        }
+                                        confirmAlert({
+                                          customUI: ({ onClose }) => {
+                                            return (
+                                              <Container>
+                                                <Card
+                                                  bg="warning"
+                                                  className="text-center"
+                                                >
+                                                  <Card.Header>
+                                                    Warning ⚠️
+                                                  </Card.Header>
+                                                  <Card.Body>
+                                                    <Card.Title>
+                                                      Are You Very Sure ?
+                                                    </Card.Title>
+                                                    <Card.Text>
+                                                      This action will delete
+                                                      floor {floorElement.floor}{" "}
+                                                      of{" "}
+                                                      {
+                                                        addressElement.postalcode
+                                                      }
+                                                      .
+                                                    </Card.Text>
+                                                    <Button
+                                                      className="m-1"
+                                                      variant="primary"
+                                                      onClick={() => {
+                                                        deleteBlockFloor(
+                                                          addressElement.postalcode,
+                                                          floorElement.floor
+                                                        );
+                                                        onClose();
+                                                      }}
+                                                    >
+                                                      Yes, Delete It.
+                                                    </Button>
+                                                    <Button
+                                                      className="ms-2"
+                                                      variant="primary"
+                                                      onClick={() => {
+                                                        onClose();
+                                                      }}
+                                                    >
+                                                      No
+                                                    </Button>
+                                                  </Card.Body>
+                                                </Card>
+                                              </Container>
+                                            );
+                                          }
+                                        });
+                                      }}
+                                    >
+                                      🗑️
+                                    </Button>
+                                  )}
+                                  {`${ZeroPad(
+                                    floorElement.floor,
+                                    DEFAULT_FLOOR_PADDING
+                                  )}`}
+                                </th>
+                                {floorElement.units.map(
+                                  (detailsElement, index) => (
+                                    <td
+                                      align="center"
+                                      onClick={(event) =>
+                                        handleClickModal(
+                                          event,
+                                          addressElement.postalcode,
+                                          floorElement.floor,
+                                          detailsElement.number,
+                                          detailsElement.type,
+                                          detailsElement.note,
+                                          detailsElement.status,
+                                          detailsElement.nhcount,
+                                          detailsElement.languages,
+                                          detailsElement.dnctime,
+                                          maxUnitNumberLength
+                                        )
+                                      }
+                                      key={`${index}-${detailsElement.number}`}
+                                    >
+                                      <UnitStatus
+                                        key={`unit-${index}-${detailsElement.number}`}
+                                        type={detailsElement.type}
+                                        note={detailsElement.note}
+                                        status={detailsElement.status}
+                                        nhcount={detailsElement.nhcount}
+                                        languages={detailsElement.languages}
+                                        trackRace={trackRace}
+                                        trackLanguages={trackLanguages}
+                                      />
+                                    </td>
+                                  )
+                                )}
+                              </tr>
+                            )
+                          )}
+                      </tbody>
+                    </Table>
+                  </div>
+                </Accordion.Body>
+              </Accordion.Item>
+            );
+          })}
+        </Accordion>
         {!isConductor && (
           <Modal show={isTerritoryRename}>
             <Modal.Header>
@@ -1545,6 +1627,7 @@ function Admin({ user, isConductor = false }: adminProps) {
                   }}
                   changeValue={`${(values as valuesDetails).code}`}
                   required={true}
+                  placeholder={"Territory code. For eg, M01, W12, etc."}
                 />
                 <GenericTextField
                   label="Name"
@@ -1552,6 +1635,9 @@ function Admin({ user, isConductor = false }: adminProps) {
                   handleChange={onFormChange}
                   changeValue={`${(values as valuesDetails).name}`}
                   required={true}
+                  placeholder={
+                    "Name of the territory. For eg, 801-810, Woodlands Drive."
+                  }
                 />
               </Modal.Body>
               <Modal.Footer>
@@ -1586,6 +1672,9 @@ function Admin({ user, isConductor = false }: adminProps) {
                   }}
                   changeValue={`${(values as valuesDetails).newPostal}`}
                   required={true}
+                  placeholder={
+                    "Block/Building postal code. Eg, 730801, 752367, etc"
+                  }
                 />
                 <GenericTextField
                   label="Address Name"
@@ -1593,6 +1682,9 @@ function Admin({ user, isConductor = false }: adminProps) {
                   handleChange={onFormChange}
                   changeValue={`${(values as valuesDetails).name}`}
                   required={true}
+                  placeholder={
+                    "Block/Building name. Eg, 367, Sembawang Star Crescent"
+                  }
                 />
                 <FloorField
                   handleChange={(e: ChangeEvent<HTMLElement>) => {
@@ -1652,6 +1744,96 @@ function Admin({ user, isConductor = false }: adminProps) {
                   onClick={() => toggleModal(ADMIN_MODAL_TYPES.ADD_UNIT)}
                 >
                   Close
+                </Button>
+                <Button type="submit" variant="primary">
+                  Save
+                </Button>
+              </Modal.Footer>
+            </Form>
+          </Modal>
+        )}
+        {!isConductor && (
+          <Modal show={isUnitDetails}>
+            <Modal.Header>
+              <Modal.Title>
+                Unit {`${(values as valuesDetails).unitDisplay}`}
+              </Modal.Title>
+            </Modal.Header>
+            <Form onSubmit={handleUpdateUnit}>
+              <Modal.Body>
+                <GenericTextField
+                  label="Sequence Number"
+                  name="sequence"
+                  placeholder="Optional unit row sequence number"
+                  handleChange={(e: ChangeEvent<HTMLElement>) => {
+                    const { value } = e.target as HTMLInputElement;
+                    setValues({ ...values, sequence: value });
+                  }}
+                  changeValue={`${(values as valuesDetails).sequence}`}
+                />
+              </Modal.Body>
+              <Modal.Footer>
+                <Button
+                  variant="secondary"
+                  onClick={() => toggleModal(ADMIN_MODAL_TYPES.UPDATE_UNIT)}
+                >
+                  Close
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    const hasOnlyOneUnitNumber =
+                      (values as valuesDetails).unitlength === 1;
+                    if (hasOnlyOneUnitNumber) {
+                      alert(`Territory requires at least 1 unit number.`);
+                      return;
+                    }
+                    toggleModal(ADMIN_MODAL_TYPES.UPDATE_UNIT);
+                    confirmAlert({
+                      customUI: ({ onClose }) => {
+                        return (
+                          <Container>
+                            <Card bg="warning" className="text-center">
+                              <Card.Header>Warning ⚠️</Card.Header>
+                              <Card.Body>
+                                <Card.Title>Are You Very Sure ?</Card.Title>
+                                <Card.Text>
+                                  This action will delete unit number{" "}
+                                  {(values as valuesDetails).unit} of{" "}
+                                  {(values as valuesDetails).postal}.
+                                </Card.Text>
+                                <Button
+                                  className="m-1"
+                                  variant="primary"
+                                  onClick={() => {
+                                    processPostalUnitNumber(
+                                      `${(values as valuesDetails).postal}`,
+                                      `${(values as valuesDetails).unit}`,
+                                      true
+                                    );
+                                    onClose();
+                                  }}
+                                >
+                                  Yes, Delete It.
+                                </Button>
+                                <Button
+                                  className="ms-2"
+                                  variant="primary"
+                                  onClick={() => {
+                                    onClose();
+                                  }}
+                                >
+                                  No
+                                </Button>
+                              </Card.Body>
+                            </Card>
+                          </Container>
+                        );
+                      }
+                    });
+                  }}
+                >
+                  Delete Unit
                 </Button>
                 <Button type="submit" variant="primary">
                   Save

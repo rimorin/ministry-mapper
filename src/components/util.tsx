@@ -13,19 +13,23 @@ import {
   Navbar,
   Offcanvas,
   Popover,
-  Table
+  Table,
+  Image
 } from "react-bootstrap";
 import Rollbar from "rollbar";
 import { database } from "../firebase";
 import {
+  Policy,
   TitleProps,
   BrandingProps,
   LegendProps,
   floorDetails,
   TerritoryListingProps,
-  unitDetails
+  unitDetails,
+  nothomeprops
 } from "./interface";
 import Countdown from "react-countdown";
+import envelopeImage from "../assets/envelope.svg";
 
 const errorHandler = (error: any, rollbar: Rollbar, showAlert = true) => {
   rollbar.error(error);
@@ -80,7 +84,8 @@ const ADMIN_MODAL_TYPES = {
   CREATE_ADDRESS: 4,
   CREATE_TERRITORY: 5,
   ADD_UNIT: 6,
-  RENAME_ADDRESS_NAME: 7
+  RENAME_ADDRESS_NAME: 7,
+  UPDATE_UNIT: 8
 };
 
 const DEFAULT_FLOOR_PADDING = 2;
@@ -175,26 +180,16 @@ const processHHLanguages = (languages: string[]) => {
   return languages.join();
 };
 
-const getCompletedPercent = (floors: floorDetails[]) => {
+const getCompletedPercent = (policy: Policy, floors: floorDetails[]) => {
   let totalUnits = 0;
   let completedUnits = 0;
 
   floors.forEach((element) => {
     element.units.forEach((uElement) => {
-      const unitStatus = uElement.status.toString();
-      const unitType = uElement.type;
-      const unitNotHomeCount = uElement.nhcount;
-      const isCountable =
-        COUNTABLE_HOUSEHOLD_STATUS.includes(unitStatus) &&
-        unitType !== HOUSEHOLD_TYPES.MALAY;
+      const isCountable = policy.isCountable(uElement);
 
       if (isCountable) totalUnits++;
-      if (
-        unitStatus === STATUS_CODES.DONE ||
-        (unitStatus === STATUS_CODES.NOT_HOME &&
-          (unitNotHomeCount === NOT_HOME_STATUS_CODES.SECOND_TRY ||
-            unitNotHomeCount === NOT_HOME_STATUS_CODES.THIRD_TRY))
-      ) {
+      if (policy.isCompleted(uElement)) {
         completedUnits++;
       }
     });
@@ -293,7 +288,8 @@ const processAddressData = async (postal: String, data: any) => {
         status: unitValues.status,
         nhcount: unitValues.nhcount || NOT_HOME_STATUS_CODES.DEFAULT,
         languages: unitValues.languages || "",
-        dnctime: unitValues.dnctime || null
+        dnctime: unitValues.dnctime || null,
+        sequence: unitValues.sequence
       });
     });
     dataList.unshift({ floor: floor, units: unitsDetails });
@@ -339,8 +335,13 @@ const Legend = ({ showLegend, hideFunction }: LegendProps) => (
             <td>Do not call or write letter.</td>
           </tr>
           <tr>
-            <td className="text-center align-middle">📬</td>
-            <td>Householder is not at home.</td>
+            <td className="text-center align-middle">
+              <NotHomeIcon />
+            </td>
+            <td>
+              Householder is not at home. Option to write a letter after a few
+              tries.
+            </td>
           </tr>
           <tr>
             <td className="text-center align-middle">✖️</td>
@@ -348,7 +349,7 @@ const Legend = ({ showLegend, hideFunction }: LegendProps) => (
           </tr>
           <tr>
             <td className="text-center align-middle">🗒️</td>
-            <td>Optional information about the unit. No personal data.</td>
+            <td>Optional information about the unit. Avoid personal data.</td>
           </tr>
         </tbody>
       </Table>
@@ -398,6 +399,17 @@ const HOUSEHOLD_LANGUAGES = {
   MALAY: { CODE: "m", DISPLAY: "Malay" }
 };
 
+const NotHomeIcon = ({ nhcount, classProp }: nothomeprops) => {
+  let containerClass = "container-nothome";
+  if (classProp) containerClass += ` ${classProp}`;
+  return (
+    <span className={containerClass}>
+      <Image fluid src={envelopeImage} className="nothome-envelope" />
+      {nhcount && <div className="badge-nothome">{nhcount}</div>}
+    </span>
+  );
+};
+
 export {
   ZeroPad,
   ModalUnitTitle,
@@ -417,6 +429,7 @@ export {
   checkTraceRaceStatus,
   processAddressData,
   ExpiryTimePopover,
+  NotHomeIcon,
   STATUS_CODES,
   MUTABLE_CODES,
   LOGIN_TYPE_CODES,
@@ -432,5 +445,6 @@ export {
   NOT_HOME_STATUS_CODES,
   MIN_START_FLOOR,
   MAX_TOP_FLOOR,
+  COUNTABLE_HOUSEHOLD_STATUS,
   HOUSEHOLD_LANGUAGES
 };
