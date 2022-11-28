@@ -3,7 +3,8 @@ import {
   COUNTABLE_HOUSEHOLD_STATUS,
   HOUSEHOLD_TYPES,
   STATUS_CODES,
-  NOT_HOME_STATUS_CODES
+  NOT_HOME_STATUS_CODES,
+  HOUSEHOLD_LANGUAGES
 } from "./util";
 
 export class RacePolicy implements Policy {
@@ -26,16 +27,19 @@ export class RacePolicy implements Policy {
 export class LanguagePolicy implements Policy {
   maxTries: number;
   homeLanguage: string;
-  constructor(maxtries: number, homelanguage: string) {
+  constructor(
+    maxtries = parseInt(NOT_HOME_STATUS_CODES.SECOND_TRY),
+    homelanguage = HOUSEHOLD_LANGUAGES.ENGLISH.CODE
+  ) {
     this.maxTries = maxtries;
     this.homeLanguage = homelanguage;
   }
   isHomeLanguage(unit: unitDetails): boolean {
-    const s = unit.languages.toUpperCase().trim();
-    if (s.length < 1) {
+    const languageValue = unit.languages.toUpperCase().trim();
+    if (languageValue.length < 1) {
       return true;
     }
-    const languages = s.split(",");
+    const languages = languageValue.split(",");
     return (
       languages.includes(this.homeLanguage.toUpperCase()) ||
       languages.length === 0

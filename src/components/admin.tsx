@@ -795,7 +795,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     checkTraceLangStatus(`${code}`).then((snapshot) => {
       setTrackLanguages(snapshot.val());
       if (snapshot.val()) {
-        setPolicy(new LanguagePolicy(2, "e"));
+        setPolicy(new LanguagePolicy());
       }
     });
     checkTraceRaceStatus(`${code}`).then((snapshot) => {

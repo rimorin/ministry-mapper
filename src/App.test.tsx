@@ -434,8 +434,8 @@ test("renders slip legend", () => {
   expect(svgImg).toHaveClass("nothome-envelope img-fluid");
 });
 
-test("test language policy countable empty", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy countable empty", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
@@ -448,92 +448,92 @@ test("test language policy countable empty", () => {
   expect(policy.isCountable(unit)).toBe(true);
 });
 
-test("test language policy countable e", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy countable e", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
     type: "",
     status: STATUS_CODES.DEFAULT,
     nhcount: "",
-    languages: "E",
+    languages: HOUSEHOLD_LANGUAGES.ENGLISH.CODE,
     dnctime: 0
   };
   expect(policy.isCountable(unit)).toBe(true);
 });
 
-test("test language policy countable c", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy countable c", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
     type: "",
     status: STATUS_CODES.DEFAULT,
     nhcount: "",
-    languages: "c",
+    languages: HOUSEHOLD_LANGUAGES.CHINESE.CODE,
     dnctime: 0
   };
   expect(policy.isCountable(unit)).toBe(false);
 });
 
-test("test language policy countable e done", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy countable e done", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
     type: "",
     status: STATUS_CODES.DONE,
     nhcount: "",
-    languages: "e",
+    languages: HOUSEHOLD_LANGUAGES.ENGLISH.CODE,
     dnctime: 0
   };
   expect(policy.isCountable(unit)).toBe(true);
 });
 
-test("test language policy countable e not home", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy countable e not home", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
     type: "",
     status: STATUS_CODES.NOT_HOME,
     nhcount: "",
-    languages: "e",
+    languages: HOUSEHOLD_LANGUAGES.ENGLISH.CODE,
     dnctime: 0
   };
   expect(policy.isCountable(unit)).toBe(true);
 });
 
-test("test language policy countable e dnc", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy countable e dnc", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
     type: "",
     status: STATUS_CODES.DO_NOT_CALL,
     nhcount: "",
-    languages: "e",
+    languages: HOUSEHOLD_LANGUAGES.ENGLISH.CODE,
     dnctime: 0
   };
   expect(policy.isCountable(unit)).toBe(false);
 });
 
-test("test language policy countable e invalid", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy countable e invalid", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
     type: "",
     status: STATUS_CODES.INVALID,
     nhcount: "",
-    languages: "e",
+    languages: HOUSEHOLD_LANGUAGES.ENGLISH.CODE,
     dnctime: 0
   };
   expect(policy.isCountable(unit)).toBe(false);
 });
 
-test("test language policy completed empty", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy completed empty", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
@@ -546,8 +546,8 @@ test("test language policy completed empty", () => {
   expect(policy.isCompleted(unit)).toBe(false);
 });
 
-test("test language policy completed done", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy completed done", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
@@ -560,8 +560,8 @@ test("test language policy completed done", () => {
   expect(policy.isCompleted(unit)).toBe(true);
 });
 
-test("test language policy completed not home 1", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy completed not home 1", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
@@ -574,8 +574,8 @@ test("test language policy completed not home 1", () => {
   expect(policy.isCompleted(unit)).toBe(false);
 });
 
-test("test language policy completed not home 2", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy completed not home 2", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
@@ -588,8 +588,8 @@ test("test language policy completed not home 2", () => {
   expect(policy.isCompleted(unit)).toBe(true);
 });
 
-test("test language policy completed not home 3", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy completed not home 3", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
@@ -602,147 +602,147 @@ test("test language policy completed not home 3", () => {
   expect(policy.isCompleted(unit)).toBe(true);
 });
 
-test("test language policy completed empty e", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy completed empty e", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
     type: "",
     status: STATUS_CODES.DEFAULT,
     nhcount: "",
-    languages: "e",
+    languages: HOUSEHOLD_LANGUAGES.ENGLISH.CODE,
     dnctime: 0
   };
   expect(policy.isCompleted(unit)).toBe(false);
 });
 
-test("test language policy completed done e", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy completed done e", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
     type: "",
     status: STATUS_CODES.DONE,
     nhcount: "",
-    languages: "e",
+    languages: HOUSEHOLD_LANGUAGES.ENGLISH.CODE,
     dnctime: 0
   };
   expect(policy.isCompleted(unit)).toBe(true);
 });
 
-test("test language policy completed e not home 1", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy completed e not home 1", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
     type: "",
     status: STATUS_CODES.NOT_HOME,
     nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
-    languages: "e",
+    languages: HOUSEHOLD_LANGUAGES.ENGLISH.CODE,
     dnctime: 0
   };
   expect(policy.isCompleted(unit)).toBe(false);
 });
 
-test("test language policy completed e not home 2", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy completed e not home 2", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
     type: "",
     status: STATUS_CODES.NOT_HOME,
     nhcount: NOT_HOME_STATUS_CODES.SECOND_TRY,
-    languages: "e",
+    languages: HOUSEHOLD_LANGUAGES.ENGLISH.CODE,
     dnctime: 0
   };
   expect(policy.isCompleted(unit)).toBe(true);
 });
 
-test("test language policy completed e not home 3", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy completed e not home 3", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
     type: "",
     status: STATUS_CODES.NOT_HOME,
     nhcount: NOT_HOME_STATUS_CODES.THIRD_TRY,
-    languages: "e",
+    languages: HOUSEHOLD_LANGUAGES.ENGLISH.CODE,
     dnctime: 0
   };
   expect(policy.isCompleted(unit)).toBe(true);
 });
 
-test("test language policy completed empty c", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy completed empty c", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
     type: "",
     status: STATUS_CODES.DEFAULT,
     nhcount: "",
-    languages: "c",
+    languages: HOUSEHOLD_LANGUAGES.CHINESE.CODE,
     dnctime: 0
   };
   expect(policy.isCompleted(unit)).toBe(false);
 });
 
-test("test language policy completed done c", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy completed done c", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
     type: "",
     status: STATUS_CODES.DONE,
     nhcount: "",
-    languages: "c",
+    languages: HOUSEHOLD_LANGUAGES.CHINESE.CODE,
     dnctime: 0
   };
   expect(policy.isCompleted(unit)).toBe(false);
 });
 
-test("test language policy completed c not home 1", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy completed c not home 1", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
     type: "",
     status: STATUS_CODES.NOT_HOME,
     nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
-    languages: "c",
+    languages: HOUSEHOLD_LANGUAGES.CHINESE.CODE,
     dnctime: 0
   };
   expect(policy.isCompleted(unit)).toBe(false);
 });
 
-test("test language policy completed c not home 2", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy completed c not home 2", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
     type: "",
     status: STATUS_CODES.NOT_HOME,
     nhcount: NOT_HOME_STATUS_CODES.SECOND_TRY,
-    languages: "c",
+    languages: HOUSEHOLD_LANGUAGES.CHINESE.CODE,
     dnctime: 0
   };
   expect(policy.isCompleted(unit)).toBe(false);
 });
 
-test("test language policy completed c not home 3", () => {
-  const policy = new LanguagePolicy(2, "e");
+test("language policy completed c not home 3", () => {
+  const policy = new LanguagePolicy();
   const unit = {
     number: "",
     note: "",
     type: "",
     status: STATUS_CODES.NOT_HOME,
     nhcount: NOT_HOME_STATUS_CODES.THIRD_TRY,
-    languages: "c",
+    languages: HOUSEHOLD_LANGUAGES.CHINESE.CODE,
     dnctime: 0
   };
   expect(policy.isCompleted(unit)).toBe(false);
 });
 
-test("test race policy empty", () => {
+test("race policy empty", () => {
   const policy = new RacePolicy();
   const unit = {
     number: "",
@@ -756,7 +756,7 @@ test("test race policy empty", () => {
   expect(policy.isCountable(unit)).toBe(true);
 });
 
-test("test race policy c done", () => {
+test("race policy c done", () => {
   const policy = new RacePolicy();
   const unit = {
     number: "",
@@ -770,7 +770,7 @@ test("test race policy c done", () => {
   expect(policy.isCountable(unit)).toBe(true);
 });
 
-test("test race policy c not home", () => {
+test("race policy c not home", () => {
   const policy = new RacePolicy();
   const unit = {
     number: "",
@@ -784,7 +784,7 @@ test("test race policy c not home", () => {
   expect(policy.isCountable(unit)).toBe(true);
 });
 
-test("test race policy c dnc", () => {
+test("race policy c dnc", () => {
   const policy = new RacePolicy();
   const unit = {
     number: "",
@@ -798,7 +798,7 @@ test("test race policy c dnc", () => {
   expect(policy.isCountable(unit)).toBe(false);
 });
 
-test("test race policy c invalid", () => {
+test("race policy c invalid", () => {
   const policy = new RacePolicy();
   const unit = {
     number: "",
@@ -812,7 +812,7 @@ test("test race policy c invalid", () => {
   expect(policy.isCountable(unit)).toBe(false);
 });
 
-test("test race policy m empty", () => {
+test("race policy m empty", () => {
   const policy = new RacePolicy();
   const unit = {
     number: "",
@@ -826,7 +826,7 @@ test("test race policy m empty", () => {
   expect(policy.isCountable(unit)).toBe(false);
 });
 
-test("test race policy m done", () => {
+test("race policy m done", () => {
   const policy = new RacePolicy();
   const unit = {
     number: "",
@@ -840,7 +840,7 @@ test("test race policy m done", () => {
   expect(policy.isCountable(unit)).toBe(false);
 });
 
-test("test race policy m not home", () => {
+test("race policy m not home", () => {
   const policy = new RacePolicy();
   const unit = {
     number: "",
@@ -854,7 +854,7 @@ test("test race policy m not home", () => {
   expect(policy.isCountable(unit)).toBe(false);
 });
 
-test("test race policy m dnc", () => {
+test("race policy m dnc", () => {
   const policy = new RacePolicy();
   const unit = {
     number: "",
@@ -868,7 +868,7 @@ test("test race policy m dnc", () => {
   expect(policy.isCountable(unit)).toBe(false);
 });
 
-test("test race policy m invalid", () => {
+test("race policy m invalid", () => {
   const policy = new RacePolicy();
   const unit = {
     number: "",
