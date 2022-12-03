@@ -797,7 +797,7 @@ function Admin({ user }: adminProps) {
     congregationCode: string | undefined
   ) => {
     if (!congregationCode) return;
-    const tokenData = await user.getIdTokenResult();
+    const tokenData = await user.getIdTokenResult(true);
     return tokenData.claims[congregationCode];
   };
 
