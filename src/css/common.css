@@ -1,0 +1,15 @@
+.sticky-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.sticky-left-cell {
+    position: sticky;
+    left: 0;
+    background-color: white !important;
+    z-index: 2;
+}
+
+.inline-cell {
+    white-space: nowrap;
+}

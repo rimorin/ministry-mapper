@@ -26,7 +26,8 @@ import {
   floorDetails,
   TerritoryListingProps,
   unitDetails,
-  nothomeprops
+  nothomeprops,
+  AuthorizerProp
 } from "./interface";
 import Countdown from "react-countdown";
 import envelopeImage from "../assets/envelope.svg";
@@ -53,6 +54,12 @@ const NOT_HOME_STATUS_CODES = {
   THIRD_TRY: "3"
 };
 
+const USER_ACCESS_LEVELS = {
+  READ_ONLY: 1,
+  CONDUCTOR: 2,
+  TERRITORY_SERVANT: 3
+};
+
 const HOUSEHOLD_TYPES = {
   CHINESE: "cn",
   MALAY: "ml",
@@ -71,11 +78,6 @@ const MUTABLE_CODES = [
   STATUS_CODES.STILL_NOT_HOME
 ];
 
-const LOGIN_TYPE_CODES = {
-  CONDUCTOR: 1,
-  ADMIN: 2
-};
-
 const ADMIN_MODAL_TYPES = {
   UNIT: 0,
   FEEDBACK: 1,
@@ -92,7 +94,9 @@ const DEFAULT_FLOOR_PADDING = 2;
 // 24 hours
 const DEFAULT_SELF_DESTRUCT_HOURS = 24;
 // 4 Weeks for personal slips
-const DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS = 24 * 7 * 4;
+const FOUR_WKS_PERSONAL_SLIP_DESTRUCT_HOURS = 24 * 7 * 4;
+// One wk
+const ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS = 24 * 7;
 const MIN_PERCENTAGE_DISPLAY = 10;
 const FIREBASE_AUTH_UNAUTHORISED_MSG =
   "Client doesn't have permission to access the desired data.";
@@ -230,6 +234,19 @@ const checkTraceLangStatus = async (code: string) => {
   return await pollingFunction(() =>
     get(child(ref(database), `congregations/${code}/trackLanguages`))
   );
+};
+
+const ComponentAuthorizer = ({
+  requiredPermission,
+  userPermission,
+  children
+}: AuthorizerProp) => {
+  if (!userPermission) return <></>;
+  const isUnAuthorized = userPermission < requiredPermission;
+  if (isUnAuthorized) {
+    return <></>;
+  }
+  return children;
 };
 
 const ExpiryTimePopover = (endtime: number) => {
@@ -432,10 +449,10 @@ export {
   NotHomeIcon,
   STATUS_CODES,
   MUTABLE_CODES,
-  LOGIN_TYPE_CODES,
   DEFAULT_FLOOR_PADDING,
   DEFAULT_SELF_DESTRUCT_HOURS,
-  DEFAULT_PERSONAL_SLIP_DESTRUCT_HOURS,
+  FOUR_WKS_PERSONAL_SLIP_DESTRUCT_HOURS,
+  ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS,
   HOUSEHOLD_TYPES,
   FIREBASE_AUTH_UNAUTHORISED_MSG,
   ADMIN_MODAL_TYPES,
@@ -446,5 +463,7 @@ export {
   MIN_START_FLOOR,
   MAX_TOP_FLOOR,
   COUNTABLE_HOUSEHOLD_STATUS,
-  HOUSEHOLD_LANGUAGES
+  HOUSEHOLD_LANGUAGES,
+  USER_ACCESS_LEVELS,
+  ComponentAuthorizer
 };

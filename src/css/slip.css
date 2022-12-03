@@ -3,27 +3,11 @@
   overflow-y: auto;
 }
 
-.sticky-table {
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-.sticky-left-cell {
-  position: sticky;
-  left: 0;
-  background-color: white !important;
-  z-index: 2;
-}
-
 .sticky-top-cell {
   position: sticky;
   top: 0;
   background-color: white;
   z-index: 3;
-}
-
-.inline-cell {
-  white-space: nowrap;
 }
 
 .badge-nothome {

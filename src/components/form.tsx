@@ -11,28 +11,45 @@ import {
 import RangeSlider from "react-bootstrap-range-slider";
 import { FloorProps, FooterProps, FormProps } from "./interface";
 import {
+  ComponentAuthorizer,
   HOUSEHOLD_LANGUAGES,
   HOUSEHOLD_TYPES,
   MAX_TOP_FLOOR,
   MIN_START_FLOOR,
   NOT_HOME_STATUS_CODES,
-  STATUS_CODES
+  STATUS_CODES,
+  USER_ACCESS_LEVELS
 } from "./util";
 
 import Calendar from "react-calendar";
 
-const ModalFooter = ({ handleClick, isSaving = false }: FooterProps) => {
+const ModalFooter = ({
+  handleClick,
+  //Default to conductor access lvl so that individual slips can be writable.
+  userAccessLevel = USER_ACCESS_LEVELS.CONDUCTOR,
+  isSaving = false
+}: FooterProps) => {
   return (
     <Modal.Footer className="justify-content-around">
       <Button variant="secondary" onClick={handleClick}>
         Close
       </Button>
-      <Button type="submit" variant="primary">
-        {isSaving && (
-          <Spinner as="span" animation="border" size="sm" aria-hidden="true" />
-        )}{" "}
-        Save
-      </Button>
+      <ComponentAuthorizer
+        requiredPermission={USER_ACCESS_LEVELS.CONDUCTOR}
+        userPermission={userAccessLevel}
+      >
+        <Button type="submit" variant="primary">
+          {isSaving && (
+            <Spinner
+              as="span"
+              animation="border"
+              size="sm"
+              aria-hidden="true"
+            />
+          )}{" "}
+          Save
+        </Button>
+      </ComponentAuthorizer>
     </Modal.Footer>
   );
 };
