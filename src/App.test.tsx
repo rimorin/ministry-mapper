@@ -92,9 +92,7 @@ test("renders admin welcome page", () => {
   render(<Welcome />);
   expect(screen.getByRole("img")).toBeInTheDocument();
   expect(
-    screen.getByText(
-      "Please select a territory from the above listing to begin."
-    )
+    screen.getByText("Please select a territory from the above listing.")
   ).toBeInTheDocument();
   expect(screen.getByText("Welcome To Ministry Mapper")).toBeInTheDocument();
 });
@@ -106,7 +104,8 @@ test("renders loading indicator", () => {
 
 test("renders login screen", () => {
   rollbarRender(<Login />);
-  expect(screen.getByText("Login")).toBeInTheDocument();
+  expect(screen.getAllByText("Login")[0]).toBeInTheDocument();
+  expect(screen.getAllByText("Login")[1]).toBeInTheDocument();
   expect(screen.getByText("Clear")).toBeInTheDocument();
   expect(screen.getByText("Email Address")).toBeInTheDocument();
   expect(screen.getByText("Password")).toBeInTheDocument();
