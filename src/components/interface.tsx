@@ -55,9 +55,7 @@ export interface valuesDetails {
 }
 
 export interface adminProps {
-  user?: User;
-  isConductor?: boolean;
-  userType?: String;
+  user: User;
 }
 
 export interface territoryDetails {
@@ -106,6 +104,7 @@ export interface BrandingProps {
 export interface FooterProps {
   handleClick?: (event: React.MouseEvent<HTMLElement>) => void;
   isSaving?: boolean;
+  userAccessLevel?: number;
 }
 
 export interface LegendProps {
@@ -140,4 +139,10 @@ export interface RouteDetails {
 export interface Policy {
   isCountable(unit: unitDetails): boolean;
   isCompleted(unit: unitDetails): boolean;
+}
+
+export interface AuthorizerProp {
+  requiredPermission: number;
+  userPermission: number | undefined;
+  children: React.ReactElement;
 }

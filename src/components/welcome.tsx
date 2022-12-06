@@ -1,14 +1,5 @@
 import { Card, Container } from "react-bootstrap";
-import { LOGIN_TYPE_CODES } from "./util";
-
-const Welcome = ({ loginType = LOGIN_TYPE_CODES.CONDUCTOR }) => {
-  let message =
-    "Please select a territory from the above listing to begin assigning slips to the publishers.";
-
-  if (loginType === LOGIN_TYPE_CODES.ADMIN) {
-    message =
-      "Please select a territory from the above listing to begin administration.";
-  }
+const Welcome = () => {
   return (
     <Container className="container-main" style={{ height: "80vh" }}>
       <Card className="card-main" style={{ width: "100%" }}>
@@ -21,7 +12,9 @@ const Welcome = ({ loginType = LOGIN_TYPE_CODES.CONDUCTOR }) => {
           <Card.Title className="text-center">
             Welcome To Ministry Mapper
           </Card.Title>
-          <Card.Text className="text-justify">{message}</Card.Text>
+          <Card.Text className="text-justify">
+            Please select a territory from the above listing.
+          </Card.Text>
         </Card.Body>
       </Card>
     </Container>

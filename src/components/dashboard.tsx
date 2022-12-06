@@ -4,9 +4,8 @@ import Admin from "./admin";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Login from "./login";
 import Loader from "./loader";
-import { adminProps } from "./interface";
 
-function Dashboard({ isConductor = false, userType = "Admin" }: adminProps) {
+function Dashboard() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [loginUser, setLoginUser] = useState<any>();
 
@@ -17,11 +16,7 @@ function Dashboard({ isConductor = false, userType = "Admin" }: adminProps) {
     });
   }, []);
   if (isLoading) return <Loader />;
-  return loginUser ? (
-    <Admin user={loginUser} isConductor={isConductor} />
-  ) : (
-    <Login loginType={userType} />
-  );
+  return loginUser ? <Admin user={loginUser} /> : <Login />;
 }
 
 export default Dashboard;

@@ -2,12 +2,11 @@ import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { Card, Form, Button, Container, Spinner } from "react-bootstrap";
 import { auth } from "../firebase";
-import { LoginProps } from "./interface";
 import { FirebaseError } from "firebase/app";
 import { errorHandler, errorMessage } from "./util";
 import { useRollbar } from "@rollbar/react";
 
-const Login = ({ loginType }: LoginProps) => {
+const Login = () => {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [validated, setValidated] = useState(false);
@@ -46,7 +45,7 @@ const Login = ({ loginType }: LoginProps) => {
       className="d-flex align-items-center justify-content-center vh-100"
     >
       <Card style={{ width: "80%" }}>
-        <Card.Header className="text-center">{loginType} Login</Card.Header>
+        <Card.Header className="text-center">Login</Card.Header>
         <Card.Body>
           <Form noValidate validated={validated} onSubmit={handleLoginSubmit}>
             <Form.Group className="mb-3" controlId="formBasicEmail">
