@@ -66,10 +66,13 @@
     "eslint-plugin-react": "^7.31.11",
     "husky": "^8.0.2",
     "lint-staged": "^13.1.0",
-    "prettier": "^2.7.1"
+    "prettier": "^2.8.1"
   },
   "lint-staged": {
-    "**/*.{ts,tsx}": ["eslint . --fix", "prettier --write ."]
+    "**/*.{ts,tsx}": [
+      "eslint . --fix",
+      "prettier --write ."
+    ]
   },
   "husky": {
     "hooks": {
