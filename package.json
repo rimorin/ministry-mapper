@@ -69,7 +69,7 @@
     "prettier": "^2.7.1"
   },
   "lint-staged": {
-    "**/*.{js,jsx}": ["eslint . --fix", "prettier --write ."]
+    "**/*.{ts,tsx}": ["eslint . --fix", "prettier --write ."]
   },
   "husky": {
     "hooks": {
