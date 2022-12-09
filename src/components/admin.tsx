@@ -94,7 +94,7 @@ import Welcome from "./welcome";
 import UnauthorizedPage from "./unauthorisedpage";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
-import { RacePolicy, LanguagePolicy } from "./policies";
+import { RacePolicy, LanguagePolicy, LinkSession } from "./policies";
 import { zeroPad } from "react-countdown";
 function Admin({ user, isConductor = false }: adminProps) {
   const { code } = useParams();
@@ -418,11 +418,15 @@ function Admin({ user, isConductor = false }: adminProps) {
   };
 
   const setTimedLink = (
+    postalcode: String,
     addressLinkId: String,
     hours = DEFAULT_SELF_DESTRUCT_HOURS
   ) => {
+    const link = new LinkSession();
+    link.tokenEndtime = addHours(hours);
+    link.postalCode = postalcode as string;
     return pollingFunction(() =>
-      set(ref(database, `links/${addressLinkId}`), addHours(hours))
+      set(ref(database, `links/${addressLinkId}`), link)
     );
   };
 
@@ -746,7 +750,7 @@ function Admin({ user, isConductor = false }: adminProps) {
     if (navigator.share) {
       setIsSettingAssignLink(true);
       try {
-        await setTimedLink(linkId, hours);
+        await setTimedLink(postalcode, linkId, hours);
         navigator
           .share({
             title: title,
@@ -1114,7 +1118,10 @@ function Admin({ user, isConductor = false }: adminProps) {
                                   territoryWindow.document.body.innerHTML =
                                     TERRITORY_VIEW_WINDOW_WELCOME_TEXT;
                                 }
-                                await setTimedLink(addressLinkId);
+                                await setTimedLink(
+                                  addressElement.postalcode,
+                                  addressLinkId
+                                );
                                 territoryWindow!.location.href = `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`;
                               } catch (error) {
                                 errorHandler(error, rollbar);

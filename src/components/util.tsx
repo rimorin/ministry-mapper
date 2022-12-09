@@ -298,6 +298,10 @@ const processAddressData = async (postal: String, data: any) => {
 };
 
 const NavBarBranding = ({ naming }: BrandingProps) => {
+  const production = process.env.REACT_APP_ROLLBAR_ENVIRONMENT === "production";
+  const environment = production
+    ? ""
+    : " {" + process.env.REACT_APP_ROLLBAR_ENVIRONMENT + "}";
   return (
     <Navbar.Brand>
       <img
@@ -308,6 +312,7 @@ const NavBarBranding = ({ naming }: BrandingProps) => {
         className="d-inline-block align-top"
       />{" "}
       {naming}
+      {environment}
     </Navbar.Brand>
   );
 };

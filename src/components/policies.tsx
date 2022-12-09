@@ -60,3 +60,24 @@ export class LanguagePolicy implements Policy {
     );
   }
 }
+
+export class LinkSession {
+  tokenEndtime: number;
+  postalCode: string;
+  homeLanguage: string;
+  maxTries: number;
+  constructor() {
+    this.tokenEndtime = 0;
+    this.postalCode = "";
+    this.homeLanguage = HOUSEHOLD_LANGUAGES.ENGLISH.CODE;
+    this.maxTries = 2;
+  }
+  fromSnapshot(linkval: any) {
+    if (linkval.tokenEndtime === undefined) {
+      this.tokenEndtime = linkval;
+    } else {
+      this.tokenEndtime = linkval.tokenEndtime;
+      this.postalCode = linkval.postalCode;
+    }
+  }
+}
