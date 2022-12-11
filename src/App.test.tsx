@@ -9,7 +9,6 @@ import {
   HOUSEHOLD_LANGUAGES,
   HOUSEHOLD_TYPES,
   Legend,
-  LOGIN_TYPE_CODES,
   NOT_HOME_STATUS_CODES,
   STATUS_CODES
 } from "./components/util";
@@ -90,23 +89,10 @@ test("renders invalid page", () => {
 });
 
 test("renders admin welcome page", () => {
-  render(<Welcome loginType={LOGIN_TYPE_CODES.ADMIN} />);
-  expect(screen.getByRole("img")).toBeInTheDocument();
-  expect(
-    screen.getByText(
-      "Please select a territory from the above listing to begin administration."
-    )
-  ).toBeInTheDocument();
-  expect(screen.getByText("Welcome To Ministry Mapper")).toBeInTheDocument();
-});
-
-test("renders conductor welcome page", () => {
   render(<Welcome />);
   expect(screen.getByRole("img")).toBeInTheDocument();
   expect(
-    screen.getByText(
-      "Please select a territory from the above listing to begin assigning slips to the publishers."
-    )
+    screen.getByText("Please select a territory from the above listing.")
   ).toBeInTheDocument();
   expect(screen.getByText("Welcome To Ministry Mapper")).toBeInTheDocument();
 });
@@ -116,21 +102,10 @@ test("renders loading indicator", () => {
   expect(screen.getByRole("status")).toBeInTheDocument();
 });
 
-test("renders admin login screen", () => {
-  const headerText = "Admin";
-  rollbarRender(<Login loginType={headerText} />);
-  expect(screen.getByText(`${headerText} Login`)).toBeInTheDocument();
-  expect(screen.getByText("Login")).toBeInTheDocument();
-  expect(screen.getByText("Clear")).toBeInTheDocument();
-  expect(screen.getByText("Email Address")).toBeInTheDocument();
-  expect(screen.getByText("Password")).toBeInTheDocument();
-});
-
-test("renders conductor login screen", () => {
-  const headerText = "Conductor";
-  rollbarRender(<Login loginType={headerText} />);
-  expect(screen.getByText(`${headerText} Login`)).toBeInTheDocument();
-  expect(screen.getByText("Login")).toBeInTheDocument();
+test("renders login screen", () => {
+  rollbarRender(<Login />);
+  expect(screen.getAllByText("Login")[0]).toBeInTheDocument();
+  expect(screen.getAllByText("Login")[1]).toBeInTheDocument();
   expect(screen.getByText("Clear")).toBeInTheDocument();
   expect(screen.getByText("Email Address")).toBeInTheDocument();
   expect(screen.getByText("Password")).toBeInTheDocument();

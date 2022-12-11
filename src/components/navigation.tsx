@@ -27,11 +27,7 @@ function Navigation() {
       <Routes>
         <Route path="*" element={<NotFoundPage />} />
         <Route path="/" element={<FrontPage />} />
-        <Route path={"admin/:code"} element={<Dashboard />} />
-        <Route
-          path={"conductor/:code"}
-          element={<Dashboard isConductor={true} userType="Conductor" />}
-        />
+        <Route path={"/:code"} element={<Dashboard />} />
         <Route
           path={"/:postalcode/:congregationcode/:id"}
           element={<Territory />}
