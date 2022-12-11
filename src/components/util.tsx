@@ -5,6 +5,9 @@ import {
   goOnline,
   orderByChild,
   query,
+  startAt,
+  endAt,
+  update,
   ref
 } from "firebase/database";
 import {
@@ -28,6 +31,7 @@ import {
   unitDetails,
   nothomeprops
 } from "./interface";
+import { LinkSession } from "./policies";
 import Countdown from "react-countdown";
 import envelopeImage from "../assets/envelope.svg";
 
@@ -297,6 +301,41 @@ const processAddressData = async (postal: String, data: any) => {
   return dataList;
 };
 
+const processAssigneeCount = async (postal: String) => {
+  const postalCode = postal as string;
+  // need to add to rules for links: ".indexOn": "postalCode",
+  const assigneeSnapshot = await pollingFunction(() =>
+    get(
+      query(
+        child(ref(database), "links"),
+        orderByChild("postalCode"),
+        startAt(postalCode),
+        endAt(postalCode)
+      )
+    )
+  );
+  const currentTimestamp = new Date().getTime();
+  var count = 0;
+  assigneeSnapshot.forEach((rec: any) => {
+    var link = rec.val() as LinkSession;
+    if (link.tokenEndtime > currentTimestamp) {
+      count++;
+    }
+  });
+  return count;
+};
+
+const triggerPostalCodeListeners = async (postalcode: string) => {
+  const deltaSnapshot = await get(ref(database, `/${postalcode}/delta`));
+  var delta = 0;
+  if (deltaSnapshot.exists()) {
+    delta = deltaSnapshot.val() + 1;
+  }
+  update(ref(database, `/${postalcode}`), {
+    delta: delta
+  });
+};
+
 const NavBarBranding = ({ naming }: BrandingProps) => {
   const production = process.env.REACT_APP_ROLLBAR_ENVIRONMENT === "production";
   const environment = production
@@ -432,6 +471,8 @@ export {
   pollingFunction,
   checkTraceLangStatus,
   checkTraceRaceStatus,
+  processAssigneeCount,
+  triggerPostalCodeListeners,
   processAddressData,
   ExpiryTimePopover,
   NotHomeIcon,

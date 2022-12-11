@@ -75,6 +75,8 @@ import {
   pollingFunction,
   checkTraceLangStatus,
   checkTraceRaceStatus,
+  processAssigneeCount,
+  triggerPostalCodeListeners,
   processAddressData
 } from "./util";
 import { useParams } from "react-router-dom";
@@ -191,7 +193,9 @@ function Admin({ user, isConductor = false }: adminProps) {
               postalCode,
               territoryData.units
             );
+            const assigneeCount = await processAssigneeCount(postalCode);
             const addressData = {
+              assigneeCount: assigneeCount,
               x_zip: territoryData.x_zip,
               name: territoryData.name,
               postalcode: postalCode,
@@ -425,9 +429,10 @@ function Admin({ user, isConductor = false }: adminProps) {
     const link = new LinkSession();
     link.tokenEndtime = addHours(hours);
     link.postalCode = postalcode as string;
-    return pollingFunction(() =>
-      set(ref(database, `links/${addressLinkId}`), link)
-    );
+    return pollingFunction(async () => {
+      set(ref(database, `links/${addressLinkId}`), link);
+      await triggerPostalCodeListeners(link.postalCode);
+    });
   };
 
   const handleClickFeedback = (
@@ -856,7 +861,6 @@ function Admin({ user, isConductor = false }: adminProps) {
 
   const territoryAddresses = Array.from(addresses.values());
   const congregationTerritoryList = Array.from(territories.values());
-
   return (
     <Fade appear={true} in={true}>
       <div>
@@ -1017,6 +1021,11 @@ function Admin({ user, isConductor = false }: adminProps) {
                       key={`navbar-${addressElement.postalcode}`}
                     >
                       <Container fluid className="justify-content-end">
+                        {addressElement.assigneeCount > 0 && (
+                          <Badge bg="danger" pill>
+                            {`${addressElement.assigneeCount}`}
+                          </Badge>
+                        )}
                         {!isConductor && (
                           <DropdownButton
                             key={`assigndrop-${addressElement.postalcode}`}
