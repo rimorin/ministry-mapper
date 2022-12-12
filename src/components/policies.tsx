@@ -85,3 +85,12 @@ export class LinkSession {
     }
   }
 }
+
+export class LinkCounts {
+  assigneeCount: number;
+  personalCount: number;
+  constructor() {
+    this.assigneeCount = 0;
+    this.personalCount = 0;
+  }
+}

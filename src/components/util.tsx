@@ -32,7 +32,7 @@ import {
   nothomeprops,
   AuthorizerProp
 } from "./interface";
-import { LinkSession } from "./policies";
+import { LinkSession, LinkCounts } from "./policies";
 import Countdown from "react-countdown";
 import envelopeImage from "../assets/envelope.svg";
 
@@ -96,7 +96,8 @@ const ADMIN_MODAL_TYPES = {
 
 const LINK_TYPES = {
   VIEW: 0,
-  ASSIGNMENT: 1
+  ASSIGNMENT: 1,
+  PERSONAL: 2
 };
 
 const DEFAULT_FLOOR_PADDING = 2;
@@ -323,10 +324,10 @@ const processAddressData = async (postal: String, data: any) => {
   return dataList;
 };
 
-const processAssigneeCount = async (postal: String) => {
+const processLinkCounts = async (postal: String) => {
   const postalCode = postal as string;
   // need to add to rules for links: ".indexOn": "postalCode",
-  const assigneeSnapshot = await pollingFunction(() =>
+  const linksSnapshot = await pollingFunction(() =>
     get(
       query(
         child(ref(database), "links"),
@@ -337,17 +338,19 @@ const processAssigneeCount = async (postal: String) => {
     )
   );
   const currentTimestamp = new Date().getTime();
-  var count = 0;
-  assigneeSnapshot.forEach((rec: any) => {
+  var counts = new LinkCounts();
+  linksSnapshot.forEach((rec: any) => {
     var link = rec.val() as LinkSession;
-    if (
-      link.linkType === LINK_TYPES.ASSIGNMENT &&
-      link.tokenEndtime > currentTimestamp
-    ) {
-      count++;
+    if (link.tokenEndtime > currentTimestamp) {
+      if (link.linkType === LINK_TYPES.ASSIGNMENT) {
+        counts.assigneeCount++;
+      }
+      if (link.linkType === LINK_TYPES.PERSONAL) {
+        counts.personalCount++;
+      }
     }
   });
-  return count;
+  return counts;
 };
 
 const triggerPostalCodeListeners = async (postalcode: string) => {
@@ -498,7 +501,7 @@ export {
   pollingFunction,
   checkTraceLangStatus,
   checkTraceRaceStatus,
-  processAssigneeCount,
+  processLinkCounts,
   triggerPostalCodeListeners,
   processAddressData,
   ExpiryTimePopover,

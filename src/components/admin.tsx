@@ -74,7 +74,7 @@ import {
   pollingFunction,
   checkTraceLangStatus,
   checkTraceRaceStatus,
-  processAssigneeCount,
+  processLinkCounts,
   triggerPostalCodeListeners,
   processAddressData,
   ComponentAuthorizer,
@@ -197,9 +197,10 @@ function Admin({ user }: adminProps) {
               postalCode,
               territoryData.units
             );
-            const assigneeCount = await processAssigneeCount(postalCode);
+            const counts = await processLinkCounts(postalCode);
             const addressData = {
-              assigneeCount: assigneeCount,
+              assigneeCount: counts.assigneeCount,
+              personalCount: counts.personalCount,
               x_zip: territoryData.x_zip,
               name: territoryData.name,
               postalcode: postalCode,
@@ -749,6 +750,7 @@ function Admin({ user }: adminProps) {
   };
 
   const shareTimedLink = async (
+    linktype: number,
     postalcode: String,
     linkId: String,
     title: string,
@@ -759,7 +761,7 @@ function Admin({ user }: adminProps) {
     if (navigator.share) {
       setIsSettingAssignLink(true);
       try {
-        await setTimedLink(LINK_TYPES.ASSIGNMENT, postalcode, linkId, hours);
+        await setTimedLink(linktype, postalcode, linkId, hours);
         navigator
           .share({
             title: title,
@@ -1056,9 +1058,9 @@ function Admin({ user }: adminProps) {
                       key={`navbar-${addressElement.postalcode}`}
                     >
                       <Container fluid className="justify-content-end">
-                        {addressElement.assigneeCount > 0 && (
+                        {addressElement.personalCount > 0 && (
                           <Badge bg="danger" pill>
-                            {`${addressElement.assigneeCount}`}
+                            {`${addressElement.personalCount}`}
                           </Badge>
                         )}
                         <ComponentAuthorizer
@@ -1077,6 +1079,7 @@ function Admin({ user }: adminProps) {
                             <Dropdown.Item
                               onClick={() => {
                                 shareTimedLink(
+                                  LINK_TYPES.PERSONAL,
                                   `${addressElement.postalcode}`,
                                   addressLinkId,
                                   `Units for ${addressElement.name}`,
@@ -1101,6 +1104,7 @@ function Admin({ user }: adminProps) {
                             <Dropdown.Item
                               onClick={() => {
                                 shareTimedLink(
+                                  LINK_TYPES.PERSONAL,
                                   `${addressElement.postalcode}`,
                                   addressLinkId,
                                   `Units for ${addressElement.name}`,
@@ -1129,12 +1133,18 @@ function Admin({ user }: adminProps) {
                           userPermission={userAccessLevel}
                         >
                           <>
+                            {addressElement.assigneeCount > 0 && (
+                              <Badge bg="danger" pill>
+                                {`${addressElement.assigneeCount}`}
+                              </Badge>
+                            )}
                             <Button
                               size="sm"
                               variant="outline-primary"
                               className="m-1"
                               onClick={(_) => {
                                 shareTimedLink(
+                                  LINK_TYPES.ASSIGNMENT,
                                   `${addressElement.postalcode}`,
                                   addressLinkId,
                                   `Units for ${addressElement.name}`,
