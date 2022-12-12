@@ -4,6 +4,7 @@ import {
   HOUSEHOLD_TYPES,
   STATUS_CODES,
   NOT_HOME_STATUS_CODES,
+  LINK_TYPES,
   HOUSEHOLD_LANGUAGES
 } from "./util";
 
@@ -66,11 +67,13 @@ export class LinkSession {
   postalCode: string;
   homeLanguage: string;
   maxTries: number;
+  linkType: number;
   constructor() {
     this.tokenEndtime = 0;
     this.postalCode = "";
     this.homeLanguage = HOUSEHOLD_LANGUAGES.ENGLISH.CODE;
     this.maxTries = 2;
+    this.linkType = LINK_TYPES.VIEW;
   }
   fromSnapshot(linkval: any) {
     if (linkval.tokenEndtime === undefined) {
@@ -78,6 +81,7 @@ export class LinkSession {
     } else {
       this.tokenEndtime = linkval.tokenEndtime;
       this.postalCode = linkval.postalCode;
+      this.linkType = linkval.linkType;
     }
   }
 }

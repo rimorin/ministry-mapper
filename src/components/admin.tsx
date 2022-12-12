@@ -79,6 +79,7 @@ import {
   processAddressData,
   ComponentAuthorizer,
   USER_ACCESS_LEVELS,
+  LINK_TYPES,
   ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS
 } from "./util";
 import { useParams } from "react-router-dom";
@@ -424,6 +425,7 @@ function Admin({ user }: adminProps) {
   };
 
   const setTimedLink = (
+    linktype: number,
     postalcode: String,
     addressLinkId: String,
     hours = DEFAULT_SELF_DESTRUCT_HOURS
@@ -431,6 +433,7 @@ function Admin({ user }: adminProps) {
     const link = new LinkSession();
     link.tokenEndtime = addHours(hours);
     link.postalCode = postalcode as string;
+    link.linkType = linktype;
     return pollingFunction(async () => {
       set(ref(database, `links/${addressLinkId}`), link);
       await triggerPostalCodeListeners(link.postalCode);
@@ -756,7 +759,7 @@ function Admin({ user }: adminProps) {
     if (navigator.share) {
       setIsSettingAssignLink(true);
       try {
-        await setTimedLink(postalcode, linkId, hours);
+        await setTimedLink(LINK_TYPES.ASSIGNMENT, postalcode, linkId, hours);
         navigator
           .share({
             title: title,
@@ -1168,6 +1171,7 @@ function Admin({ user }: adminProps) {
                                       TERRITORY_VIEW_WINDOW_WELCOME_TEXT;
                                   }
                                   await setTimedLink(
+                                    LINK_TYPES.VIEW,
                                     addressElement.postalcode,
                                     addressLinkId
                                   );

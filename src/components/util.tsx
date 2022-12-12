@@ -94,6 +94,11 @@ const ADMIN_MODAL_TYPES = {
   UPDATE_UNIT: 8
 };
 
+const LINK_TYPES = {
+  VIEW: 0,
+  ASSIGNMENT: 1
+};
+
 const DEFAULT_FLOOR_PADDING = 2;
 // 24 hours
 const DEFAULT_SELF_DESTRUCT_HOURS = 24;
@@ -335,7 +340,10 @@ const processAssigneeCount = async (postal: String) => {
   var count = 0;
   assigneeSnapshot.forEach((rec: any) => {
     var link = rec.val() as LinkSession;
-    if (link.tokenEndtime > currentTimestamp) {
+    if (
+      link.linkType === LINK_TYPES.ASSIGNMENT &&
+      link.tokenEndtime > currentTimestamp
+    ) {
       count++;
     }
   });
@@ -457,6 +465,8 @@ const HOUSEHOLD_LANGUAGES = {
   CHINESE: { CODE: "c", DISPLAY: "Chinese" },
   BURMESE: { CODE: "b", DISPLAY: "Burmese" },
   TAMIL: { CODE: "t", DISPLAY: "Tamil" },
+  TAGALOG: { CODE: "tg", DISPLAY: "Tagalog" },
+  INDONESIAN: { CODE: "id", DISPLAY: "Indonesian" },
   MALAY: { CODE: "m", DISPLAY: "Malay" }
 };
 
@@ -511,5 +521,6 @@ export {
   COUNTABLE_HOUSEHOLD_STATUS,
   HOUSEHOLD_LANGUAGES,
   USER_ACCESS_LEVELS,
+  LINK_TYPES,
   ComponentAuthorizer
 };
