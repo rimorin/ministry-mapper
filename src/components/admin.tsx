@@ -763,14 +763,14 @@ function Admin({ user }: adminProps) {
     if (navigator.share) {
       setIsSettingAssignLink(true);
       try {
-        await setTimedLink(linktype, postalcode, linkId, hours);
         navigator
           .share({
             title: title,
             text: body,
             url: url
           })
-          .then((_) => {
+          .then(async (_) => {
+            await setTimedLink(linktype, postalcode, linkId, hours);
             setAccordionKeys((existingKeys) =>
               existingKeys.filter((key) => key !== postalcode)
             );
