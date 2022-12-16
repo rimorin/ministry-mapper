@@ -101,6 +101,8 @@ import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
 import { RacePolicy, LanguagePolicy, LinkSession } from "./policies";
 import { zeroPad } from "react-countdown";
+import gearImage from "../assets/gear.svg";
+import Image from "react-bootstrap/Image";
 function Admin({ user }: adminProps) {
   const { code } = useParams();
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -1008,6 +1010,14 @@ function Admin({ user }: adminProps) {
                 }}
               >
                 Log Out
+              </Button>
+              <Button
+                className="m-1"
+                size="sm"
+                variant="outline-primary"
+                onClick={async () => {}}
+              >
+                <Image fluid src={gearImage} />
               </Button>
             </Navbar.Collapse>
           </Container>
