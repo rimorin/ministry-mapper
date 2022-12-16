@@ -1384,10 +1384,9 @@ function Admin({ user }: adminProps) {
                       bordered
                       striped
                       hover
-                      responsive="sm"
                       className="sticky-table"
                     >
-                      <thead>
+                      <thead className="sticky-top-cell">
                         <tr>
                           <th
                             scope="col"
