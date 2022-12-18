@@ -65,6 +65,8 @@ export interface territoryDetails {
 }
 
 export interface addressDetails {
+  assigneeCount: number;
+  personalCount: number;
   x_zip: String;
   name: String;
   postalcode: String;

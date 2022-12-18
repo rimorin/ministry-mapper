@@ -74,9 +74,12 @@ import {
   pollingFunction,
   checkTraceLangStatus,
   checkTraceRaceStatus,
+  processLinkCounts,
+  triggerPostalCodeListeners,
   processAddressData,
   ComponentAuthorizer,
   USER_ACCESS_LEVELS,
+  LINK_TYPES,
   ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS
 } from "./util";
 import { useParams } from "react-router-dom";
@@ -96,7 +99,7 @@ import Welcome from "./welcome";
 import UnauthorizedPage from "./unauthorisedpage";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
-import { RacePolicy, LanguagePolicy } from "./policies";
+import { RacePolicy, LanguagePolicy, LinkSession } from "./policies";
 import { zeroPad } from "react-countdown";
 function Admin({ user }: adminProps) {
   const { code } = useParams();
@@ -194,7 +197,10 @@ function Admin({ user }: adminProps) {
               postalCode,
               territoryData.units
             );
+            const counts = await processLinkCounts(postalCode);
             const addressData = {
+              assigneeCount: counts.assigneeCount,
+              personalCount: counts.personalCount,
               x_zip: territoryData.x_zip,
               name: territoryData.name,
               postalcode: postalCode,
@@ -420,12 +426,19 @@ function Admin({ user }: adminProps) {
   };
 
   const setTimedLink = (
+    linktype: number,
+    postalcode: String,
     addressLinkId: String,
     hours = DEFAULT_SELF_DESTRUCT_HOURS
   ) => {
-    return pollingFunction(() =>
-      set(ref(database, `links/${addressLinkId}`), addHours(hours))
-    );
+    const link = new LinkSession();
+    link.tokenEndtime = addHours(hours);
+    link.postalCode = postalcode as string;
+    link.linkType = linktype;
+    return pollingFunction(async () => {
+      set(ref(database, `links/${addressLinkId}`), link);
+      await triggerPostalCodeListeners(link.postalCode);
+    });
   };
 
   const handleClickFeedback = (
@@ -737,6 +750,7 @@ function Admin({ user }: adminProps) {
   };
 
   const shareTimedLink = async (
+    linktype: number,
     postalcode: String,
     linkId: String,
     title: string,
@@ -747,14 +761,14 @@ function Admin({ user }: adminProps) {
     if (navigator.share) {
       setIsSettingAssignLink(true);
       try {
-        await setTimedLink(linkId, hours);
         navigator
           .share({
             title: title,
             text: body,
             url: url
           })
-          .then((_) => {
+          .then(async (_) => {
+            await setTimedLink(linktype, postalcode, linkId, hours);
             setAccordionKeys((existingKeys) =>
               existingKeys.filter((key) => key !== postalcode)
             );
@@ -1044,6 +1058,11 @@ function Admin({ user }: adminProps) {
                       key={`navbar-${addressElement.postalcode}`}
                     >
                       <Container fluid className="justify-content-end">
+                        {addressElement.personalCount > 0 && (
+                          <Badge bg="danger" pill>
+                            {`${addressElement.personalCount}`}
+                          </Badge>
+                        )}
                         <ComponentAuthorizer
                           requiredPermission={
                             USER_ACCESS_LEVELS.TERRITORY_SERVANT
@@ -1060,6 +1079,7 @@ function Admin({ user }: adminProps) {
                             <Dropdown.Item
                               onClick={() => {
                                 shareTimedLink(
+                                  LINK_TYPES.PERSONAL,
                                   `${addressElement.postalcode}`,
                                   addressLinkId,
                                   `Units for ${addressElement.name}`,
@@ -1084,6 +1104,7 @@ function Admin({ user }: adminProps) {
                             <Dropdown.Item
                               onClick={() => {
                                 shareTimedLink(
+                                  LINK_TYPES.PERSONAL,
                                   `${addressElement.postalcode}`,
                                   addressLinkId,
                                   `Units for ${addressElement.name}`,
@@ -1112,12 +1133,18 @@ function Admin({ user }: adminProps) {
                           userPermission={userAccessLevel}
                         >
                           <>
+                            {addressElement.assigneeCount > 0 && (
+                              <Badge bg="danger" pill>
+                                {`${addressElement.assigneeCount}`}
+                              </Badge>
+                            )}
                             <Button
                               size="sm"
                               variant="outline-primary"
                               className="m-1"
                               onClick={(_) => {
                                 shareTimedLink(
+                                  LINK_TYPES.ASSIGNMENT,
                                   `${addressElement.postalcode}`,
                                   addressLinkId,
                                   `Units for ${addressElement.name}`,
@@ -1153,7 +1180,11 @@ function Admin({ user }: adminProps) {
                                     territoryWindow.document.body.innerHTML =
                                       TERRITORY_VIEW_WINDOW_WELCOME_TEXT;
                                   }
-                                  await setTimedLink(addressLinkId);
+                                  await setTimedLink(
+                                    LINK_TYPES.VIEW,
+                                    addressElement.postalcode,
+                                    addressLinkId
+                                  );
                                   territoryWindow!.location.href = `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`;
                                 } catch (error) {
                                   errorHandler(error, rollbar);

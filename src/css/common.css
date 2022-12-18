@@ -13,3 +13,8 @@
 .inline-cell {
   white-space: nowrap;
 }
+
+.group-wrap {
+  display: block;
+  flex-wrap: wrap;
+}

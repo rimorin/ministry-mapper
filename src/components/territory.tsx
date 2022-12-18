@@ -7,6 +7,7 @@ import { child, onValue, ref } from "firebase/database";
 import InvalidPage from "./invalidpage";
 import NotFoundPage from "./notfoundpage";
 import Slip from "./slip";
+import { LinkSession } from "./policies";
 
 function Territory() {
   const { id, postalcode, congregationcode } = useParams();
@@ -22,7 +23,9 @@ function Territory() {
     onValue(linkReference, (snapshot) => {
       setIsTokenLoading(false);
       if (snapshot.exists()) {
-        const tokenEndtime = snapshot.val();
+        const linkrec = new LinkSession();
+        linkrec.fromSnapshot(snapshot.val());
+        const tokenEndtime = linkrec.tokenEndtime;
         const currentTimestamp = new Date().getTime();
         setTokenEndTime(tokenEndtime);
         setIsLinkExpired(currentTimestamp > tokenEndtime);
