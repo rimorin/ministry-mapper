@@ -15,5 +15,6 @@
 }
 
 .group-wrap {
+  display: block;
   flex-wrap: wrap;
 }
