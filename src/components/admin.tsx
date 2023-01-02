@@ -66,6 +66,7 @@ import {
   errorHandler,
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   HOUSEHOLD_TYPES,
+  HOUSEHOLD_LANGUAGES,
   MIN_START_FLOOR,
   NOT_HOME_STATUS_CODES,
   parseHHLanguages,
@@ -103,6 +104,7 @@ import { RacePolicy, LanguagePolicy, LinkSession } from "./policies";
 import { zeroPad } from "react-countdown";
 import gearImage from "../assets/gear.svg";
 import Image from "react-bootstrap/Image";
+import { Preferences, loadPreferences, savePreferences } from "./preferences";
 function Admin({ user }: adminProps) {
   const { code } = useParams();
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -122,6 +124,7 @@ function Admin({ user }: adminProps) {
   const [isTerritoryRename, setIsTerritoryRename] = useState<boolean>(false);
   const [isDnc, setIsDnc] = useState<boolean>(false);
   const [isUnitDetails, setIsUnitDetails] = useState<boolean>(false);
+  const [isProfile, setIsProfile] = useState<boolean>(false);
   const [showTerritoryListing, setShowTerritoryListing] =
     useState<boolean>(false);
   const [trackRace, setTrackRace] = useState<boolean>(true);
@@ -361,6 +364,9 @@ function Admin({ user }: adminProps) {
       case ADMIN_MODAL_TYPES.UPDATE_UNIT:
         setIsUnitDetails(!isUnitDetails);
         break;
+      case ADMIN_MODAL_TYPES.PROFILE:
+        setIsProfile(!isProfile);
+        break;
       default:
         setIsOpen(!isOpen);
     }
@@ -437,6 +443,10 @@ function Admin({ user }: adminProps) {
     link.tokenEndtime = addHours(hours);
     link.postalCode = postalcode as string;
     link.linkType = linktype;
+    const prefs = new Preferences();
+    loadPreferences(prefs);
+    link.homeLanguage = prefs.homeLanguage;
+    link.maxTries = prefs.maxTries;
     return pollingFunction(async () => {
       set(ref(database, `links/${addressLinkId}`), link);
       await triggerPostalCodeListeners(link.postalCode);
@@ -538,6 +548,20 @@ function Admin({ user }: adminProps) {
         set(ref(database, `/${details.postal}/name`), details.name)
       );
       toggleModal(ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME);
+    } catch (error) {
+      errorHandler(error, rollbar);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSubmitProfile = async (event: FormEvent<HTMLElement>) => {
+    event.preventDefault();
+    const prefs = values as Preferences;
+    setIsSaving(true);
+    try {
+      savePreferences(prefs);
+      toggleModal(ADMIN_MODAL_TYPES.PROFILE);
     } catch (error) {
       errorHandler(error, rollbar);
     } finally {
@@ -1015,7 +1039,16 @@ function Admin({ user }: adminProps) {
                 className="m-1"
                 size="sm"
                 variant="outline-primary"
-                onClick={async () => {}}
+                onClick={async () => {
+                  const prefs = new Preferences();
+                  loadPreferences(prefs);
+                  setValues({
+                    ...values,
+                    homeLanguage: prefs.homeLanguage,
+                    maxTries: prefs.maxTries
+                  });
+                  toggleModal(ADMIN_MODAL_TYPES.PROFILE);
+                }}
               >
                 <Image fluid src={gearImage} />
               </Button>
@@ -2033,6 +2066,58 @@ function Admin({ user }: adminProps) {
               handleClick={() => toggleModal(ADMIN_MODAL_TYPES.UNIT)}
               isSaving={isSaving}
               userAccessLevel={userAccessLevel}
+            />
+          </Form>
+        </Modal>
+        <Modal show={isProfile}>
+          <Modal.Header>
+            <Modal.Title>{`My profile`}</Modal.Title>
+          </Modal.Header>
+          <Form onSubmit={handleSubmitProfile}>
+            <Modal.Body>
+              <Form.Label htmlFor="inputMaxTries">Max Tries</Form.Label>
+              <Form.Select
+                id="inputMaxTries"
+                name="maxTries"
+                value={`${(values as Preferences).maxTries}`}
+                onChange={onFormChange}
+              >
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+              </Form.Select>
+              <Form.Label htmlFor="inputHomeLanguage">Your Language</Form.Label>
+              <Form.Select
+                id="inputHomeLanguage"
+                name="homeLanguage"
+                value={`${(values as Preferences).homeLanguage}`}
+                onChange={onFormChange}
+              >
+                <option value={HOUSEHOLD_LANGUAGES.ENGLISH.CODE}>
+                  {HOUSEHOLD_LANGUAGES.ENGLISH.DISPLAY}
+                </option>
+                <option value={HOUSEHOLD_LANGUAGES.CHINESE.CODE}>
+                  {HOUSEHOLD_LANGUAGES.CHINESE.DISPLAY}
+                </option>
+                <option value={HOUSEHOLD_LANGUAGES.INDONESIAN.CODE}>
+                  {HOUSEHOLD_LANGUAGES.INDONESIAN.DISPLAY}
+                </option>
+                <option value={HOUSEHOLD_LANGUAGES.TAGALOG.CODE}>
+                  {HOUSEHOLD_LANGUAGES.TAGALOG.DISPLAY}
+                </option>
+                <option value={HOUSEHOLD_LANGUAGES.TAMIL.CODE}>
+                  {HOUSEHOLD_LANGUAGES.TAMIL.DISPLAY}
+                </option>
+                <option value={HOUSEHOLD_LANGUAGES.BURMESE.CODE}>
+                  {HOUSEHOLD_LANGUAGES.BURMESE.DISPLAY}
+                </option>
+              </Form.Select>
+            </Modal.Body>
+            <ModalFooter
+              handleClick={() => toggleModal(ADMIN_MODAL_TYPES.PROFILE)}
+              userAccessLevel={userAccessLevel}
+              isSaving={isSaving}
             />
           </Form>
         </Modal>
