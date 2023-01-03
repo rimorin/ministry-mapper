@@ -102,8 +102,7 @@ import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
 import { RacePolicy, LanguagePolicy, LinkSession } from "./policies";
 import { zeroPad } from "react-countdown";
-import gearImage from "../assets/gear.svg";
-import Image from "react-bootstrap/Image";
+import { ReactComponent as GearImage } from "../assets/gear.svg";
 import { Preferences, loadPreferences, savePreferences } from "./preferences";
 function Admin({ user }: adminProps) {
   const { code } = useParams();
@@ -870,16 +869,23 @@ function Admin({ user }: adminProps) {
       const isTrackLanguages = snapshot.val();
       setTrackLanguages(isTrackLanguages);
       if (isTrackLanguages) {
-        setPolicy(new LanguagePolicy());
-        applyPreferencesToPolicy();
+        const preferences = new Preferences();
+        loadPreferences(preferences);
+        const languagePolicy = new LanguagePolicy();
+        languagePolicy.homeLanguage = preferences.homeLanguage;
+        languagePolicy.maxTries = preferences.maxTries;
+        setPolicy(languagePolicy);
       }
     });
     checkTraceRaceStatus(`${code}`).then((snapshot) => {
       const isTrackRace = snapshot.val();
       setTrackRace(isTrackRace);
       if (isTrackRace) {
-        setPolicy(new RacePolicy());
-        applyPreferencesToPolicy();
+        const preferences = new Preferences();
+        loadPreferences(preferences);
+        const racePolicy = new RacePolicy();
+        racePolicy.maxTries = preferences.maxTries;
+        setPolicy(racePolicy);
       }
     });
 
@@ -1064,7 +1070,7 @@ function Admin({ user }: adminProps) {
                   toggleModal(ADMIN_MODAL_TYPES.PROFILE);
                 }}
               >
-                <Image fluid src={gearImage} />
+                <GearImage stroke="var(--bs-blue)" />
               </Button>
             </Navbar.Collapse>
           </Container>
@@ -1606,7 +1612,11 @@ function Admin({ user }: adminProps) {
                                   (detailsElement, index) => (
                                     <td
                                       align="center"
-                                      className="inline-cell"
+                                      className={`inline-cell ${
+                                        policy?.isAvailable(detailsElement)
+                                          ? "available"
+                                          : ""
+                                      }`}
                                       onClick={(event) =>
                                         handleClickModal(
                                           event,

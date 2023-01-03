@@ -141,6 +141,7 @@ export interface RouteDetails {
 export interface Policy {
   isCountable(unit: unitDetails): boolean;
   isCompleted(unit: unitDetails): boolean;
+  isAvailable(unit: unitDetails): boolean;
 }
 
 export interface AuthorizerProp {

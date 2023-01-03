@@ -18,3 +18,7 @@
   display: block;
   flex-wrap: wrap;
 }
+
+.available {
+  background-color: rgba(0, 255, 0, 0.1) !important;
+}

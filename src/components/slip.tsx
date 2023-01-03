@@ -12,7 +12,7 @@ import {
   OverlayTrigger,
   Table
 } from "react-bootstrap";
-import { floorDetails, valuesDetails } from "./interface";
+import { floorDetails, valuesDetails, Policy } from "./interface";
 import TableHeader from "./table";
 import UnitStatus from "./unit";
 import {
@@ -45,12 +45,19 @@ import {
   ModalFooter
 } from "./form";
 import Loader from "./loader";
+import { RacePolicy, LanguagePolicy } from "./policies";
 import { useRollbar } from "@rollbar/react";
 import "react-calendar/dist/Calendar.css";
 import "../css/slip.css";
 import "../css/common.css";
 
-const Slip = ({ tokenEndtime = 0, postalcode = "", congregationcode = "" }) => {
+const Slip = ({
+  tokenEndtime = 0,
+  postalcode = "",
+  congregationcode = "",
+  maxTries = 0,
+  homeLanguage = ""
+}) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isFeedback, setIsFeedback] = useState<boolean>(false);
   const [showLegend, setShowLegend] = useState<boolean>(false);
@@ -64,6 +71,7 @@ const Slip = ({ tokenEndtime = 0, postalcode = "", congregationcode = "" }) => {
   const [postalName, setPostalName] = useState<String>();
   const [postalZip, setPostalZip] = useState<String>();
   const [values, setValues] = useState<Object>({});
+  const [policy, setPolicy] = useState<Policy>();
   const rollbar = useRollbar();
 
   const toggleModal = (isModal: boolean) => {
@@ -180,12 +188,25 @@ const Slip = ({ tokenEndtime = 0, postalcode = "", congregationcode = "" }) => {
       setFloors(await processAddressData(postalcode, data));
     };
 
-    checkTraceLangStatus(congregationcode).then((snapshot) =>
-      setTrackLanguages(snapshot.val())
-    );
-    checkTraceRaceStatus(congregationcode).then((snapshot) =>
-      setTrackRace(snapshot.val())
-    );
+    checkTraceLangStatus(congregationcode).then((snapshot) => {
+      const isTrackLanguages = snapshot.val();
+      setTrackLanguages(isTrackLanguages);
+      if (isTrackLanguages) {
+        const languagePolicy = new LanguagePolicy();
+        languagePolicy.maxTries = maxTries;
+        languagePolicy.homeLanguage = homeLanguage;
+        setPolicy(languagePolicy);
+      }
+    });
+    checkTraceRaceStatus(congregationcode).then((snapshot) => {
+      const isTrackRace = snapshot.val();
+      setTrackRace(isTrackRace);
+      if (isTrackRace) {
+        const racePolicy = new RacePolicy();
+        racePolicy.maxTries = maxTries;
+        setPolicy(racePolicy);
+      }
+    });
     onValue(
       postalNameReference,
       (snapshot) => {
@@ -238,7 +259,7 @@ const Slip = ({ tokenEndtime = 0, postalcode = "", congregationcode = "" }) => {
     document.body.addEventListener("touchstart", setActivityTime);
 
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-  }, [tokenEndtime, postalcode, congregationcode]);
+  }, [tokenEndtime, postalcode, congregationcode, maxTries, homeLanguage]);
   if (isPostalLoading) return <Loader />;
   const maxUnitNumberLength = getMaxUnitLength(floors);
   const zipcode = postalZip == null ? postalcode : postalZip;
@@ -298,7 +319,9 @@ const Slip = ({ tokenEndtime = 0, postalcode = "", congregationcode = "" }) => {
                     </th>
                     {item.units.map((element, _) => (
                       <td
-                        className="text-center align-middle inline-cell"
+                        className={`text-center align-middle inline-cell ${
+                          policy?.isAvailable(element) ? "available" : ""
+                        }`}
                         onClick={(event) =>
                           handleClickModal(
                             event,

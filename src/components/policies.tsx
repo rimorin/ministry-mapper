@@ -27,6 +27,9 @@ export class RacePolicy implements Policy {
           unit.nhcount === NOT_HOME_STATUS_CODES.THIRD_TRY))
     );
   }
+  isAvailable(unit: unitDetails): boolean {
+    return this.isCountable(unit) && !this.isCompleted(unit);
+  }
 }
 
 export class LanguagePolicy implements Policy {
@@ -64,6 +67,9 @@ export class LanguagePolicy implements Policy {
       this.isHomeLanguage(unit)
     );
   }
+  isAvailable(unit: unitDetails): boolean {
+    return this.isCountable(unit) && !this.isCompleted(unit);
+  }
 }
 
 export class LinkSession {
@@ -86,6 +92,8 @@ export class LinkSession {
       this.tokenEndtime = linkval.tokenEndtime;
       this.postalCode = linkval.postalCode;
       this.linkType = linkval.linkType;
+      this.maxTries = linkval.maxTries;
+      this.homeLanguage = linkval.homeLanguage;
     }
   }
 }
