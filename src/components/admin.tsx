@@ -561,6 +561,7 @@ function Admin({ user }: adminProps) {
     setIsSaving(true);
     try {
       savePreferences(prefs);
+      applyPreferencesToPolicy();
       toggleModal(ADMIN_MODAL_TYPES.PROFILE);
     } catch (error) {
       errorHandler(error, rollbar);
@@ -838,6 +839,20 @@ function Admin({ user }: adminProps) {
     return tokenData.claims[congregationCode];
   };
 
+  const applyPreferencesToPolicy = () => {
+    const preferences = new Preferences();
+    loadPreferences(preferences);
+    if (trackLanguages) {
+      const p = policy as LanguagePolicy;
+      p.homeLanguage = preferences.homeLanguage;
+      p.maxTries = preferences.maxTries;
+    }
+    if (trackRace) {
+      const p = policy as RacePolicy;
+      p.maxTries = preferences.maxTries;
+    }
+  };
+
   useEffect(() => {
     getUserAccessLevel(user, code).then((userAccessLevel) => {
       if (!userAccessLevel) {
@@ -856,6 +871,7 @@ function Admin({ user }: adminProps) {
       setTrackLanguages(isTrackLanguages);
       if (isTrackLanguages) {
         setPolicy(new LanguagePolicy());
+        applyPreferencesToPolicy();
       }
     });
     checkTraceRaceStatus(`${code}`).then((snapshot) => {
@@ -863,6 +879,7 @@ function Admin({ user }: adminProps) {
       setTrackRace(isTrackRace);
       if (isTrackRace) {
         setPolicy(new RacePolicy());
+        applyPreferencesToPolicy();
       }
     });
 
