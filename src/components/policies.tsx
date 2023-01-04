@@ -4,6 +4,7 @@ import {
   HOUSEHOLD_TYPES,
   STATUS_CODES,
   NOT_HOME_STATUS_CODES,
+  LINK_TYPES,
   HOUSEHOLD_LANGUAGES
 } from "./util";
 
@@ -58,5 +59,38 @@ export class LanguagePolicy implements Policy {
         (unit.status === STATUS_CODES.NOT_HOME && tries >= this.maxTries)) &&
       this.isHomeLanguage(unit)
     );
+  }
+}
+
+export class LinkSession {
+  tokenEndtime: number;
+  postalCode: string;
+  homeLanguage: string;
+  maxTries: number;
+  linkType: number;
+  constructor() {
+    this.tokenEndtime = 0;
+    this.postalCode = "";
+    this.homeLanguage = HOUSEHOLD_LANGUAGES.ENGLISH.CODE;
+    this.maxTries = 2;
+    this.linkType = LINK_TYPES.VIEW;
+  }
+  fromSnapshot(linkval: any) {
+    if (linkval.tokenEndtime === undefined) {
+      this.tokenEndtime = linkval;
+    } else {
+      this.tokenEndtime = linkval.tokenEndtime;
+      this.postalCode = linkval.postalCode;
+      this.linkType = linkval.linkType;
+    }
+  }
+}
+
+export class LinkCounts {
+  assigneeCount: number;
+  personalCount: number;
+  constructor() {
+    this.assigneeCount = 0;
+    this.personalCount = 0;
   }
 }

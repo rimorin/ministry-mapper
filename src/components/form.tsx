@@ -1,3 +1,4 @@
+import "../css/common.css";
 import {
   Form,
   ToggleButtonGroup,
@@ -156,7 +157,7 @@ const HHLangField = ({ handleChangeValues, changeValues }: FormProps) => {
           value={changeValues}
           onChange={handleChangeValues}
           size="sm"
-          className="mb-1"
+          className="mb-1 group-wrap"
         >
           <ToggleButton
             id="type-cb-0"
@@ -193,6 +194,20 @@ const HHLangField = ({ handleChangeValues, changeValues }: FormProps) => {
           >
             {HOUSEHOLD_LANGUAGES.MALAY.DISPLAY}
           </ToggleButton>
+          <ToggleButton
+            id="type-cb-5"
+            variant="outline-primary"
+            value={HOUSEHOLD_LANGUAGES.TAGALOG.CODE}
+          >
+            {HOUSEHOLD_LANGUAGES.TAGALOG.DISPLAY}
+          </ToggleButton>
+          <ToggleButton
+            id="type-cb-6"
+            variant="outline-primary"
+            value={HOUSEHOLD_LANGUAGES.INDONESIAN.CODE}
+          >
+            {HOUSEHOLD_LANGUAGES.INDONESIAN.DISPLAY}
+          </ToggleButton>
         </ToggleButtonGroup>
       </Container>
     </Form.Group>
@@ -209,7 +224,7 @@ const HHStatusField = ({ handleChange, changeValue }: FormProps) => {
         name="status"
         type="radio"
         value={changeValue}
-        className="mb-3"
+        className="mb-3 group-wrap"
         onChange={handleChange}
       >
         <ToggleButton
@@ -261,7 +276,7 @@ const HHNotHomeField = ({ handleChange, changeValue }: FormProps) => {
           name="nhcount"
           type="radio"
           value={changeValue}
-          className="mb-3"
+          className="mb-3 group-wrap"
           onChange={handleChange}
         >
           <ToggleButton

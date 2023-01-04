@@ -74,9 +74,12 @@ import {
   pollingFunction,
   checkTraceLangStatus,
   checkTraceRaceStatus,
+  processLinkCounts,
+  triggerPostalCodeListeners,
   processAddressData,
   ComponentAuthorizer,
   USER_ACCESS_LEVELS,
+  LINK_TYPES,
   ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS
 } from "./util";
 import { useParams } from "react-router-dom";
@@ -96,7 +99,7 @@ import Welcome from "./welcome";
 import UnauthorizedPage from "./unauthorisedpage";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
-import { RacePolicy, LanguagePolicy } from "./policies";
+import { RacePolicy, LanguagePolicy, LinkSession } from "./policies";
 import { zeroPad } from "react-countdown";
 function Admin({ user }: adminProps) {
   const { code } = useParams();
@@ -105,8 +108,11 @@ function Admin({ user }: adminProps) {
   const [isLinkRevoke, setIsLinkRevoke] = useState<boolean>(false);
   const [isCreate, setIsCreate] = useState<boolean>(false);
   const [isAddressRename, setIsAddressRename] = useState<boolean>(false);
+  const [isSettingPersonalLink, setIsSettingPersonalLink] =
+    useState<boolean>(false);
   const [isSettingAssignLink, setIsSettingAssignLink] =
     useState<boolean>(false);
+  const [selectedPostal, setSelectedPostal] = useState<String>();
   const [isSettingViewLink, setIsSettingViewLink] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isUnauthorised, setIsUnauthorised] = useState<boolean>(false);
@@ -186,6 +192,7 @@ function Admin({ user }: adminProps) {
       return false;
     });
     for (const postalCode of postalCodeListing) {
+      setAccordionKeys((existingKeys) => [...existingKeys, postalCode]);
       unsubscribers.push(
         onValue(child(ref(database), `/${postalCode}`), async (snapshot) => {
           if (snapshot.exists()) {
@@ -194,14 +201,16 @@ function Admin({ user }: adminProps) {
               postalCode,
               territoryData.units
             );
+            const counts = await processLinkCounts(postalCode);
             const addressData = {
+              assigneeCount: counts.assigneeCount,
+              personalCount: counts.personalCount,
               x_zip: territoryData.x_zip,
               name: territoryData.name,
               postalcode: postalCode,
               floors: floorData,
               feedback: territoryData.feedback
             };
-            setAccordionKeys((existingKeys) => [...existingKeys, postalCode]);
             setAddresses(
               (existingAddresses) =>
                 new Map<String, addressDetails>(
@@ -420,12 +429,19 @@ function Admin({ user }: adminProps) {
   };
 
   const setTimedLink = (
+    linktype: number,
+    postalcode: String,
     addressLinkId: String,
     hours = DEFAULT_SELF_DESTRUCT_HOURS
   ) => {
-    return pollingFunction(() =>
-      set(ref(database, `links/${addressLinkId}`), addHours(hours))
-    );
+    const link = new LinkSession();
+    link.tokenEndtime = addHours(hours);
+    link.postalCode = postalcode as string;
+    link.linkType = linktype;
+    return pollingFunction(async () => {
+      set(ref(database, `links/${addressLinkId}`), link);
+      await triggerPostalCodeListeners(link.postalCode);
+    });
   };
 
   const handleClickFeedback = (
@@ -737,6 +753,7 @@ function Admin({ user }: adminProps) {
   };
 
   const shareTimedLink = async (
+    linktype: number,
     postalcode: String,
     linkId: String,
     title: string,
@@ -745,24 +762,25 @@ function Admin({ user }: adminProps) {
     hours = DEFAULT_SELF_DESTRUCT_HOURS
   ) => {
     if (navigator.share) {
-      setIsSettingAssignLink(true);
       try {
-        await setTimedLink(linkId, hours);
-        navigator
-          .share({
-            title: title,
-            text: body,
-            url: url
-          })
-          .then((_) => {
-            setAccordionKeys((existingKeys) =>
-              existingKeys.filter((key) => key !== postalcode)
-            );
-          });
+        await navigator.share({
+          title: title,
+          text: body,
+          url: url
+        });
+        setSelectedPostal(postalcode);
+        if (linktype === LINK_TYPES.ASSIGNMENT) setIsSettingAssignLink(true);
+        if (linktype === LINK_TYPES.PERSONAL) setIsSettingPersonalLink(true);
+        await setTimedLink(linktype, postalcode, linkId, hours);
+        setAccordionKeys((existingKeys) =>
+          existingKeys.filter((key) => key !== postalcode)
+        );
       } catch (error) {
-        errorHandler(error, rollbar);
+        errorHandler(error, rollbar, false);
       } finally {
         setIsSettingAssignLink(false);
+        setIsSettingPersonalLink(false);
+        setSelectedPostal("");
       }
     } else {
       alert("Browser doesn't support this feature.");
@@ -1054,12 +1072,36 @@ function Admin({ user }: adminProps) {
                             key={`assigndrop-${addressElement.postalcode}`}
                             size="sm"
                             variant="outline-primary"
-                            title="Personal"
+                            title={
+                              <>
+                                {isSettingPersonalLink &&
+                                  selectedPostal ===
+                                    addressElement.postalcode && (
+                                    <>
+                                      <Spinner
+                                        as="span"
+                                        animation="border"
+                                        size="sm"
+                                        aria-hidden="true"
+                                      />{" "}
+                                    </>
+                                  )}
+                                {addressElement.personalCount > 0 && (
+                                  <>
+                                    <Badge bg="danger">
+                                      {`${addressElement.personalCount}`}
+                                    </Badge>{" "}
+                                  </>
+                                )}
+                                Personal
+                              </>
+                            }
                             className="m-1 d-inline-block"
                           >
                             <Dropdown.Item
                               onClick={() => {
                                 shareTimedLink(
+                                  LINK_TYPES.PERSONAL,
                                   `${addressElement.postalcode}`,
                                   addressLinkId,
                                   `Units for ${addressElement.name}`,
@@ -1069,21 +1111,12 @@ function Admin({ user }: adminProps) {
                                 );
                               }}
                             >
-                              {isSettingAssignLink && (
-                                <>
-                                  <Spinner
-                                    as="span"
-                                    animation="border"
-                                    size="sm"
-                                    aria-hidden="true"
-                                  />{" "}
-                                </>
-                              )}
                               One-week
                             </Dropdown.Item>
                             <Dropdown.Item
                               onClick={() => {
                                 shareTimedLink(
+                                  LINK_TYPES.PERSONAL,
                                   `${addressElement.postalcode}`,
                                   addressLinkId,
                                   `Units for ${addressElement.name}`,
@@ -1093,16 +1126,6 @@ function Admin({ user }: adminProps) {
                                 );
                               }}
                             >
-                              {isSettingAssignLink && (
-                                <>
-                                  <Spinner
-                                    as="span"
-                                    animation="border"
-                                    size="sm"
-                                    aria-hidden="true"
-                                  />{" "}
-                                </>
-                              )}
                               One-month
                             </Dropdown.Item>
                           </DropdownButton>
@@ -1118,6 +1141,7 @@ function Admin({ user }: adminProps) {
                               className="m-1"
                               onClick={(_) => {
                                 shareTimedLink(
+                                  LINK_TYPES.ASSIGNMENT,
                                   `${addressElement.postalcode}`,
                                   addressLinkId,
                                   `Units for ${addressElement.name}`,
@@ -1126,15 +1150,22 @@ function Admin({ user }: adminProps) {
                                 );
                               }}
                             >
-                              {isSettingAssignLink && (
-                                <>
-                                  <Spinner
-                                    as="span"
-                                    animation="border"
-                                    size="sm"
-                                    aria-hidden="true"
-                                  />{" "}
-                                </>
+                              {isSettingAssignLink &&
+                                selectedPostal ===
+                                  addressElement.postalcode && (
+                                  <>
+                                    <Spinner
+                                      as="span"
+                                      animation="border"
+                                      size="sm"
+                                      aria-hidden="true"
+                                    />{" "}
+                                  </>
+                                )}
+                              {addressElement.assigneeCount > 0 && (
+                                <Badge bg="danger" className="me-1">
+                                  {`${addressElement.assigneeCount}`}
+                                </Badge>
                               )}
                               Assign
                             </Button>
@@ -1153,7 +1184,11 @@ function Admin({ user }: adminProps) {
                                     territoryWindow.document.body.innerHTML =
                                       TERRITORY_VIEW_WINDOW_WELCOME_TEXT;
                                   }
-                                  await setTimedLink(addressLinkId);
+                                  await setTimedLink(
+                                    LINK_TYPES.VIEW,
+                                    addressElement.postalcode,
+                                    addressLinkId
+                                  );
                                   territoryWindow!.location.href = `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`;
                                 } catch (error) {
                                   errorHandler(error, rollbar);

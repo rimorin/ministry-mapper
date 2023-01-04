@@ -5,6 +5,9 @@ import {
   goOnline,
   orderByChild,
   query,
+  startAt,
+  endAt,
+  update,
   ref
 } from "firebase/database";
 import {
@@ -29,6 +32,7 @@ import {
   nothomeprops,
   AuthorizerProp
 } from "./interface";
+import { LinkSession, LinkCounts } from "./policies";
 import Countdown from "react-countdown";
 import envelopeImage from "../assets/envelope.svg";
 
@@ -88,6 +92,12 @@ const ADMIN_MODAL_TYPES = {
   ADD_UNIT: 6,
   RENAME_ADDRESS_NAME: 7,
   UPDATE_UNIT: 8
+};
+
+const LINK_TYPES = {
+  VIEW: 0,
+  ASSIGNMENT: 1,
+  PERSONAL: 2
 };
 
 const DEFAULT_FLOOR_PADDING = 2;
@@ -314,7 +324,51 @@ const processAddressData = async (postal: String, data: any) => {
   return dataList;
 };
 
+const processLinkCounts = async (postal: String) => {
+  const postalCode = postal as string;
+  // need to add to rules for links: ".indexOn": "postalCode",
+  const linksSnapshot = await pollingFunction(() =>
+    get(
+      query(
+        child(ref(database), "links"),
+        orderByChild("postalCode"),
+        startAt(postalCode),
+        endAt(postalCode)
+      )
+    )
+  );
+  const currentTimestamp = new Date().getTime();
+  var counts = new LinkCounts();
+  linksSnapshot.forEach((rec: any) => {
+    var link = rec.val() as LinkSession;
+    if (link.tokenEndtime > currentTimestamp) {
+      if (link.linkType === LINK_TYPES.ASSIGNMENT) {
+        counts.assigneeCount++;
+      }
+      if (link.linkType === LINK_TYPES.PERSONAL) {
+        counts.personalCount++;
+      }
+    }
+  });
+  return counts;
+};
+
+const triggerPostalCodeListeners = async (postalcode: string) => {
+  const deltaSnapshot = await get(ref(database, `/${postalcode}/delta`));
+  var delta = 0;
+  if (deltaSnapshot.exists()) {
+    delta = deltaSnapshot.val() + 1;
+  }
+  update(ref(database, `/${postalcode}`), {
+    delta: delta
+  });
+};
+
 const NavBarBranding = ({ naming }: BrandingProps) => {
+  const production = process.env.REACT_APP_ROLLBAR_ENVIRONMENT === "production";
+  const environment = production
+    ? ""
+    : " {" + process.env.REACT_APP_ROLLBAR_ENVIRONMENT + "}";
   return (
     <Navbar.Brand>
       <img
@@ -325,6 +379,7 @@ const NavBarBranding = ({ naming }: BrandingProps) => {
         className="d-inline-block align-top"
       />{" "}
       {naming}
+      {environment}
     </Navbar.Brand>
   );
 };
@@ -413,6 +468,8 @@ const HOUSEHOLD_LANGUAGES = {
   CHINESE: { CODE: "c", DISPLAY: "Chinese" },
   BURMESE: { CODE: "b", DISPLAY: "Burmese" },
   TAMIL: { CODE: "t", DISPLAY: "Tamil" },
+  TAGALOG: { CODE: "tg", DISPLAY: "Tagalog" },
+  INDONESIAN: { CODE: "id", DISPLAY: "Indonesian" },
   MALAY: { CODE: "m", DISPLAY: "Malay" }
 };
 
@@ -444,6 +501,8 @@ export {
   pollingFunction,
   checkTraceLangStatus,
   checkTraceRaceStatus,
+  processLinkCounts,
+  triggerPostalCodeListeners,
   processAddressData,
   ExpiryTimePopover,
   NotHomeIcon,
@@ -465,5 +524,6 @@ export {
   COUNTABLE_HOUSEHOLD_STATUS,
   HOUSEHOLD_LANGUAGES,
   USER_ACCESS_LEVELS,
+  LINK_TYPES,
   ComponentAuthorizer
 };
