@@ -108,8 +108,11 @@ function Admin({ user }: adminProps) {
   const [isLinkRevoke, setIsLinkRevoke] = useState<boolean>(false);
   const [isCreate, setIsCreate] = useState<boolean>(false);
   const [isAddressRename, setIsAddressRename] = useState<boolean>(false);
+  const [isSettingPersonalLink, setIsSettingPersonalLink] =
+    useState<boolean>(false);
   const [isSettingAssignLink, setIsSettingAssignLink] =
     useState<boolean>(false);
+  const [selectedPostal, setSelectedPostal] = useState<String>();
   const [isSettingViewLink, setIsSettingViewLink] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isUnauthorised, setIsUnauthorised] = useState<boolean>(false);
@@ -189,6 +192,7 @@ function Admin({ user }: adminProps) {
       return false;
     });
     for (const postalCode of postalCodeListing) {
+      setAccordionKeys((existingKeys) => [...existingKeys, postalCode]);
       unsubscribers.push(
         onValue(child(ref(database), `/${postalCode}`), async (snapshot) => {
           if (snapshot.exists()) {
@@ -207,7 +211,6 @@ function Admin({ user }: adminProps) {
               floors: floorData,
               feedback: territoryData.feedback
             };
-            setAccordionKeys((existingKeys) => [...existingKeys, postalCode]);
             setAddresses(
               (existingAddresses) =>
                 new Map<String, addressDetails>(
@@ -759,21 +762,25 @@ function Admin({ user }: adminProps) {
     hours = DEFAULT_SELF_DESTRUCT_HOURS
   ) => {
     if (navigator.share) {
-      setIsSettingAssignLink(true);
       try {
         await navigator.share({
           title: title,
           text: body,
           url: url
         });
+        setSelectedPostal(postalcode);
+        if (linktype === LINK_TYPES.ASSIGNMENT) setIsSettingAssignLink(true);
+        if (linktype === LINK_TYPES.PERSONAL) setIsSettingPersonalLink(true);
         await setTimedLink(linktype, postalcode, linkId, hours);
         setAccordionKeys((existingKeys) =>
           existingKeys.filter((key) => key !== postalcode)
         );
       } catch (error) {
-        errorHandler(error, rollbar);
+        errorHandler(error, rollbar, false);
       } finally {
         setIsSettingAssignLink(false);
+        setIsSettingPersonalLink(false);
+        setSelectedPostal("");
       }
     } else {
       alert("Browser doesn't support this feature.");
@@ -1055,11 +1062,6 @@ function Admin({ user }: adminProps) {
                       key={`navbar-${addressElement.postalcode}`}
                     >
                       <Container fluid className="justify-content-end">
-                        {addressElement.personalCount > 0 && (
-                          <Badge bg="danger" pill>
-                            {`${addressElement.personalCount}`}
-                          </Badge>
-                        )}
                         <ComponentAuthorizer
                           requiredPermission={
                             USER_ACCESS_LEVELS.TERRITORY_SERVANT
@@ -1070,7 +1072,30 @@ function Admin({ user }: adminProps) {
                             key={`assigndrop-${addressElement.postalcode}`}
                             size="sm"
                             variant="outline-primary"
-                            title="Personal"
+                            title={
+                              <>
+                                {isSettingPersonalLink &&
+                                  selectedPostal ===
+                                    addressElement.postalcode && (
+                                    <>
+                                      <Spinner
+                                        as="span"
+                                        animation="border"
+                                        size="sm"
+                                        aria-hidden="true"
+                                      />{" "}
+                                    </>
+                                  )}
+                                {addressElement.personalCount > 0 && (
+                                  <>
+                                    <Badge bg="danger">
+                                      {`${addressElement.personalCount}`}
+                                    </Badge>{" "}
+                                  </>
+                                )}
+                                Personal
+                              </>
+                            }
                             className="m-1 d-inline-block"
                           >
                             <Dropdown.Item
@@ -1086,16 +1111,6 @@ function Admin({ user }: adminProps) {
                                 );
                               }}
                             >
-                              {isSettingAssignLink && (
-                                <>
-                                  <Spinner
-                                    as="span"
-                                    animation="border"
-                                    size="sm"
-                                    aria-hidden="true"
-                                  />{" "}
-                                </>
-                              )}
                               One-week
                             </Dropdown.Item>
                             <Dropdown.Item
@@ -1111,16 +1126,6 @@ function Admin({ user }: adminProps) {
                                 );
                               }}
                             >
-                              {isSettingAssignLink && (
-                                <>
-                                  <Spinner
-                                    as="span"
-                                    animation="border"
-                                    size="sm"
-                                    aria-hidden="true"
-                                  />{" "}
-                                </>
-                              )}
                               One-month
                             </Dropdown.Item>
                           </DropdownButton>
@@ -1130,11 +1135,6 @@ function Admin({ user }: adminProps) {
                           userPermission={userAccessLevel}
                         >
                           <>
-                            {addressElement.assigneeCount > 0 && (
-                              <Badge bg="danger" pill>
-                                {`${addressElement.assigneeCount}`}
-                              </Badge>
-                            )}
                             <Button
                               size="sm"
                               variant="outline-primary"
@@ -1150,15 +1150,22 @@ function Admin({ user }: adminProps) {
                                 );
                               }}
                             >
-                              {isSettingAssignLink && (
-                                <>
-                                  <Spinner
-                                    as="span"
-                                    animation="border"
-                                    size="sm"
-                                    aria-hidden="true"
-                                  />{" "}
-                                </>
+                              {isSettingAssignLink &&
+                                selectedPostal ===
+                                  addressElement.postalcode && (
+                                  <>
+                                    <Spinner
+                                      as="span"
+                                      animation="border"
+                                      size="sm"
+                                      aria-hidden="true"
+                                    />{" "}
+                                  </>
+                                )}
+                              {addressElement.assigneeCount > 0 && (
+                                <Badge bg="danger" className="me-1">
+                                  {`${addressElement.assigneeCount}`}
+                                </Badge>
                               )}
                               Assign
                             </Button>
