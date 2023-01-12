@@ -30,6 +30,17 @@ export class RacePolicy implements Policy {
   isAvailable(unit: unitDetails): boolean {
     return this.isCountable(unit) && !this.isCompleted(unit);
   }
+  getHomeLanguage(): string {
+    return "";
+  }
+  getMaxTries(): number {
+    return this.maxTries;
+  }
+  fromClaims(claims: any): void {
+    if (claims.maxTries !== undefined) {
+      this.maxTries = claims.maxTries;
+    }
+  }
 }
 
 export class LanguagePolicy implements Policy {
@@ -69,6 +80,20 @@ export class LanguagePolicy implements Policy {
   }
   isAvailable(unit: unitDetails): boolean {
     return this.isCountable(unit) && !this.isCompleted(unit);
+  }
+  getHomeLanguage(): string {
+    return this.homeLanguage;
+  }
+  getMaxTries(): number {
+    return this.maxTries;
+  }
+  fromClaims(claims: any): void {
+    if (claims.maxTries !== undefined) {
+      this.maxTries = claims.maxTries;
+    }
+    if (claims.homeLanguage !== undefined) {
+      this.homeLanguage = claims.homeLanguage;
+    }
   }
 }
 

@@ -296,6 +296,7 @@ function Admin({ user }: adminProps) {
         type: HOUSEHOLD_TYPES.CHINESE,
         note: "",
         nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+        sequence: element.sequence,
         languages: ""
       };
     });
@@ -318,15 +319,23 @@ function Admin({ user }: adminProps) {
           currentStatus = STATUS_CODES.DEFAULT;
         }
         unitUpdates[
-          `/${postalcode}/units/${floorDetails.floor}/${element.number}`
-        ] = {
-          type: element.type,
-          note: element.note,
-          status: currentStatus,
-          nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
-          languages: element.languages,
-          dnctime: element.dnctime
-        };
+          `/${postalcode}/units/${floorDetails.floor}/${element.number}/type`
+        ] = element.type;
+        unitUpdates[
+          `/${postalcode}/units/${floorDetails.floor}/${element.number}/note`
+        ] = element.note;
+        unitUpdates[
+          `/${postalcode}/units/${floorDetails.floor}/${element.number}/status`
+        ] = currentStatus;
+        unitUpdates[
+          `/${postalcode}/units/${floorDetails.floor}/${element.number}/nhcount`
+        ] = NOT_HOME_STATUS_CODES.DEFAULT;
+        unitUpdates[
+          `/${postalcode}/units/${floorDetails.floor}/${element.number}/languages`
+        ] = element.languages;
+        unitUpdates[
+          `/${postalcode}/units/${floorDetails.floor}/${element.number}/dnctime`
+        ] = element.dnctime;
       });
     }
     try {
@@ -445,10 +454,13 @@ function Admin({ user }: adminProps) {
     link.tokenEndtime = addHours(hours);
     link.postalCode = postalcode as string;
     link.linkType = linktype;
-    const prefs = new Preferences();
-    loadPreferences(prefs);
-    link.homeLanguage = prefs.homeLanguage;
-    link.maxTries = prefs.maxTries;
+    let p = policy;
+    if (p === undefined) {
+      p = new LanguagePolicy();
+      console.log("policy not loaded in time");
+    }
+    link.homeLanguage = p.getHomeLanguage();
+    link.maxTries = p.getMaxTries();
     return pollingFunction(async () => {
       set(ref(database, `links/${addressLinkId}`), link);
       await triggerPostalCodeListeners(link.postalCode);
@@ -563,7 +575,6 @@ function Admin({ user }: adminProps) {
     setIsSaving(true);
     try {
       savePreferences(prefs);
-      applyPreferencesToPolicy();
       toggleModal(ADMIN_MODAL_TYPES.PROFILE);
     } catch (error) {
       errorHandler(error, rollbar);
@@ -598,6 +609,7 @@ function Admin({ user }: adminProps) {
               note: "",
               status: STATUS_CODES.DEFAULT,
               nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+              x_floor: floorDetails.floor,
               languages: ""
             };
       });
@@ -845,20 +857,6 @@ function Admin({ user }: adminProps) {
     return tokenData.claims[congregationCode];
   };
 
-  const applyPreferencesToPolicy = () => {
-    const preferences = new Preferences();
-    loadPreferences(preferences);
-    if (trackLanguages) {
-      const p = policy as LanguagePolicy;
-      p.homeLanguage = preferences.homeLanguage;
-      p.maxTries = preferences.maxTries;
-    }
-    if (trackRace) {
-      const p = policy as RacePolicy;
-      p.maxTries = preferences.maxTries;
-    }
-  };
-
   useEffect(() => {
     getUserAccessLevel(user, code).then((userAccessLevel) => {
       if (!userAccessLevel) {
@@ -872,26 +870,23 @@ function Admin({ user }: adminProps) {
       setUserAccessLevel(Number(userAccessLevel));
     });
 
-    checkTraceLangStatus(`${code}`).then((snapshot) => {
+    checkTraceLangStatus(`${code}`).then(async (snapshot) => {
       const isTrackLanguages = snapshot.val();
       setTrackLanguages(isTrackLanguages);
       if (isTrackLanguages) {
-        const preferences = new Preferences();
-        loadPreferences(preferences);
+        const tokenData = await user.getIdTokenResult(true);
         const languagePolicy = new LanguagePolicy();
-        languagePolicy.homeLanguage = preferences.homeLanguage;
-        languagePolicy.maxTries = preferences.maxTries;
+        languagePolicy.fromClaims(tokenData.claims);
         setPolicy(languagePolicy);
       }
     });
-    checkTraceRaceStatus(`${code}`).then((snapshot) => {
+    checkTraceRaceStatus(`${code}`).then(async (snapshot) => {
       const isTrackRace = snapshot.val();
       setTrackRace(isTrackRace);
       if (isTrackRace) {
-        const preferences = new Preferences();
-        loadPreferences(preferences);
+        const tokenData = await user.getIdTokenResult(true);
         const racePolicy = new RacePolicy();
-        racePolicy.maxTries = preferences.maxTries;
+        racePolicy.fromClaims(tokenData.claims);
         setPolicy(racePolicy);
       }
     });
