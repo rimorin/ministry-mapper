@@ -439,7 +439,7 @@ function Admin({ user }: adminProps) {
     link.postalCode = postalcode as string;
     link.linkType = linktype;
     return pollingFunction(async () => {
-      set(ref(database, `links/${addressLinkId}`), link);
+      await set(ref(database, `links/${addressLinkId}`), link);
       await triggerPostalCodeListeners(link.postalCode);
     });
   };
