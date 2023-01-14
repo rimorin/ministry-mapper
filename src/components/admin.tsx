@@ -48,6 +48,7 @@ import {
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import {
+  getLanguageDisplayByCode,
   STATUS_CODES,
   MUTABLE_CODES,
   ZeroPad,
@@ -66,7 +67,6 @@ import {
   errorHandler,
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   HOUSEHOLD_TYPES,
-  HOUSEHOLD_LANGUAGES,
   MIN_START_FLOOR,
   NOT_HOME_STATUS_CODES,
   parseHHLanguages,
@@ -103,7 +103,6 @@ import { useRollbar } from "@rollbar/react";
 import { RacePolicy, LanguagePolicy, LinkSession } from "./policies";
 import { zeroPad } from "react-countdown";
 import { ReactComponent as GearImage } from "../assets/gear.svg";
-import { Preferences, loadPreferences, savePreferences } from "./preferences";
 function Admin({ user }: adminProps) {
   const { code } = useParams();
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -562,20 +561,6 @@ function Admin({ user }: adminProps) {
         set(ref(database, `/${details.postal}/name`), details.name)
       );
       toggleModal(ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME);
-    } catch (error) {
-      errorHandler(error, rollbar);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleSubmitProfile = async (event: FormEvent<HTMLElement>) => {
-    event.preventDefault();
-    const prefs = values as Preferences;
-    setIsSaving(true);
-    try {
-      savePreferences(prefs);
-      toggleModal(ADMIN_MODAL_TYPES.PROFILE);
     } catch (error) {
       errorHandler(error, rollbar);
     } finally {
@@ -1062,13 +1047,6 @@ function Admin({ user }: adminProps) {
                 size="sm"
                 variant="outline-primary"
                 onClick={async () => {
-                  const prefs = new Preferences();
-                  loadPreferences(prefs);
-                  setValues({
-                    ...values,
-                    homeLanguage: prefs.homeLanguage,
-                    maxTries: prefs.maxTries
-                  });
                   toggleModal(ADMIN_MODAL_TYPES.PROFILE);
                 }}
               >
@@ -2099,52 +2077,40 @@ function Admin({ user }: adminProps) {
           <Modal.Header>
             <Modal.Title>{`My profile`}</Modal.Title>
           </Modal.Header>
-          <Form onSubmit={handleSubmitProfile}>
+          <Form>
             <Modal.Body>
-              <Form.Label htmlFor="inputMaxTries">Max Tries</Form.Label>
-              <Form.Select
-                id="inputMaxTries"
-                name="maxTries"
-                value={`${(values as Preferences).maxTries}`}
-                onChange={onFormChange}
-              >
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-                <option>4</option>
-              </Form.Select>
-              <Form.Label htmlFor="inputHomeLanguage">Your Language</Form.Label>
-              <Form.Select
-                id="inputHomeLanguage"
-                name="homeLanguage"
-                value={`${(values as Preferences).homeLanguage}`}
-                onChange={onFormChange}
-              >
-                <option value={HOUSEHOLD_LANGUAGES.ENGLISH.CODE}>
-                  {HOUSEHOLD_LANGUAGES.ENGLISH.DISPLAY}
-                </option>
-                <option value={HOUSEHOLD_LANGUAGES.CHINESE.CODE}>
-                  {HOUSEHOLD_LANGUAGES.CHINESE.DISPLAY}
-                </option>
-                <option value={HOUSEHOLD_LANGUAGES.INDONESIAN.CODE}>
-                  {HOUSEHOLD_LANGUAGES.INDONESIAN.DISPLAY}
-                </option>
-                <option value={HOUSEHOLD_LANGUAGES.TAGALOG.CODE}>
-                  {HOUSEHOLD_LANGUAGES.TAGALOG.DISPLAY}
-                </option>
-                <option value={HOUSEHOLD_LANGUAGES.TAMIL.CODE}>
-                  {HOUSEHOLD_LANGUAGES.TAMIL.DISPLAY}
-                </option>
-                <option value={HOUSEHOLD_LANGUAGES.BURMESE.CODE}>
-                  {HOUSEHOLD_LANGUAGES.BURMESE.DISPLAY}
-                </option>
-              </Form.Select>
+              <Form.Label htmlFor="userid">User</Form.Label>
+              <Form.Control
+                plaintext
+                readOnly
+                id="userid"
+                defaultValue={`${user.email}`}
+              />
+              <Form.Label htmlFor="txtMaxTries">Max Tries</Form.Label>
+              <Form.Control
+                plaintext
+                readOnly
+                id="txtMaxTries"
+                defaultValue={`${policy?.getMaxTries()}`}
+              />
+              <Form.Label htmlFor="txtHomeLanguage">Home Language</Form.Label>
+              <Form.Control
+                plaintext
+                readOnly
+                id="txtHomeLanguage"
+                defaultValue={`${getLanguageDisplayByCode(
+                  policy?.getHomeLanguage() as string
+                )}`}
+              />
             </Modal.Body>
-            <ModalFooter
-              handleClick={() => toggleModal(ADMIN_MODAL_TYPES.PROFILE)}
-              userAccessLevel={userAccessLevel}
-              isSaving={isSaving}
-            />
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                onClick={() => toggleModal(ADMIN_MODAL_TYPES.PROFILE)}
+              >
+                Close
+              </Button>
+            </Modal.Footer>
           </Form>
         </Modal>
       </div>
