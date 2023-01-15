@@ -233,22 +233,57 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const deleteBlock = async (postalcode: String) => {
+  const getTerritoryAddress = async (territoryCode: String) => {
+    return await pollingFunction(() =>
+      get(
+        ref(
+          database,
+          `congregations/${code}/territories/${territoryCode}/addresses`
+        )
+      )
+    );
+  };
+
+  const deleteTerritory = async () => {
+    if (!selectedTerritoryCode) return;
     try {
-      await remove(ref(database, `${postalcode}`));
-      const addressSnapshot = await pollingFunction(() =>
-        get(
+      const addressesSnapshot = await getTerritoryAddress(
+        selectedTerritoryCode
+      );
+      if (addressesSnapshot.exists()) {
+        const addressData = addressesSnapshot.val();
+        for (const addkey in addressData) {
+          const postalcode = addressData[addkey];
+          await pollingFunction(() => remove(ref(database, `${postalcode}`)));
+        }
+      }
+      await pollingFunction(() =>
+        remove(
           ref(
             database,
-            `congregations/${code}/territories/${selectedTerritoryCode}/addresses`
+            `congregations/${code}/territories/${selectedTerritoryCode}`
           )
         )
       );
-      if (addressSnapshot.exists()) {
-        const addressData = addressSnapshot.val();
+      alert(`Deleted territory, ${selectedTerritoryCode}.`);
+      window.location.reload();
+    } catch (error) {
+      errorHandler(error, rollbar);
+    }
+  };
+
+  const deleteBlock = async (postalCode: String) => {
+    if (!selectedTerritoryCode) return;
+    try {
+      await remove(ref(database, `${postalCode}`));
+      const addressesSnapshot = await getTerritoryAddress(
+        selectedTerritoryCode
+      );
+      if (addressesSnapshot.exists()) {
+        const addressData = addressesSnapshot.val();
         for (const addkey in addressData) {
-          const units = addressData[addkey];
-          if (units === postalcode) {
+          const currentPostalcode = addressData[addkey];
+          if (currentPostalcode === postalCode) {
             await pollingFunction(() =>
               remove(
                 ref(
@@ -261,7 +296,7 @@ function Admin({ user }: adminProps) {
           }
         }
       }
-      alert(`Deleted postal address, ${postalcode}.`);
+      alert(`Deleted postal address, ${postalCode}.`);
       await refreshCongregationTerritory(`${selectedTerritoryCode}`);
     } catch (error) {
       errorHandler(error, rollbar);
@@ -941,6 +976,62 @@ function Admin({ user }: adminProps) {
                   Create Territory
                 </Button>
               </ComponentAuthorizer>
+
+              {selectedTerritory && (
+                <ComponentAuthorizer
+                  requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
+                  userPermission={userAccessLevel}
+                >
+                  <Button
+                    className="m-1"
+                    size="sm"
+                    variant="outline-primary"
+                    onClick={() =>
+                      confirmAlert({
+                        customUI: ({ onClose }) => {
+                          return (
+                            <Container>
+                              <Card bg="warning" className="text-center">
+                                <Card.Header>Warning ⚠️</Card.Header>
+                                <Card.Body>
+                                  <Card.Title>Are You Very Sure ?</Card.Title>
+                                  <Card.Text>
+                                    This action will delete the territory,{" "}
+                                    {selectedTerritoryCode} -{" "}
+                                    {selectedTerritoryName} and all its
+                                    addresses.
+                                  </Card.Text>
+                                  <Button
+                                    className="m-1"
+                                    variant="primary"
+                                    onClick={() => {
+                                      deleteTerritory();
+                                      onClose();
+                                    }}
+                                  >
+                                    Yes, Delete It.
+                                  </Button>
+                                  <Button
+                                    className="ms-2"
+                                    variant="primary"
+                                    onClick={() => {
+                                      onClose();
+                                    }}
+                                  >
+                                    No
+                                  </Button>
+                                </Card.Body>
+                              </Card>
+                            </Container>
+                          );
+                        }
+                      })
+                    }
+                  >
+                    Delete Territory
+                  </Button>
+                </ComponentAuthorizer>
+              )}
               {selectedTerritory && (
                 <ComponentAuthorizer
                   requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
@@ -959,6 +1050,7 @@ function Admin({ user }: adminProps) {
                   </Button>
                 </ComponentAuthorizer>
               )}
+
               {selectedTerritory && (
                 <ComponentAuthorizer
                   requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
