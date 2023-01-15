@@ -1050,7 +1050,6 @@ function Admin({ user }: adminProps) {
                   </Button>
                 </ComponentAuthorizer>
               )}
-
               {selectedTerritory && (
                 <ComponentAuthorizer
                   requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
