@@ -976,7 +976,6 @@ function Admin({ user }: adminProps) {
                   Create Territory
                 </Button>
               </ComponentAuthorizer>
-
               {selectedTerritory && (
                 <ComponentAuthorizer
                   requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
