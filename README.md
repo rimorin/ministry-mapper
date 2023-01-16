@@ -58,6 +58,8 @@ Disadvantages of Ministry Mapper
   5. Build package
   6. For local developement, generate a token from Appcheck and copy key to environment variable, `REACT_APP_FIREBASE_APPCHECK_DEBUG_TOKEN`.
 
+- Firebase Functions. Refer to [documentation](https://github.com/rimorin/ministry-mapper-cron) for deployment.
+
 - Rollbar setup
 
   1. Create [Rollbar](https://rollbar.com/) account
