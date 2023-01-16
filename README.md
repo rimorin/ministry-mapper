@@ -39,15 +39,7 @@ Disadvantages of Ministry Mapper
 - Firebase Database setup
 
   1. Create Google account and setup firebase realtime database
-  2. Prepare territory.json file that contains your territory data in the format specified.
-  3. Upload Json file to real-time database
-  4. Implement security rules to prevent unwanted deletions and access.
-
-- Firebase Authentication setup
-
-  1. Setup firebase authentication
-  2. Configure email/password authentication type
-  3. Add email/password credentials
+  2. Implement security rules to prevent unwanted deletions and access.
 
 - Firebase Appcheck setup (Recommend to setup once app domain is active)
 
