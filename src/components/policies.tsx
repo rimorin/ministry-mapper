@@ -10,7 +10,7 @@ import {
 
 export class RacePolicy implements Policy {
   maxTries: number;
-  constructor(maxtries = parseInt(NOT_HOME_STATUS_CODES.THIRD_TRY)) {
+  constructor(maxtries = parseInt(NOT_HOME_STATUS_CODES.SECOND_TRY)) {
     this.maxTries = maxtries;
   }
   isCountable(unit: unitDetails): boolean {
