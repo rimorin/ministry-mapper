@@ -2079,29 +2079,40 @@ function Admin({ user }: adminProps) {
           </Modal.Header>
           <Form>
             <Modal.Body>
-              <Form.Label htmlFor="userid">User</Form.Label>
-              <Form.Control
-                plaintext
-                readOnly
-                id="userid"
-                defaultValue={`${user.email}`}
-              />
-              <Form.Label htmlFor="txtMaxTries">Max Tries</Form.Label>
-              <Form.Control
-                plaintext
-                readOnly
-                id="txtMaxTries"
-                defaultValue={`${policy?.getMaxTries()}`}
-              />
-              <Form.Label htmlFor="txtHomeLanguage">Home Language</Form.Label>
-              <Form.Control
-                plaintext
-                readOnly
-                id="txtHomeLanguage"
-                defaultValue={`${getLanguageDisplayByCode(
-                  policy?.getHomeLanguage() as string
-                )}`}
-              />
+              <Form.Group className="mb-3">
+                <Form.Label htmlFor="userid">User</Form.Label>
+                <Form.Control
+                  readOnly
+                  id="userid"
+                  defaultValue={`${user.email}`}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label htmlFor="txtMaxTries">Max Tries</Form.Label>
+                <Form.Control
+                  readOnly
+                  id="txtMaxTries"
+                  defaultValue={`${policy?.getMaxTries()}`}
+                />
+                <Form.Text className="text-muted">
+                  The number of times to try not at homes before considering it
+                  done
+                </Form.Text>
+              </Form.Group>
+              {trackLanguages && (
+                <Form.Group className="mb-3">
+                  <Form.Label htmlFor="txtHomeLanguage">
+                    Home Language
+                  </Form.Label>
+                  <Form.Control
+                    readOnly
+                    id="txtHomeLanguage"
+                    defaultValue={`${getLanguageDisplayByCode(
+                      policy?.getHomeLanguage() as string
+                    )}`}
+                  />
+                </Form.Group>
+              )}
             </Modal.Body>
             <Modal.Footer>
               <Button
