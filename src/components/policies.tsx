@@ -20,11 +20,10 @@ export class RacePolicy implements Policy {
     );
   }
   isCompleted(unit: unitDetails): boolean {
+    const tries: number = parseInt(unit.nhcount as string);
     return (
       unit.status === STATUS_CODES.DONE ||
-      (unit.status === STATUS_CODES.NOT_HOME &&
-        (unit.nhcount === NOT_HOME_STATUS_CODES.SECOND_TRY ||
-          unit.nhcount === NOT_HOME_STATUS_CODES.THIRD_TRY))
+      (unit.status === STATUS_CODES.NOT_HOME && tries >= this.maxTries)
     );
   }
   isAvailable(unit: unitDetails): boolean {

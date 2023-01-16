@@ -55,7 +55,8 @@ const STATUS_CODES = {
 const NOT_HOME_STATUS_CODES = {
   DEFAULT: "1",
   SECOND_TRY: "2",
-  THIRD_TRY: "3"
+  THIRD_TRY: "3",
+  FOURTH_TRY: "4"
 };
 
 const USER_ACCESS_LEVELS = {
