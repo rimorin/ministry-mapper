@@ -48,6 +48,7 @@ import {
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import {
+  getLanguageDisplayByCode,
   STATUS_CODES,
   MUTABLE_CODES,
   ZeroPad,
@@ -101,6 +102,7 @@ import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
 import { RacePolicy, LanguagePolicy, LinkSession } from "./policies";
 import { zeroPad } from "react-countdown";
+import { ReactComponent as GearImage } from "../assets/gear.svg";
 function Admin({ user }: adminProps) {
   const { code } = useParams();
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -123,6 +125,7 @@ function Admin({ user }: adminProps) {
   const [isTerritoryRename, setIsTerritoryRename] = useState<boolean>(false);
   const [isDnc, setIsDnc] = useState<boolean>(false);
   const [isUnitDetails, setIsUnitDetails] = useState<boolean>(false);
+  const [isProfile, setIsProfile] = useState<boolean>(false);
   const [showTerritoryListing, setShowTerritoryListing] =
     useState<boolean>(false);
   const [trackRace, setTrackRace] = useState<boolean>(true);
@@ -327,6 +330,7 @@ function Admin({ user }: adminProps) {
         type: HOUSEHOLD_TYPES.CHINESE,
         note: "",
         nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+        sequence: element.sequence,
         languages: ""
       };
     });
@@ -349,15 +353,23 @@ function Admin({ user }: adminProps) {
           currentStatus = STATUS_CODES.DEFAULT;
         }
         unitUpdates[
-          `/${postalcode}/units/${floorDetails.floor}/${element.number}`
-        ] = {
-          type: element.type,
-          note: element.note,
-          status: currentStatus,
-          nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
-          languages: element.languages,
-          dnctime: element.dnctime
-        };
+          `/${postalcode}/units/${floorDetails.floor}/${element.number}/type`
+        ] = element.type;
+        unitUpdates[
+          `/${postalcode}/units/${floorDetails.floor}/${element.number}/note`
+        ] = element.note;
+        unitUpdates[
+          `/${postalcode}/units/${floorDetails.floor}/${element.number}/status`
+        ] = currentStatus;
+        unitUpdates[
+          `/${postalcode}/units/${floorDetails.floor}/${element.number}/nhcount`
+        ] = NOT_HOME_STATUS_CODES.DEFAULT;
+        unitUpdates[
+          `/${postalcode}/units/${floorDetails.floor}/${element.number}/languages`
+        ] = element.languages;
+        unitUpdates[
+          `/${postalcode}/units/${floorDetails.floor}/${element.number}/dnctime`
+        ] = element.dnctime;
       });
     }
     try {
@@ -396,6 +408,9 @@ function Admin({ user }: adminProps) {
         break;
       case ADMIN_MODAL_TYPES.UPDATE_UNIT:
         setIsUnitDetails(!isUnitDetails);
+        break;
+      case ADMIN_MODAL_TYPES.PROFILE:
+        setIsProfile(!isProfile);
         break;
       default:
         setIsOpen(!isOpen);
@@ -473,6 +488,13 @@ function Admin({ user }: adminProps) {
     link.tokenEndtime = addHours(hours);
     link.postalCode = postalcode as string;
     link.linkType = linktype;
+    let p = policy;
+    if (p === undefined) {
+      p = new LanguagePolicy();
+      console.log("policy not loaded in time");
+    }
+    link.homeLanguage = p.getHomeLanguage();
+    link.maxTries = p.getMaxTries();
     return pollingFunction(async () => {
       await set(ref(database, `links/${addressLinkId}`), link);
       await triggerPostalCodeListeners(link.postalCode);
@@ -607,6 +629,7 @@ function Admin({ user }: adminProps) {
               note: "",
               status: STATUS_CODES.DEFAULT,
               nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+              x_floor: floorDetails.floor,
               languages: ""
             };
       });
@@ -867,18 +890,24 @@ function Admin({ user }: adminProps) {
       setUserAccessLevel(Number(userAccessLevel));
     });
 
-    checkTraceLangStatus(`${code}`).then((snapshot) => {
+    checkTraceLangStatus(`${code}`).then(async (snapshot) => {
       const isTrackLanguages = snapshot.val();
       setTrackLanguages(isTrackLanguages);
       if (isTrackLanguages) {
-        setPolicy(new LanguagePolicy());
+        const tokenData = await user.getIdTokenResult(true);
+        const languagePolicy = new LanguagePolicy();
+        languagePolicy.fromClaims(tokenData.claims);
+        setPolicy(languagePolicy);
       }
     });
-    checkTraceRaceStatus(`${code}`).then((snapshot) => {
+    checkTraceRaceStatus(`${code}`).then(async (snapshot) => {
       const isTrackRace = snapshot.val();
       setTrackRace(isTrackRace);
       if (isTrackRace) {
-        setPolicy(new RacePolicy());
+        const tokenData = await user.getIdTokenResult(true);
+        const racePolicy = new RacePolicy();
+        racePolicy.fromClaims(tokenData.claims);
+        setPolicy(racePolicy);
       }
     });
 
@@ -1102,6 +1131,16 @@ function Admin({ user }: adminProps) {
                 }}
               >
                 Log Out
+              </Button>
+              <Button
+                className="m-1"
+                size="sm"
+                variant="outline-primary"
+                onClick={async () => {
+                  toggleModal(ADMIN_MODAL_TYPES.PROFILE);
+                }}
+              >
+                <GearImage stroke="var(--bs-blue)" />
               </Button>
             </Navbar.Collapse>
           </Container>
@@ -1643,7 +1682,11 @@ function Admin({ user }: adminProps) {
                                   (detailsElement, index) => (
                                     <td
                                       align="center"
-                                      className="inline-cell"
+                                      className={`inline-cell ${
+                                        policy?.isAvailable(detailsElement)
+                                          ? "available"
+                                          : ""
+                                      }`}
                                       onClick={(event) =>
                                         handleClickModal(
                                           event,
@@ -2118,6 +2161,57 @@ function Admin({ user }: adminProps) {
               isSaving={isSaving}
               userAccessLevel={userAccessLevel}
             />
+          </Form>
+        </Modal>
+        <Modal show={isProfile}>
+          <Modal.Header>
+            <Modal.Title>{`My profile`}</Modal.Title>
+          </Modal.Header>
+          <Form>
+            <Modal.Body>
+              <Form.Group className="mb-3">
+                <Form.Label htmlFor="userid">User</Form.Label>
+                <Form.Control
+                  readOnly
+                  id="userid"
+                  defaultValue={`${user.email}`}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label htmlFor="txtMaxTries">Max Tries</Form.Label>
+                <Form.Control
+                  readOnly
+                  id="txtMaxTries"
+                  defaultValue={`${policy?.getMaxTries()}`}
+                />
+                <Form.Text className="text-muted">
+                  The number of times to try not at homes before considering it
+                  done
+                </Form.Text>
+              </Form.Group>
+              {trackLanguages && (
+                <Form.Group className="mb-3">
+                  <Form.Label htmlFor="txtHomeLanguage">
+                    Home Language
+                  </Form.Label>
+                  <Form.Control
+                    readOnly
+                    id="txtHomeLanguage"
+                    defaultValue={`${getLanguageDisplayByCode(
+                      policy?.getHomeLanguage() as string
+                    )}`}
+                  />
+                </Form.Group>
+              )}
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                onClick={() => toggleModal(ADMIN_MODAL_TYPES.PROFILE)}
+              >
+                Close
+              </Button>
+            </Modal.Footer>
           </Form>
         </Modal>
       </div>

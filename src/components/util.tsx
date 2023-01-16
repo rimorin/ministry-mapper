@@ -55,7 +55,8 @@ const STATUS_CODES = {
 const NOT_HOME_STATUS_CODES = {
   DEFAULT: "1",
   SECOND_TRY: "2",
-  THIRD_TRY: "3"
+  THIRD_TRY: "3",
+  FOURTH_TRY: "4"
 };
 
 const USER_ACCESS_LEVELS = {
@@ -91,7 +92,8 @@ const ADMIN_MODAL_TYPES = {
   CREATE_TERRITORY: 5,
   ADD_UNIT: 6,
   RENAME_ADDRESS_NAME: 7,
-  UPDATE_UNIT: 8
+  UPDATE_UNIT: 8,
+  PROFILE: 9
 };
 
 const LINK_TYPES = {
@@ -370,7 +372,7 @@ const NavBarBranding = ({ naming }: BrandingProps) => {
     ? ""
     : " {" + process.env.REACT_APP_ROLLBAR_ENVIRONMENT + "}";
   return (
-    <Navbar.Brand>
+    <Navbar.Brand className="brand-wrap">
       <img
         alt=""
         src={`${process.env.PUBLIC_URL}/favicon-32x32.png`}
@@ -484,7 +486,24 @@ const NotHomeIcon = ({ nhcount, classProp }: nothomeprops) => {
   );
 };
 
+const getLanguageDisplayByCode = (code: string): string => {
+  let display: string = "";
+  if (code !== undefined) {
+    const keys = Object.keys(HOUSEHOLD_LANGUAGES);
+    keys.every((key) => {
+      let language = Reflect.get(HOUSEHOLD_LANGUAGES, key);
+      if (language.CODE.toLowerCase() === code.toLowerCase()) {
+        display = language.DISPLAY;
+        return false;
+      }
+      return true;
+    });
+  }
+  return display;
+};
+
 export {
+  getLanguageDisplayByCode,
   ZeroPad,
   ModalUnitTitle,
   assignmentMessage,
