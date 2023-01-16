@@ -372,7 +372,7 @@ const NavBarBranding = ({ naming }: BrandingProps) => {
     ? ""
     : " {" + process.env.REACT_APP_ROLLBAR_ENVIRONMENT + "}";
   return (
-    <Navbar.Brand>
+    <Navbar.Brand className="brand-wrap">
       <img
         alt=""
         src={`${process.env.PUBLIC_URL}/favicon-32x32.png`}
