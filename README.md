@@ -31,7 +31,7 @@ Disadvantages of Ministry Mapper
 
   1. Create account using the [administration module](https://github.com/rimorin/ministry-mapper-admin).
   2. Configure user claims
-  3. Configure congregation object in firebase rtdb path, /congregations.
+  3. Configure congregation object in firebase rtdb path, /congregations. [Sample here](https://github.com/rimorin/ministry-mapper/blob/master/template.json).
   4. Access domain/code to begin administering.
 
 ### Deployment
