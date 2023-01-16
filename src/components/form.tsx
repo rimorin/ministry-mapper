@@ -300,6 +300,13 @@ const HHNotHomeField = ({ handleChange, changeValue }: FormProps) => {
           >
             3rd
           </ToggleButton>
+          <ToggleButton
+            id="nh-status-tb-3"
+            variant="outline-secondary"
+            value={NOT_HOME_STATUS_CODES.FOURTH_TRY}
+          >
+            4th
+          </ToggleButton>
         </ToggleButtonGroup>
       </InputGroup>
     </Form.Group>

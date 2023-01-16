@@ -9,6 +9,10 @@ import {
 } from "./util";
 
 export class RacePolicy implements Policy {
+  maxTries: number;
+  constructor(maxtries = parseInt(NOT_HOME_STATUS_CODES.SECOND_TRY)) {
+    this.maxTries = maxtries;
+  }
   isCountable(unit: unitDetails): boolean {
     return (
       COUNTABLE_HOUSEHOLD_STATUS.includes(unit.status as string) &&
@@ -16,12 +20,25 @@ export class RacePolicy implements Policy {
     );
   }
   isCompleted(unit: unitDetails): boolean {
+    const tries: number = parseInt(unit.nhcount as string);
     return (
       unit.status === STATUS_CODES.DONE ||
-      (unit.status === STATUS_CODES.NOT_HOME &&
-        (unit.nhcount === NOT_HOME_STATUS_CODES.SECOND_TRY ||
-          unit.nhcount === NOT_HOME_STATUS_CODES.THIRD_TRY))
+      (unit.status === STATUS_CODES.NOT_HOME && tries >= this.maxTries)
     );
+  }
+  isAvailable(unit: unitDetails): boolean {
+    return this.isCountable(unit) && !this.isCompleted(unit);
+  }
+  getHomeLanguage(): string {
+    return "";
+  }
+  getMaxTries(): number {
+    return this.maxTries;
+  }
+  fromClaims(claims: any): void {
+    if (claims.maxTries !== undefined) {
+      this.maxTries = claims.maxTries;
+    }
   }
 }
 
@@ -60,6 +77,23 @@ export class LanguagePolicy implements Policy {
       this.isHomeLanguage(unit)
     );
   }
+  isAvailable(unit: unitDetails): boolean {
+    return this.isCountable(unit) && !this.isCompleted(unit);
+  }
+  getHomeLanguage(): string {
+    return this.homeLanguage;
+  }
+  getMaxTries(): number {
+    return this.maxTries;
+  }
+  fromClaims(claims: any): void {
+    if (claims.maxTries !== undefined) {
+      this.maxTries = claims.maxTries;
+    }
+    if (claims.homeLanguage !== undefined) {
+      this.homeLanguage = claims.homeLanguage;
+    }
+  }
 }
 
 export class LinkSession {
@@ -82,6 +116,8 @@ export class LinkSession {
       this.tokenEndtime = linkval.tokenEndtime;
       this.postalCode = linkval.postalCode;
       this.linkType = linkval.linkType;
+      this.maxTries = linkval.maxTries;
+      this.homeLanguage = linkval.homeLanguage;
     }
   }
 }

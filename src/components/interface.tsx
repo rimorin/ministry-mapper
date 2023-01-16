@@ -141,6 +141,10 @@ export interface RouteDetails {
 export interface Policy {
   isCountable(unit: unitDetails): boolean;
   isCompleted(unit: unitDetails): boolean;
+  isAvailable(unit: unitDetails): boolean;
+  getHomeLanguage(): string;
+  getMaxTries(): number;
+  fromClaims(claims: any): void;
 }
 
 export interface AuthorizerProp {

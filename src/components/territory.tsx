@@ -16,6 +16,7 @@ function Territory() {
   const [isLinkExpired, setIsLinkExpired] = useState<boolean>(false);
   const [isValidPostalcode, setIsValidPostalcode] = useState<boolean>(true);
   const [tokenEndTime, setTokenEndTime] = useState<number>(0);
+  const [linkSession, setLinkSession] = useState<LinkSession>();
 
   useEffect(() => {
     const linkReference = child(ref(database), `/links/${id}`);
@@ -25,6 +26,7 @@ function Territory() {
       if (snapshot.exists()) {
         const linkrec = new LinkSession();
         linkrec.fromSnapshot(snapshot.val());
+        setLinkSession(linkrec);
         const tokenEndtime = linkrec.tokenEndtime;
         const currentTimestamp = new Date().getTime();
         setTokenEndTime(tokenEndtime);
@@ -55,6 +57,8 @@ function Territory() {
       tokenEndtime={tokenEndTime}
       postalcode={postalcode}
       congregationcode={congregationcode}
+      maxTries={linkSession?.maxTries}
+      homeLanguage={linkSession?.homeLanguage}
     ></Slip>
   );
 }
