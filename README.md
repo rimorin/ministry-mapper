@@ -25,14 +25,16 @@ Disadvantages of Ministry Mapper
 - Initial migration work of the territory data. Territory servants will have to take some time to enter their entire territory details into the system.
 - Internet dependency. Requires publishers to use their internet capable phones/tablets to use. System may not be applicable for countries where internet access is not readily available.
 - Slight learning curve. Elderly and non tech-savvy publishers may have to overcome the challenge of transiting from paper/pen to the use of a computing device to update territory records.
-- Currently optimised for countries where territories are mostly apartments/flats. (Landed/House features can be included in future versions).
+- Currently optimised for countries where territories are mostly apartments/flats.
 
 ### Usage
 
-  1. Create account using the [administration module](https://github.com/rimorin/ministry-mapper-admin).
-  2. Configure user claims
-  3. Configure congregation object in firebase rtdb path, /congregations. [Sample here](https://github.com/rimorin/ministry-mapper/blob/master/template.json).
-  4. Access domain/code to begin administering.
+Configuration is done using a seperate [administration module](https://github.com/rimorin/ministry-mapper-admin).
+
+  1. Create account
+  2. Configure user roles
+  3. Configure congregation 
+  4. Access url, https://your_domain/congregation_code to begin administering.
 
 ### Deployment
 
@@ -92,4 +94,4 @@ Disadvantages of Ministry Mapper
 5. Firebase Real-time database - Cloud based database with real time synchronization across all clients.
 6. Firebase Authentication - Cloud based authentication service.
 7. Firebase Appcheck - Protects your app from abuse by attesting that incoming traffic and blocking traffic without valid credentials.
-8. Firebase Function - Cloud based backend job scheduler
+8. Firebase Functions - Cloud based backend job scheduler
