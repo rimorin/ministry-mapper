@@ -22,37 +22,26 @@ Advantages of Ministry Mapper
 
 Disadvantages of Ministry Mapper
 
-- Initial migration work of the territory data. Territory servants will have to translate their current territory data into a json specific file to feed into the platform.
+- Initial migration work of the territory data. Territory servants will have to take some time to enter their entire territory details into the system.
 - Internet dependency. Requires publishers to use their internet capable phones/tablets to use. System may not be applicable for countries where internet access is not readily available.
 - Slight learning curve. Elderly and non tech-savvy publishers may have to overcome the challenge of transiting from paper/pen to the use of a computing device to update territory records.
-- Currently optimised for countries where territories are mostly apartments/flats. (Landed/House features can be included in future versions).
+- Currently optimised for countries where territories are mostly apartments/flats.
 
 ### Usage
 
-- To access the admin screen of a congregation, `domain/admin/<congregation code>`
-  1. Login with admin credentials
-  2. To restart territory status during a cycle, click on reset button under each postal address.
-- To access the conductor screen of a congregation, `domain/conductor/<congregation code>`
-  1. Login with conductor credentials
-  2. To assign a slip to a publisher, select territory and postal address and click on the share button.
-- To access a particular postal address, `domain/<postal code>`
-  1. Login with publisher credentials (Disabled by default)
-  2. To update an unit number, tap on a unit box and update its details accordingly.
+Configuration is done using a seperate [administration module](https://github.com/rimorin/ministry-mapper-admin).
+
+  1. Create account
+  2. Configure user roles
+  3. Configure congregation 
+  4. Access url, https://your_domain/congregation_code to begin administering.
 
 ### Deployment
 
 - Firebase Database setup
 
   1. Create Google account and setup firebase realtime database
-  2. Prepare territory.json file that contains your territory data in the format specified.
-  3. Upload Json file to real-time database
-  4. Implement security rules to prevent unwanted deletions and access.
-
-- Firebase Authentication setup
-
-  1. Setup firebase authentication
-  2. Configure email/password authentication type
-  3. Add email/password credentials
+  2. Implement security rules to prevent unwanted deletions and access.
 
 - Firebase Appcheck setup (Recommend to setup once app domain is active)
 
@@ -63,12 +52,14 @@ Disadvantages of Ministry Mapper
   5. Build package
   6. For local developement, generate a token from Appcheck and copy key to environment variable, `REACT_APP_FIREBASE_APPCHECK_DEBUG_TOKEN`.
 
-- Sentry setup
+- Firebase Functions. Refer to [documentation](https://github.com/rimorin/ministry-mapper-cron) for deployment.
 
-  1. Create [Sentry](https://sentry.io) account
+- Rollbar setup
+
+  1. Create [Rollbar](https://rollbar.com/) account
   2. Create a React project
   3. Go to setting and retrieve client keys DSN.
-  4. Copy DSN to environment variable, `REACT_APP_SENTRY_LOGGING_DSN` when building for production.
+  4. Copy access token to environment variable, `REACT_APP_ROLLBAR_ACCESS_TOKEN` when building for production.
 
 - Local deployment
   1. Setup .env with the following environment variables and their values.
@@ -99,7 +90,8 @@ Disadvantages of Ministry Mapper
 1. Bootstrap - CSS Framework
 2. ReactJs - Javascript UI Framework
 3. Typescript - Javascript typed implementation library
-4. Sentry - App error tracking and monitoring
+4. Rollbar - App error tracking and monitoring
 5. Firebase Real-time database - Cloud based database with real time synchronization across all clients.
 6. Firebase Authentication - Cloud based authentication service.
 7. Firebase Appcheck - Protects your app from abuse by attesting that incoming traffic and blocking traffic without valid credentials.
+8. Firebase Functions - Cloud based backend job scheduler
