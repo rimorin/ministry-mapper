@@ -532,7 +532,7 @@ function Admin({ user }: adminProps) {
       unit: unit,
       unitDisplay: zeroPad(`${unit}`, maxUnitNumber),
       unitlength: unitlength,
-      sequence: unitseq || ""
+      sequence: unitseq === undefined ? "" : unitseq
     });
     toggleModal(ADMIN_MODAL_TYPES.UPDATE_UNIT);
   };
@@ -659,7 +659,7 @@ function Admin({ user }: adminProps) {
       floorDetails.units.forEach((_) => {
         unitUpdates[
           `/${postalCode}/units/${floorDetails.floor}/${unitNumber}/sequence`
-        ] = sequence || {};
+        ] = sequence === undefined ? {} : sequence;
       });
     }
     setIsSaving(true);
@@ -687,7 +687,9 @@ function Admin({ user }: adminProps) {
     const details = values as valuesDetails;
     const postalCode = details.postal;
     const unitNumber = details.unit;
-    const unitSeq = details.sequence;
+    const unitSeq = isNaN(parseInt(details.sequence))
+      ? undefined
+      : parseInt(details.sequence);
     processPostalUnitSequence(`${postalCode}`, unitNumber, unitSeq);
     toggleModal(ADMIN_MODAL_TYPES.UPDATE_UNIT);
   };
