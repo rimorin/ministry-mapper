@@ -50,7 +50,7 @@ export interface valuesDetails {
   newPostal?: String;
   code?: String;
   dnctime?: number;
-  sequence?: number;
+  sequence: string;
   unitlength?: number;
 }
 
