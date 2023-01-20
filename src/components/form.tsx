@@ -224,13 +224,14 @@ const HHStatusField = ({ handleChange, changeValue }: FormProps) => {
         name="status"
         type="radio"
         value={changeValue}
-        className="mb-3 group-wrap"
+        className="mb-3"
         onChange={handleChange}
       >
         <ToggleButton
           id="status-tb-0"
           variant="outline-dark"
           value={STATUS_CODES.DEFAULT}
+          className="fluid-text"
         >
           Not Done
         </ToggleButton>
@@ -238,6 +239,7 @@ const HHStatusField = ({ handleChange, changeValue }: FormProps) => {
           id="status-tb-1"
           variant="outline-success"
           value={STATUS_CODES.DONE}
+          className="fluid-text"
         >
           Done
         </ToggleButton>
@@ -245,6 +247,7 @@ const HHStatusField = ({ handleChange, changeValue }: FormProps) => {
           id="status-tb-2"
           variant="outline-secondary"
           value={STATUS_CODES.NOT_HOME}
+          className="fluid-text"
         >
           Not Home
         </ToggleButton>
@@ -252,6 +255,7 @@ const HHStatusField = ({ handleChange, changeValue }: FormProps) => {
           id="status-tb-4"
           variant="outline-danger"
           value={STATUS_CODES.DO_NOT_CALL}
+          className="fluid-text"
         >
           DNC
         </ToggleButton>
@@ -259,6 +263,7 @@ const HHStatusField = ({ handleChange, changeValue }: FormProps) => {
           id="status-tb-5"
           variant="outline-info"
           value={STATUS_CODES.INVALID}
+          className="fluid-text"
         >
           Invalid
         </ToggleButton>

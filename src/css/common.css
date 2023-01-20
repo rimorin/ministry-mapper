@@ -26,3 +26,11 @@
 .brand-wrap {
   white-space: normal;
 }
+
+/* https://css-tricks.com/linearly-scale-font-size-with-css-clamp-based-on-the-viewport/ */
+@media screen and (max-width: 450px) {
+  .fluid-text {
+    font-size: clamp(0.5rem, 2.8vw, 2rem);
+    font-weight: bolder;
+  }
+}
