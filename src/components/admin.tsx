@@ -883,6 +883,8 @@ function Admin({ user }: adminProps) {
     return tokenData.claims[congregationCode];
   };
 
+  /* Special logic to handle cases where device navigator.share 
+  does not return a callback after a successful share. */
   const specialShareTimedLink = (
     linktype: number,
     postalcode: String,
@@ -986,7 +988,7 @@ function Admin({ user }: adminProps) {
         setPolicy(racePolicy);
       }
     });
-
+    // Huawei is considered special due to its unusual behaviour in their OS native share functionality.
     setIsSpecialDevice(getUA().device.vendor === UA_DEVICE_MAKES.HUAWEI);
 
     const congregationReference = child(ref(database), `congregations/${code}`);
