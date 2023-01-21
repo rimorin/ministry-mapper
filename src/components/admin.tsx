@@ -81,7 +81,8 @@ import {
   ComponentAuthorizer,
   USER_ACCESS_LEVELS,
   LINK_TYPES,
-  ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS
+  ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS,
+  EnvironmentIndicator
 } from "./util";
 import { useParams } from "react-router-dom";
 import {
@@ -960,6 +961,7 @@ function Admin({ user }: adminProps) {
   return (
     <Fade appear={true} in={true}>
       <div>
+        <EnvironmentIndicator />
         <TerritoryListing
           showListing={showTerritoryListing}
           hideFunction={toggleTerritoryListing}
