@@ -29,8 +29,15 @@
 
 /* https://css-tricks.com/linearly-scale-font-size-with-css-clamp-based-on-the-viewport/ */
 @media screen and (max-width: 450px) {
-  .fluid-text {
+  .fluid-status {
     font-size: clamp(0.5rem, 2.8vw, 2rem);
+    font-weight: bolder;
+  }
+}
+
+@media screen and (max-width: 450px) {
+  .fluid-branding {
+    font-size: clamp(0.5rem, 3.2vw, 2rem);
     font-weight: bolder;
   }
 }
