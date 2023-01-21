@@ -82,6 +82,7 @@ import {
   USER_ACCESS_LEVELS,
   LINK_TYPES,
   ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS,
+  EnvironmentIndicator,
   UA_DEVICE_MAKES,
   UNSUPPORTED_BROWSER_MSG
 } from "./util";
@@ -1038,6 +1039,7 @@ function Admin({ user }: adminProps) {
   return (
     <Fade appear={true} in={true}>
       <div>
+        <EnvironmentIndicator />
         <TerritoryListing
           showListing={showTerritoryListing}
           hideFunction={toggleTerritoryListing}

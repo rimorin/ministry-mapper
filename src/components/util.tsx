@@ -17,7 +17,8 @@ import {
   Offcanvas,
   Popover,
   Table,
-  Image
+  Image,
+  ProgressBar
 } from "react-bootstrap";
 import Rollbar from "rollbar";
 import { database } from "../firebase";
@@ -369,10 +370,6 @@ const triggerPostalCodeListeners = async (postalcode: string) => {
 };
 
 const NavBarBranding = ({ naming }: BrandingProps) => {
-  const production = process.env.REACT_APP_ROLLBAR_ENVIRONMENT === "production";
-  const environment = production
-    ? ""
-    : " {" + process.env.REACT_APP_ROLLBAR_ENVIRONMENT + "}";
   return (
     <Navbar.Brand className="brand-wrap">
       <img
@@ -382,9 +379,26 @@ const NavBarBranding = ({ naming }: BrandingProps) => {
         height="32"
         className="d-inline-block align-top"
       />{" "}
-      {naming}
-      {environment}
+      <Navbar.Text className="fluid-text">{naming}</Navbar.Text>
     </Navbar.Brand>
+  );
+};
+
+const EnvironmentIndicator = () => {
+  if (process.env.REACT_APP_ROLLBAR_ENVIRONMENT === "production") return <></>;
+  return (
+    <ProgressBar
+      now={100}
+      animated
+      style={{
+        borderRadius: 0,
+        position: "sticky",
+        top: 0,
+        fontWeight: "bold",
+        zIndex: 1000
+      }}
+      label={`${process.env.REACT_APP_ROLLBAR_ENVIRONMENT} environment`}
+    />
   );
 };
 
@@ -552,5 +566,6 @@ export {
   HOUSEHOLD_LANGUAGES,
   USER_ACCESS_LEVELS,
   LINK_TYPES,
-  ComponentAuthorizer
+  ComponentAuthorizer,
+  EnvironmentIndicator
 };
