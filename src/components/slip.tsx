@@ -33,7 +33,8 @@ import {
   checkTraceLangStatus,
   checkTraceRaceStatus,
   processAddressData,
-  ExpiryTimePopover
+  ExpiryTimePopover,
+  EnvironmentIndicator
 } from "./util";
 import {
   DncDateField,
@@ -267,6 +268,7 @@ const Slip = ({
     <Fade appear={true} in={true}>
       <div>
         <Legend showLegend={showLegend} hideFunction={toggleLegend} />
+        <EnvironmentIndicator />
         <Navbar bg="light" expand="sm">
           <Container fluid>
             <NavBarBranding naming={`${postalName}`} />
