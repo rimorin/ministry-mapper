@@ -380,8 +380,10 @@ const NavBarBranding = ({ naming }: BrandingProps) => {
         height="32"
         className="d-inline-block align-top"
       />{" "}
-      {naming}
-      {environment}
+      <Navbar.Text className="fluid-text">
+        {naming}
+        {environment}
+      </Navbar.Text>
     </Navbar.Brand>
   );
 };
