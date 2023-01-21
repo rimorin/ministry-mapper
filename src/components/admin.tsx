@@ -82,7 +82,9 @@ import {
   USER_ACCESS_LEVELS,
   LINK_TYPES,
   ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS,
-  EnvironmentIndicator
+  EnvironmentIndicator,
+  UA_DEVICE_MAKES,
+  UNSUPPORTED_BROWSER_MSG
 } from "./util";
 import { useParams } from "react-router-dom";
 import {
@@ -104,6 +106,7 @@ import { useRollbar } from "@rollbar/react";
 import { RacePolicy, LanguagePolicy, LinkSession } from "./policies";
 import { zeroPad } from "react-countdown";
 import { ReactComponent as GearImage } from "../assets/gear.svg";
+import getUA from "ua-parser-js";
 function Admin({ user }: adminProps) {
   const { code } = useParams();
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -127,6 +130,7 @@ function Admin({ user }: adminProps) {
   const [isDnc, setIsDnc] = useState<boolean>(false);
   const [isUnitDetails, setIsUnitDetails] = useState<boolean>(false);
   const [isProfile, setIsProfile] = useState<boolean>(false);
+  const [isSpecialDevice, setIsSpecialDevice] = useState<boolean>(false);
   const [showTerritoryListing, setShowTerritoryListing] =
     useState<boolean>(false);
   const [trackRace, setTrackRace] = useState<boolean>(true);
@@ -844,7 +848,7 @@ function Admin({ user }: adminProps) {
         setSelectedPostal("");
       }
     } else {
-      alert("Browser doesn't support this feature.");
+      alert(UNSUPPORTED_BROWSER_MSG);
     }
   };
 
@@ -880,6 +884,78 @@ function Admin({ user }: adminProps) {
     return tokenData.claims[congregationCode];
   };
 
+  /* Special logic to handle cases where device navigator.share 
+  does not return a callback after a successful share. */
+  const specialShareTimedLink = (
+    linktype: number,
+    postalcode: String,
+    name: String,
+    linkId: String,
+    hours = DEFAULT_SELF_DESTRUCT_HOURS
+  ) => {
+    if (navigator.share) {
+      confirmAlert({
+        customUI: ({ onClose }) => {
+          return (
+            <Container>
+              <Card bg="Light" className="text-center">
+                <Card.Header>
+                  Confirmation on{" "}
+                  {linktype === LINK_TYPES.PERSONAL ? "personal " : " "}
+                  assignment for {name} ✅
+                </Card.Header>
+                <Card.Body>
+                  <Card.Title>Do you want to proceed ?</Card.Title>
+                  <Button
+                    className="m-1"
+                    variant="primary"
+                    onClick={async () => {
+                      onClose();
+                      setSelectedPostal(postalcode);
+                      if (linktype === LINK_TYPES.ASSIGNMENT)
+                        setIsSettingAssignLink(true);
+                      if (linktype === LINK_TYPES.PERSONAL)
+                        setIsSettingPersonalLink(true);
+                      await setTimedLink(linktype, postalcode, linkId, hours);
+
+                      try {
+                        navigator.share({
+                          title: `Units for ${name}`,
+                          text: assignmentMessage(name),
+                          url: `${domain}/${postalcode}/${code}/${linkId}`
+                        });
+                      } finally {
+                        setIsSettingAssignLink(false);
+                        setIsSettingPersonalLink(false);
+                        setSelectedPostal("");
+                        setAccordionKeys((existingKeys) =>
+                          existingKeys.filter((key) => key !== postalcode)
+                        );
+                      }
+                    }}
+                  >
+                    Yes
+                  </Button>
+                  <Button
+                    className="ms-2"
+                    variant="primary"
+                    onClick={() => {
+                      onClose();
+                    }}
+                  >
+                    No
+                  </Button>
+                </Card.Body>
+              </Card>
+            </Container>
+          );
+        }
+      });
+    } else {
+      alert(UNSUPPORTED_BROWSER_MSG);
+    }
+  };
+
   useEffect(() => {
     getUserAccessLevel(user, code).then((userAccessLevel) => {
       if (!userAccessLevel) {
@@ -913,6 +989,8 @@ function Admin({ user }: adminProps) {
         setPolicy(racePolicy);
       }
     });
+    // Huawei is considered special due to its unusual behaviour in their OS native share functionality.
+    setIsSpecialDevice(getUA().device.vendor === UA_DEVICE_MAKES.HUAWEI);
 
     const congregationReference = child(ref(database), `congregations/${code}`);
     onValue(
@@ -1233,9 +1311,19 @@ function Admin({ user }: adminProps) {
                           >
                             <Dropdown.Item
                               onClick={() => {
+                                if (isSpecialDevice) {
+                                  specialShareTimedLink(
+                                    LINK_TYPES.PERSONAL,
+                                    addressElement.postalcode,
+                                    addressElement.name,
+                                    addressLinkId,
+                                    ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS
+                                  );
+                                  return;
+                                }
                                 shareTimedLink(
                                   LINK_TYPES.PERSONAL,
-                                  `${addressElement.postalcode}`,
+                                  addressElement.postalcode,
                                   addressLinkId,
                                   `Units for ${addressElement.name}`,
                                   assignmentMessage(addressElement.name),
@@ -1248,9 +1336,19 @@ function Admin({ user }: adminProps) {
                             </Dropdown.Item>
                             <Dropdown.Item
                               onClick={() => {
+                                if (isSpecialDevice) {
+                                  specialShareTimedLink(
+                                    LINK_TYPES.PERSONAL,
+                                    addressElement.postalcode,
+                                    addressElement.name,
+                                    addressLinkId,
+                                    FOUR_WKS_PERSONAL_SLIP_DESTRUCT_HOURS
+                                  );
+                                  return;
+                                }
                                 shareTimedLink(
                                   LINK_TYPES.PERSONAL,
-                                  `${addressElement.postalcode}`,
+                                  addressElement.postalcode,
                                   addressLinkId,
                                   `Units for ${addressElement.name}`,
                                   assignmentMessage(addressElement.name),
@@ -1273,9 +1371,18 @@ function Admin({ user }: adminProps) {
                               variant="outline-primary"
                               className="m-1"
                               onClick={(_) => {
+                                if (isSpecialDevice) {
+                                  specialShareTimedLink(
+                                    LINK_TYPES.ASSIGNMENT,
+                                    addressElement.postalcode,
+                                    addressElement.name,
+                                    addressLinkId
+                                  );
+                                  return;
+                                }
                                 shareTimedLink(
                                   LINK_TYPES.ASSIGNMENT,
-                                  `${addressElement.postalcode}`,
+                                  addressElement.postalcode,
                                   addressLinkId,
                                   `Units for ${addressElement.name}`,
                                   assignmentMessage(addressElement.name),

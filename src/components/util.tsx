@@ -159,6 +159,8 @@ const errorMessage = (code: String) => {
   return "Invalid Credentials";
 };
 
+const UNSUPPORTED_BROWSER_MSG = "Browser doesn't support this feature.";
+
 const ZeroPad = (num: String, places: number) => num.padStart(places, "0");
 
 const assignmentMessage = (address: String) => {
@@ -489,6 +491,10 @@ const HOUSEHOLD_LANGUAGES = {
   MALAY: { CODE: "m", DISPLAY: "Malay" }
 };
 
+const UA_DEVICE_MAKES = {
+  HUAWEI: "Huawei"
+};
+
 const NotHomeIcon = ({ nhcount, classProp }: nothomeprops) => {
   let containerClass = "container-nothome";
   if (classProp) containerClass += ` ${classProp}`;
@@ -539,6 +545,8 @@ export {
   processAddressData,
   ExpiryTimePopover,
   NotHomeIcon,
+  UA_DEVICE_MAKES,
+  UNSUPPORTED_BROWSER_MSG,
   STATUS_CODES,
   MUTABLE_CODES,
   DEFAULT_FLOOR_PADDING,
