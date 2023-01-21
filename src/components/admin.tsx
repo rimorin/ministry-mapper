@@ -987,7 +987,7 @@ function Admin({ user }: adminProps) {
       }
     });
 
-    setIsSpecialDevice(getUA().device.vendor !== UA_DEVICE_MAKES.HUAWEI);
+    setIsSpecialDevice(getUA().device.vendor === UA_DEVICE_MAKES.HUAWEI);
 
     const congregationReference = child(ref(database), `congregations/${code}`);
     onValue(
