@@ -1259,7 +1259,9 @@ function Admin({ user }: adminProps) {
                 key={`accordion-${addressElement.postalcode}`}
                 eventKey={`${addressElement.postalcode}`}
               >
-                <Accordion.Header>{addressElement.name}</Accordion.Header>
+                <Accordion.Header>
+                  <span className="fluid-branding">{addressElement.name}</span>
+                </Accordion.Header>
                 <Accordion.Body className="p-0">
                   <ProgressBar
                     style={{ borderRadius: 0 }}

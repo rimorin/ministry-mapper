@@ -283,13 +283,13 @@ const Slip = ({
                 overlay={ExpiryTimePopover(tokenEndtime)}
                 rootClose={true}
               >
-                <Button className="me-2 mb-1">Time</Button>
+                <Button className="me-2 mb-1 fluid-button">Time</Button>
               </OverlayTrigger>
-              <Button className="me-2 mb-1" onClick={toggleLegend}>
+              <Button className="me-2 mb-1 fluid-button" onClick={toggleLegend}>
                 Legend
               </Button>
               <Button
-                className="me-2 mb-1"
+                className="me-2 mb-1 fluid-button"
                 onClick={() => {
                   window.open(
                     `http://maps.google.com.sg/maps?q=${zipcode}`,
@@ -299,7 +299,10 @@ const Slip = ({
               >
                 Direction
               </Button>
-              <Button className="me-2" onClick={handleClickFeedback}>
+              <Button
+                className="me-2 fluid-button"
+                onClick={handleClickFeedback}
+              >
                 Feedback
               </Button>
             </Navbar.Collapse>
