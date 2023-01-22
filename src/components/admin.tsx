@@ -1071,78 +1071,7 @@ function Admin({ user }: adminProps) {
                       : "Select Territory"}
                   </Button>
                 )}
-              <ComponentAuthorizer
-                requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
-                userPermission={userAccessLevel}
-              >
-                <Button
-                  className="m-1"
-                  size="sm"
-                  variant="outline-primary"
-                  onClick={() => {
-                    setValues({ ...values, name: "", code: "" });
-                    toggleModal(ADMIN_MODAL_TYPES.CREATE_TERRITORY);
-                  }}
-                >
-                  Create Territory
-                </Button>
-              </ComponentAuthorizer>
-              {selectedTerritory && (
-                <ComponentAuthorizer
-                  requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
-                  userPermission={userAccessLevel}
-                >
-                  <Button
-                    className="m-1"
-                    size="sm"
-                    variant="outline-primary"
-                    onClick={() =>
-                      confirmAlert({
-                        customUI: ({ onClose }) => {
-                          return (
-                            <Container>
-                              <Card bg="warning" className="text-center">
-                                <Card.Header>Warning ⚠️</Card.Header>
-                                <Card.Body>
-                                  <Card.Title>Are You Very Sure ?</Card.Title>
-                                  <Card.Text>
-                                    This action will delete the territory,{" "}
-                                    {selectedTerritoryCode} -{" "}
-                                    {selectedTerritoryName} and all its
-                                    addresses.
-                                  </Card.Text>
-                                  <Button
-                                    className="m-1"
-                                    variant="primary"
-                                    onClick={() => {
-                                      deleteTerritory();
-                                      onClose();
-                                    }}
-                                  >
-                                    Yes, Delete It.
-                                  </Button>
-                                  <Button
-                                    className="ms-2"
-                                    variant="primary"
-                                    onClick={() => {
-                                      onClose();
-                                    }}
-                                  >
-                                    No
-                                  </Button>
-                                </Card.Body>
-                              </Card>
-                            </Container>
-                          );
-                        }
-                      })
-                    }
-                  >
-                    Delete Territory
-                  </Button>
-                </ComponentAuthorizer>
-              )}
-              {selectedTerritory && (
+              {!selectedTerritory && (
                 <ComponentAuthorizer
                   requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
                   userPermission={userAccessLevel}
@@ -1152,12 +1081,92 @@ function Admin({ user }: adminProps) {
                     size="sm"
                     variant="outline-primary"
                     onClick={() => {
-                      setValues({ ...values, name: selectedTerritoryName });
-                      toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
+                      setValues({ ...values, name: "", code: "" });
+                      toggleModal(ADMIN_MODAL_TYPES.CREATE_TERRITORY);
                     }}
                   >
-                    Edit Territory Name
+                    Create Territory
                   </Button>
+                </ComponentAuthorizer>
+              )}
+              {selectedTerritory && (
+                <ComponentAuthorizer
+                  requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
+                  userPermission={userAccessLevel}
+                >
+                  <Dropdown>
+                    <Dropdown.Toggle variant="outline-primary" size="sm">
+                      Territory
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu show>
+                      <Dropdown.Item
+                        onClick={() => {
+                          setValues({ ...values, name: "", code: "" });
+                          toggleModal(ADMIN_MODAL_TYPES.CREATE_TERRITORY);
+                        }}
+                      >
+                        Create New
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        onClick={() =>
+                          confirmAlert({
+                            customUI: ({ onClose }) => {
+                              return (
+                                <Container>
+                                  <Card bg="warning" className="text-center">
+                                    <Card.Header>Warning ⚠️</Card.Header>
+                                    <Card.Body>
+                                      <Card.Title>
+                                        Are You Very Sure ?
+                                      </Card.Title>
+                                      <Card.Text>
+                                        This action will delete the territory,{" "}
+                                        {selectedTerritoryCode} -{" "}
+                                        {selectedTerritoryName} and all its
+                                        addresses.
+                                      </Card.Text>
+                                      <Button
+                                        className="m-1"
+                                        variant="primary"
+                                        onClick={() => {
+                                          deleteTerritory();
+                                          onClose();
+                                        }}
+                                      >
+                                        Yes, Delete It.
+                                      </Button>
+                                      <Button
+                                        className="ms-2"
+                                        variant="primary"
+                                        onClick={() => {
+                                          onClose();
+                                        }}
+                                      >
+                                        No
+                                      </Button>
+                                    </Card.Body>
+                                  </Card>
+                                </Container>
+                              );
+                            }
+                          })
+                        }
+                      >
+                        Delete Current
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        onClick={() => {
+                          setValues({
+                            ...values,
+                            name: selectedTerritoryName
+                          });
+                          toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
+                        }}
+                      >
+                        Edit Current Name
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
                 </ComponentAuthorizer>
               )}
               {selectedTerritory && (
@@ -1180,7 +1189,7 @@ function Admin({ user }: adminProps) {
                       toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS);
                     }}
                   >
-                    Create Address
+                    New Address
                   </Button>
                 </ComponentAuthorizer>
               )}
