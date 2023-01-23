@@ -1495,7 +1495,7 @@ function Admin({ user }: adminProps) {
                           }
                           userPermission={userAccessLevel}
                         >
-                          <Dropdown align="end">
+                          <Dropdown align="end" className="m-1">
                             <Dropdown.Toggle
                               variant="outline-primary"
                               size="sm"
