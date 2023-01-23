@@ -335,7 +335,7 @@ function Admin({ user }: adminProps) {
         type: HOUSEHOLD_TYPES.CHINESE,
         note: "",
         nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
-        sequence: element.sequence,
+        sequence: element.sequence ? element.sequence : 0,
         languages: ""
       };
     });
@@ -515,11 +515,7 @@ function Admin({ user }: adminProps) {
     toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
   };
 
-  const handleClickAddUnit = (
-    _: MouseEvent<HTMLElement>,
-    postalcode: String,
-    floors: number
-  ) => {
+  const handleClickAddUnit = (postalcode: String, floors: number) => {
     setValues({ ...values, postal: postalcode, floors: floors, unit: "" });
     toggleModal(ADMIN_MODAL_TYPES.ADD_UNIT);
   };
@@ -558,11 +554,7 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const handleClickChangeAddressName = (
-    _: MouseEvent<HTMLElement>,
-    postalcode: String,
-    name: String
-  ) => {
+  const handleClickChangeAddressName = (postalcode: String, name: String) => {
     setValues({ ...values, name: name, postal: postalcode });
     toggleModal(ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME);
   };
@@ -1094,11 +1086,11 @@ function Admin({ user }: adminProps) {
                   requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
                   userPermission={userAccessLevel}
                 >
-                  <Dropdown>
+                  <Dropdown className="m-1">
                     <Dropdown.Toggle variant="outline-primary" size="sm">
                       Territory
                     </Dropdown.Toggle>
-                    <Dropdown.Menu show>
+                    <Dropdown.Menu>
                       <Dropdown.Item
                         onClick={() => {
                           setValues({ ...values, name: "", code: "" });
@@ -1503,165 +1495,157 @@ function Admin({ user }: adminProps) {
                           }
                           userPermission={userAccessLevel}
                         >
-                          <>
-                            <Button
-                              size="sm"
+                          <Dropdown>
+                            <Dropdown.Toggle
                               variant="outline-primary"
-                              className="m-1"
-                              onClick={(event) => {
-                                handleClickChangeAddressName(
-                                  event,
-                                  addressElement.postalcode,
-                                  addressElement.name
-                                );
-                              }}
-                            >
-                              Rename
-                            </Button>
-                            <Button
                               size="sm"
-                              variant="outline-primary"
-                              className="m-1"
-                              onClick={(event) => {
-                                handleClickAddUnit(
-                                  event,
-                                  addressElement.postalcode,
-                                  addressElement.floors.length
-                                );
-                              }}
                             >
-                              Add Unit
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline-primary"
-                              className="m-1"
-                              onClick={(event) => {
-                                addFloorToBlock(addressElement.postalcode);
-                              }}
-                            >
-                              Add Higher Floor
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline-primary"
-                              className="m-1"
-                              onClick={(event) => {
-                                addFloorToBlock(
-                                  addressElement.postalcode,
-                                  true
-                                );
-                              }}
-                            >
-                              Add Lower Floor
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline-primary"
-                              className="m-1"
-                              onClick={() =>
-                                confirmAlert({
-                                  customUI: ({ onClose }) => {
-                                    return (
-                                      <Container>
-                                        <Card
-                                          bg="warning"
-                                          className="text-center"
-                                        >
-                                          <Card.Header>Warning ⚠️</Card.Header>
-                                          <Card.Body>
-                                            <Card.Title>
-                                              Are You Very Sure ?
-                                            </Card.Title>
-                                            <Card.Text>
-                                              This action will reset all unit
-                                              status of {addressElement.name}.
-                                            </Card.Text>
-                                            <Button
-                                              className="m-1"
-                                              variant="primary"
-                                              onClick={() => {
-                                                resetBlock(
-                                                  addressElement.postalcode
-                                                );
-                                                onClose();
-                                              }}
-                                            >
-                                              Yes, Reset It.
-                                            </Button>
-                                            <Button
-                                              className="ms-2"
-                                              variant="primary"
-                                              onClick={() => {
-                                                onClose();
-                                              }}
-                                            >
-                                              No
-                                            </Button>
-                                          </Card.Body>
-                                        </Card>
-                                      </Container>
-                                    );
-                                  }
-                                })
-                              }
-                            >
-                              Reset
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline-primary"
-                              className="m-1"
-                              onClick={() =>
-                                confirmAlert({
-                                  customUI: ({ onClose }) => {
-                                    return (
-                                      <Container>
-                                        <Card
-                                          bg="warning"
-                                          className="text-center"
-                                        >
-                                          <Card.Header>Warning ⚠️</Card.Header>
-                                          <Card.Body>
-                                            <Card.Title>
-                                              Are You Very Sure ?
-                                            </Card.Title>
-                                            <Card.Text>
-                                              The action will completely delete,{" "}
-                                              {addressElement.name}.
-                                            </Card.Text>
-                                            <Button
-                                              className="m-1"
-                                              variant="primary"
-                                              onClick={() => {
-                                                deleteBlock(
-                                                  addressElement.postalcode
-                                                );
-                                                onClose();
-                                              }}
-                                            >
-                                              Yes, Delete It.
-                                            </Button>
-                                            <Button
-                                              className="ms-2"
-                                              variant="primary"
-                                              onClick={() => {
-                                                onClose();
-                                              }}
-                                            >
-                                              No
-                                            </Button>
-                                          </Card.Body>
-                                        </Card>
-                                      </Container>
-                                    );
-                                  }
-                                })
-                              }
-                            >
-                              Delete
-                            </Button>
-                          </>
+                              Address
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu>
+                              <Dropdown.Item
+                                onClick={() => {
+                                  handleClickChangeAddressName(
+                                    addressElement.postalcode,
+                                    addressElement.name
+                                  );
+                                }}
+                              >
+                                Rename
+                              </Dropdown.Item>
+                              <Dropdown.Item
+                                onClick={() => {
+                                  handleClickAddUnit(
+                                    addressElement.postalcode,
+                                    addressElement.floors.length
+                                  );
+                                }}
+                              >
+                                Add Unit No.
+                              </Dropdown.Item>
+                              <Dropdown.Item
+                                onClick={() => {
+                                  addFloorToBlock(addressElement.postalcode);
+                                }}
+                              >
+                                Add Higher Floor
+                              </Dropdown.Item>
+                              <Dropdown.Item
+                                onClick={() => {
+                                  addFloorToBlock(
+                                    addressElement.postalcode,
+                                    true
+                                  );
+                                }}
+                              >
+                                Add Lower Floor
+                              </Dropdown.Item>
+                              <Dropdown.Item
+                                onClick={() =>
+                                  confirmAlert({
+                                    customUI: ({ onClose }) => {
+                                      return (
+                                        <Container>
+                                          <Card
+                                            bg="warning"
+                                            className="text-center"
+                                          >
+                                            <Card.Header>
+                                              Warning ⚠️
+                                            </Card.Header>
+                                            <Card.Body>
+                                              <Card.Title>
+                                                Are You Very Sure ?
+                                              </Card.Title>
+                                              <Card.Text>
+                                                This action will reset all unit
+                                                status of {addressElement.name}.
+                                              </Card.Text>
+                                              <Button
+                                                className="m-1"
+                                                variant="primary"
+                                                onClick={() => {
+                                                  resetBlock(
+                                                    addressElement.postalcode
+                                                  );
+                                                  onClose();
+                                                }}
+                                              >
+                                                Yes, Reset It.
+                                              </Button>
+                                              <Button
+                                                className="ms-2"
+                                                variant="primary"
+                                                onClick={() => {
+                                                  onClose();
+                                                }}
+                                              >
+                                                No
+                                              </Button>
+                                            </Card.Body>
+                                          </Card>
+                                        </Container>
+                                      );
+                                    }
+                                  })
+                                }
+                              >
+                                Reset Status
+                              </Dropdown.Item>
+                              <Dropdown.Item
+                                onClick={() =>
+                                  confirmAlert({
+                                    customUI: ({ onClose }) => {
+                                      return (
+                                        <Container>
+                                          <Card
+                                            bg="warning"
+                                            className="text-center"
+                                          >
+                                            <Card.Header>
+                                              Warning ⚠️
+                                            </Card.Header>
+                                            <Card.Body>
+                                              <Card.Title>
+                                                Are You Very Sure ?
+                                              </Card.Title>
+                                              <Card.Text>
+                                                The action will completely
+                                                delete, {addressElement.name}.
+                                              </Card.Text>
+                                              <Button
+                                                className="m-1"
+                                                variant="primary"
+                                                onClick={() => {
+                                                  deleteBlock(
+                                                    addressElement.postalcode
+                                                  );
+                                                  onClose();
+                                                }}
+                                              >
+                                                Yes, Delete It.
+                                              </Button>
+                                              <Button
+                                                className="ms-2"
+                                                variant="primary"
+                                                onClick={() => {
+                                                  onClose();
+                                                }}
+                                              >
+                                                No
+                                              </Button>
+                                            </Card.Body>
+                                          </Card>
+                                        </Container>
+                                      );
+                                    }
+                                  })
+                                }
+                              >
+                                Delete
+                              </Dropdown.Item>
+                            </Dropdown.Menu>
+                          </Dropdown>
                         </ComponentAuthorizer>
                       </Container>
                     </Navbar>
