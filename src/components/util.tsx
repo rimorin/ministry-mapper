@@ -44,6 +44,7 @@ const errorHandler = (error: any, rollbar: Rollbar, showAlert = true) => {
   }
 };
 
+//STILL_NOT_HOME not longer in use.
 const STATUS_CODES = {
   DEFAULT: "-1",
   DONE: "1",
