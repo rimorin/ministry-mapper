@@ -346,6 +346,25 @@ function Admin({ user }: adminProps) {
     }
   };
 
+  const resetTerritory = async () => {
+    if (!selectedTerritoryCode) return;
+    try {
+      const addressesSnapshot = await getTerritoryAddress(
+        selectedTerritoryCode
+      );
+      if (addressesSnapshot.exists()) {
+        const addressData = addressesSnapshot.val();
+        for (const addkey in addressData) {
+          const postalcode = addressData[addkey];
+          await resetBlock(postalcode);
+        }
+      }
+      alert(`Reset status of territory, ${selectedTerritoryCode}.`);
+    } catch (error) {
+      errorHandler(error, rollbar);
+    }
+  };
+
   const resetBlock = async (postalcode: String) => {
     const blockAddresses = addresses.get(postalcode);
     if (!blockAddresses) return;
@@ -1145,6 +1164,53 @@ function Admin({ user }: adminProps) {
                         }}
                       >
                         Edit Current Name
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        onClick={() =>
+                          confirmAlert({
+                            customUI: ({ onClose }) => {
+                              return (
+                                <Container>
+                                  <Card bg="warning" className="text-center">
+                                    <Card.Header>Warning ⚠️</Card.Header>
+                                    <Card.Body>
+                                      <Card.Title>
+                                        Are You Very Sure ?
+                                      </Card.Title>
+                                      <Card.Text>
+                                        This action will reset the status of all
+                                        addresses in the territory,{" "}
+                                        {selectedTerritoryCode} -{" "}
+                                        {selectedTerritoryName}.
+                                      </Card.Text>
+                                      <Button
+                                        className="m-1"
+                                        variant="primary"
+                                        onClick={() => {
+                                          resetTerritory();
+                                          onClose();
+                                        }}
+                                      >
+                                        Yes, Reset them.
+                                      </Button>
+                                      <Button
+                                        className="ms-2"
+                                        variant="primary"
+                                        onClick={() => {
+                                          onClose();
+                                        }}
+                                      >
+                                        No
+                                      </Button>
+                                    </Card.Body>
+                                  </Card>
+                                </Container>
+                              );
+                            }
+                          })
+                        }
+                      >
+                        Reset status
                       </Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
