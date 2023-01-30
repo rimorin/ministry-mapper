@@ -23,13 +23,6 @@ const UnitStatus = (props: unitProps) => {
     status = "🚫 ";
   }
 
-  if (
-    currentStatus === STATUS_CODES.STILL_NOT_HOME ||
-    currentStatus === STATUS_CODES.NOT_HOME
-  ) {
-    status = "📬";
-  }
-
   return (
     <>
       {currentStatus !== STATUS_CODES.NOT_HOME && <>{status}</>}

@@ -346,6 +346,25 @@ function Admin({ user }: adminProps) {
     }
   };
 
+  const resetTerritory = async () => {
+    if (!selectedTerritoryCode) return;
+    try {
+      const addressesSnapshot = await getTerritoryAddress(
+        selectedTerritoryCode
+      );
+      if (addressesSnapshot.exists()) {
+        const addressData = addressesSnapshot.val();
+        for (const addkey in addressData) {
+          const postalcode = addressData[addkey];
+          await resetBlock(postalcode);
+        }
+      }
+      alert(`Reset status of territory, ${selectedTerritoryCode}.`);
+    } catch (error) {
+      errorHandler(error, rollbar);
+    }
+  };
+
   const resetBlock = async (postalcode: String) => {
     const blockAddresses = addresses.get(postalcode);
     if (!blockAddresses) return;
@@ -353,28 +372,17 @@ function Admin({ user }: adminProps) {
     for (const index in blockAddresses.floors) {
       const floorDetails = blockAddresses.floors[index];
       floorDetails.units.forEach((element) => {
+        const unitPath = `/${postalcode}/units/${floorDetails.floor}/${element.number}`;
         let currentStatus = element.status;
         if (MUTABLE_CODES.includes(`${currentStatus}`)) {
           currentStatus = STATUS_CODES.DEFAULT;
         }
-        unitUpdates[
-          `/${postalcode}/units/${floorDetails.floor}/${element.number}/type`
-        ] = element.type;
-        unitUpdates[
-          `/${postalcode}/units/${floorDetails.floor}/${element.number}/note`
-        ] = element.note;
-        unitUpdates[
-          `/${postalcode}/units/${floorDetails.floor}/${element.number}/status`
-        ] = currentStatus;
-        unitUpdates[
-          `/${postalcode}/units/${floorDetails.floor}/${element.number}/nhcount`
-        ] = NOT_HOME_STATUS_CODES.DEFAULT;
-        unitUpdates[
-          `/${postalcode}/units/${floorDetails.floor}/${element.number}/languages`
-        ] = element.languages;
-        unitUpdates[
-          `/${postalcode}/units/${floorDetails.floor}/${element.number}/dnctime`
-        ] = element.dnctime;
+        unitUpdates[`${unitPath}/type`] = element.type;
+        unitUpdates[`${unitPath}/note`] = element.note;
+        unitUpdates[`${unitPath}/status`] = currentStatus;
+        unitUpdates[`${unitPath}/nhcount`] = NOT_HOME_STATUS_CODES.DEFAULT;
+        unitUpdates[`${unitPath}/languages`] = element.languages;
+        unitUpdates[`${unitPath}/dnctime`] = element.dnctime;
       });
     }
     try {
@@ -493,13 +501,13 @@ function Admin({ user }: adminProps) {
     link.tokenEndtime = addHours(hours);
     link.postalCode = postalcode as string;
     link.linkType = linktype;
-    let p = policy;
-    if (p === undefined) {
-      p = new LanguagePolicy();
+    let currentPolicy = policy;
+    if (currentPolicy === undefined) {
+      currentPolicy = new LanguagePolicy();
       console.log("policy not loaded in time");
     }
-    link.homeLanguage = p.getHomeLanguage();
-    link.maxTries = p.getMaxTries();
+    link.homeLanguage = currentPolicy.getHomeLanguage();
+    link.maxTries = currentPolicy.getMaxTries();
     return pollingFunction(async () => {
       await set(ref(database, `links/${addressLinkId}`), link);
       await triggerPostalCodeListeners(link.postalCode);
@@ -1156,6 +1164,53 @@ function Admin({ user }: adminProps) {
                         }}
                       >
                         Edit Current Name
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        onClick={() =>
+                          confirmAlert({
+                            customUI: ({ onClose }) => {
+                              return (
+                                <Container>
+                                  <Card bg="warning" className="text-center">
+                                    <Card.Header>Warning ⚠️</Card.Header>
+                                    <Card.Body>
+                                      <Card.Title>
+                                        Are You Very Sure ?
+                                      </Card.Title>
+                                      <Card.Text>
+                                        This action will reset the status of all
+                                        addresses in the territory,{" "}
+                                        {selectedTerritoryCode} -{" "}
+                                        {selectedTerritoryName}.
+                                      </Card.Text>
+                                      <Button
+                                        className="m-1"
+                                        variant="primary"
+                                        onClick={() => {
+                                          resetTerritory();
+                                          onClose();
+                                        }}
+                                      >
+                                        Yes, Reset them.
+                                      </Button>
+                                      <Button
+                                        className="ms-2"
+                                        variant="primary"
+                                        onClick={() => {
+                                          onClose();
+                                        }}
+                                      >
+                                        No
+                                      </Button>
+                                    </Card.Body>
+                                  </Card>
+                                </Container>
+                              );
+                            }
+                          })
+                        }
+                      >
+                        Reset status
                       </Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
