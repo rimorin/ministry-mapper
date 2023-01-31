@@ -956,6 +956,31 @@ function Admin({ user }: adminProps) {
     }
   };
 
+  const getTerritoryAddressData = (
+    adds: Map<String, addressDetails>,
+    policy: Policy
+  ) => {
+    let unitLengths = new Map();
+    let completedPercents = new Map();
+    let totalPercent = 0;
+
+    adds.forEach((address, _) => {
+      const postalCode = address.postalcode;
+      const maxUnitNumberLength = getMaxUnitLength(address.floors);
+      const completedPercent = getCompletedPercent(policy, address.floors);
+      unitLengths.set(postalCode, maxUnitNumberLength);
+      completedPercents.set(postalCode, completedPercent);
+      totalPercent += completedPercent.completedValue;
+    });
+
+    return {
+      aggregate: `${Math.round((totalPercent / (100 * adds.size)) * 100)}%`,
+      lengths: unitLengths,
+      percents: completedPercents,
+      listing: Array.from(addresses.values())
+    };
+  };
+
   useEffect(() => {
     getUserAccessLevel(user, code).then((userAccessLevel) => {
       if (!userAccessLevel) {
@@ -1031,8 +1056,10 @@ function Admin({ user }: adminProps) {
 
   if (isLoading) return <Loader />;
   if (isUnauthorised) return <UnauthorizedPage />;
-
-  const territoryAddresses = Array.from(addresses.values());
+  const territryAddressData = getTerritoryAddressData(
+    addresses,
+    policy as Policy
+  );
   const congregationTerritoryList = Array.from(territories.values());
   const isAdmin = userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT;
   const isReadonly = userAccessLevel === USER_ACCESS_LEVELS.READ_ONLY;
@@ -1066,9 +1093,20 @@ function Admin({ user }: adminProps) {
                     variant="outline-primary"
                     onClick={toggleTerritoryListing}
                   >
-                    {selectedTerritory
-                      ? `${selectedTerritory}`
-                      : "Select Territory"}
+                    {selectedTerritory ? (
+                      <>
+                        <Badge
+                          pill
+                          bg="secondary"
+                          style={{ marginRight: "0.25rem" }}
+                        >
+                          {territryAddressData.aggregate}
+                        </Badge>
+                        {selectedTerritory}
+                      </>
+                    ) : (
+                      "Select Territory"
+                    )}
                   </Button>
                 )}
               {!selectedTerritory && (
@@ -1299,24 +1337,25 @@ function Admin({ user }: adminProps) {
           alwaysOpen={!isReadonly}
           flush
         >
-          {territoryAddresses.map((addressElement) => {
-            const maxUnitNumberLength = getMaxUnitLength(addressElement.floors);
-            const completedPercent = getCompletedPercent(
-              policy as Policy,
-              addressElement.floors
-            );
+          {territryAddressData.listing.map((addressElement) => {
+            const currentPostalcode = addressElement.postalcode;
+            const currentPostalname = addressElement.name;
+            const maxUnitNumberLength =
+              territryAddressData.lengths.get(currentPostalcode);
+            const completedPercent =
+              territryAddressData.percents.get(currentPostalcode);
             const addressLinkId = nanoid();
             const zipcode =
               addressElement.x_zip == null
-                ? addressElement.postalcode
+                ? currentPostalcode
                 : addressElement.x_zip;
             return (
               <Accordion.Item
-                key={`accordion-${addressElement.postalcode}`}
-                eventKey={`${addressElement.postalcode}`}
+                key={`accordion-${currentPostalcode}`}
+                eventKey={`${currentPostalcode}`}
               >
                 <Accordion.Header>
-                  <span className="fluid-branding">{addressElement.name}</span>
+                  <span className="fluid-branding">{currentPostalname}</span>
                 </Accordion.Header>
                 <Accordion.Body className="p-0">
                   <ProgressBar
@@ -1324,11 +1363,11 @@ function Admin({ user }: adminProps) {
                     now={completedPercent.completedValue}
                     label={completedPercent.completedDisplay}
                   />
-                  <div key={`div-${addressElement.postalcode}`}>
+                  <div key={`div-${currentPostalcode}`}>
                     <Navbar
                       bg="light"
                       expand="lg"
-                      key={`navbar-${addressElement.postalcode}`}
+                      key={`navbar-${currentPostalcode}`}
                     >
                       <Container fluid className="justify-content-end">
                         <ComponentAuthorizer
@@ -1338,14 +1377,13 @@ function Admin({ user }: adminProps) {
                           userPermission={userAccessLevel}
                         >
                           <DropdownButton
-                            key={`assigndrop-${addressElement.postalcode}`}
+                            key={`assigndrop-${currentPostalcode}`}
                             size="sm"
                             variant="outline-primary"
                             title={
                               <>
                                 {isSettingPersonalLink &&
-                                  selectedPostal ===
-                                    addressElement.postalcode && (
+                                  selectedPostal === currentPostalcode && (
                                     <>
                                       <Spinner
                                         as="span"
@@ -1372,8 +1410,8 @@ function Admin({ user }: adminProps) {
                                 if (isSpecialDevice) {
                                   specialShareTimedLink(
                                     LINK_TYPES.PERSONAL,
-                                    addressElement.postalcode,
-                                    addressElement.name,
+                                    currentPostalcode,
+                                    currentPostalname,
                                     addressLinkId,
                                     ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS
                                   );
@@ -1381,11 +1419,11 @@ function Admin({ user }: adminProps) {
                                 }
                                 shareTimedLink(
                                   LINK_TYPES.PERSONAL,
-                                  addressElement.postalcode,
+                                  currentPostalcode,
                                   addressLinkId,
-                                  `Units for ${addressElement.name}`,
-                                  assignmentMessage(addressElement.name),
-                                  `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`,
+                                  `Units for ${currentPostalname}`,
+                                  assignmentMessage(currentPostalname),
+                                  `${domain}/${currentPostalcode}/${code}/${addressLinkId}`,
                                   ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS
                                 );
                               }}
@@ -1397,8 +1435,8 @@ function Admin({ user }: adminProps) {
                                 if (isSpecialDevice) {
                                   specialShareTimedLink(
                                     LINK_TYPES.PERSONAL,
-                                    addressElement.postalcode,
-                                    addressElement.name,
+                                    currentPostalcode,
+                                    currentPostalname,
                                     addressLinkId,
                                     FOUR_WKS_PERSONAL_SLIP_DESTRUCT_HOURS
                                   );
@@ -1406,11 +1444,11 @@ function Admin({ user }: adminProps) {
                                 }
                                 shareTimedLink(
                                   LINK_TYPES.PERSONAL,
-                                  addressElement.postalcode,
+                                  currentPostalcode,
                                   addressLinkId,
-                                  `Units for ${addressElement.name}`,
-                                  assignmentMessage(addressElement.name),
-                                  `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`,
+                                  `Units for ${currentPostalname}`,
+                                  assignmentMessage(currentPostalname),
+                                  `${domain}/${currentPostalcode}/${code}/${addressLinkId}`,
                                   FOUR_WKS_PERSONAL_SLIP_DESTRUCT_HOURS
                                 );
                               }}
@@ -1432,25 +1470,24 @@ function Admin({ user }: adminProps) {
                                 if (isSpecialDevice) {
                                   specialShareTimedLink(
                                     LINK_TYPES.ASSIGNMENT,
-                                    addressElement.postalcode,
-                                    addressElement.name,
+                                    currentPostalcode,
+                                    currentPostalname,
                                     addressLinkId
                                   );
                                   return;
                                 }
                                 shareTimedLink(
                                   LINK_TYPES.ASSIGNMENT,
-                                  addressElement.postalcode,
+                                  currentPostalcode,
                                   addressLinkId,
-                                  `Units for ${addressElement.name}`,
-                                  assignmentMessage(addressElement.name),
-                                  `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`
+                                  `Units for ${currentPostalname}`,
+                                  assignmentMessage(currentPostalname),
+                                  `${domain}/${currentPostalcode}/${code}/${addressLinkId}`
                                 );
                               }}
                             >
                               {isSettingAssignLink &&
-                                selectedPostal ===
-                                  addressElement.postalcode && (
+                                selectedPostal === currentPostalcode && (
                                   <>
                                     <Spinner
                                       as="span"
@@ -1484,10 +1521,10 @@ function Admin({ user }: adminProps) {
                                   }
                                   await setTimedLink(
                                     LINK_TYPES.VIEW,
-                                    addressElement.postalcode,
+                                    currentPostalcode,
                                     addressLinkId
                                   );
-                                  territoryWindow!.location.href = `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`;
+                                  territoryWindow!.location.href = `${domain}/${currentPostalcode}/${code}/${addressLinkId}`;
                                 } catch (error) {
                                   errorHandler(error, rollbar);
                                 } finally {
@@ -1529,7 +1566,7 @@ function Admin({ user }: adminProps) {
                           onClick={(event) => {
                             handleClickFeedback(
                               event,
-                              addressElement.postalcode,
+                              currentPostalcode,
                               addressElement.feedback
                             );
                           }}
@@ -1561,8 +1598,8 @@ function Admin({ user }: adminProps) {
                               <Dropdown.Item
                                 onClick={() => {
                                   handleClickChangeAddressName(
-                                    addressElement.postalcode,
-                                    addressElement.name
+                                    currentPostalcode,
+                                    currentPostalname
                                   );
                                 }}
                               >
@@ -1571,7 +1608,7 @@ function Admin({ user }: adminProps) {
                               <Dropdown.Item
                                 onClick={() => {
                                   handleClickAddUnit(
-                                    addressElement.postalcode,
+                                    currentPostalcode,
                                     addressElement.floors.length
                                   );
                                 }}
@@ -1580,17 +1617,14 @@ function Admin({ user }: adminProps) {
                               </Dropdown.Item>
                               <Dropdown.Item
                                 onClick={() => {
-                                  addFloorToBlock(addressElement.postalcode);
+                                  addFloorToBlock(currentPostalcode);
                                 }}
                               >
                                 Add Higher Floor
                               </Dropdown.Item>
                               <Dropdown.Item
                                 onClick={() => {
-                                  addFloorToBlock(
-                                    addressElement.postalcode,
-                                    true
-                                  );
+                                  addFloorToBlock(currentPostalcode, true);
                                 }}
                               >
                                 Add Lower Floor
@@ -1614,15 +1648,13 @@ function Admin({ user }: adminProps) {
                                               </Card.Title>
                                               <Card.Text>
                                                 This action will reset all unit
-                                                status of {addressElement.name}.
+                                                status of {currentPostalname}.
                                               </Card.Text>
                                               <Button
                                                 className="m-1"
                                                 variant="primary"
                                                 onClick={() => {
-                                                  resetBlock(
-                                                    addressElement.postalcode
-                                                  );
+                                                  resetBlock(currentPostalcode);
                                                   onClose();
                                                 }}
                                               >
@@ -1666,14 +1698,14 @@ function Admin({ user }: adminProps) {
                                               </Card.Title>
                                               <Card.Text>
                                                 The action will completely
-                                                delete, {addressElement.name}.
+                                                delete, {currentPostalname}.
                                               </Card.Text>
                                               <Button
                                                 className="m-1"
                                                 variant="primary"
                                                 onClick={() => {
                                                   deleteBlock(
-                                                    addressElement.postalcode
+                                                    currentPostalcode
                                                   );
                                                   onClose();
                                                 }}
@@ -1705,7 +1737,7 @@ function Admin({ user }: adminProps) {
                       </Container>
                     </Navbar>
                     <Table
-                      key={`table-${addressElement.postalcode}`}
+                      key={`table-${currentPostalcode}`}
                       bordered
                       striped
                       hover
@@ -1733,7 +1765,7 @@ function Admin({ user }: adminProps) {
                                     onClick={() => {
                                       if (!isAdmin) return;
                                       handleClickUpdateUnit(
-                                        addressElement.postalcode,
+                                        currentPostalcode,
                                         addressElement.floors[0].units.length,
                                         item.sequence,
                                         item.number,
@@ -1748,7 +1780,7 @@ function Admin({ user }: adminProps) {
                             )}
                         </tr>
                       </thead>
-                      <tbody key={`tbody-${addressElement.postalcode}`}>
+                      <tbody key={`tbody-${currentPostalcode}`}>
                         {addressElement.floors &&
                           addressElement.floors.map(
                             (floorElement, floorIndex) => (
@@ -1795,18 +1827,14 @@ function Admin({ user }: adminProps) {
                                                     <Card.Text>
                                                       This action will delete
                                                       floor {floorElement.floor}{" "}
-                                                      of{" "}
-                                                      {
-                                                        addressElement.postalcode
-                                                      }
-                                                      .
+                                                      of {currentPostalcode}.
                                                     </Card.Text>
                                                     <Button
                                                       className="m-1"
                                                       variant="primary"
                                                       onClick={() => {
                                                         deleteBlockFloor(
-                                                          addressElement.postalcode,
+                                                          currentPostalcode,
                                                           floorElement.floor
                                                         );
                                                         onClose();
@@ -1851,7 +1879,7 @@ function Admin({ user }: adminProps) {
                                       onClick={(event) =>
                                         handleClickModal(
                                           event,
-                                          addressElement.postalcode,
+                                          currentPostalcode,
                                           floorElement.floor,
                                           detailsElement.number,
                                           detailsElement.type,
