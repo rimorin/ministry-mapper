@@ -84,7 +84,8 @@ import {
   ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS,
   EnvironmentIndicator,
   UA_DEVICE_MAKES,
-  UNSUPPORTED_BROWSER_MSG
+  UNSUPPORTED_BROWSER_MSG,
+  AggregationBadge
 } from "./util";
 import { useParams } from "react-router-dom";
 import {
@@ -140,10 +141,15 @@ function Admin({ user }: adminProps) {
   const [territories, setTerritories] = useState(
     new Map<String, territoryDetails>()
   );
+  const [sortedAddressList, setSortedAddressList] = useState<
+    Array<territoryDetails>
+  >([]);
   const [selectedTerritory, setSelectedTerritory] = useState<String>();
   const [selectedTerritoryCode, setSelectedTerritoryCode] = useState<String>();
   const [selectedTerritoryName, setSelectedTerritoryName] = useState<String>();
-  const [addresses, setAddresses] = useState(new Map<String, addressDetails>());
+  const [addressData, setAddressData] = useState(
+    new Map<String, addressDetails>()
+  );
   const [accordingKeys, setAccordionKeys] = useState<Array<string>>([]);
   const [policy, setPolicy] = useState<Policy>();
   const [userAccessLevel, setUserAccessLevel] = useState<number>();
@@ -155,7 +161,7 @@ function Admin({ user }: adminProps) {
     unsubscribers.forEach((unsubFunction) => {
       unsubFunction();
     });
-    setAddresses(new Map<String, addressDetails>());
+    setAddressData(new Map<String, addressDetails>());
   };
 
   const clearAdminState = () => {
@@ -187,6 +193,7 @@ function Admin({ user }: adminProps) {
     );
 
     if (!territoryNameResult.exists()) return;
+    if (!territoryAddsResult.exists()) return;
     const territoryName = territoryNameResult.val();
     setSelectedTerritory(`${selectedTerritoryCode} - ${territoryName}`);
     setSelectedTerritoryCode(selectedTerritoryCode);
@@ -194,32 +201,38 @@ function Admin({ user }: adminProps) {
     // detach unsub listeners first then clear
     refreshAddressState();
     unsubscribers = [] as Array<Unsubscribe>;
-    let postalCodeListing = [] as Array<string>;
+    let detailsListing = [] as Array<territoryDetails>;
     territoryAddsResult.forEach((addElement: any) => {
-      postalCodeListing.push(addElement.val());
+      detailsListing.push({
+        code: addElement.val(),
+        name: "",
+        addresses: ""
+      });
       return false;
     });
-    for (const postalCode of postalCodeListing) {
-      setAccordionKeys((existingKeys) => [...existingKeys, postalCode]);
+    setSortedAddressList(detailsListing);
+    for (const details of detailsListing) {
+      const postalCode = details.code;
+      setAccordionKeys((existingKeys) => [...existingKeys, `${postalCode}`]);
       unsubscribers.push(
         onValue(child(ref(database), `/${postalCode}`), async (snapshot) => {
           if (snapshot.exists()) {
-            const territoryData = snapshot.val();
+            const postalSnapshot = snapshot.val();
             const floorData = await processAddressData(
               postalCode,
-              territoryData.units
+              postalSnapshot.units
             );
             const counts = await processLinkCounts(postalCode);
             const addressData = {
               assigneeCount: counts.assigneeCount,
               personalCount: counts.personalCount,
-              x_zip: territoryData.x_zip,
-              name: territoryData.name,
+              x_zip: postalSnapshot.x_zip,
+              name: postalSnapshot.name,
               postalcode: postalCode,
               floors: floorData,
-              feedback: territoryData.feedback
+              feedback: postalSnapshot.feedback
             };
-            setAddresses(
+            setAddressData(
               (existingAddresses) =>
                 new Map<String, addressDetails>(
                   existingAddresses.set(postalCode, addressData)
@@ -312,7 +325,7 @@ function Admin({ user }: adminProps) {
   };
 
   const addFloorToBlock = async (postalcode: String, lowerFloor = false) => {
-    const blockAddresses = addresses.get(postalcode);
+    const blockAddresses = addressData.get(postalcode);
     if (!blockAddresses) return;
     const unitUpdates: unitMaps = {};
     let floorIndex = 0;
@@ -366,7 +379,7 @@ function Admin({ user }: adminProps) {
   };
 
   const resetBlock = async (postalcode: String) => {
-    const blockAddresses = addresses.get(postalcode);
+    const blockAddresses = addressData.get(postalcode);
     if (!blockAddresses) return;
     const unitUpdates: unitMaps = {};
     for (const index in blockAddresses.floors) {
@@ -504,7 +517,6 @@ function Admin({ user }: adminProps) {
     let currentPolicy = policy;
     if (currentPolicy === undefined) {
       currentPolicy = new LanguagePolicy();
-      console.log("policy not loaded in time");
     }
     link.homeLanguage = currentPolicy.getHomeLanguage();
     link.maxTries = currentPolicy.getMaxTries();
@@ -618,7 +630,7 @@ function Admin({ user }: adminProps) {
     unitNumber: String,
     isDelete = false
   ) => {
-    const blockAddresses = addresses.get(`${postalCode}`);
+    const blockAddresses = addressData.get(`${postalCode}`);
     if (!blockAddresses) return;
 
     const unitUpdates: unitMaps = {};
@@ -655,7 +667,7 @@ function Admin({ user }: adminProps) {
     unitNumber: String,
     sequence: number | undefined
   ) => {
-    const blockAddresses = addresses.get(`${postalCode}`);
+    const blockAddresses = addressData.get(`${postalCode}`);
     if (!blockAddresses) return;
 
     const unitUpdates: unitMaps = {};
@@ -957,14 +969,14 @@ function Admin({ user }: adminProps) {
   };
 
   const getTerritoryAddressData = (
-    adds: Map<String, addressDetails>,
+    addresses: Map<String, addressDetails>,
     policy: Policy
   ) => {
     let unitLengths = new Map();
     let completedPercents = new Map();
     let totalPercent = 0;
 
-    adds.forEach((address, _) => {
+    addresses.forEach((address, _) => {
       const postalCode = address.postalcode;
       const maxUnitNumberLength = getMaxUnitLength(address.floors);
       const completedPercent = getCompletedPercent(policy, address.floors);
@@ -973,11 +985,19 @@ function Admin({ user }: adminProps) {
       totalPercent += completedPercent.completedValue;
     });
 
+    let territoryCoverageAggr = Math.round(
+      (totalPercent / (100 * addresses.size)) * 100
+    );
+
+    if (isNaN(territoryCoverageAggr)) {
+      territoryCoverageAggr = 0;
+    }
+
     return {
-      aggregate: `${Math.round((totalPercent / (100 * adds.size)) * 100)}%`,
+      aggregate: territoryCoverageAggr,
       lengths: unitLengths,
       percents: completedPercents,
-      listing: Array.from(addresses.values())
+      data: addresses
     };
   };
 
@@ -1056,8 +1076,9 @@ function Admin({ user }: adminProps) {
 
   if (isLoading) return <Loader />;
   if (isUnauthorised) return <UnauthorizedPage />;
-  const territryAddressData = getTerritoryAddressData(
-    addresses,
+  const isDataCompletelyFetched = addressData.size === sortedAddressList.length;
+  const territoryAddressData = getTerritoryAddressData(
+    addressData,
     policy as Policy
   );
   const congregationTerritoryList = Array.from(territories.values());
@@ -1095,13 +1116,10 @@ function Admin({ user }: adminProps) {
                   >
                     {selectedTerritory ? (
                       <>
-                        <Badge
-                          pill
-                          bg="secondary"
-                          style={{ marginRight: "0.25rem" }}
-                        >
-                          {territryAddressData.aggregate}
-                        </Badge>
+                        <AggregationBadge
+                          isDataFetched={isDataCompletelyFetched}
+                          aggregate={territoryAddressData.aggregate}
+                        />
                         {selectedTerritory}
                       </>
                     ) : (
@@ -1337,13 +1355,18 @@ function Admin({ user }: adminProps) {
           alwaysOpen={!isReadonly}
           flush
         >
-          {territryAddressData.listing.map((addressElement) => {
-            const currentPostalcode = addressElement.postalcode;
+          {sortedAddressList.map((currentAdd) => {
+            const currentPostalcode = currentAdd.code;
+            const addressElement = territoryAddressData.data.get(
+              currentAdd.code
+            );
+
+            if (!addressElement) return <></>;
             const currentPostalname = addressElement.name;
             const maxUnitNumberLength =
-              territryAddressData.lengths.get(currentPostalcode);
+              territoryAddressData.lengths.get(currentPostalcode);
             const completedPercent =
-              territryAddressData.percents.get(currentPostalcode);
+              territoryAddressData.percents.get(currentPostalcode);
             const addressLinkId = nanoid();
             const zipcode =
               addressElement.x_zip == null
