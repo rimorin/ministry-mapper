@@ -18,7 +18,9 @@ import {
   Popover,
   Table,
   Image,
-  ProgressBar
+  ProgressBar,
+  Badge,
+  Spinner
 } from "react-bootstrap";
 import Rollbar from "rollbar";
 import { database } from "../firebase";
@@ -31,7 +33,8 @@ import {
   TerritoryListingProps,
   unitDetails,
   nothomeprops,
-  AuthorizerProp
+  AuthorizerProp,
+  aggregateProp
 } from "./interface";
 import { LinkSession, LinkCounts } from "./policies";
 import Countdown from "react-countdown";
@@ -523,6 +526,23 @@ const getLanguageDisplayByCode = (code: string): string => {
   return display;
 };
 
+const AggregationBadge = ({ aggregate = 0, isDataFetched }: aggregateProp) => {
+  let statusColor = "dark";
+  if (aggregate > 30) statusColor = "secondary";
+  if (aggregate > 90) statusColor = "success";
+  return (
+    <span style={{ marginRight: "0.25rem" }}>
+      {isDataFetched ? (
+        <Badge pill bg={statusColor}>
+          {aggregate}%
+        </Badge>
+      ) : (
+        <Spinner as="span" animation="border" size="sm" aria-hidden="true" />
+      )}
+    </span>
+  );
+};
+
 export {
   getLanguageDisplayByCode,
   ZeroPad,
@@ -546,6 +566,7 @@ export {
   processAddressData,
   ExpiryTimePopover,
   NotHomeIcon,
+  AggregationBadge,
   UA_DEVICE_MAKES,
   UNSUPPORTED_BROWSER_MSG,
   STATUS_CODES,
