@@ -210,11 +210,9 @@ const getCompletedPercent = (policy: Policy, floors: floorDetails[]) => {
   floors.forEach((element) => {
     element.units.forEach((uElement) => {
       const isCountable = policy.isCountable(uElement);
-
+      if (!isCountable) return;
       if (isCountable) totalUnits++;
-      if (policy.isCompleted(uElement)) {
-        completedUnits++;
-      }
+      if (policy.isCompleted(uElement)) completedUnits++;
     });
   });
   const completedValue = Math.round((completedUnits / totalUnits) * 100);
