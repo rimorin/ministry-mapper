@@ -1361,7 +1361,8 @@ function Admin({ user }: adminProps) {
               currentAdd.code
             );
 
-            if (!addressElement) return <></>;
+            if (!addressElement)
+              return <div key={`empty-div-${currentPostalcode}`}></div>;
             const currentPostalname = addressElement.name;
             const maxUnitNumberLength =
               territoryAddressData.lengths.get(currentPostalcode);
