@@ -382,13 +382,12 @@ const Slip = ({
               <HHStatusField
                 handleChange={(toggleValue) => {
                   let dnctime = null;
+                  const statusValue = toggleValue.toString();
                   setIsNotHome(false);
                   setIsDnc(false);
-                  if (toggleValue.toString() === STATUS_CODES.NOT_HOME) {
+                  if (statusValue === STATUS_CODES.NOT_HOME) {
                     setIsNotHome(true);
-                  } else if (
-                    toggleValue.toString() === STATUS_CODES.DO_NOT_CALL
-                  ) {
+                  } else if (statusValue === STATUS_CODES.DO_NOT_CALL) {
                     setIsDnc(true);
                     dnctime = new Date().getTime();
                   }
@@ -396,7 +395,7 @@ const Slip = ({
                     ...values,
                     nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
                     dnctime: dnctime,
-                    status: toggleValue
+                    status: statusValue
                   });
                 }}
                 changeValue={`${(values as valuesDetails).status}`}
@@ -416,7 +415,7 @@ const Slip = ({
                   <HHNotHomeField
                     changeValue={`${(values as valuesDetails).nhcount}`}
                     handleChange={(toggleValue) => {
-                      setValues({ ...values, nhcount: toggleValue });
+                      setValues({ ...values, nhcount: toggleValue.toString() });
                     }}
                   />
                 </div>

@@ -152,3 +152,8 @@ export interface AuthorizerProp {
   userPermission: number | undefined;
   children: React.ReactElement;
 }
+
+export interface aggregateProp {
+  aggregate?: number;
+  isDataFetched?: boolean;
+}

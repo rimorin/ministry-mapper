@@ -84,7 +84,8 @@ import {
   ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS,
   EnvironmentIndicator,
   UA_DEVICE_MAKES,
-  UNSUPPORTED_BROWSER_MSG
+  UNSUPPORTED_BROWSER_MSG,
+  AggregationBadge
 } from "./util";
 import { useParams } from "react-router-dom";
 import {
@@ -140,10 +141,15 @@ function Admin({ user }: adminProps) {
   const [territories, setTerritories] = useState(
     new Map<String, territoryDetails>()
   );
+  const [sortedAddressList, setSortedAddressList] = useState<
+    Array<territoryDetails>
+  >([]);
   const [selectedTerritory, setSelectedTerritory] = useState<String>();
   const [selectedTerritoryCode, setSelectedTerritoryCode] = useState<String>();
   const [selectedTerritoryName, setSelectedTerritoryName] = useState<String>();
-  const [addresses, setAddresses] = useState(new Map<String, addressDetails>());
+  const [addressData, setAddressData] = useState(
+    new Map<String, addressDetails>()
+  );
   const [accordingKeys, setAccordionKeys] = useState<Array<string>>([]);
   const [policy, setPolicy] = useState<Policy>();
   const [userAccessLevel, setUserAccessLevel] = useState<number>();
@@ -155,7 +161,7 @@ function Admin({ user }: adminProps) {
     unsubscribers.forEach((unsubFunction) => {
       unsubFunction();
     });
-    setAddresses(new Map<String, addressDetails>());
+    setAddressData(new Map<String, addressDetails>());
   };
 
   const clearAdminState = () => {
@@ -187,6 +193,7 @@ function Admin({ user }: adminProps) {
     );
 
     if (!territoryNameResult.exists()) return;
+    if (!territoryAddsResult.exists()) return;
     const territoryName = territoryNameResult.val();
     setSelectedTerritory(`${selectedTerritoryCode} - ${territoryName}`);
     setSelectedTerritoryCode(selectedTerritoryCode);
@@ -194,32 +201,38 @@ function Admin({ user }: adminProps) {
     // detach unsub listeners first then clear
     refreshAddressState();
     unsubscribers = [] as Array<Unsubscribe>;
-    let postalCodeListing = [] as Array<string>;
+    let detailsListing = [] as Array<territoryDetails>;
     territoryAddsResult.forEach((addElement: any) => {
-      postalCodeListing.push(addElement.val());
+      detailsListing.push({
+        code: addElement.val(),
+        name: "",
+        addresses: ""
+      });
       return false;
     });
-    for (const postalCode of postalCodeListing) {
-      setAccordionKeys((existingKeys) => [...existingKeys, postalCode]);
+    setSortedAddressList(detailsListing);
+    for (const details of detailsListing) {
+      const postalCode = details.code;
+      setAccordionKeys((existingKeys) => [...existingKeys, `${postalCode}`]);
       unsubscribers.push(
         onValue(child(ref(database), `/${postalCode}`), async (snapshot) => {
           if (snapshot.exists()) {
-            const territoryData = snapshot.val();
+            const postalSnapshot = snapshot.val();
             const floorData = await processAddressData(
               postalCode,
-              territoryData.units
+              postalSnapshot.units
             );
             const counts = await processLinkCounts(postalCode);
             const addressData = {
               assigneeCount: counts.assigneeCount,
               personalCount: counts.personalCount,
-              x_zip: territoryData.x_zip,
-              name: territoryData.name,
+              x_zip: postalSnapshot.x_zip,
+              name: postalSnapshot.name,
               postalcode: postalCode,
               floors: floorData,
-              feedback: territoryData.feedback
+              feedback: postalSnapshot.feedback
             };
-            setAddresses(
+            setAddressData(
               (existingAddresses) =>
                 new Map<String, addressDetails>(
                   existingAddresses.set(postalCode, addressData)
@@ -312,7 +325,7 @@ function Admin({ user }: adminProps) {
   };
 
   const addFloorToBlock = async (postalcode: String, lowerFloor = false) => {
-    const blockAddresses = addresses.get(postalcode);
+    const blockAddresses = addressData.get(postalcode);
     if (!blockAddresses) return;
     const unitUpdates: unitMaps = {};
     let floorIndex = 0;
@@ -366,7 +379,7 @@ function Admin({ user }: adminProps) {
   };
 
   const resetBlock = async (postalcode: String) => {
-    const blockAddresses = addresses.get(postalcode);
+    const blockAddresses = addressData.get(postalcode);
     if (!blockAddresses) return;
     const unitUpdates: unitMaps = {};
     for (const index in blockAddresses.floors) {
@@ -504,7 +517,6 @@ function Admin({ user }: adminProps) {
     let currentPolicy = policy;
     if (currentPolicy === undefined) {
       currentPolicy = new LanguagePolicy();
-      console.log("policy not loaded in time");
     }
     link.homeLanguage = currentPolicy.getHomeLanguage();
     link.maxTries = currentPolicy.getMaxTries();
@@ -618,7 +630,7 @@ function Admin({ user }: adminProps) {
     unitNumber: String,
     isDelete = false
   ) => {
-    const blockAddresses = addresses.get(`${postalCode}`);
+    const blockAddresses = addressData.get(`${postalCode}`);
     if (!blockAddresses) return;
 
     const unitUpdates: unitMaps = {};
@@ -655,7 +667,7 @@ function Admin({ user }: adminProps) {
     unitNumber: String,
     sequence: number | undefined
   ) => {
-    const blockAddresses = addresses.get(`${postalCode}`);
+    const blockAddresses = addressData.get(`${postalCode}`);
     if (!blockAddresses) return;
 
     const unitUpdates: unitMaps = {};
@@ -956,6 +968,39 @@ function Admin({ user }: adminProps) {
     }
   };
 
+  const getTerritoryAddressData = (
+    addresses: Map<String, addressDetails>,
+    policy: Policy
+  ) => {
+    let unitLengths = new Map();
+    let completedPercents = new Map();
+    let totalPercent = 0;
+
+    addresses.forEach((address, _) => {
+      const postalCode = address.postalcode;
+      const maxUnitNumberLength = getMaxUnitLength(address.floors);
+      const completedPercent = getCompletedPercent(policy, address.floors);
+      unitLengths.set(postalCode, maxUnitNumberLength);
+      completedPercents.set(postalCode, completedPercent);
+      totalPercent += completedPercent.completedValue;
+    });
+
+    let territoryCoverageAggr = Math.round(
+      (totalPercent / (100 * addresses.size)) * 100
+    );
+
+    if (isNaN(territoryCoverageAggr)) {
+      territoryCoverageAggr = 0;
+    }
+
+    return {
+      aggregate: territoryCoverageAggr,
+      lengths: unitLengths,
+      percents: completedPercents,
+      data: addresses
+    };
+  };
+
   useEffect(() => {
     getUserAccessLevel(user, code).then((userAccessLevel) => {
       if (!userAccessLevel) {
@@ -1031,8 +1076,11 @@ function Admin({ user }: adminProps) {
 
   if (isLoading) return <Loader />;
   if (isUnauthorised) return <UnauthorizedPage />;
-
-  const territoryAddresses = Array.from(addresses.values());
+  const isDataCompletelyFetched = addressData.size === sortedAddressList.length;
+  const territoryAddressData = getTerritoryAddressData(
+    addressData,
+    policy as Policy
+  );
   const congregationTerritoryList = Array.from(territories.values());
   const isAdmin = userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT;
   const isReadonly = userAccessLevel === USER_ACCESS_LEVELS.READ_ONLY;
@@ -1066,9 +1114,17 @@ function Admin({ user }: adminProps) {
                     variant="outline-primary"
                     onClick={toggleTerritoryListing}
                   >
-                    {selectedTerritory
-                      ? `${selectedTerritory}`
-                      : "Select Territory"}
+                    {selectedTerritory ? (
+                      <>
+                        <AggregationBadge
+                          isDataFetched={isDataCompletelyFetched}
+                          aggregate={territoryAddressData.aggregate}
+                        />
+                        {selectedTerritory}
+                      </>
+                    ) : (
+                      "Select Territory"
+                    )}
                   </Button>
                 )}
               {!selectedTerritory && (
@@ -1299,24 +1355,31 @@ function Admin({ user }: adminProps) {
           alwaysOpen={!isReadonly}
           flush
         >
-          {territoryAddresses.map((addressElement) => {
-            const maxUnitNumberLength = getMaxUnitLength(addressElement.floors);
-            const completedPercent = getCompletedPercent(
-              policy as Policy,
-              addressElement.floors
+          {sortedAddressList.map((currentAdd) => {
+            const currentPostalcode = currentAdd.code;
+            const addressElement = territoryAddressData.data.get(
+              currentAdd.code
             );
+
+            if (!addressElement)
+              return <div key={`empty-div-${currentPostalcode}`}></div>;
+            const currentPostalname = addressElement.name;
+            const maxUnitNumberLength =
+              territoryAddressData.lengths.get(currentPostalcode);
+            const completedPercent =
+              territoryAddressData.percents.get(currentPostalcode);
             const addressLinkId = nanoid();
             const zipcode =
               addressElement.x_zip == null
-                ? addressElement.postalcode
+                ? currentPostalcode
                 : addressElement.x_zip;
             return (
               <Accordion.Item
-                key={`accordion-${addressElement.postalcode}`}
-                eventKey={`${addressElement.postalcode}`}
+                key={`accordion-${currentPostalcode}`}
+                eventKey={`${currentPostalcode}`}
               >
                 <Accordion.Header>
-                  <span className="fluid-branding">{addressElement.name}</span>
+                  <span className="fluid-branding">{currentPostalname}</span>
                 </Accordion.Header>
                 <Accordion.Body className="p-0">
                   <ProgressBar
@@ -1324,11 +1387,11 @@ function Admin({ user }: adminProps) {
                     now={completedPercent.completedValue}
                     label={completedPercent.completedDisplay}
                   />
-                  <div key={`div-${addressElement.postalcode}`}>
+                  <div key={`div-${currentPostalcode}`}>
                     <Navbar
                       bg="light"
                       expand="lg"
-                      key={`navbar-${addressElement.postalcode}`}
+                      key={`navbar-${currentPostalcode}`}
                     >
                       <Container fluid className="justify-content-end">
                         <ComponentAuthorizer
@@ -1338,14 +1401,13 @@ function Admin({ user }: adminProps) {
                           userPermission={userAccessLevel}
                         >
                           <DropdownButton
-                            key={`assigndrop-${addressElement.postalcode}`}
+                            key={`assigndrop-${currentPostalcode}`}
                             size="sm"
                             variant="outline-primary"
                             title={
                               <>
                                 {isSettingPersonalLink &&
-                                  selectedPostal ===
-                                    addressElement.postalcode && (
+                                  selectedPostal === currentPostalcode && (
                                     <>
                                       <Spinner
                                         as="span"
@@ -1372,8 +1434,8 @@ function Admin({ user }: adminProps) {
                                 if (isSpecialDevice) {
                                   specialShareTimedLink(
                                     LINK_TYPES.PERSONAL,
-                                    addressElement.postalcode,
-                                    addressElement.name,
+                                    currentPostalcode,
+                                    currentPostalname,
                                     addressLinkId,
                                     ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS
                                   );
@@ -1381,11 +1443,11 @@ function Admin({ user }: adminProps) {
                                 }
                                 shareTimedLink(
                                   LINK_TYPES.PERSONAL,
-                                  addressElement.postalcode,
+                                  currentPostalcode,
                                   addressLinkId,
-                                  `Units for ${addressElement.name}`,
-                                  assignmentMessage(addressElement.name),
-                                  `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`,
+                                  `Units for ${currentPostalname}`,
+                                  assignmentMessage(currentPostalname),
+                                  `${domain}/${currentPostalcode}/${code}/${addressLinkId}`,
                                   ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS
                                 );
                               }}
@@ -1397,8 +1459,8 @@ function Admin({ user }: adminProps) {
                                 if (isSpecialDevice) {
                                   specialShareTimedLink(
                                     LINK_TYPES.PERSONAL,
-                                    addressElement.postalcode,
-                                    addressElement.name,
+                                    currentPostalcode,
+                                    currentPostalname,
                                     addressLinkId,
                                     FOUR_WKS_PERSONAL_SLIP_DESTRUCT_HOURS
                                   );
@@ -1406,11 +1468,11 @@ function Admin({ user }: adminProps) {
                                 }
                                 shareTimedLink(
                                   LINK_TYPES.PERSONAL,
-                                  addressElement.postalcode,
+                                  currentPostalcode,
                                   addressLinkId,
-                                  `Units for ${addressElement.name}`,
-                                  assignmentMessage(addressElement.name),
-                                  `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`,
+                                  `Units for ${currentPostalname}`,
+                                  assignmentMessage(currentPostalname),
+                                  `${domain}/${currentPostalcode}/${code}/${addressLinkId}`,
                                   FOUR_WKS_PERSONAL_SLIP_DESTRUCT_HOURS
                                 );
                               }}
@@ -1432,25 +1494,24 @@ function Admin({ user }: adminProps) {
                                 if (isSpecialDevice) {
                                   specialShareTimedLink(
                                     LINK_TYPES.ASSIGNMENT,
-                                    addressElement.postalcode,
-                                    addressElement.name,
+                                    currentPostalcode,
+                                    currentPostalname,
                                     addressLinkId
                                   );
                                   return;
                                 }
                                 shareTimedLink(
                                   LINK_TYPES.ASSIGNMENT,
-                                  addressElement.postalcode,
+                                  currentPostalcode,
                                   addressLinkId,
-                                  `Units for ${addressElement.name}`,
-                                  assignmentMessage(addressElement.name),
-                                  `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`
+                                  `Units for ${currentPostalname}`,
+                                  assignmentMessage(currentPostalname),
+                                  `${domain}/${currentPostalcode}/${code}/${addressLinkId}`
                                 );
                               }}
                             >
                               {isSettingAssignLink &&
-                                selectedPostal ===
-                                  addressElement.postalcode && (
+                                selectedPostal === currentPostalcode && (
                                   <>
                                     <Spinner
                                       as="span"
@@ -1484,10 +1545,10 @@ function Admin({ user }: adminProps) {
                                   }
                                   await setTimedLink(
                                     LINK_TYPES.VIEW,
-                                    addressElement.postalcode,
+                                    currentPostalcode,
                                     addressLinkId
                                   );
-                                  territoryWindow!.location.href = `${domain}/${addressElement.postalcode}/${code}/${addressLinkId}`;
+                                  territoryWindow!.location.href = `${domain}/${currentPostalcode}/${code}/${addressLinkId}`;
                                 } catch (error) {
                                   errorHandler(error, rollbar);
                                 } finally {
@@ -1529,7 +1590,7 @@ function Admin({ user }: adminProps) {
                           onClick={(event) => {
                             handleClickFeedback(
                               event,
-                              addressElement.postalcode,
+                              currentPostalcode,
                               addressElement.feedback
                             );
                           }}
@@ -1561,8 +1622,8 @@ function Admin({ user }: adminProps) {
                               <Dropdown.Item
                                 onClick={() => {
                                   handleClickChangeAddressName(
-                                    addressElement.postalcode,
-                                    addressElement.name
+                                    currentPostalcode,
+                                    currentPostalname
                                   );
                                 }}
                               >
@@ -1571,7 +1632,7 @@ function Admin({ user }: adminProps) {
                               <Dropdown.Item
                                 onClick={() => {
                                   handleClickAddUnit(
-                                    addressElement.postalcode,
+                                    currentPostalcode,
                                     addressElement.floors.length
                                   );
                                 }}
@@ -1580,17 +1641,14 @@ function Admin({ user }: adminProps) {
                               </Dropdown.Item>
                               <Dropdown.Item
                                 onClick={() => {
-                                  addFloorToBlock(addressElement.postalcode);
+                                  addFloorToBlock(currentPostalcode);
                                 }}
                               >
                                 Add Higher Floor
                               </Dropdown.Item>
                               <Dropdown.Item
                                 onClick={() => {
-                                  addFloorToBlock(
-                                    addressElement.postalcode,
-                                    true
-                                  );
+                                  addFloorToBlock(currentPostalcode, true);
                                 }}
                               >
                                 Add Lower Floor
@@ -1614,15 +1672,13 @@ function Admin({ user }: adminProps) {
                                               </Card.Title>
                                               <Card.Text>
                                                 This action will reset all unit
-                                                status of {addressElement.name}.
+                                                status of {currentPostalname}.
                                               </Card.Text>
                                               <Button
                                                 className="m-1"
                                                 variant="primary"
                                                 onClick={() => {
-                                                  resetBlock(
-                                                    addressElement.postalcode
-                                                  );
+                                                  resetBlock(currentPostalcode);
                                                   onClose();
                                                 }}
                                               >
@@ -1666,14 +1722,14 @@ function Admin({ user }: adminProps) {
                                               </Card.Title>
                                               <Card.Text>
                                                 The action will completely
-                                                delete, {addressElement.name}.
+                                                delete, {currentPostalname}.
                                               </Card.Text>
                                               <Button
                                                 className="m-1"
                                                 variant="primary"
                                                 onClick={() => {
                                                   deleteBlock(
-                                                    addressElement.postalcode
+                                                    currentPostalcode
                                                   );
                                                   onClose();
                                                 }}
@@ -1705,7 +1761,7 @@ function Admin({ user }: adminProps) {
                       </Container>
                     </Navbar>
                     <Table
-                      key={`table-${addressElement.postalcode}`}
+                      key={`table-${currentPostalcode}`}
                       bordered
                       striped
                       hover
@@ -1733,7 +1789,7 @@ function Admin({ user }: adminProps) {
                                     onClick={() => {
                                       if (!isAdmin) return;
                                       handleClickUpdateUnit(
-                                        addressElement.postalcode,
+                                        currentPostalcode,
                                         addressElement.floors[0].units.length,
                                         item.sequence,
                                         item.number,
@@ -1748,7 +1804,7 @@ function Admin({ user }: adminProps) {
                             )}
                         </tr>
                       </thead>
-                      <tbody key={`tbody-${addressElement.postalcode}`}>
+                      <tbody key={`tbody-${currentPostalcode}`}>
                         {addressElement.floors &&
                           addressElement.floors.map(
                             (floorElement, floorIndex) => (
@@ -1795,18 +1851,14 @@ function Admin({ user }: adminProps) {
                                                     <Card.Text>
                                                       This action will delete
                                                       floor {floorElement.floor}{" "}
-                                                      of{" "}
-                                                      {
-                                                        addressElement.postalcode
-                                                      }
-                                                      .
+                                                      of {currentPostalcode}.
                                                     </Card.Text>
                                                     <Button
                                                       className="m-1"
                                                       variant="primary"
                                                       onClick={() => {
                                                         deleteBlockFloor(
-                                                          addressElement.postalcode,
+                                                          currentPostalcode,
                                                           floorElement.floor
                                                         );
                                                         onClose();
@@ -1851,7 +1903,7 @@ function Admin({ user }: adminProps) {
                                       onClick={(event) =>
                                         handleClickModal(
                                           event,
-                                          addressElement.postalcode,
+                                          currentPostalcode,
                                           floorElement.floor,
                                           detailsElement.number,
                                           detailsElement.type,
@@ -2256,13 +2308,12 @@ function Admin({ user }: adminProps) {
               <HHStatusField
                 handleChange={(toggleValue) => {
                   let dnctime = null;
+                  const statusValue = toggleValue.toString();
                   setIsNotHome(false);
                   setIsDnc(false);
-                  if (toggleValue.toString() === STATUS_CODES.NOT_HOME) {
+                  if (statusValue === STATUS_CODES.NOT_HOME) {
                     setIsNotHome(true);
-                  } else if (
-                    toggleValue.toString() === STATUS_CODES.DO_NOT_CALL
-                  ) {
+                  } else if (statusValue === STATUS_CODES.DO_NOT_CALL) {
                     setIsDnc(true);
                     dnctime = new Date().getTime();
                   }
@@ -2270,7 +2321,7 @@ function Admin({ user }: adminProps) {
                     ...values,
                     nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
                     dnctime: dnctime,
-                    status: toggleValue
+                    status: statusValue
                   });
                 }}
                 changeValue={`${(values as valuesDetails).status}`}
@@ -2290,7 +2341,7 @@ function Admin({ user }: adminProps) {
                   <HHNotHomeField
                     changeValue={`${(values as valuesDetails).nhcount}`}
                     handleChange={(toggleValue) => {
-                      setValues({ ...values, nhcount: toggleValue });
+                      setValues({ ...values, nhcount: toggleValue.toString() });
                     }}
                   />
                 </div>
