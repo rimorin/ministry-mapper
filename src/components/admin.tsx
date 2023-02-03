@@ -985,7 +985,7 @@ function Admin({ user }: adminProps) {
       totalPercent += completedPercent.completedValue;
     });
 
-    let territoryCoverageAggr = Math.round(
+    let territoryCoverageAggr = Math.floor(
       (totalPercent / (100 * addresses.size)) * 100
     );
 
