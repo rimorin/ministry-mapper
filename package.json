@@ -40,7 +40,8 @@
     "test": "CI=true react-scripts test",
     "eject": "react-scripts eject",
     "analyze": "source-map-explorer 'build/static/js/*.js'",
-    "prettier": "npx prettier --check src"
+    "prettier": "npx prettier --check src",
+    "prepare": "husky install"
   },
   "eslintConfig": {
     "extends": [
@@ -61,8 +62,11 @@
     ]
   },
   "devDependencies": {
+    "@commitlint/cli": "^17.4.2",
+    "@commitlint/config-conventional": "^17.4.2",
     "@semantic-release/changelog": "^6.0.2",
     "@semantic-release/git": "^10.0.1",
+    "husky": "^8.0.3",
     "prettier": "2.7.1"
   },
   "plugins": [
