@@ -525,13 +525,17 @@ const getLanguageDisplayByCode = (code: string): string => {
 };
 
 const AggregationBadge = ({ aggregate = 0, isDataFetched }: aggregateProp) => {
-  let statusColor = "dark";
-  if (aggregate > 30) statusColor = "secondary";
-  if (aggregate > 90) statusColor = "success";
+  let badgeStyle = "";
+  let statusColor = "success";
+  if (aggregate > 70 && aggregate <= 90) {
+    statusColor = "warning";
+    badgeStyle = "aggregate-dark-text";
+  }
+  if (aggregate > 90) statusColor = "danger";
   return (
     <span style={{ marginRight: "0.25rem" }}>
       {isDataFetched ? (
-        <Badge pill bg={statusColor}>
+        <Badge pill bg={statusColor} className={badgeStyle}>
           {aggregate}%
         </Badge>
       ) : (
