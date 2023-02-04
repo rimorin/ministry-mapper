@@ -1,3 +1,17 @@
+# [1.1.0](https://github.com/rimorin/ministry-mapper/compare/v1.0.0...v1.1.0) (2023-02-04)
+
+
+### Bug Fixes
+
+* Disable husky on GH actions release ([1ae4d6c](https://github.com/rimorin/ministry-mapper/commit/1ae4d6cc435728953dbbb4d9f2fddd63bd4e039e))
+* rounds down the aggregate percentage ([c1d7feb](https://github.com/rimorin/ministry-mapper/commit/c1d7feb918fdbe40a5feac16264f229723893584))
+* updated firebase version due to a bug in build ([814fe29](https://github.com/rimorin/ministry-mapper/commit/814fe2901390631d25c8ae96a45d9d82abc93269))
+
+
+### Features
+
+* improved color scheme for territory aggregator ([4c23006](https://github.com/rimorin/ministry-mapper/commit/4c230065b8ab9259563c48b0ea7a3c7f7c03cc1c))
+
 # 1.0.0 (2023-02-03)
 
 
