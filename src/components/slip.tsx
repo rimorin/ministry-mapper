@@ -300,7 +300,7 @@ const Slip = ({
                 Direction
               </Button>
               <Button
-                className="me-2 fluid-button"
+                className="me-2 mb-1 fluid-button"
                 onClick={handleClickFeedback}
               >
                 Feedback
