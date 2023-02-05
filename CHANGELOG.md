@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/rimorin/ministry-mapper/compare/v1.1.0...v1.1.1) (2023-02-05)
+
+
+### Bug Fixes
+
+* address unselectable territories that are empty ([f2f986a](https://github.com/rimorin/ministry-mapper/commit/f2f986a099ed373591f3eab0b04bf612a81f890f))
+
 # [1.1.0](https://github.com/rimorin/ministry-mapper/compare/v1.0.0...v1.1.0) (2023-02-04)
 
 
