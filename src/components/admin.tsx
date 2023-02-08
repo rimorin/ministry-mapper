@@ -1087,7 +1087,7 @@ function Admin({ user }: adminProps) {
   const isReadonly = userAccessLevel === USER_ACCESS_LEVELS.READ_ONLY;
   return (
     <Fade appear={true} in={true}>
-      <div>
+      <>
         <EnvironmentIndicator />
         <TerritoryListing
           showListing={showTerritoryListing}
@@ -2426,7 +2426,7 @@ function Admin({ user }: adminProps) {
             </Modal.Footer>
           </Form>
         </Modal>
-      </div>
+      </>
     </Fade>
   );
 }

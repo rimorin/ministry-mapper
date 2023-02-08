@@ -268,7 +268,7 @@ const Slip = ({
   const zipcode = postalZip == null ? postalcode : postalZip;
   return (
     <Fade appear={true} in={true}>
-      <div>
+      <>
         <Legend showLegend={showLegend} hideFunction={toggleLegend} />
         <EnvironmentIndicator />
         <Navbar bg="light" expand="sm">
@@ -451,7 +451,7 @@ const Slip = ({
             />
           </Form>
         </Modal>
-      </div>
+      </>
     </Fade>
   );
 };

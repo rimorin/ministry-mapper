@@ -286,12 +286,12 @@ const ExpiryTimePopover = (endtime: number) => {
             const minsDisplay =
               props.minutes !== 0 ? <>{props.minutes}m </> : <></>;
             return (
-              <div>
+              <>
                 {daysDisplay}
                 {hoursDisplay}
                 {minsDisplay}
                 {props.formatted.seconds}s
-              </div>
+              </>
             );
           }}
         />

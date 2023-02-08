@@ -13,7 +13,7 @@ const UnitStatus = (props: unitProps) => {
   let status = "";
 
   if (currentStatus === STATUS_CODES.INVALID) {
-    return <div>✖️</div>;
+    return <>✖️</>;
   }
   if (currentStatus === STATUS_CODES.DONE) {
     status = "✅ ";
