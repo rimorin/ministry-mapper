@@ -1896,11 +1896,10 @@ function Admin({ user }: adminProps) {
                                   (detailsElement, index) => (
                                     <td
                                       align="center"
-                                      className={`inline-cell ${
-                                        policy?.isAvailable(detailsElement)
-                                          ? "available"
-                                          : ""
-                                      }`}
+                                      className={`inline-cell ${policy?.getUnitColor(
+                                        detailsElement,
+                                        completedPercent.completedValue
+                                      )}`}
                                       onClick={(event) =>
                                         handleClickModal(
                                           event,

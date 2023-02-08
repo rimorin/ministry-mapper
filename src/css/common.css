@@ -23,6 +23,10 @@
   background-color: rgba(0, 255, 0, 0.1) !important;
 }
 
+.cell-highlight {
+  box-shadow: 0px 0px 10px 2px green inset !important;
+}
+
 .brand-wrap {
   white-space: normal;
 }

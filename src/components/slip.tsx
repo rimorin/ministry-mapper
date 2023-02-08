@@ -34,7 +34,8 @@ import {
   checkTraceRaceStatus,
   processAddressData,
   ExpiryTimePopover,
-  EnvironmentIndicator
+  EnvironmentIndicator,
+  getCompletedPercent
 } from "./util";
 import {
   DncDateField,
@@ -263,6 +264,7 @@ const Slip = ({
   }, [tokenEndtime, postalcode, congregationcode, maxTries, homeLanguage]);
   if (isPostalLoading) return <Loader />;
   const maxUnitNumberLength = getMaxUnitLength(floors);
+  const completedPercent = getCompletedPercent(policy as Policy, floors);
   const zipcode = postalZip == null ? postalcode : postalZip;
   return (
     <Fade appear={true} in={true}>
@@ -324,9 +326,10 @@ const Slip = ({
                     </th>
                     {item.units.map((element, _) => (
                       <td
-                        className={`text-center align-middle inline-cell ${
-                          policy?.isAvailable(element) ? "available" : ""
-                        }`}
+                        className={`text-center align-middle inline-cell ${policy?.getUnitColor(
+                          element,
+                          completedPercent.completedValue
+                        )}`}
                         onClick={(event) =>
                           handleClickModal(
                             event,
