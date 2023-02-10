@@ -59,6 +59,7 @@ import {
   RELOAD_INACTIVITY_DURATION,
   RELOAD_CHECK_INTERVAL_MS
 } from "../../utils/constants";
+import "../../css/slip.css";
 
 const Slip = ({
   tokenEndtime = 0,
