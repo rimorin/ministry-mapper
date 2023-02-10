@@ -1,12 +1,18 @@
+import { memo } from "react";
 import { floorDetails } from "./interface";
-import { ZeroPad } from "./util";
+import { DEFAULT_FLOOR_PADDING, ZeroPad } from "./util";
+
+interface floorHeaderProp {
+  floor: String;
+  index: number;
+}
 
 interface tableHeaderProp {
   floors: Array<floorDetails>;
   maxUnitNumber: number;
 }
 
-function TableHeader({ floors, maxUnitNumber = 2 }: tableHeaderProp) {
+const TableHeader = memo(({ floors, maxUnitNumber = 2 }: tableHeaderProp) => {
   return (
     <>
       <thead className="sticky-top-cell">
@@ -28,6 +34,16 @@ function TableHeader({ floors, maxUnitNumber = 2 }: tableHeaderProp) {
       </thead>
     </>
   );
-}
+});
 
-export default TableHeader;
+const FloorHeader = memo(({ index, floor }: floorHeaderProp) => (
+  <th
+    className="sticky-left-cell text-center align-middle"
+    key={`${index}-${floor}`}
+    scope="row"
+  >
+    {ZeroPad(floor, DEFAULT_FLOOR_PADDING)}
+  </th>
+));
+
+export { TableHeader, FloorHeader };

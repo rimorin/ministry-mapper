@@ -1,4 +1,12 @@
-import { MouseEvent, ChangeEvent, FormEvent, useEffect, useState } from "react";
+import {
+  MouseEvent,
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+  useState,
+  useMemo,
+  useCallback
+} from "react";
 import { ref, child, onValue, set, update } from "firebase/database";
 import { database } from "../firebase";
 import {
@@ -9,11 +17,10 @@ import {
   Form,
   Modal,
   Navbar,
-  OverlayTrigger,
   Table
 } from "react-bootstrap";
 import { floorDetails, valuesDetails, Policy } from "./interface";
-import TableHeader from "./table";
+import { TableHeader, FloorHeader } from "./table";
 import UnitStatus from "./unit";
 import {
   pollingFunction,
@@ -33,7 +40,7 @@ import {
   checkTraceLangStatus,
   checkTraceRaceStatus,
   processAddressData,
-  ExpiryTimePopover,
+  ExpiryButton,
   EnvironmentIndicator,
   getCompletedPercent
 } from "./util";
@@ -148,9 +155,9 @@ const Slip = ({
     toggleModal(false);
   };
 
-  const toggleLegend = () => {
+  const toggleLegend = useCallback(() => {
     setShowLegend(!showLegend);
-  };
+  }, [showLegend]);
 
   const handleSubmitFeedback = async (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
@@ -262,9 +269,14 @@ const Slip = ({
 
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
   }, [tokenEndtime, postalcode, congregationcode, maxTries, homeLanguage]);
+
+  const maxUnitNumberLength = useMemo(() => getMaxUnitLength(floors), [floors]);
+  const completedPercent = useMemo(
+    () => getCompletedPercent(policy as Policy, floors),
+    [policy, floors]
+  );
   if (isPostalLoading) return <Loader />;
-  const maxUnitNumberLength = getMaxUnitLength(floors);
-  const completedPercent = getCompletedPercent(policy as Policy, floors);
+
   const zipcode = postalZip == null ? postalcode : postalZip;
   return (
     <Fade appear={true} in={true}>
@@ -279,14 +291,7 @@ const Slip = ({
               id="basic-navbar-nav"
               className="justify-content-end mt-1"
             >
-              <OverlayTrigger
-                trigger="click"
-                placement="auto"
-                overlay={ExpiryTimePopover(tokenEndtime)}
-                rootClose={true}
-              >
-                <Button className="me-2 mb-1 fluid-button">Time</Button>
-              </OverlayTrigger>
+              <ExpiryButton endtime={tokenEndtime} />
               <Button className="me-2 mb-1 fluid-button" onClick={toggleLegend}>
                 Legend
               </Button>
@@ -317,13 +322,7 @@ const Slip = ({
               {floors &&
                 floors.map((item, index) => (
                   <tr key={`row-${index}`}>
-                    <th
-                      className="sticky-left-cell text-center align-middle"
-                      key={`${index}-${item.floor}`}
-                      scope="row"
-                    >
-                      {ZeroPad(item.floor, DEFAULT_FLOOR_PADDING)}
-                    </th>
+                    <FloorHeader index={index} floor={item.floor} />
                     {item.units.map((element, _) => (
                       <td
                         className={`text-center align-middle inline-cell ${policy?.getUnitColor(

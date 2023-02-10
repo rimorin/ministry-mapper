@@ -157,3 +157,7 @@ export interface aggregateProp {
   aggregate?: number;
   isDataFetched?: boolean;
 }
+
+export interface ExpiryButtonProp {
+  endtime: number;
+}

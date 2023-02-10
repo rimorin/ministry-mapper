@@ -20,7 +20,9 @@ import {
   Image,
   ProgressBar,
   Badge,
-  Spinner
+  Spinner,
+  Button,
+  OverlayTrigger
 } from "react-bootstrap";
 import Rollbar from "rollbar";
 import { database } from "../firebase";
@@ -34,11 +36,13 @@ import {
   unitDetails,
   nothomeprops,
   AuthorizerProp,
-  aggregateProp
+  aggregateProp,
+  ExpiryButtonProp
 } from "./interface";
 import { LinkSession, LinkCounts } from "./policies";
 import Countdown from "react-countdown";
 import envelopeImage from "../assets/envelope.svg";
+import { memo } from "react";
 
 const errorHandler = (error: any, rollbar: Rollbar, showAlert = true) => {
   rollbar.error(error);
@@ -182,7 +186,7 @@ const assignmentMessage = (address: String) => {
 
 const getMaxUnitLength = (floors: floorDetails[]) => {
   let maxUnitNumberLength = 1;
-
+  if (floors.length === 0) return maxUnitNumberLength;
   floors[0].units.forEach((element) => {
     const lengthOfUnitNumber = `${element.number}`.length;
     if (maxUnitNumberLength < lengthOfUnitNumber) {
@@ -300,6 +304,19 @@ const ExpiryTimePopover = (endtime: number) => {
   );
 };
 
+const ExpiryButton = memo(({ endtime }: ExpiryButtonProp) => {
+  return (
+    <OverlayTrigger
+      trigger="click"
+      placement="auto"
+      overlay={ExpiryTimePopover(endtime)}
+      rootClose={true}
+    >
+      <Button className="me-2 mb-1 fluid-button">Time</Button>
+    </OverlayTrigger>
+  );
+});
+
 const processAddressData = async (postal: String, data: any) => {
   const dataList = [];
   for (const floor in data) {
@@ -371,7 +388,7 @@ const triggerPostalCodeListeners = async (postalcode: string) => {
   });
 };
 
-const NavBarBranding = ({ naming }: BrandingProps) => {
+const NavBarBranding = memo(({ naming }: BrandingProps) => {
   return (
     <Navbar.Brand className="brand-wrap">
       <img
@@ -384,9 +401,9 @@ const NavBarBranding = ({ naming }: BrandingProps) => {
       <Navbar.Text className="fluid-branding">{naming}</Navbar.Text>
     </Navbar.Brand>
   );
-};
+});
 
-const EnvironmentIndicator = () => {
+const EnvironmentIndicator = memo(() => {
   if (process.env.REACT_APP_ROLLBAR_ENVIRONMENT === "production") return <></>;
   return (
     <ProgressBar
@@ -402,85 +419,91 @@ const EnvironmentIndicator = () => {
       label={`${process.env.REACT_APP_ROLLBAR_ENVIRONMENT} environment`}
     />
   );
-};
+});
 
-const Legend = ({ showLegend, hideFunction }: LegendProps) => (
-  <Offcanvas show={showLegend} onHide={hideFunction}>
-    <Offcanvas.Header closeButton>
-      <Offcanvas.Title>Legend</Offcanvas.Title>
-    </Offcanvas.Header>
-    <Offcanvas.Body>
-      <Table>
-        <thead>
-          <tr>
-            <th>Symbol</th>
-            <th>Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td className="text-center align-middle">✅</td>
-            <td>Spoke to householder or Wrote Letter.</td>
-          </tr>
-          <tr>
-            <td className="text-center align-middle">🚫</td>
-            <td>Do not call or write letter.</td>
-          </tr>
-          <tr>
-            <td className="text-center align-middle">
-              <NotHomeIcon />
-            </td>
-            <td>
-              Householder is not at home. Option to write a letter after a few
-              tries.
-            </td>
-          </tr>
-          <tr>
-            <td className="text-center align-middle">✖️</td>
-            <td>Unit doesn't exist for some reason.</td>
-          </tr>
-          <tr>
-            <td className="text-center align-middle">🗒️</td>
-            <td>Optional information about the unit. Avoid personal data.</td>
-          </tr>
-        </tbody>
-      </Table>
-    </Offcanvas.Body>
-  </Offcanvas>
-);
+const Legend = memo(({ showLegend, hideFunction }: LegendProps) => {
+  return (
+    <Offcanvas show={showLegend} onHide={hideFunction}>
+      <Offcanvas.Header closeButton>
+        <Offcanvas.Title>Legend</Offcanvas.Title>
+      </Offcanvas.Header>
+      <Offcanvas.Body>
+        <Table>
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className="text-center align-middle">✅</td>
+              <td>Spoke to householder or Wrote Letter.</td>
+            </tr>
+            <tr>
+              <td className="text-center align-middle">🚫</td>
+              <td>Do not call or write letter.</td>
+            </tr>
+            <tr>
+              <td className="text-center align-middle">
+                <NotHomeIcon />
+              </td>
+              <td>
+                Householder is not at home. Option to write a letter after a few
+                tries.
+              </td>
+            </tr>
+            <tr>
+              <td className="text-center align-middle">✖️</td>
+              <td>Unit doesn't exist for some reason.</td>
+            </tr>
+            <tr>
+              <td className="text-center align-middle">🗒️</td>
+              <td>Optional information about the unit. Avoid personal data.</td>
+            </tr>
+          </tbody>
+        </Table>
+      </Offcanvas.Body>
+    </Offcanvas>
+  );
+});
 
-const TerritoryListing = ({
-  showListing,
-  hideFunction,
-  selectedTerritory,
-  handleSelect,
-  territories
-}: TerritoryListingProps) => (
-  <Offcanvas
-    placement={"bottom"}
-    show={showListing}
-    onHide={hideFunction}
-    style={{ height: TERRITORY_SELECTOR_VIEWPORT_HEIGHT }}
-  >
-    <Offcanvas.Header closeButton>
-      <Offcanvas.Title>Select Territory</Offcanvas.Title>
-    </Offcanvas.Header>
-    <Offcanvas.Body>
-      <ListGroup onSelect={handleSelect}>
-        {territories &&
-          territories.map((element) => (
-            <ListGroup.Item
-              action
-              key={`listgroup-item-${element.code}`}
-              eventKey={`${element.code}`}
-              active={selectedTerritory === element.code}
-            >
-              {element.code} - {element.name}
-            </ListGroup.Item>
-          ))}
-      </ListGroup>
-    </Offcanvas.Body>
-  </Offcanvas>
+const TerritoryListing = memo(
+  ({
+    showListing,
+    hideFunction,
+    selectedTerritory,
+    handleSelect,
+    territories
+  }: TerritoryListingProps) => {
+    return (
+      <Offcanvas
+        placement={"bottom"}
+        show={showListing}
+        onHide={hideFunction}
+        style={{ height: TERRITORY_SELECTOR_VIEWPORT_HEIGHT }}
+      >
+        <Offcanvas.Header closeButton>
+          <Offcanvas.Title>Select Territory</Offcanvas.Title>
+        </Offcanvas.Header>
+        <Offcanvas.Body>
+          <ListGroup onSelect={handleSelect}>
+            {territories &&
+              territories.map((element) => (
+                <ListGroup.Item
+                  action
+                  key={`listgroup-item-${element.code}`}
+                  eventKey={`${element.code}`}
+                  active={selectedTerritory === element.code}
+                >
+                  {element.code} - {element.name}
+                </ListGroup.Item>
+              ))}
+          </ListGroup>
+        </Offcanvas.Body>
+      </Offcanvas>
+    );
+  }
 );
 
 const HOUSEHOLD_LANGUAGES = {
@@ -497,7 +520,7 @@ const UA_DEVICE_MAKES = {
   HUAWEI: "Huawei"
 };
 
-const NotHomeIcon = ({ nhcount, classProp }: nothomeprops) => {
+const NotHomeIcon = memo(({ nhcount, classProp }: nothomeprops) => {
   let containerClass = "container-nothome";
   if (classProp) containerClass += ` ${classProp}`;
   return (
@@ -506,7 +529,7 @@ const NotHomeIcon = ({ nhcount, classProp }: nothomeprops) => {
       {nhcount && <div className="badge-nothome">{nhcount}</div>}
     </span>
   );
-};
+});
 
 const getLanguageDisplayByCode = (code: string): string => {
   let display: string = "";
@@ -524,26 +547,28 @@ const getLanguageDisplayByCode = (code: string): string => {
   return display;
 };
 
-const AggregationBadge = ({ aggregate = 0, isDataFetched }: aggregateProp) => {
-  let badgeStyle = "";
-  let statusColor = "success";
-  if (aggregate > 70 && aggregate <= 90) {
-    statusColor = "warning";
-    badgeStyle = "aggregate-dark-text";
+const AggregationBadge = memo(
+  ({ aggregate = 0, isDataFetched }: aggregateProp) => {
+    let badgeStyle = "";
+    let statusColor = "success";
+    if (aggregate > 70 && aggregate <= 90) {
+      statusColor = "warning";
+      badgeStyle = "aggregate-dark-text";
+    }
+    if (aggregate > 90) statusColor = "danger";
+    return (
+      <span style={{ marginRight: "0.25rem" }}>
+        {isDataFetched ? (
+          <Badge pill bg={statusColor} className={badgeStyle}>
+            {aggregate}%
+          </Badge>
+        ) : (
+          <Spinner as="span" animation="border" size="sm" aria-hidden="true" />
+        )}
+      </span>
+    );
   }
-  if (aggregate > 90) statusColor = "danger";
-  return (
-    <span style={{ marginRight: "0.25rem" }}>
-      {isDataFetched ? (
-        <Badge pill bg={statusColor} className={badgeStyle}>
-          {aggregate}%
-        </Badge>
-      ) : (
-        <Spinner as="span" animation="border" size="sm" aria-hidden="true" />
-      )}
-    </span>
-  );
-};
+);
 
 export {
   getLanguageDisplayByCode,
@@ -567,6 +592,7 @@ export {
   triggerPostalCodeListeners,
   processAddressData,
   ExpiryTimePopover,
+  ExpiryButton,
   NotHomeIcon,
   AggregationBadge,
   UA_DEVICE_MAKES,

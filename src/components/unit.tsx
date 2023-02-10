@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Badge } from "react-bootstrap";
 import { unitProps } from "./interface";
 import { HOUSEHOLD_TYPES, NotHomeIcon, STATUS_CODES } from "./util";
@@ -40,4 +41,4 @@ const UnitStatus = (props: unitProps) => {
   );
 };
 
-export default UnitStatus;
+export default memo(UnitStatus);

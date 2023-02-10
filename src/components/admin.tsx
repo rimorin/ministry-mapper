@@ -16,7 +16,16 @@ import "../css/admin.css";
 import "../css/common.css";
 import { signOut, User } from "firebase/auth";
 import { nanoid } from "nanoid";
-import { MouseEvent, ChangeEvent, FormEvent, useEffect, useState } from "react";
+import {
+  MouseEvent,
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  SyntheticEvent
+} from "react";
 import {
   Accordion,
   Badge,
@@ -884,10 +893,6 @@ function Admin({ user }: adminProps) {
     return territoryList;
   };
 
-  const toggleTerritoryListing = () => {
-    setShowTerritoryListing(!showTerritoryListing);
-  };
-
   const getUserAccessLevel = async (
     user: User,
     congregationCode: string | undefined
@@ -968,6 +973,25 @@ function Admin({ user }: adminProps) {
       alert(UNSUPPORTED_BROWSER_MSG);
     }
   };
+
+  const handleTerritorySelect = useCallback(
+    (eventKey: string | null, _: SyntheticEvent<unknown, Event>) => {
+      processSelectedTerritory(`${eventKey}`);
+      toggleTerritoryListing();
+    },
+    // Reset cache when the territory dropdown is selected
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [showTerritoryListing]
+  );
+
+  const toggleTerritoryListing = useCallback(() => {
+    setShowTerritoryListing(!showTerritoryListing);
+  }, [showTerritoryListing]);
+
+  const congregationTerritoryList = useMemo(
+    () => Array.from(territories.values()),
+    [territories]
+  );
 
   const getTerritoryAddressData = (
     addresses: Map<String, addressDetails>,
@@ -1059,10 +1083,6 @@ function Admin({ user }: adminProps) {
       currentTime = new Date().getTime();
     };
 
-    document.body.addEventListener("mousemove", setActivityTime);
-    document.body.addEventListener("keypress", setActivityTime);
-    document.body.addEventListener("touchstart", setActivityTime);
-
     const refreshPage = () => {
       const inactivityPeriod = new Date().getTime() - currentTime;
       if (inactivityPeriod >= RELOAD_INACTIVITY_DURATION) {
@@ -1072,32 +1092,34 @@ function Admin({ user }: adminProps) {
       }
     };
 
+    document.body.addEventListener("mousemove", setActivityTime);
+    document.body.addEventListener("keypress", setActivityTime);
+    document.body.addEventListener("touchstart", setActivityTime);
+
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
   }, [user, code, rollbar]);
+
+  const territoryAddressData = useMemo(
+    () => getTerritoryAddressData(addressData, policy as Policy),
+    [addressData, policy]
+  );
 
   if (isLoading) return <Loader />;
   if (isUnauthorised) return <UnauthorizedPage />;
   const isDataCompletelyFetched = addressData.size === sortedAddressList.length;
-  const territoryAddressData = getTerritoryAddressData(
-    addressData,
-    policy as Policy
-  );
-  const congregationTerritoryList = Array.from(territories.values());
   const isAdmin = userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT;
   const isReadonly = userAccessLevel === USER_ACCESS_LEVELS.READ_ONLY;
+
   return (
     <Fade appear={true} in={true}>
       <>
         <EnvironmentIndicator />
         <TerritoryListing
           showListing={showTerritoryListing}
-          hideFunction={toggleTerritoryListing}
           territories={congregationTerritoryList}
           selectedTerritory={selectedTerritoryCode}
-          handleSelect={(eventKey, _) => {
-            processSelectedTerritory(`${eventKey}`);
-            toggleTerritoryListing();
-          }}
+          hideFunction={toggleTerritoryListing}
+          handleSelect={handleTerritorySelect}
         />
         <Navbar bg="light" variant="light" expand="lg">
           <Container fluid>
