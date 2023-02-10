@@ -11,7 +11,7 @@ export interface unitDetails {
   sequence?: number;
 }
 
-export interface nothomeprops {
+export interface nothomeProps {
   nhcount?: String;
   classProp?: String;
 }
@@ -160,4 +160,14 @@ export interface aggregateProp {
 
 export interface ExpiryButtonProp {
   endtime: number;
+}
+
+export interface floorHeaderProp {
+  floor: String;
+  index: number;
+}
+
+export interface tableHeaderProp {
+  floors: Array<floorDetails>;
+  maxUnitNumber: number;
 }

@@ -19,6 +19,28 @@
   flex-wrap: wrap;
 }
 
+.badge-nothome {
+  color: black;
+  position: absolute;
+  top: 30%;
+  left: 20%;
+  font-size: 0.8em;
+  font-weight: bold;
+  width: 1em;
+}
+
+.container-nothome {
+  position: relative;
+  height: 0.75em;
+  width: 1.5em;
+  z-index: 1;
+  display: inline-block;
+}
+
+.nothome-envelope {
+  opacity: 0.4;
+}
+
 .available {
   background-color: rgba(0, 255, 0, 0.1) !important;
 }

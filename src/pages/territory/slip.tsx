@@ -8,7 +8,7 @@ import {
   useCallback
 } from "react";
 import { ref, child, onValue, set, update } from "firebase/database";
-import { database } from "../firebase";
+import { database } from "../../firebase";
 import {
   Button,
   Collapse,
@@ -19,31 +19,8 @@ import {
   Navbar,
   Table
 } from "react-bootstrap";
-import { floorDetails, valuesDetails, Policy } from "./interface";
-import { TableHeader, FloorHeader } from "./table";
-import UnitStatus from "./unit";
-import {
-  pollingFunction,
-  DEFAULT_FLOOR_PADDING,
-  errorHandler,
-  getMaxUnitLength,
-  Legend,
-  ModalUnitTitle,
-  NavBarBranding,
-  NOT_HOME_STATUS_CODES,
-  parseHHLanguages,
-  processHHLanguages,
-  RELOAD_CHECK_INTERVAL_MS,
-  RELOAD_INACTIVITY_DURATION,
-  STATUS_CODES,
-  ZeroPad,
-  checkTraceLangStatus,
-  checkTraceRaceStatus,
-  processAddressData,
-  ExpiryButton,
-  EnvironmentIndicator,
-  getCompletedPercent
-} from "./util";
+import { floorDetails, valuesDetails, Policy } from "../../utils/interface";
+import { TableHeader, FloorHeader, UnitStatus } from "../../components/table";
 import {
   DncDateField,
   GenericTextAreaField,
@@ -51,14 +28,37 @@ import {
   HHNotHomeField,
   HHStatusField,
   HHTypeField,
-  ModalFooter
-} from "./form";
-import Loader from "./loader";
-import { RacePolicy, LanguagePolicy } from "./policies";
+  ModalFooter,
+  ModalUnitTitle
+} from "../../components/form";
+import { RacePolicy, LanguagePolicy } from "../../utils/policies";
 import { useRollbar } from "@rollbar/react";
-import "react-calendar/dist/Calendar.css";
-import "../css/slip.css";
-import "../css/common.css";
+import {
+  ZeroPad,
+  pollingFunction,
+  errorHandler,
+  processHHLanguages,
+  processAddressData,
+  checkTraceLangStatus,
+  checkTraceRaceStatus,
+  getMaxUnitLength,
+  getCompletedPercent,
+  parseHHLanguages
+} from "../../utils/helpers";
+import {
+  Legend,
+  EnvironmentIndicator,
+  NavBarBranding,
+  ExpiryButton
+} from "../../components/navigation";
+import { Loader } from "../../components/static";
+import {
+  DEFAULT_FLOOR_PADDING,
+  NOT_HOME_STATUS_CODES,
+  STATUS_CODES,
+  RELOAD_INACTIVITY_DURATION,
+  RELOAD_CHECK_INTERVAL_MS
+} from "../../utils/constants";
 
 const Slip = ({
   tokenEndtime = 0,

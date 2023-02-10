@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
-import { auth } from "../firebase";
+import { auth } from "../../firebase";
 import Admin from "./admin";
-import "bootstrap/dist/css/bootstrap.min.css";
-import Login from "./login";
-import Loader from "./loader";
+import Login from "../login";
+import { Loader } from "../../components/static";
 
 function Dashboard() {
   const [isLoading, setIsLoading] = useState<boolean>(true);

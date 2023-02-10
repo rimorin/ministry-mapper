@@ -1,12 +1,12 @@
-import { unitDetails, Policy } from "./interface";
 import {
+  NOT_HOME_STATUS_CODES,
   COUNTABLE_HOUSEHOLD_STATUS,
   HOUSEHOLD_TYPES,
   STATUS_CODES,
-  NOT_HOME_STATUS_CODES,
-  LINK_TYPES,
-  HOUSEHOLD_LANGUAGES
-} from "./util";
+  HOUSEHOLD_LANGUAGES,
+  LINK_TYPES
+} from "./constants";
+import { unitDetails, Policy } from "./interface";
 
 const AVAILABLE_STYLE_CLASS = "available";
 

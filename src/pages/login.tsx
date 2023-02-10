@@ -3,8 +3,8 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { Card, Form, Button, Container, Spinner } from "react-bootstrap";
 import { auth } from "../firebase";
 import { FirebaseError } from "firebase/app";
-import { errorHandler, errorMessage } from "./util";
 import { useRollbar } from "@rollbar/react";
+import { errorHandler, errorMessage } from "../utils/helpers";
 
 const Login = () => {
   const [loginEmail, setLoginEmail] = useState("");

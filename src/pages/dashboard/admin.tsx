@@ -12,8 +12,7 @@ import {
   orderByValue,
   off
 } from "firebase/database";
-import "../css/admin.css";
-import "../css/common.css";
+import "../../css/admin.css";
 import { signOut, User } from "firebase/auth";
 import { nanoid } from "nanoid";
 import {
@@ -43,9 +42,7 @@ import {
   Spinner,
   Table
 } from "react-bootstrap";
-import { database, auth } from "./../firebase";
-import Loader from "./loader";
-import UnitStatus from "./unit";
+import { database, auth } from "../../firebase";
 import {
   Policy,
   valuesDetails,
@@ -53,49 +50,9 @@ import {
   addressDetails,
   adminProps,
   unitMaps
-} from "./interface";
+} from "../../utils/interface";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
-import {
-  getLanguageDisplayByCode,
-  STATUS_CODES,
-  MUTABLE_CODES,
-  ZeroPad,
-  ModalUnitTitle,
-  assignmentMessage,
-  NavBarBranding,
-  getMaxUnitLength,
-  DEFAULT_FLOOR_PADDING,
-  addHours,
-  DEFAULT_SELF_DESTRUCT_HOURS,
-  getCompletedPercent,
-  FOUR_WKS_PERSONAL_SLIP_DESTRUCT_HOURS,
-  ADMIN_MODAL_TYPES,
-  RELOAD_INACTIVITY_DURATION,
-  RELOAD_CHECK_INTERVAL_MS,
-  errorHandler,
-  TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
-  HOUSEHOLD_TYPES,
-  MIN_START_FLOOR,
-  NOT_HOME_STATUS_CODES,
-  parseHHLanguages,
-  processHHLanguages,
-  TerritoryListing,
-  pollingFunction,
-  checkTraceLangStatus,
-  checkTraceRaceStatus,
-  processLinkCounts,
-  triggerPostalCodeListeners,
-  processAddressData,
-  ComponentAuthorizer,
-  USER_ACCESS_LEVELS,
-  LINK_TYPES,
-  ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS,
-  EnvironmentIndicator,
-  UA_DEVICE_MAKES,
-  UNSUPPORTED_BROWSER_MSG,
-  AggregationBadge
-} from "./util";
 import { useParams } from "react-router-dom";
 import {
   AdminLinkField,
@@ -107,16 +64,60 @@ import {
   HHNotHomeField,
   HHStatusField,
   HHTypeField,
-  ModalFooter
-} from "./form";
-import Welcome from "./welcome";
-import UnauthorizedPage from "./unauthorisedpage";
+  ModalFooter,
+  ModalUnitTitle
+} from "../../components/form";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
-import { RacePolicy, LanguagePolicy, LinkSession } from "./policies";
+import { RacePolicy, LanguagePolicy, LinkSession } from "../../utils/policies";
 import { zeroPad } from "react-countdown";
-import { ReactComponent as GearImage } from "../assets/gear.svg";
+import { ReactComponent as GearImage } from "../../assets/gear.svg";
 import getUA from "ua-parser-js";
+import { UnitStatus } from "../../components/table";
+import {
+  pollingFunction,
+  processAddressData,
+  processLinkCounts,
+  errorHandler,
+  processHHLanguages,
+  ZeroPad,
+  addHours,
+  triggerPostalCodeListeners,
+  assignmentMessage,
+  getMaxUnitLength,
+  getCompletedPercent,
+  checkTraceLangStatus,
+  checkTraceRaceStatus,
+  parseHHLanguages,
+  getLanguageDisplayByCode
+} from "../../utils/helpers";
+import {
+  EnvironmentIndicator,
+  TerritoryListing,
+  NavBarBranding,
+  AggregationBadge,
+  ComponentAuthorizer
+} from "../../components/navigation";
+import { Loader, UnauthorizedPage, Welcome } from "../../components/static";
+import {
+  STATUS_CODES,
+  HOUSEHOLD_TYPES,
+  NOT_HOME_STATUS_CODES,
+  MUTABLE_CODES,
+  ADMIN_MODAL_TYPES,
+  DEFAULT_FLOOR_PADDING,
+  DEFAULT_SELF_DESTRUCT_HOURS,
+  LINK_TYPES,
+  UNSUPPORTED_BROWSER_MSG,
+  UA_DEVICE_MAKES,
+  RELOAD_INACTIVITY_DURATION,
+  RELOAD_CHECK_INTERVAL_MS,
+  USER_ACCESS_LEVELS,
+  ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS,
+  FOUR_WKS_PERSONAL_SLIP_DESTRUCT_HOURS,
+  TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
+  MIN_START_FLOOR
+} from "../../utils/constants";
 function Admin({ user }: adminProps) {
   const { code } = useParams();
   const [isOpen, setIsOpen] = useState<boolean>(false);
