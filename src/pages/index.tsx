@@ -6,10 +6,11 @@ import { NotFoundPage, FrontPage, MaintenanceMode } from "../components/static";
 import { database } from "../firebase";
 import Dashboard from "./dashboard/index";
 import Territory from "./territory/index";
-import "react-calendar/dist/Calendar.css";
-import "../css/common.css";
+// Load bootstrap first followed by your custom styles
 import "bootstrap/dist/css/bootstrap.min.css";
+import "react-calendar/dist/Calendar.css";
 import "../css/main.css";
+import "../css/common.css";
 
 function Main() {
   const [isMaintenance, setIsMaintenance] = useState<boolean>(false);
