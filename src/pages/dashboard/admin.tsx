@@ -142,6 +142,7 @@ function Admin({ user }: adminProps) {
   const [isUnitDetails, setIsUnitDetails] = useState<boolean>(false);
   const [isProfile, setIsProfile] = useState<boolean>(false);
   const [isSpecialDevice, setIsSpecialDevice] = useState<boolean>(false);
+  const [isChangePostal, setIsChangePostal] = useState<boolean>(false);
   const [showTerritoryListing, setShowTerritoryListing] =
     useState<boolean>(false);
   const [trackRace, setTrackRace] = useState<boolean>(true);
@@ -304,7 +305,7 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const deleteBlock = async (postalCode: String) => {
+  const deleteBlock = async (postalCode: String, showAlert: boolean) => {
     if (!selectedTerritoryCode) return;
     try {
       await remove(ref(database, `${postalCode}`));
@@ -328,7 +329,7 @@ function Admin({ user }: adminProps) {
           }
         }
       }
-      alert(`Deleted postal address, ${postalCode}.`);
+      if (showAlert) alert(`Deleted postal address, ${postalCode}.`);
       await refreshCongregationTerritory(`${selectedTerritoryCode}`);
     } catch (error) {
       errorHandler(error, rollbar);
@@ -448,6 +449,9 @@ function Admin({ user }: adminProps) {
         break;
       case ADMIN_MODAL_TYPES.PROFILE:
         setIsProfile(!isProfile);
+        break;
+      case ADMIN_MODAL_TYPES.UPDATE_POSTAL:
+        setIsChangePostal(!isChangePostal);
         break;
       default:
         setIsOpen(!isOpen);
@@ -624,6 +628,46 @@ function Admin({ user }: adminProps) {
         set(ref(database, `/${details.postal}/name`), details.name)
       );
       toggleModal(ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME);
+    } catch (error) {
+      errorHandler(error, rollbar);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleClickChangePostal = (postalcode: String) => {
+    setValues({ ...values, postal: postalcode, newPostal: "" });
+    toggleModal(ADMIN_MODAL_TYPES.UPDATE_POSTAL);
+  };
+
+  const handleUpdatePostalcode = async (event: FormEvent<HTMLElement>) => {
+    event.preventDefault();
+    const details = values as valuesDetails;
+    const newPostalCode = `${details.newPostal}`;
+    const oldPostalCode = `${details.postal}`;
+    setIsSaving(true);
+    try {
+      const newPostalRef = ref(database, newPostalCode);
+      const existingAddress = await get(newPostalRef);
+      if (existingAddress.exists()) {
+        alert(`Postal address, ${newPostalCode} already exist.`);
+        return;
+      }
+      const oldPostalData = await get(ref(database, oldPostalCode));
+      await pollingFunction(() => set(newPostalRef, oldPostalData.val()));
+      await pollingFunction(() =>
+        set(
+          push(
+            ref(
+              database,
+              `congregations/${code}/territories/${selectedTerritoryCode}/addresses`
+            )
+          ),
+          newPostalCode
+        )
+      );
+      await pollingFunction(() => deleteBlock(oldPostalCode, false));
+      await toggleModal(ADMIN_MODAL_TYPES.UPDATE_POSTAL);
     } catch (error) {
       errorHandler(error, rollbar);
     } finally {
@@ -1645,6 +1689,13 @@ function Admin({ user }: adminProps) {
                             <Dropdown.Menu>
                               <Dropdown.Item
                                 onClick={() => {
+                                  handleClickChangePostal(currentPostalcode);
+                                }}
+                              >
+                                Change Postalcode
+                              </Dropdown.Item>
+                              <Dropdown.Item
+                                onClick={() => {
                                   handleClickChangeAddressName(
                                     currentPostalcode,
                                     currentPostalname
@@ -1753,7 +1804,8 @@ function Admin({ user }: adminProps) {
                                                 variant="primary"
                                                 onClick={() => {
                                                   deleteBlock(
-                                                    currentPostalcode
+                                                    currentPostalcode,
+                                                    true
                                                   );
                                                   onClose();
                                                 }}
@@ -2031,6 +2083,49 @@ function Admin({ user }: adminProps) {
                 </Button>
                 <Button type="submit" variant="primary">
                   Revoke
+                </Button>
+              </Modal.Footer>
+            </Form>
+          </Modal>
+        )}
+        {isAdmin && (
+          <Modal show={isChangePostal}>
+            <Modal.Header>
+              <Modal.Title>Change address postal code</Modal.Title>
+            </Modal.Header>
+            <Form onSubmit={handleUpdatePostalcode}>
+              <Modal.Body>
+                <Form.Group className="mb-3">
+                  <Form.Label htmlFor="userid">Existing Postal Code</Form.Label>
+                  <Form.Control
+                    readOnly
+                    id="existingcode"
+                    defaultValue={`${(values as valuesDetails).postal}`}
+                  />
+                </Form.Group>
+                <GenericTextField
+                  label="New Postal Code"
+                  name="postalcode"
+                  handleChange={(e: ChangeEvent<HTMLElement>) => {
+                    const { value } = e.target as HTMLInputElement;
+                    setValues({ ...values, newPostal: value });
+                  }}
+                  changeValue={`${(values as valuesDetails).newPostal}`}
+                  required={true}
+                  placeholder={
+                    "Block/Building postal code. Eg, 730801, 752367, etc"
+                  }
+                />
+              </Modal.Body>
+              <Modal.Footer>
+                <Button
+                  variant="secondary"
+                  onClick={() => toggleModal(ADMIN_MODAL_TYPES.UPDATE_POSTAL)}
+                >
+                  Close
+                </Button>
+                <Button type="submit" variant="primary">
+                  Change
                 </Button>
               </Modal.Footer>
             </Form>
