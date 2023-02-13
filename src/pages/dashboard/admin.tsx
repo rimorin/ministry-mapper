@@ -96,7 +96,8 @@ import {
   TerritoryListing,
   NavBarBranding,
   AggregationBadge,
-  ComponentAuthorizer
+  ComponentAuthorizer,
+  TerritoryHeader
 } from "../../components/navigation";
 import { Loader, UnauthorizedPage, Welcome } from "../../components/static";
 import {
@@ -157,7 +158,6 @@ function Admin({ user }: adminProps) {
   const [sortedAddressList, setSortedAddressList] = useState<
     Array<territoryDetails>
   >([]);
-  const [selectedTerritory, setSelectedTerritory] = useState<String>();
   const [selectedTerritoryCode, setSelectedTerritoryCode] = useState<String>();
   const [selectedTerritoryName, setSelectedTerritoryName] = useState<String>();
   const [addressData, setAddressData] = useState(
@@ -207,7 +207,6 @@ function Admin({ user }: adminProps) {
 
     if (!territoryNameResult.exists()) return;
     const territoryName = territoryNameResult.val();
-    setSelectedTerritory(`${selectedTerritoryCode} - ${territoryName}`);
     setSelectedTerritoryCode(selectedTerritoryCode);
     setSelectedTerritoryName(territoryName);
     //Set selected states followed by result check
@@ -615,7 +614,6 @@ function Admin({ user }: adminProps) {
         )
       );
       setSelectedTerritoryName(territoryName);
-      setSelectedTerritory(`${selectedTerritoryCode} - ${territoryName}`);
       toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
     } catch (error) {
       errorHandler(error, rollbar);
@@ -1218,20 +1216,20 @@ function Admin({ user }: adminProps) {
                     variant="outline-primary"
                     onClick={toggleTerritoryListing}
                   >
-                    {selectedTerritory ? (
+                    {selectedTerritoryCode ? (
                       <>
                         <AggregationBadge
                           isDataFetched={isDataCompletelyFetched}
                           aggregate={territoryAddressData.aggregate}
                         />
-                        {selectedTerritory}
+                        {selectedTerritoryCode}
                       </>
                     ) : (
                       "Select Territory"
                     )}
                   </Button>
                 )}
-              {!selectedTerritory && (
+              {!selectedTerritoryCode && (
                 <ComponentAuthorizer
                   requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
                   userPermission={userAccessLevel}
@@ -1249,12 +1247,12 @@ function Admin({ user }: adminProps) {
                   </Button>
                 </ComponentAuthorizer>
               )}
-              {selectedTerritory && (
+              {selectedTerritoryCode && (
                 <ComponentAuthorizer
                   requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
                   userPermission={userAccessLevel}
                 >
-                  <Dropdown className="m-1">
+                  <Dropdown className="m-1 d-inline-block">
                     <Dropdown.Toggle variant="outline-primary" size="sm">
                       Territory
                     </Dropdown.Toggle>
@@ -1384,7 +1382,7 @@ function Admin({ user }: adminProps) {
                   </Dropdown>
                 </ComponentAuthorizer>
               )}
-              {selectedTerritory && (
+              {selectedTerritoryCode && (
                 <ComponentAuthorizer
                   requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
                   userPermission={userAccessLevel}
@@ -1451,7 +1449,8 @@ function Admin({ user }: adminProps) {
             </Navbar.Collapse>
           </Container>
         </Navbar>
-        {!selectedTerritory && <Welcome />}
+        {!selectedTerritoryCode && <Welcome />}
+        <TerritoryHeader name={`${selectedTerritoryName}`} />
         {/* There is no need to open all accordion for read-only users. */}
         <Accordion
           activeKey={isReadonly ? undefined : accordingKeys}

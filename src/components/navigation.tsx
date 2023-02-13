@@ -8,7 +8,8 @@ import {
   Badge,
   Spinner,
   Button,
-  OverlayTrigger
+  OverlayTrigger,
+  Container
 } from "react-bootstrap";
 import {
   BrandingProps,
@@ -16,7 +17,8 @@ import {
   TerritoryListingProps,
   aggregateProp,
   ExpiryButtonProp,
-  AuthorizerProp
+  AuthorizerProp,
+  territoryHeaderProp
 } from "../utils/interface";
 import Countdown from "react-countdown";
 import { memo } from "react";
@@ -224,6 +226,15 @@ const AggregationBadge = memo(
   }
 );
 
+const TerritoryHeader = memo(({ name }: territoryHeaderProp) => {
+  if (!name) return <></>;
+  return (
+    <Container className="text-center bg-light py-2 fw-bolder text-success border-top">
+      {name}
+    </Container>
+  );
+});
+
 export {
   NavBarBranding,
   Legend,
@@ -232,5 +243,6 @@ export {
   ExpiryButton,
   AggregationBadge,
   ComponentAuthorizer,
-  EnvironmentIndicator
+  EnvironmentIndicator,
+  TerritoryHeader
 };

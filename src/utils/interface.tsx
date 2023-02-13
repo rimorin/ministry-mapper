@@ -171,3 +171,7 @@ export interface tableHeaderProp {
   floors: Array<floorDetails>;
   maxUnitNumber: number;
 }
+
+export interface territoryHeaderProp {
+  name: String;
+}
