@@ -143,6 +143,8 @@ function Admin({ user }: adminProps) {
   const [isProfile, setIsProfile] = useState<boolean>(false);
   const [isSpecialDevice, setIsSpecialDevice] = useState<boolean>(false);
   const [isChangePostal, setIsChangePostal] = useState<boolean>(false);
+  const [isChangeTerritoryCode, setIsChangeTerritoryCode] =
+    useState<boolean>(false);
   const [showTerritoryListing, setShowTerritoryListing] =
     useState<boolean>(false);
   const [trackRace, setTrackRace] = useState<boolean>(true);
@@ -453,6 +455,9 @@ function Admin({ user }: adminProps) {
       case ADMIN_MODAL_TYPES.UPDATE_POSTAL:
         setIsChangePostal(!isChangePostal);
         break;
+      case ADMIN_MODAL_TYPES.UPDATE_TERRITORY_CODE:
+        setIsChangeTerritoryCode(!isChangeTerritoryCode);
+        break;
       default:
         setIsOpen(!isOpen);
     }
@@ -628,6 +633,37 @@ function Admin({ user }: adminProps) {
         set(ref(database, `/${details.postal}/name`), details.name)
       );
       toggleModal(ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME);
+    } catch (error) {
+      errorHandler(error, rollbar);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleUpdateTerritoryCode = async (event: FormEvent<HTMLElement>) => {
+    event.preventDefault();
+    const details = values as valuesDetails;
+    const newTerritoryCode = `${details.code}`;
+    setIsSaving(true);
+    try {
+      const newCodeRef = ref(
+        database,
+        `congregations/${code}/territories/${newTerritoryCode}`
+      );
+      const existingTerritory = await get(newCodeRef);
+      if (existingTerritory.exists()) {
+        alert(`Territory code, ${newTerritoryCode} already exist.`);
+        return;
+      }
+      const oldCodeRef = ref(
+        database,
+        `congregations/${code}/territories/${selectedTerritoryCode}`
+      );
+      const oldTerritoryData = await get(oldCodeRef);
+      await pollingFunction(() => set(newCodeRef, oldTerritoryData.val()));
+      await pollingFunction(() => remove(oldCodeRef));
+      toggleModal(ADMIN_MODAL_TYPES.UPDATE_TERRITORY_CODE);
+      processSelectedTerritory(newTerritoryCode);
     } catch (error) {
       errorHandler(error, rollbar);
     } finally {
@@ -1230,6 +1266,14 @@ function Admin({ user }: adminProps) {
                         }}
                       >
                         Create New
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        onClick={() => {
+                          setValues({ ...values, code: "" });
+                          toggleModal(ADMIN_MODAL_TYPES.UPDATE_TERRITORY_CODE);
+                        }}
+                      >
+                        Change Code
                       </Dropdown.Item>
                       <Dropdown.Item
                         onClick={() =>
@@ -2083,6 +2127,51 @@ function Admin({ user }: adminProps) {
                 </Button>
                 <Button type="submit" variant="primary">
                   Revoke
+                </Button>
+              </Modal.Footer>
+            </Form>
+          </Modal>
+        )}
+        {isAdmin && (
+          <Modal show={isChangeTerritoryCode}>
+            <Modal.Header>
+              <Modal.Title>Change territory code</Modal.Title>
+            </Modal.Header>
+            <Form onSubmit={handleUpdateTerritoryCode}>
+              <Modal.Body>
+                <Form.Group className="mb-3">
+                  <Form.Label htmlFor="userid">
+                    Existing Territory Code
+                  </Form.Label>
+                  <Form.Control
+                    readOnly
+                    id="existingcode"
+                    defaultValue={`${selectedTerritoryCode}`}
+                  />
+                </Form.Group>
+                <GenericTextField
+                  label="New Territory Code"
+                  name="code"
+                  handleChange={(e: ChangeEvent<HTMLElement>) => {
+                    const { value } = e.target as HTMLInputElement;
+                    setValues({ ...values, code: value });
+                  }}
+                  changeValue={`${(values as valuesDetails).code}`}
+                  required={true}
+                  placeholder={"Territory code. For eg, M01, W12, etc."}
+                />
+              </Modal.Body>
+              <Modal.Footer>
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    toggleModal(ADMIN_MODAL_TYPES.UPDATE_TERRITORY_CODE)
+                  }
+                >
+                  Close
+                </Button>
+                <Button type="submit" variant="primary">
+                  Change
                 </Button>
               </Modal.Footer>
             </Form>
