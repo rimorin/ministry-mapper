@@ -1430,17 +1430,6 @@ function Admin({ user }: adminProps) {
                 size="sm"
                 variant="outline-primary"
                 onClick={async () => {
-                  clearAdminState();
-                  await signOut(auth);
-                }}
-              >
-                Log Out
-              </Button>
-              <Button
-                className="m-1"
-                size="sm"
-                variant="outline-primary"
-                onClick={async () => {
                   toggleModal(ADMIN_MODAL_TYPES.PROFILE);
                 }}
               >
@@ -2583,7 +2572,7 @@ function Admin({ user }: adminProps) {
         </Modal>
         <Modal show={isProfile}>
           <Modal.Header>
-            <Modal.Title>{`My profile`}</Modal.Title>
+            <Modal.Title>My Profile</Modal.Title>
           </Modal.Header>
           <Form>
             <Modal.Body>
@@ -2602,7 +2591,7 @@ function Admin({ user }: adminProps) {
                   id="txtMaxTries"
                   defaultValue={`${policy?.getMaxTries()}`}
                 />
-                <Form.Text className="text-muted">
+                <Form.Text muted>
                   The number of times to try not at homes before considering it
                   done
                 </Form.Text>
@@ -2621,8 +2610,25 @@ function Admin({ user }: adminProps) {
                   />
                 </Form.Group>
               )}
+              <Form.Group className="mb-3">
+                <Form.Label htmlFor="userid">Application Version</Form.Label>
+                <Form.Control
+                  readOnly
+                  id="appversionno"
+                  defaultValue={process.env.REACT_APP_VERSION}
+                />
+              </Form.Group>
             </Modal.Body>
             <Modal.Footer>
+              <Button
+                variant="primary"
+                onClick={async () => {
+                  clearAdminState();
+                  await signOut(auth);
+                }}
+              >
+                Log Out
+              </Button>
               <Button
                 variant="secondary"
                 onClick={() => toggleModal(ADMIN_MODAL_TYPES.PROFILE)}
