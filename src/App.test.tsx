@@ -1,19 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import FrontPage from "./components/frontpage";
-import MaintenanceMode from "./components/maintenance";
-import NotFoundPage from "./components/notfoundpage";
-import UnauthorizedPage from "./components/unauthorisedpage";
-import InvalidPage from "./components/invalidpage";
-import Welcome from "./components/welcome";
-import {
-  HOUSEHOLD_LANGUAGES,
-  HOUSEHOLD_TYPES,
-  Legend,
-  NOT_HOME_STATUS_CODES,
-  STATUS_CODES
-} from "./components/util";
-import Loader from "./components/loader";
-import Login from "./components/login";
+import Login from "./pages/login";
 import {
   GenericTextAreaField,
   HHLangField,
@@ -21,9 +7,25 @@ import {
   HHStatusField,
   HHTypeField
 } from "./components/form";
-import UnitStatus from "./components/unit";
 import { Provider } from "@rollbar/react";
-import { LanguagePolicy, RacePolicy } from "./components/policies";
+import { LanguagePolicy, RacePolicy } from "./utils/policies";
+import { UnitStatus } from "./components/table";
+import { Legend } from "./components/navigation";
+import {
+  FrontPage,
+  MaintenanceMode,
+  NotFoundPage,
+  UnauthorizedPage,
+  InvalidPage,
+  Welcome,
+  Loader
+} from "./components/static";
+import {
+  STATUS_CODES,
+  HOUSEHOLD_TYPES,
+  NOT_HOME_STATUS_CODES,
+  HOUSEHOLD_LANGUAGES
+} from "./utils/constants";
 
 const mockRollbarConfig = {
   accessToken: "",

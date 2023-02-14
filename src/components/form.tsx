@@ -1,4 +1,3 @@
-import "../css/common.css";
 import {
   Form,
   ToggleButtonGroup,
@@ -10,19 +9,24 @@ import {
   Container
 } from "react-bootstrap";
 import RangeSlider from "react-bootstrap-range-slider";
-import { FloorProps, FooterProps, FormProps } from "./interface";
 import {
-  ComponentAuthorizer,
-  HOUSEHOLD_LANGUAGES,
-  HOUSEHOLD_TYPES,
-  MAX_TOP_FLOOR,
-  MIN_START_FLOOR,
-  NOT_HOME_STATUS_CODES,
-  STATUS_CODES,
-  USER_ACCESS_LEVELS
-} from "./util";
+  FloorProps,
+  FooterProps,
+  FormProps,
+  TitleProps
+} from "../utils/interface";
 
 import Calendar from "react-calendar";
+import {
+  USER_ACCESS_LEVELS,
+  HOUSEHOLD_TYPES,
+  MIN_START_FLOOR,
+  MAX_TOP_FLOOR,
+  HOUSEHOLD_LANGUAGES,
+  STATUS_CODES,
+  NOT_HOME_STATUS_CODES
+} from "../utils/constants";
+import { ComponentAuthorizer } from "./navigation";
 
 const ModalFooter = ({
   handleClick,
@@ -347,6 +351,19 @@ const DncDateField = ({ handleDateChange, changeDate }: FormProps) => {
   );
 };
 
+const ModalUnitTitle = ({ unit, floor, postal }: TitleProps) => {
+  let titleString = `# ${floor} - ${unit}`;
+
+  if (postal) {
+    titleString = `${postal}, ${titleString}`;
+  }
+  return (
+    <Modal.Header>
+      <Modal.Title>{titleString}</Modal.Title>
+    </Modal.Header>
+  );
+};
+
 export {
   HHType,
   HHTypeField,
@@ -358,5 +375,6 @@ export {
   FloorField,
   GenericTextField,
   GenericTextAreaField,
-  ModalFooter
+  ModalFooter,
+  ModalUnitTitle
 };

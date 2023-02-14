@@ -11,7 +11,7 @@ export interface unitDetails {
   sequence?: number;
 }
 
-export interface nothomeprops {
+export interface nothomeProps {
   nhcount?: String;
   classProp?: String;
 }
@@ -141,7 +141,7 @@ export interface RouteDetails {
 export interface Policy {
   isCountable(unit: unitDetails): boolean;
   isCompleted(unit: unitDetails): boolean;
-  isAvailable(unit: unitDetails): boolean;
+  getUnitColor(unit: unitDetails, progress: number): string;
   getHomeLanguage(): string;
   getMaxTries(): number;
   fromClaims(claims: any): void;
@@ -156,4 +156,22 @@ export interface AuthorizerProp {
 export interface aggregateProp {
   aggregate?: number;
   isDataFetched?: boolean;
+}
+
+export interface ExpiryButtonProp {
+  endtime: number;
+}
+
+export interface floorHeaderProp {
+  floor: String;
+  index: number;
+}
+
+export interface tableHeaderProp {
+  floors: Array<floorDetails>;
+  maxUnitNumber: number;
+}
+
+export interface territoryHeaderProp {
+  name: String;
 }

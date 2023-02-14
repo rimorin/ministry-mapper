@@ -1,6 +1,14 @@
-import { MouseEvent, ChangeEvent, FormEvent, useEffect, useState } from "react";
+import {
+  MouseEvent,
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+  useState,
+  useMemo,
+  useCallback
+} from "react";
 import { ref, child, onValue, set, update } from "firebase/database";
-import { database } from "../firebase";
+import { database } from "../../firebase";
 import {
   Button,
   Collapse,
@@ -9,33 +17,10 @@ import {
   Form,
   Modal,
   Navbar,
-  OverlayTrigger,
   Table
 } from "react-bootstrap";
-import { floorDetails, valuesDetails, Policy } from "./interface";
-import TableHeader from "./table";
-import UnitStatus from "./unit";
-import {
-  pollingFunction,
-  DEFAULT_FLOOR_PADDING,
-  errorHandler,
-  getMaxUnitLength,
-  Legend,
-  ModalUnitTitle,
-  NavBarBranding,
-  NOT_HOME_STATUS_CODES,
-  parseHHLanguages,
-  processHHLanguages,
-  RELOAD_CHECK_INTERVAL_MS,
-  RELOAD_INACTIVITY_DURATION,
-  STATUS_CODES,
-  ZeroPad,
-  checkTraceLangStatus,
-  checkTraceRaceStatus,
-  processAddressData,
-  ExpiryTimePopover,
-  EnvironmentIndicator
-} from "./util";
+import { floorDetails, valuesDetails, Policy } from "../../utils/interface";
+import { TableHeader, FloorHeader, UnitStatus } from "../../components/table";
 import {
   DncDateField,
   GenericTextAreaField,
@@ -43,14 +28,38 @@ import {
   HHNotHomeField,
   HHStatusField,
   HHTypeField,
-  ModalFooter
-} from "./form";
-import Loader from "./loader";
-import { RacePolicy, LanguagePolicy } from "./policies";
+  ModalFooter,
+  ModalUnitTitle
+} from "../../components/form";
+import { RacePolicy, LanguagePolicy } from "../../utils/policies";
 import { useRollbar } from "@rollbar/react";
-import "react-calendar/dist/Calendar.css";
-import "../css/slip.css";
-import "../css/common.css";
+import {
+  ZeroPad,
+  pollingFunction,
+  errorHandler,
+  processHHLanguages,
+  processAddressData,
+  checkTraceLangStatus,
+  checkTraceRaceStatus,
+  getMaxUnitLength,
+  getCompletedPercent,
+  parseHHLanguages
+} from "../../utils/helpers";
+import {
+  Legend,
+  EnvironmentIndicator,
+  NavBarBranding,
+  ExpiryButton
+} from "../../components/navigation";
+import { Loader } from "../../components/static";
+import {
+  DEFAULT_FLOOR_PADDING,
+  NOT_HOME_STATUS_CODES,
+  STATUS_CODES,
+  RELOAD_INACTIVITY_DURATION,
+  RELOAD_CHECK_INTERVAL_MS
+} from "../../utils/constants";
+import "../../css/slip.css";
 
 const Slip = ({
   tokenEndtime = 0,
@@ -147,9 +156,9 @@ const Slip = ({
     toggleModal(false);
   };
 
-  const toggleLegend = () => {
+  const toggleLegend = useCallback(() => {
     setShowLegend(!showLegend);
-  };
+  }, [showLegend]);
 
   const handleSubmitFeedback = async (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
@@ -261,12 +270,18 @@ const Slip = ({
 
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
   }, [tokenEndtime, postalcode, congregationcode, maxTries, homeLanguage]);
+
+  const maxUnitNumberLength = useMemo(() => getMaxUnitLength(floors), [floors]);
+  const completedPercent = useMemo(
+    () => getCompletedPercent(policy as Policy, floors),
+    [policy, floors]
+  );
   if (isPostalLoading) return <Loader />;
-  const maxUnitNumberLength = getMaxUnitLength(floors);
+
   const zipcode = postalZip == null ? postalcode : postalZip;
   return (
     <Fade appear={true} in={true}>
-      <div>
+      <>
         <Legend showLegend={showLegend} hideFunction={toggleLegend} />
         <EnvironmentIndicator />
         <Navbar bg="light" expand="sm">
@@ -277,14 +292,7 @@ const Slip = ({
               id="basic-navbar-nav"
               className="justify-content-end mt-1"
             >
-              <OverlayTrigger
-                trigger="click"
-                placement="auto"
-                overlay={ExpiryTimePopover(tokenEndtime)}
-                rootClose={true}
-              >
-                <Button className="me-2 mb-1 fluid-button">Time</Button>
-              </OverlayTrigger>
+              <ExpiryButton endtime={tokenEndtime} />
               <Button className="me-2 mb-1 fluid-button" onClick={toggleLegend}>
                 Legend
               </Button>
@@ -315,18 +323,13 @@ const Slip = ({
               {floors &&
                 floors.map((item, index) => (
                   <tr key={`row-${index}`}>
-                    <th
-                      className="sticky-left-cell text-center align-middle"
-                      key={`${index}-${item.floor}`}
-                      scope="row"
-                    >
-                      {ZeroPad(item.floor, DEFAULT_FLOOR_PADDING)}
-                    </th>
+                    <FloorHeader index={index} floor={item.floor} />
                     {item.units.map((element, _) => (
                       <td
-                        className={`text-center align-middle inline-cell ${
-                          policy?.isAvailable(element) ? "available" : ""
-                        }`}
+                        className={`text-center align-middle inline-cell ${policy?.getUnitColor(
+                          element,
+                          completedPercent.completedValue
+                        )}`}
                         onClick={(event) =>
                           handleClickModal(
                             event,
@@ -448,7 +451,7 @@ const Slip = ({
             />
           </Form>
         </Modal>
-      </div>
+      </>
     </Fade>
   );
 };

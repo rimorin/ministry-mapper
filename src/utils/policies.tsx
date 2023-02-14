@@ -1,12 +1,25 @@
-import { unitDetails, Policy } from "./interface";
 import {
+  NOT_HOME_STATUS_CODES,
   COUNTABLE_HOUSEHOLD_STATUS,
   HOUSEHOLD_TYPES,
   STATUS_CODES,
-  NOT_HOME_STATUS_CODES,
-  LINK_TYPES,
-  HOUSEHOLD_LANGUAGES
-} from "./util";
+  HOUSEHOLD_LANGUAGES,
+  LINK_TYPES
+} from "./constants";
+import { unitDetails, Policy } from "./interface";
+
+const AVAILABLE_STYLE_CLASS = "available";
+
+const processAvailableColour = (
+  completedUnit = false,
+  countableUnit = true,
+  addressProgress = 0
+) => {
+  if (!countableUnit || completedUnit) return "";
+  if (addressProgress < 90) return AVAILABLE_STYLE_CLASS;
+
+  return `${AVAILABLE_STYLE_CLASS} cell-highlight`;
+};
 
 export class RacePolicy implements Policy {
   maxTries: number;
@@ -26,8 +39,12 @@ export class RacePolicy implements Policy {
       (unit.status === STATUS_CODES.NOT_HOME && tries >= this.maxTries)
     );
   }
-  isAvailable(unit: unitDetails): boolean {
-    return this.isCountable(unit) && !this.isCompleted(unit);
+  getUnitColor(unit: unitDetails, progress: number): string {
+    return processAvailableColour(
+      this.isCompleted(unit),
+      this.isCountable(unit),
+      progress
+    );
   }
   getHomeLanguage(): string {
     return "";
@@ -77,8 +94,12 @@ export class LanguagePolicy implements Policy {
       this.isHomeLanguage(unit)
     );
   }
-  isAvailable(unit: unitDetails): boolean {
-    return this.isCountable(unit) && !this.isCompleted(unit);
+  getUnitColor(unit: unitDetails, progress: number): string {
+    return processAvailableColour(
+      this.isCompleted(unit),
+      this.isCountable(unit),
+      progress
+    );
   }
   getHomeLanguage(): string {
     return this.homeLanguage;

@@ -12,11 +12,19 @@ import {
   orderByValue,
   off
 } from "firebase/database";
-import "../css/admin.css";
-import "../css/common.css";
+import "../../css/admin.css";
 import { signOut, User } from "firebase/auth";
 import { nanoid } from "nanoid";
-import { MouseEvent, ChangeEvent, FormEvent, useEffect, useState } from "react";
+import {
+  MouseEvent,
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  SyntheticEvent
+} from "react";
 import {
   Accordion,
   Badge,
@@ -34,9 +42,7 @@ import {
   Spinner,
   Table
 } from "react-bootstrap";
-import { database, auth } from "./../firebase";
-import Loader from "./loader";
-import UnitStatus from "./unit";
+import { database, auth } from "../../firebase";
 import {
   Policy,
   valuesDetails,
@@ -44,49 +50,9 @@ import {
   addressDetails,
   adminProps,
   unitMaps
-} from "./interface";
+} from "../../utils/interface";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
-import {
-  getLanguageDisplayByCode,
-  STATUS_CODES,
-  MUTABLE_CODES,
-  ZeroPad,
-  ModalUnitTitle,
-  assignmentMessage,
-  NavBarBranding,
-  getMaxUnitLength,
-  DEFAULT_FLOOR_PADDING,
-  addHours,
-  DEFAULT_SELF_DESTRUCT_HOURS,
-  getCompletedPercent,
-  FOUR_WKS_PERSONAL_SLIP_DESTRUCT_HOURS,
-  ADMIN_MODAL_TYPES,
-  RELOAD_INACTIVITY_DURATION,
-  RELOAD_CHECK_INTERVAL_MS,
-  errorHandler,
-  TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
-  HOUSEHOLD_TYPES,
-  MIN_START_FLOOR,
-  NOT_HOME_STATUS_CODES,
-  parseHHLanguages,
-  processHHLanguages,
-  TerritoryListing,
-  pollingFunction,
-  checkTraceLangStatus,
-  checkTraceRaceStatus,
-  processLinkCounts,
-  triggerPostalCodeListeners,
-  processAddressData,
-  ComponentAuthorizer,
-  USER_ACCESS_LEVELS,
-  LINK_TYPES,
-  ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS,
-  EnvironmentIndicator,
-  UA_DEVICE_MAKES,
-  UNSUPPORTED_BROWSER_MSG,
-  AggregationBadge
-} from "./util";
 import { useParams } from "react-router-dom";
 import {
   AdminLinkField,
@@ -98,16 +64,61 @@ import {
   HHNotHomeField,
   HHStatusField,
   HHTypeField,
-  ModalFooter
-} from "./form";
-import Welcome from "./welcome";
-import UnauthorizedPage from "./unauthorisedpage";
+  ModalFooter,
+  ModalUnitTitle
+} from "../../components/form";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
-import { RacePolicy, LanguagePolicy, LinkSession } from "./policies";
+import { RacePolicy, LanguagePolicy, LinkSession } from "../../utils/policies";
 import { zeroPad } from "react-countdown";
-import { ReactComponent as GearImage } from "../assets/gear.svg";
+import { ReactComponent as GearImage } from "../../assets/gear.svg";
 import getUA from "ua-parser-js";
+import { UnitStatus } from "../../components/table";
+import {
+  pollingFunction,
+  processAddressData,
+  processLinkCounts,
+  errorHandler,
+  processHHLanguages,
+  ZeroPad,
+  addHours,
+  triggerPostalCodeListeners,
+  assignmentMessage,
+  getMaxUnitLength,
+  getCompletedPercent,
+  checkTraceLangStatus,
+  checkTraceRaceStatus,
+  parseHHLanguages,
+  getLanguageDisplayByCode
+} from "../../utils/helpers";
+import {
+  EnvironmentIndicator,
+  TerritoryListing,
+  NavBarBranding,
+  AggregationBadge,
+  ComponentAuthorizer,
+  TerritoryHeader
+} from "../../components/navigation";
+import { Loader, UnauthorizedPage, Welcome } from "../../components/static";
+import {
+  STATUS_CODES,
+  HOUSEHOLD_TYPES,
+  NOT_HOME_STATUS_CODES,
+  MUTABLE_CODES,
+  ADMIN_MODAL_TYPES,
+  DEFAULT_FLOOR_PADDING,
+  DEFAULT_SELF_DESTRUCT_HOURS,
+  LINK_TYPES,
+  UNSUPPORTED_BROWSER_MSG,
+  UA_DEVICE_MAKES,
+  RELOAD_INACTIVITY_DURATION,
+  RELOAD_CHECK_INTERVAL_MS,
+  USER_ACCESS_LEVELS,
+  ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS,
+  FOUR_WKS_PERSONAL_SLIP_DESTRUCT_HOURS,
+  TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
+  MIN_START_FLOOR
+} from "../../utils/constants";
 function Admin({ user }: adminProps) {
   const { code } = useParams();
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -132,6 +143,9 @@ function Admin({ user }: adminProps) {
   const [isUnitDetails, setIsUnitDetails] = useState<boolean>(false);
   const [isProfile, setIsProfile] = useState<boolean>(false);
   const [isSpecialDevice, setIsSpecialDevice] = useState<boolean>(false);
+  const [isChangePostal, setIsChangePostal] = useState<boolean>(false);
+  const [isChangeTerritoryCode, setIsChangeTerritoryCode] =
+    useState<boolean>(false);
   const [showTerritoryListing, setShowTerritoryListing] =
     useState<boolean>(false);
   const [trackRace, setTrackRace] = useState<boolean>(true);
@@ -144,7 +158,6 @@ function Admin({ user }: adminProps) {
   const [sortedAddressList, setSortedAddressList] = useState<
     Array<territoryDetails>
   >([]);
-  const [selectedTerritory, setSelectedTerritory] = useState<String>();
   const [selectedTerritoryCode, setSelectedTerritoryCode] = useState<String>();
   const [selectedTerritoryName, setSelectedTerritoryName] = useState<String>();
   const [addressData, setAddressData] = useState(
@@ -194,7 +207,6 @@ function Admin({ user }: adminProps) {
 
     if (!territoryNameResult.exists()) return;
     const territoryName = territoryNameResult.val();
-    setSelectedTerritory(`${selectedTerritoryCode} - ${territoryName}`);
     setSelectedTerritoryCode(selectedTerritoryCode);
     setSelectedTerritoryName(territoryName);
     //Set selected states followed by result check
@@ -294,7 +306,7 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const deleteBlock = async (postalCode: String) => {
+  const deleteBlock = async (postalCode: String, showAlert: boolean) => {
     if (!selectedTerritoryCode) return;
     try {
       await remove(ref(database, `${postalCode}`));
@@ -318,7 +330,7 @@ function Admin({ user }: adminProps) {
           }
         }
       }
-      alert(`Deleted postal address, ${postalCode}.`);
+      if (showAlert) alert(`Deleted postal address, ${postalCode}.`);
       await refreshCongregationTerritory(`${selectedTerritoryCode}`);
     } catch (error) {
       errorHandler(error, rollbar);
@@ -438,6 +450,12 @@ function Admin({ user }: adminProps) {
         break;
       case ADMIN_MODAL_TYPES.PROFILE:
         setIsProfile(!isProfile);
+        break;
+      case ADMIN_MODAL_TYPES.UPDATE_POSTAL:
+        setIsChangePostal(!isChangePostal);
+        break;
+      case ADMIN_MODAL_TYPES.UPDATE_TERRITORY_CODE:
+        setIsChangeTerritoryCode(!isChangeTerritoryCode);
         break;
       default:
         setIsOpen(!isOpen);
@@ -596,7 +614,6 @@ function Admin({ user }: adminProps) {
         )
       );
       setSelectedTerritoryName(territoryName);
-      setSelectedTerritory(`${selectedTerritoryCode} - ${territoryName}`);
       toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
     } catch (error) {
       errorHandler(error, rollbar);
@@ -614,6 +631,77 @@ function Admin({ user }: adminProps) {
         set(ref(database, `/${details.postal}/name`), details.name)
       );
       toggleModal(ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME);
+    } catch (error) {
+      errorHandler(error, rollbar);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleUpdateTerritoryCode = async (event: FormEvent<HTMLElement>) => {
+    event.preventDefault();
+    const details = values as valuesDetails;
+    const newTerritoryCode = `${details.code}`;
+    setIsSaving(true);
+    try {
+      const newCodeRef = ref(
+        database,
+        `congregations/${code}/territories/${newTerritoryCode}`
+      );
+      const existingTerritory = await get(newCodeRef);
+      if (existingTerritory.exists()) {
+        alert(`Territory code, ${newTerritoryCode} already exist.`);
+        return;
+      }
+      const oldCodeRef = ref(
+        database,
+        `congregations/${code}/territories/${selectedTerritoryCode}`
+      );
+      const oldTerritoryData = await get(oldCodeRef);
+      await pollingFunction(() => set(newCodeRef, oldTerritoryData.val()));
+      await pollingFunction(() => remove(oldCodeRef));
+      toggleModal(ADMIN_MODAL_TYPES.UPDATE_TERRITORY_CODE);
+      processSelectedTerritory(newTerritoryCode);
+    } catch (error) {
+      errorHandler(error, rollbar);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleClickChangePostal = (postalcode: String) => {
+    setValues({ ...values, postal: postalcode, newPostal: "" });
+    toggleModal(ADMIN_MODAL_TYPES.UPDATE_POSTAL);
+  };
+
+  const handleUpdatePostalcode = async (event: FormEvent<HTMLElement>) => {
+    event.preventDefault();
+    const details = values as valuesDetails;
+    const newPostalCode = `${details.newPostal}`;
+    const oldPostalCode = `${details.postal}`;
+    setIsSaving(true);
+    try {
+      const newPostalRef = ref(database, newPostalCode);
+      const existingAddress = await get(newPostalRef);
+      if (existingAddress.exists()) {
+        alert(`Postal address, ${newPostalCode} already exist.`);
+        return;
+      }
+      const oldPostalData = await get(ref(database, oldPostalCode));
+      await pollingFunction(() => set(newPostalRef, oldPostalData.val()));
+      await pollingFunction(() =>
+        set(
+          push(
+            ref(
+              database,
+              `congregations/${code}/territories/${selectedTerritoryCode}/addresses`
+            )
+          ),
+          newPostalCode
+        )
+      );
+      await pollingFunction(() => deleteBlock(oldPostalCode, false));
+      await toggleModal(ADMIN_MODAL_TYPES.UPDATE_POSTAL);
     } catch (error) {
       errorHandler(error, rollbar);
     } finally {
@@ -884,10 +972,6 @@ function Admin({ user }: adminProps) {
     return territoryList;
   };
 
-  const toggleTerritoryListing = () => {
-    setShowTerritoryListing(!showTerritoryListing);
-  };
-
   const getUserAccessLevel = async (
     user: User,
     congregationCode: string | undefined
@@ -968,6 +1052,25 @@ function Admin({ user }: adminProps) {
       alert(UNSUPPORTED_BROWSER_MSG);
     }
   };
+
+  const handleTerritorySelect = useCallback(
+    (eventKey: string | null, _: SyntheticEvent<unknown, Event>) => {
+      processSelectedTerritory(`${eventKey}`);
+      toggleTerritoryListing();
+    },
+    // Reset cache when the territory dropdown is selected
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [showTerritoryListing]
+  );
+
+  const toggleTerritoryListing = useCallback(() => {
+    setShowTerritoryListing(!showTerritoryListing);
+  }, [showTerritoryListing]);
+
+  const congregationTerritoryList = useMemo(
+    () => Array.from(territories.values()),
+    [territories]
+  );
 
   const getTerritoryAddressData = (
     addresses: Map<String, addressDetails>,
@@ -1059,10 +1162,6 @@ function Admin({ user }: adminProps) {
       currentTime = new Date().getTime();
     };
 
-    document.body.addEventListener("mousemove", setActivityTime);
-    document.body.addEventListener("keypress", setActivityTime);
-    document.body.addEventListener("touchstart", setActivityTime);
-
     const refreshPage = () => {
       const inactivityPeriod = new Date().getTime() - currentTime;
       if (inactivityPeriod >= RELOAD_INACTIVITY_DURATION) {
@@ -1072,32 +1171,34 @@ function Admin({ user }: adminProps) {
       }
     };
 
+    document.body.addEventListener("mousemove", setActivityTime);
+    document.body.addEventListener("keypress", setActivityTime);
+    document.body.addEventListener("touchstart", setActivityTime);
+
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
   }, [user, code, rollbar]);
+
+  const territoryAddressData = useMemo(
+    () => getTerritoryAddressData(addressData, policy as Policy),
+    [addressData, policy]
+  );
 
   if (isLoading) return <Loader />;
   if (isUnauthorised) return <UnauthorizedPage />;
   const isDataCompletelyFetched = addressData.size === sortedAddressList.length;
-  const territoryAddressData = getTerritoryAddressData(
-    addressData,
-    policy as Policy
-  );
-  const congregationTerritoryList = Array.from(territories.values());
   const isAdmin = userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT;
   const isReadonly = userAccessLevel === USER_ACCESS_LEVELS.READ_ONLY;
+
   return (
     <Fade appear={true} in={true}>
-      <div>
+      <>
         <EnvironmentIndicator />
         <TerritoryListing
           showListing={showTerritoryListing}
-          hideFunction={toggleTerritoryListing}
           territories={congregationTerritoryList}
           selectedTerritory={selectedTerritoryCode}
-          handleSelect={(eventKey, _) => {
-            processSelectedTerritory(`${eventKey}`);
-            toggleTerritoryListing();
-          }}
+          hideFunction={toggleTerritoryListing}
+          handleSelect={handleTerritorySelect}
         />
         <Navbar bg="light" variant="light" expand="lg">
           <Container fluid>
@@ -1115,20 +1216,20 @@ function Admin({ user }: adminProps) {
                     variant="outline-primary"
                     onClick={toggleTerritoryListing}
                   >
-                    {selectedTerritory ? (
+                    {selectedTerritoryCode ? (
                       <>
                         <AggregationBadge
                           isDataFetched={isDataCompletelyFetched}
                           aggregate={territoryAddressData.aggregate}
                         />
-                        {selectedTerritory}
+                        {selectedTerritoryCode}
                       </>
                     ) : (
                       "Select Territory"
                     )}
                   </Button>
                 )}
-              {!selectedTerritory && (
+              {!selectedTerritoryCode && (
                 <ComponentAuthorizer
                   requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
                   userPermission={userAccessLevel}
@@ -1146,12 +1247,12 @@ function Admin({ user }: adminProps) {
                   </Button>
                 </ComponentAuthorizer>
               )}
-              {selectedTerritory && (
+              {selectedTerritoryCode && (
                 <ComponentAuthorizer
                   requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
                   userPermission={userAccessLevel}
                 >
-                  <Dropdown className="m-1">
+                  <Dropdown className="m-1 d-inline-block">
                     <Dropdown.Toggle variant="outline-primary" size="sm">
                       Territory
                     </Dropdown.Toggle>
@@ -1163,6 +1264,14 @@ function Admin({ user }: adminProps) {
                         }}
                       >
                         Create New
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        onClick={() => {
+                          setValues({ ...values, code: "" });
+                          toggleModal(ADMIN_MODAL_TYPES.UPDATE_TERRITORY_CODE);
+                        }}
+                      >
+                        Change Code
                       </Dropdown.Item>
                       <Dropdown.Item
                         onClick={() =>
@@ -1273,7 +1382,7 @@ function Admin({ user }: adminProps) {
                   </Dropdown>
                 </ComponentAuthorizer>
               )}
-              {selectedTerritory && (
+              {selectedTerritoryCode && (
                 <ComponentAuthorizer
                   requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
                   userPermission={userAccessLevel}
@@ -1321,17 +1430,6 @@ function Admin({ user }: adminProps) {
                 size="sm"
                 variant="outline-primary"
                 onClick={async () => {
-                  clearAdminState();
-                  await signOut(auth);
-                }}
-              >
-                Log Out
-              </Button>
-              <Button
-                className="m-1"
-                size="sm"
-                variant="outline-primary"
-                onClick={async () => {
                   toggleModal(ADMIN_MODAL_TYPES.PROFILE);
                 }}
               >
@@ -1340,7 +1438,8 @@ function Admin({ user }: adminProps) {
             </Navbar.Collapse>
           </Container>
         </Navbar>
-        {!selectedTerritory && <Welcome />}
+        {!selectedTerritoryCode && <Welcome />}
+        <TerritoryHeader name={`${selectedTerritoryName}`} />
         {/* There is no need to open all accordion for read-only users. */}
         <Accordion
           activeKey={isReadonly ? undefined : accordingKeys}
@@ -1622,6 +1721,13 @@ function Admin({ user }: adminProps) {
                             <Dropdown.Menu>
                               <Dropdown.Item
                                 onClick={() => {
+                                  handleClickChangePostal(currentPostalcode);
+                                }}
+                              >
+                                Change Postalcode
+                              </Dropdown.Item>
+                              <Dropdown.Item
+                                onClick={() => {
                                   handleClickChangeAddressName(
                                     currentPostalcode,
                                     currentPostalname
@@ -1730,7 +1836,8 @@ function Admin({ user }: adminProps) {
                                                 variant="primary"
                                                 onClick={() => {
                                                   deleteBlock(
-                                                    currentPostalcode
+                                                    currentPostalcode,
+                                                    true
                                                   );
                                                   onClose();
                                                 }}
@@ -1896,11 +2003,10 @@ function Admin({ user }: adminProps) {
                                   (detailsElement, index) => (
                                     <td
                                       align="center"
-                                      className={`inline-cell ${
-                                        policy?.isAvailable(detailsElement)
-                                          ? "available"
-                                          : ""
-                                      }`}
+                                      className={`inline-cell ${policy?.getUnitColor(
+                                        detailsElement,
+                                        completedPercent.completedValue
+                                      )}`}
                                       onClick={(event) =>
                                         handleClickModal(
                                           event,
@@ -2009,6 +2115,94 @@ function Admin({ user }: adminProps) {
                 </Button>
                 <Button type="submit" variant="primary">
                   Revoke
+                </Button>
+              </Modal.Footer>
+            </Form>
+          </Modal>
+        )}
+        {isAdmin && (
+          <Modal show={isChangeTerritoryCode}>
+            <Modal.Header>
+              <Modal.Title>Change territory code</Modal.Title>
+            </Modal.Header>
+            <Form onSubmit={handleUpdateTerritoryCode}>
+              <Modal.Body>
+                <Form.Group className="mb-3">
+                  <Form.Label htmlFor="userid">
+                    Existing Territory Code
+                  </Form.Label>
+                  <Form.Control
+                    readOnly
+                    id="existingcode"
+                    defaultValue={`${selectedTerritoryCode}`}
+                  />
+                </Form.Group>
+                <GenericTextField
+                  label="New Territory Code"
+                  name="code"
+                  handleChange={(e: ChangeEvent<HTMLElement>) => {
+                    const { value } = e.target as HTMLInputElement;
+                    setValues({ ...values, code: value });
+                  }}
+                  changeValue={`${(values as valuesDetails).code}`}
+                  required={true}
+                  placeholder={"Territory code. For eg, M01, W12, etc."}
+                />
+              </Modal.Body>
+              <Modal.Footer>
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    toggleModal(ADMIN_MODAL_TYPES.UPDATE_TERRITORY_CODE)
+                  }
+                >
+                  Close
+                </Button>
+                <Button type="submit" variant="primary">
+                  Change
+                </Button>
+              </Modal.Footer>
+            </Form>
+          </Modal>
+        )}
+        {isAdmin && (
+          <Modal show={isChangePostal}>
+            <Modal.Header>
+              <Modal.Title>Change address postal code</Modal.Title>
+            </Modal.Header>
+            <Form onSubmit={handleUpdatePostalcode}>
+              <Modal.Body>
+                <Form.Group className="mb-3">
+                  <Form.Label htmlFor="userid">Existing Postal Code</Form.Label>
+                  <Form.Control
+                    readOnly
+                    id="existingcode"
+                    defaultValue={`${(values as valuesDetails).postal}`}
+                  />
+                </Form.Group>
+                <GenericTextField
+                  label="New Postal Code"
+                  name="postalcode"
+                  handleChange={(e: ChangeEvent<HTMLElement>) => {
+                    const { value } = e.target as HTMLInputElement;
+                    setValues({ ...values, newPostal: value });
+                  }}
+                  changeValue={`${(values as valuesDetails).newPostal}`}
+                  required={true}
+                  placeholder={
+                    "Block/Building postal code. Eg, 730801, 752367, etc"
+                  }
+                />
+              </Modal.Body>
+              <Modal.Footer>
+                <Button
+                  variant="secondary"
+                  onClick={() => toggleModal(ADMIN_MODAL_TYPES.UPDATE_POSTAL)}
+                >
+                  Close
+                </Button>
+                <Button type="submit" variant="primary">
+                  Change
                 </Button>
               </Modal.Footer>
             </Form>
@@ -2378,7 +2572,7 @@ function Admin({ user }: adminProps) {
         </Modal>
         <Modal show={isProfile}>
           <Modal.Header>
-            <Modal.Title>{`My profile`}</Modal.Title>
+            <Modal.Title>My Profile</Modal.Title>
           </Modal.Header>
           <Form>
             <Modal.Body>
@@ -2397,7 +2591,7 @@ function Admin({ user }: adminProps) {
                   id="txtMaxTries"
                   defaultValue={`${policy?.getMaxTries()}`}
                 />
-                <Form.Text className="text-muted">
+                <Form.Text muted>
                   The number of times to try not at homes before considering it
                   done
                 </Form.Text>
@@ -2416,8 +2610,25 @@ function Admin({ user }: adminProps) {
                   />
                 </Form.Group>
               )}
+              <Form.Group className="mb-3">
+                <Form.Label htmlFor="userid">Application Version</Form.Label>
+                <Form.Control
+                  readOnly
+                  id="appversionno"
+                  defaultValue={process.env.REACT_APP_VERSION}
+                />
+              </Form.Group>
             </Modal.Body>
             <Modal.Footer>
+              <Button
+                variant="primary"
+                onClick={async () => {
+                  clearAdminState();
+                  await signOut(auth);
+                }}
+              >
+                Log Out
+              </Button>
               <Button
                 variant="secondary"
                 onClick={() => toggleModal(ADMIN_MODAL_TYPES.PROFILE)}
@@ -2427,7 +2638,7 @@ function Admin({ user }: adminProps) {
             </Modal.Footer>
           </Form>
         </Modal>
-      </div>
+      </>
     </Fade>
   );
 }

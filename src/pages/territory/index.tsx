@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
-import { database } from "../firebase";
-import "bootstrap/dist/css/bootstrap.min.css";
-import Loader from "./loader";
+import { database } from "../../firebase";
 import { useParams } from "react-router-dom";
 import { child, onValue, ref } from "firebase/database";
-import InvalidPage from "./invalidpage";
-import NotFoundPage from "./notfoundpage";
 import Slip from "./slip";
-import { LinkSession } from "./policies";
+import { LinkSession } from "../../utils/policies";
+import { Loader, NotFoundPage, InvalidPage } from "../../components/static";
 
 function Territory() {
   const { id, postalcode, congregationcode } = useParams();
