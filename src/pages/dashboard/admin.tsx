@@ -1439,7 +1439,7 @@ function Admin({ user }: adminProps) {
           </Container>
         </Navbar>
         {!selectedTerritoryCode && <Welcome />}
-        <TerritoryHeader name={`${selectedTerritoryName}`} />
+        <TerritoryHeader name={selectedTerritoryName} />
         {/* There is no need to open all accordion for read-only users. */}
         <Accordion
           activeKey={isReadonly ? undefined : accordingKeys}
