@@ -173,5 +173,5 @@ export interface tableHeaderProp {
 }
 
 export interface territoryHeaderProp {
-  name: String;
+  name: String | undefined;
 }

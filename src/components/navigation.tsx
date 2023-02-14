@@ -229,7 +229,10 @@ const AggregationBadge = memo(
 const TerritoryHeader = memo(({ name }: territoryHeaderProp) => {
   if (!name) return <></>;
   return (
-    <Container className="text-center bg-light py-2 fw-bolder text-success border-top">
+    <Container
+      fluid
+      className="text-center bg-light py-2 fw-bolder text-success border-top"
+    >
       {name}
     </Container>
   );
