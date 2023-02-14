@@ -1,3 +1,25 @@
+# [1.2.0](https://github.com/rimorin/ministry-mapper/compare/v1.1.1...v1.2.0) (2023-02-14)
+
+
+### Bug Fixes
+
+* fix package.json script for getting version ([04703ab](https://github.com/rimorin/ministry-mapper/commit/04703abb1954a19958e3ba1ec44826389d4ae252))
+* semantic release not updating package json version ([57a163c](https://github.com/rimorin/ministry-mapper/commit/57a163c5740eca26b8198cd41970e3ec12d21253))
+
+
+### Features
+
+* allow postal code modification in admin ([857314d](https://github.com/rimorin/ministry-mapper/commit/857314dc51df58e89b6b2f5f5ddde0f22731b3a7))
+* allow territory code modification in admin ([98f03c2](https://github.com/rimorin/ministry-mapper/commit/98f03c214974480ed27686bca927733a82b82707))
+* display app version in admin ([8363753](https://github.com/rimorin/ministry-mapper/commit/83637530cbece8b691621dca8f8b4862410759d8))
+* implement cell hightlighting when handling the last few units of an address ([686e2ff](https://github.com/rimorin/ministry-mapper/commit/686e2ffeffd2c364e8ca19ddc633a47eec90ec51))
+
+
+### Performance Improvements
+
+* memotization of values and components ([28dab52](https://github.com/rimorin/ministry-mapper/commit/28dab52342e27cafceead80cf9cdb28a38f5bb70))
+* use react fragment instead of div ([8362445](https://github.com/rimorin/ministry-mapper/commit/8362445651d82fd9bd401b7aab3be188cd1e1f5d))
+
 ## [1.1.1](https://github.com/rimorin/ministry-mapper/compare/v1.1.0...v1.1.1) (2023-02-05)
 
 
