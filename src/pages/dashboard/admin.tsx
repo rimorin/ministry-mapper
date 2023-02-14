@@ -1724,7 +1724,7 @@ function Admin({ user }: adminProps) {
                                   handleClickChangePostal(currentPostalcode);
                                 }}
                               >
-                                Change Postalcode
+                                Change Postal Code
                               </Dropdown.Item>
                               <Dropdown.Item
                                 onClick={() => {
