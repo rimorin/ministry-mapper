@@ -1,3 +1,10 @@
+## [1.2.5](https://github.com/rimorin/ministry-mapper/compare/v1.2.4...v1.2.5) (2023-02-15)
+
+
+### Bug Fixes
+
+* github workflow for semantic versioning ([b22ff90](https://github.com/rimorin/ministry-mapper/commit/b22ff909d1b5ca01f977fc2c22484559ab8b8c05))
+
 # [1.2.0](https://github.com/rimorin/ministry-mapper/compare/v1.1.1...v1.2.0) (2023-02-14)
 
 
