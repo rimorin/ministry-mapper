@@ -2619,7 +2619,7 @@ function Admin({ user }: adminProps) {
                 />
               </Form.Group>
             </Modal.Body>
-            <Modal.Footer>
+            <Modal.Footer className="justify-content-around">
               <Button
                 variant="primary"
                 onClick={async () => {
