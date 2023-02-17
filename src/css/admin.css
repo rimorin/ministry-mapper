@@ -5,3 +5,10 @@
 .aggregate-dark-text {
   color: black;
 }
+
+.back-to-top {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  cursor: pointer;
+}

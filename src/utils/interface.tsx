@@ -175,3 +175,7 @@ export interface tableHeaderProp {
 export interface territoryHeaderProp {
   name: String | undefined;
 }
+
+export interface backToTopProp {
+  showButton: boolean;
+}
