@@ -97,7 +97,8 @@ import {
   NavBarBranding,
   AggregationBadge,
   ComponentAuthorizer,
-  TerritoryHeader
+  TerritoryHeader,
+  BackToTopButton
 } from "../../components/navigation";
 import { Loader, UnauthorizedPage, Welcome } from "../../components/static";
 import {
@@ -117,7 +118,8 @@ import {
   ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS,
   FOUR_WKS_PERSONAL_SLIP_DESTRUCT_HOURS,
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
-  MIN_START_FLOOR
+  MIN_START_FLOOR,
+  PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY
 } from "../../utils/constants";
 function Admin({ user }: adminProps) {
   const { code } = useParams();
@@ -146,6 +148,7 @@ function Admin({ user }: adminProps) {
   const [isChangePostal, setIsChangePostal] = useState<boolean>(false);
   const [isChangeTerritoryCode, setIsChangeTerritoryCode] =
     useState<boolean>(false);
+  const [showBkTopButton, setShowBkTopButton] = useState(false);
   const [showTerritoryListing, setShowTerritoryListing] =
     useState<boolean>(false);
   const [trackRace, setTrackRace] = useState<boolean>(true);
@@ -1174,6 +1177,9 @@ function Admin({ user }: adminProps) {
     document.body.addEventListener("mousemove", setActivityTime);
     document.body.addEventListener("keypress", setActivityTime);
     document.body.addEventListener("touchstart", setActivityTime);
+    window.addEventListener("scroll", () => {
+      setShowBkTopButton(window.scrollY > PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY);
+    });
 
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
   }, [user, code, rollbar]);
@@ -2048,6 +2054,7 @@ function Admin({ user }: adminProps) {
             );
           })}
         </Accordion>
+        <BackToTopButton showButton={showBkTopButton} />
         {isAdmin && (
           <Modal show={isTerritoryRename}>
             <Modal.Header>

@@ -9,7 +9,8 @@ import {
   Spinner,
   Button,
   OverlayTrigger,
-  Container
+  Container,
+  Fade
 } from "react-bootstrap";
 import {
   BrandingProps,
@@ -18,12 +19,14 @@ import {
   aggregateProp,
   ExpiryButtonProp,
   AuthorizerProp,
-  territoryHeaderProp
+  territoryHeaderProp,
+  backToTopProp
 } from "../utils/interface";
 import Countdown from "react-countdown";
 import { memo } from "react";
 import { NotHomeIcon } from "./table";
 import { TERRITORY_SELECTOR_VIEWPORT_HEIGHT } from "../utils/constants";
+import { ReactComponent as TopArrowImage } from "../assets/top-arrow.svg";
 
 const ComponentAuthorizer = ({
   requiredPermission,
@@ -238,6 +241,22 @@ const TerritoryHeader = memo(({ name }: territoryHeaderProp) => {
   );
 });
 
+const BackToTopButton = memo(({ showButton }: backToTopProp) => (
+  <Fade in={showButton}>
+    <div
+      onClick={() => {
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth"
+        });
+      }}
+      className="back-to-top"
+    >
+      <TopArrowImage />
+    </div>
+  </Fade>
+));
+
 export {
   NavBarBranding,
   Legend,
@@ -247,5 +266,6 @@ export {
   AggregationBadge,
   ComponentAuthorizer,
   EnvironmentIndicator,
-  TerritoryHeader
+  TerritoryHeader,
+  BackToTopButton
 };
