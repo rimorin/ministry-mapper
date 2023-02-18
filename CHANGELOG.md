@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/rimorin/ministry-mapper/compare/v1.2.5...v1.3.0) (2023-02-18)
+
+
+### Features
+
+* back to top button for admins and conductors ([b8a3fab](https://github.com/rimorin/ministry-mapper/commit/b8a3fababa409fe18f44deb7e4451b340a8e1a2b))
+
 ## [1.2.5](https://github.com/rimorin/ministry-mapper/compare/v1.2.4...v1.2.5) (2023-02-15)
 
 
