@@ -89,7 +89,8 @@ import {
   checkTraceLangStatus,
   checkTraceRaceStatus,
   parseHHLanguages,
-  getLanguageDisplayByCode
+  getLanguageDisplayByCode,
+  checkCongregationExpireHours
 } from "../../utils/helpers";
 import {
   EnvironmentIndicator,
@@ -169,6 +170,9 @@ function Admin({ user }: adminProps) {
   const [accordingKeys, setAccordionKeys] = useState<Array<string>>([]);
   const [policy, setPolicy] = useState<Policy>();
   const [userAccessLevel, setUserAccessLevel] = useState<number>();
+  const [defaultExpiryHours, setDefaultExpiryHours] = useState<number>(
+    DEFAULT_SELF_DESTRUCT_HOURS
+  );
   const domain = process.env.PUBLIC_URL;
   const rollbar = useRollbar();
   let unsubscribers = new Array<Unsubscribe>();
@@ -530,7 +534,7 @@ function Admin({ user }: adminProps) {
     linktype: number,
     postalcode: String,
     addressLinkId: String,
-    hours = DEFAULT_SELF_DESTRUCT_HOURS
+    hours: number
   ) => {
     const link = new LinkSession();
     link.tokenEndtime = addHours(hours);
@@ -928,7 +932,7 @@ function Admin({ user }: adminProps) {
     title: string,
     body: string,
     url: string,
-    hours = DEFAULT_SELF_DESTRUCT_HOURS
+    hours: number
   ) => {
     if (navigator.share) {
       try {
@@ -1140,6 +1144,10 @@ function Admin({ user }: adminProps) {
         racePolicy.fromClaims(tokenData.claims);
         setPolicy(racePolicy);
       }
+    });
+    checkCongregationExpireHours(`${code}`).then((snapshot) => {
+      if (!snapshot.exists()) return;
+      setDefaultExpiryHours(snapshot.val());
     });
     // Huawei is considered special due to its unusual behaviour in their OS native share functionality.
     setIsSpecialDevice(getUA().device.vendor === UA_DEVICE_MAKES.HUAWEI);
@@ -1602,7 +1610,8 @@ function Admin({ user }: adminProps) {
                                     LINK_TYPES.ASSIGNMENT,
                                     currentPostalcode,
                                     currentPostalname,
-                                    addressLinkId
+                                    addressLinkId,
+                                    defaultExpiryHours
                                   );
                                   return;
                                 }
@@ -1612,7 +1621,8 @@ function Admin({ user }: adminProps) {
                                   addressLinkId,
                                   `Units for ${currentPostalname}`,
                                   assignmentMessage(currentPostalname),
-                                  `${domain}/${currentPostalcode}/${code}/${addressLinkId}`
+                                  `${domain}/${currentPostalcode}/${code}/${addressLinkId}`,
+                                  defaultExpiryHours
                                 );
                               }}
                             >
@@ -1652,7 +1662,8 @@ function Admin({ user }: adminProps) {
                                   await setTimedLink(
                                     LINK_TYPES.VIEW,
                                     currentPostalcode,
-                                    addressLinkId
+                                    addressLinkId,
+                                    defaultExpiryHours
                                   );
                                   territoryWindow!.location.href = `${domain}/${currentPostalcode}/${code}/${addressLinkId}`;
                                 } catch (error) {
