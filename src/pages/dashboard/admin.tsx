@@ -764,7 +764,6 @@ function Admin({ user }: adminProps) {
     setIsSaving(true);
     try {
       await pollingFunction(() => update(ref(database), unitUpdates));
-      await refreshCongregationTerritory(`${selectedTerritoryCode}`);
     } catch (error) {
       errorHandler(error, rollbar);
     } finally {
@@ -792,7 +791,6 @@ function Admin({ user }: adminProps) {
     setIsSaving(true);
     try {
       await pollingFunction(() => update(ref(database), unitUpdates));
-      await refreshCongregationTerritory(`${selectedTerritoryCode}`);
     } catch (error) {
       errorHandler(error, rollbar);
     } finally {
