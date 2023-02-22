@@ -179,3 +179,21 @@ export interface territoryHeaderProp {
 export interface backToTopProp {
   showButton: boolean;
 }
+
+export interface territoryTableProps {
+  floors: floorDetails[];
+  maxUnitNumberLength: number;
+  policy: Policy | undefined;
+  completedPercent: {
+    completedValue: number;
+    completedDisplay: string;
+  };
+  trackRace: boolean;
+  trackLanguages: boolean;
+  postalCode: string;
+  adminUnitHeaderStyle?: string;
+  userAccessLevel?: number;
+  handleUnitStatusUpdate: (event: React.MouseEvent<HTMLElement>) => void;
+  handleUnitNoUpdate?: (event: React.MouseEvent<HTMLElement>) => void;
+  handleFloorDelete?: (event: React.MouseEvent<HTMLElement>) => void;
+}

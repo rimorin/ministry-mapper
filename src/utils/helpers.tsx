@@ -129,6 +129,12 @@ const checkTraceLangStatus = async (code: string) => {
   );
 };
 
+const checkCongregationExpireHours = async (code: string) => {
+  return await pollingFunction(() =>
+    get(child(ref(database), `congregations/${code}/expiryHours`))
+  );
+};
+
 const processAddressData = async (postal: String, data: any) => {
   const dataList = [];
   for (const floor in data) {
@@ -230,6 +236,7 @@ export {
   pollingFunction,
   checkTraceLangStatus,
   checkTraceRaceStatus,
+  checkCongregationExpireHours,
   processLinkCounts,
   triggerPostalCodeListeners,
   processAddressData

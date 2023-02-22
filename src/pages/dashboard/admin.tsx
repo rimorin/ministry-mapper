@@ -39,8 +39,7 @@ import {
   Modal,
   Navbar,
   ProgressBar,
-  Spinner,
-  Table
+  Spinner
 } from "react-bootstrap";
 import { database, auth } from "../../firebase";
 import {
@@ -73,7 +72,7 @@ import { RacePolicy, LanguagePolicy, LinkSession } from "../../utils/policies";
 import { zeroPad } from "react-countdown";
 import { ReactComponent as GearImage } from "../../assets/gear.svg";
 import getUA from "ua-parser-js";
-import { UnitStatus } from "../../components/table";
+import { AdminTable } from "../../components/table";
 import {
   pollingFunction,
   processAddressData,
@@ -89,7 +88,8 @@ import {
   checkTraceLangStatus,
   checkTraceRaceStatus,
   parseHHLanguages,
-  getLanguageDisplayByCode
+  getLanguageDisplayByCode,
+  checkCongregationExpireHours
 } from "../../utils/helpers";
 import {
   EnvironmentIndicator,
@@ -119,7 +119,8 @@ import {
   FOUR_WKS_PERSONAL_SLIP_DESTRUCT_HOURS,
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   MIN_START_FLOOR,
-  PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY
+  PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY,
+  DEFAULT_UNIT_SEQUENCE_NO
 } from "../../utils/constants";
 function Admin({ user }: adminProps) {
   const { code } = useParams();
@@ -169,6 +170,9 @@ function Admin({ user }: adminProps) {
   const [accordingKeys, setAccordionKeys] = useState<Array<string>>([]);
   const [policy, setPolicy] = useState<Policy>();
   const [userAccessLevel, setUserAccessLevel] = useState<number>();
+  const [defaultExpiryHours, setDefaultExpiryHours] = useState<number>(
+    DEFAULT_SELF_DESTRUCT_HOURS
+  );
   const domain = process.env.PUBLIC_URL;
   const rollbar = useRollbar();
   let unsubscribers = new Array<Unsubscribe>();
@@ -530,7 +534,7 @@ function Admin({ user }: adminProps) {
     linktype: number,
     postalcode: String,
     addressLinkId: String,
-    hours = DEFAULT_SELF_DESTRUCT_HOURS
+    hours: number
   ) => {
     const link = new LinkSession();
     link.tokenEndtime = addHours(hours);
@@ -725,6 +729,19 @@ function Admin({ user }: adminProps) {
     const blockAddresses = addressData.get(`${postalCode}`);
     if (!blockAddresses) return;
 
+    if (!isDelete) {
+      const existingUnitNo = await get(
+        ref(
+          database,
+          `/${postalCode}/units/${blockAddresses.floors[0].floor}/${unitNumber}`
+        )
+      );
+      if (existingUnitNo.exists()) {
+        alert(`Unit number, ${unitNumber} already exist.`);
+        return;
+      }
+    }
+
     const unitUpdates: unitMaps = {};
     for (const index in blockAddresses.floors) {
       const floorDetails = blockAddresses.floors[index];
@@ -739,14 +756,14 @@ function Admin({ user }: adminProps) {
               status: STATUS_CODES.DEFAULT,
               nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
               x_floor: floorDetails.floor,
-              languages: ""
+              languages: "",
+              sequence: DEFAULT_UNIT_SEQUENCE_NO
             };
       });
     }
     setIsSaving(true);
     try {
       await pollingFunction(() => update(ref(database), unitUpdates));
-      await refreshCongregationTerritory(`${selectedTerritoryCode}`);
     } catch (error) {
       errorHandler(error, rollbar);
     } finally {
@@ -774,7 +791,6 @@ function Admin({ user }: adminProps) {
     setIsSaving(true);
     try {
       await pollingFunction(() => update(ref(database), unitUpdates));
-      await refreshCongregationTerritory(`${selectedTerritoryCode}`);
     } catch (error) {
       errorHandler(error, rollbar);
     } finally {
@@ -928,7 +944,7 @@ function Admin({ user }: adminProps) {
     title: string,
     body: string,
     url: string,
-    hours = DEFAULT_SELF_DESTRUCT_HOURS
+    hours: number
   ) => {
     if (navigator.share) {
       try {
@@ -1140,6 +1156,10 @@ function Admin({ user }: adminProps) {
         racePolicy.fromClaims(tokenData.claims);
         setPolicy(racePolicy);
       }
+    });
+    checkCongregationExpireHours(`${code}`).then((snapshot) => {
+      if (!snapshot.exists()) return;
+      setDefaultExpiryHours(snapshot.val());
     });
     // Huawei is considered special due to its unusual behaviour in their OS native share functionality.
     setIsSpecialDevice(getUA().device.vendor === UA_DEVICE_MAKES.HUAWEI);
@@ -1602,7 +1622,8 @@ function Admin({ user }: adminProps) {
                                     LINK_TYPES.ASSIGNMENT,
                                     currentPostalcode,
                                     currentPostalname,
-                                    addressLinkId
+                                    addressLinkId,
+                                    defaultExpiryHours
                                   );
                                   return;
                                 }
@@ -1612,7 +1633,8 @@ function Admin({ user }: adminProps) {
                                   addressLinkId,
                                   `Units for ${currentPostalname}`,
                                   assignmentMessage(currentPostalname),
-                                  `${domain}/${currentPostalcode}/${code}/${addressLinkId}`
+                                  `${domain}/${currentPostalcode}/${code}/${addressLinkId}`,
+                                  defaultExpiryHours
                                 );
                               }}
                             >
@@ -1652,7 +1674,8 @@ function Admin({ user }: adminProps) {
                                   await setTimedLink(
                                     LINK_TYPES.VIEW,
                                     currentPostalcode,
-                                    addressLinkId
+                                    addressLinkId,
+                                    defaultExpiryHours
                                   );
                                   territoryWindow!.location.href = `${domain}/${currentPostalcode}/${code}/${addressLinkId}`;
                                 } catch (error) {
@@ -1874,180 +1897,104 @@ function Admin({ user }: adminProps) {
                         </ComponentAuthorizer>
                       </Container>
                     </Navbar>
-                    <Table
-                      key={`table-${currentPostalcode}`}
-                      bordered
-                      striped
-                      hover
-                      responsive="sm"
-                      className="sticky-table"
-                    >
-                      <thead>
-                        <tr>
-                          <th
-                            scope="col"
-                            className="text-center align-middle sticky-left-cell"
-                          >
-                            lvl/unit
-                          </th>
-                          {addressElement.floors &&
-                            addressElement.floors[0].units.map(
-                              (item, index) => {
-                                return (
-                                  <th
-                                    key={`${index}-${item.number}`}
-                                    scope="col"
-                                    className={`${
-                                      isAdmin ? "admin-unit-header " : ""
-                                    }text-center align-middle`}
-                                    onClick={() => {
-                                      if (!isAdmin) return;
-                                      handleClickUpdateUnit(
-                                        currentPostalcode,
-                                        addressElement.floors[0].units.length,
-                                        item.sequence,
-                                        item.number,
-                                        maxUnitNumberLength
-                                      );
-                                    }}
-                                  >
-                                    {ZeroPad(item.number, maxUnitNumberLength)}
-                                  </th>
-                                );
-                              }
-                            )}
-                        </tr>
-                      </thead>
-                      <tbody key={`tbody-${currentPostalcode}`}>
-                        {addressElement.floors &&
-                          addressElement.floors.map(
-                            (floorElement, floorIndex) => (
-                              <tr key={`row-${floorIndex}`}>
-                                <th
-                                  className="text-center inline-cell sticky-left-cell"
-                                  key={`floor-${floorIndex}`}
-                                  scope="row"
-                                >
-                                  <ComponentAuthorizer
-                                    requiredPermission={
-                                      USER_ACCESS_LEVELS.TERRITORY_SERVANT
-                                    }
-                                    userPermission={userAccessLevel}
-                                  >
+                    <AdminTable
+                      floors={addressElement.floors}
+                      maxUnitNumberLength={maxUnitNumberLength}
+                      policy={policy}
+                      completedPercent={completedPercent}
+                      trackRace={trackRace}
+                      trackLanguages={trackLanguages}
+                      postalCode={`${currentPostalcode}`}
+                      handleUnitStatusUpdate={(event) => {
+                        const {
+                          floor,
+                          unitno,
+                          hhtype,
+                          hhnote,
+                          hhstatus,
+                          nhcount,
+                          languages,
+                          dnctime
+                        } = event.currentTarget.dataset;
+                        handleClickModal(
+                          event,
+                          currentPostalcode,
+                          floor || "",
+                          unitno || "",
+                          hhtype || "",
+                          hhnote || "",
+                          hhstatus || "",
+                          nhcount || "",
+                          languages || "",
+                          Number(dnctime),
+                          maxUnitNumberLength
+                        );
+                      }}
+                      adminUnitHeaderStyle={`${
+                        isAdmin ? "admin-unit-header " : ""
+                      }`}
+                      handleUnitNoUpdate={(event) => {
+                        const { sequence, unitno, length } =
+                          event.currentTarget.dataset;
+                        if (!isAdmin) return;
+                        handleClickUpdateUnit(
+                          currentPostalcode,
+                          Number(length),
+                          Number(sequence),
+                          unitno || "",
+                          maxUnitNumberLength
+                        );
+                      }}
+                      handleFloorDelete={(event) => {
+                        const { floor } = event.currentTarget.dataset;
+                        const hasOnlyOneFloor =
+                          addressElement.floors.length === 1;
+                        if (hasOnlyOneFloor) {
+                          alert(`Territory requires at least 1 floor.`);
+                          return;
+                        }
+                        confirmAlert({
+                          customUI: ({ onClose }) => {
+                            return (
+                              <Container>
+                                <Card bg="warning" className="text-center">
+                                  <Card.Header>Warning ⚠️</Card.Header>
+                                  <Card.Body>
+                                    <Card.Title>Are You Very Sure ?</Card.Title>
+                                    <Card.Text>
+                                      This action will delete floor {`${floor}`}{" "}
+                                      of {currentPostalcode}.
+                                    </Card.Text>
                                     <Button
-                                      size="sm"
-                                      variant="outline-warning"
-                                      className="me-1"
+                                      className="m-1"
+                                      variant="primary"
                                       onClick={() => {
-                                        const hasOnlyOneFloor =
-                                          addressElement.floors.length === 1;
-                                        if (hasOnlyOneFloor) {
-                                          alert(
-                                            `Territory requires at least 1 floor.`
-                                          );
-                                          return;
-                                        }
-                                        confirmAlert({
-                                          customUI: ({ onClose }) => {
-                                            return (
-                                              <Container>
-                                                <Card
-                                                  bg="warning"
-                                                  className="text-center"
-                                                >
-                                                  <Card.Header>
-                                                    Warning ⚠️
-                                                  </Card.Header>
-                                                  <Card.Body>
-                                                    <Card.Title>
-                                                      Are You Very Sure ?
-                                                    </Card.Title>
-                                                    <Card.Text>
-                                                      This action will delete
-                                                      floor {floorElement.floor}{" "}
-                                                      of {currentPostalcode}.
-                                                    </Card.Text>
-                                                    <Button
-                                                      className="m-1"
-                                                      variant="primary"
-                                                      onClick={() => {
-                                                        deleteBlockFloor(
-                                                          currentPostalcode,
-                                                          floorElement.floor
-                                                        );
-                                                        onClose();
-                                                      }}
-                                                    >
-                                                      Yes, Delete It.
-                                                    </Button>
-                                                    <Button
-                                                      className="ms-2"
-                                                      variant="primary"
-                                                      onClick={() => {
-                                                        onClose();
-                                                      }}
-                                                    >
-                                                      No
-                                                    </Button>
-                                                  </Card.Body>
-                                                </Card>
-                                              </Container>
-                                            );
-                                          }
-                                        });
+                                        deleteBlockFloor(
+                                          currentPostalcode,
+                                          `${floor}`
+                                        );
+                                        onClose();
                                       }}
                                     >
-                                      🗑️
+                                      Yes, Delete It.
                                     </Button>
-                                  </ComponentAuthorizer>
-                                  {`${ZeroPad(
-                                    floorElement.floor,
-                                    DEFAULT_FLOOR_PADDING
-                                  )}`}
-                                </th>
-                                {floorElement.units.map(
-                                  (detailsElement, index) => (
-                                    <td
-                                      align="center"
-                                      className={`inline-cell ${policy?.getUnitColor(
-                                        detailsElement,
-                                        completedPercent.completedValue
-                                      )}`}
-                                      onClick={(event) =>
-                                        handleClickModal(
-                                          event,
-                                          currentPostalcode,
-                                          floorElement.floor,
-                                          detailsElement.number,
-                                          detailsElement.type,
-                                          detailsElement.note,
-                                          detailsElement.status,
-                                          detailsElement.nhcount,
-                                          detailsElement.languages,
-                                          detailsElement.dnctime,
-                                          maxUnitNumberLength
-                                        )
-                                      }
-                                      key={`${index}-${detailsElement.number}`}
+                                    <Button
+                                      className="ms-2"
+                                      variant="primary"
+                                      onClick={() => {
+                                        onClose();
+                                      }}
                                     >
-                                      <UnitStatus
-                                        key={`unit-${index}-${detailsElement.number}`}
-                                        type={detailsElement.type}
-                                        note={detailsElement.note}
-                                        status={detailsElement.status}
-                                        nhcount={detailsElement.nhcount}
-                                        languages={detailsElement.languages}
-                                        trackRace={trackRace}
-                                        trackLanguages={trackLanguages}
-                                      />
-                                    </td>
-                                  )
-                                )}
-                              </tr>
-                            )
-                          )}
-                      </tbody>
-                    </Table>
+                                      No
+                                    </Button>
+                                  </Card.Body>
+                                </Card>
+                              </Container>
+                            );
+                          }
+                        });
+                      }}
+                    ></AdminTable>
                   </div>
                 </Accordion.Body>
               </Accordion.Item>
