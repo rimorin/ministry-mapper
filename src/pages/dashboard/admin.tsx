@@ -39,8 +39,7 @@ import {
   Modal,
   Navbar,
   ProgressBar,
-  Spinner,
-  Table
+  Spinner
 } from "react-bootstrap";
 import { database, auth } from "../../firebase";
 import {
@@ -73,7 +72,7 @@ import { RacePolicy, LanguagePolicy, LinkSession } from "../../utils/policies";
 import { zeroPad } from "react-countdown";
 import { ReactComponent as GearImage } from "../../assets/gear.svg";
 import getUA from "ua-parser-js";
-import { UnitStatus } from "../../components/table";
+import { AdminTable } from "../../components/table";
 import {
   pollingFunction,
   processAddressData,
@@ -1885,180 +1884,104 @@ function Admin({ user }: adminProps) {
                         </ComponentAuthorizer>
                       </Container>
                     </Navbar>
-                    <Table
-                      key={`table-${currentPostalcode}`}
-                      bordered
-                      striped
-                      hover
-                      responsive="sm"
-                      className="sticky-table"
-                    >
-                      <thead>
-                        <tr>
-                          <th
-                            scope="col"
-                            className="text-center align-middle sticky-left-cell"
-                          >
-                            lvl/unit
-                          </th>
-                          {addressElement.floors &&
-                            addressElement.floors[0].units.map(
-                              (item, index) => {
-                                return (
-                                  <th
-                                    key={`${index}-${item.number}`}
-                                    scope="col"
-                                    className={`${
-                                      isAdmin ? "admin-unit-header " : ""
-                                    }text-center align-middle`}
-                                    onClick={() => {
-                                      if (!isAdmin) return;
-                                      handleClickUpdateUnit(
-                                        currentPostalcode,
-                                        addressElement.floors[0].units.length,
-                                        item.sequence,
-                                        item.number,
-                                        maxUnitNumberLength
-                                      );
-                                    }}
-                                  >
-                                    {ZeroPad(item.number, maxUnitNumberLength)}
-                                  </th>
-                                );
-                              }
-                            )}
-                        </tr>
-                      </thead>
-                      <tbody key={`tbody-${currentPostalcode}`}>
-                        {addressElement.floors &&
-                          addressElement.floors.map(
-                            (floorElement, floorIndex) => (
-                              <tr key={`row-${floorIndex}`}>
-                                <th
-                                  className="text-center inline-cell sticky-left-cell"
-                                  key={`floor-${floorIndex}`}
-                                  scope="row"
-                                >
-                                  <ComponentAuthorizer
-                                    requiredPermission={
-                                      USER_ACCESS_LEVELS.TERRITORY_SERVANT
-                                    }
-                                    userPermission={userAccessLevel}
-                                  >
+                    <AdminTable
+                      floors={addressElement.floors}
+                      maxUnitNumberLength={maxUnitNumberLength}
+                      policy={policy}
+                      completedPercent={completedPercent}
+                      trackRace={trackRace}
+                      trackLanguages={trackLanguages}
+                      postalCode={`${currentPostalcode}`}
+                      handleUnitStatusUpdate={(event) => {
+                        const {
+                          floor,
+                          unitno,
+                          hhtype,
+                          hhnote,
+                          hhstatus,
+                          nhcount,
+                          languages,
+                          dnctime
+                        } = event.currentTarget.dataset;
+                        handleClickModal(
+                          event,
+                          currentPostalcode,
+                          floor || "",
+                          unitno || "",
+                          hhtype || "",
+                          hhnote || "",
+                          hhstatus || "",
+                          nhcount || "",
+                          languages || "",
+                          Number(dnctime),
+                          maxUnitNumberLength
+                        );
+                      }}
+                      adminUnitHeaderStyle={`${
+                        isAdmin ? "admin-unit-header " : ""
+                      }`}
+                      handleUnitNoUpdate={(event) => {
+                        const { sequence, unitno, length } =
+                          event.currentTarget.dataset;
+                        if (!isAdmin) return;
+                        handleClickUpdateUnit(
+                          currentPostalcode,
+                          Number(length),
+                          Number(sequence),
+                          unitno || "",
+                          maxUnitNumberLength
+                        );
+                      }}
+                      handleFloorDelete={(event) => {
+                        const { floor } = event.currentTarget.dataset;
+                        const hasOnlyOneFloor =
+                          addressElement.floors.length === 1;
+                        if (hasOnlyOneFloor) {
+                          alert(`Territory requires at least 1 floor.`);
+                          return;
+                        }
+                        confirmAlert({
+                          customUI: ({ onClose }) => {
+                            return (
+                              <Container>
+                                <Card bg="warning" className="text-center">
+                                  <Card.Header>Warning ⚠️</Card.Header>
+                                  <Card.Body>
+                                    <Card.Title>Are You Very Sure ?</Card.Title>
+                                    <Card.Text>
+                                      This action will delete floor {`${floor}`}{" "}
+                                      of {currentPostalcode}.
+                                    </Card.Text>
                                     <Button
-                                      size="sm"
-                                      variant="outline-warning"
-                                      className="me-1"
+                                      className="m-1"
+                                      variant="primary"
                                       onClick={() => {
-                                        const hasOnlyOneFloor =
-                                          addressElement.floors.length === 1;
-                                        if (hasOnlyOneFloor) {
-                                          alert(
-                                            `Territory requires at least 1 floor.`
-                                          );
-                                          return;
-                                        }
-                                        confirmAlert({
-                                          customUI: ({ onClose }) => {
-                                            return (
-                                              <Container>
-                                                <Card
-                                                  bg="warning"
-                                                  className="text-center"
-                                                >
-                                                  <Card.Header>
-                                                    Warning ⚠️
-                                                  </Card.Header>
-                                                  <Card.Body>
-                                                    <Card.Title>
-                                                      Are You Very Sure ?
-                                                    </Card.Title>
-                                                    <Card.Text>
-                                                      This action will delete
-                                                      floor {floorElement.floor}{" "}
-                                                      of {currentPostalcode}.
-                                                    </Card.Text>
-                                                    <Button
-                                                      className="m-1"
-                                                      variant="primary"
-                                                      onClick={() => {
-                                                        deleteBlockFloor(
-                                                          currentPostalcode,
-                                                          floorElement.floor
-                                                        );
-                                                        onClose();
-                                                      }}
-                                                    >
-                                                      Yes, Delete It.
-                                                    </Button>
-                                                    <Button
-                                                      className="ms-2"
-                                                      variant="primary"
-                                                      onClick={() => {
-                                                        onClose();
-                                                      }}
-                                                    >
-                                                      No
-                                                    </Button>
-                                                  </Card.Body>
-                                                </Card>
-                                              </Container>
-                                            );
-                                          }
-                                        });
+                                        deleteBlockFloor(
+                                          currentPostalcode,
+                                          `${floor}`
+                                        );
+                                        onClose();
                                       }}
                                     >
-                                      🗑️
+                                      Yes, Delete It.
                                     </Button>
-                                  </ComponentAuthorizer>
-                                  {`${ZeroPad(
-                                    floorElement.floor,
-                                    DEFAULT_FLOOR_PADDING
-                                  )}`}
-                                </th>
-                                {floorElement.units.map(
-                                  (detailsElement, index) => (
-                                    <td
-                                      align="center"
-                                      className={`inline-cell ${policy?.getUnitColor(
-                                        detailsElement,
-                                        completedPercent.completedValue
-                                      )}`}
-                                      onClick={(event) =>
-                                        handleClickModal(
-                                          event,
-                                          currentPostalcode,
-                                          floorElement.floor,
-                                          detailsElement.number,
-                                          detailsElement.type,
-                                          detailsElement.note,
-                                          detailsElement.status,
-                                          detailsElement.nhcount,
-                                          detailsElement.languages,
-                                          detailsElement.dnctime,
-                                          maxUnitNumberLength
-                                        )
-                                      }
-                                      key={`${index}-${detailsElement.number}`}
+                                    <Button
+                                      className="ms-2"
+                                      variant="primary"
+                                      onClick={() => {
+                                        onClose();
+                                      }}
                                     >
-                                      <UnitStatus
-                                        key={`unit-${index}-${detailsElement.number}`}
-                                        type={detailsElement.type}
-                                        note={detailsElement.note}
-                                        status={detailsElement.status}
-                                        nhcount={detailsElement.nhcount}
-                                        languages={detailsElement.languages}
-                                        trackRace={trackRace}
-                                        trackLanguages={trackLanguages}
-                                      />
-                                    </td>
-                                  )
-                                )}
-                              </tr>
-                            )
-                          )}
-                      </tbody>
-                    </Table>
+                                      No
+                                    </Button>
+                                  </Card.Body>
+                                </Card>
+                              </Container>
+                            );
+                          }
+                        });
+                      }}
+                    ></AdminTable>
                   </div>
                 </Accordion.Body>
               </Accordion.Item>

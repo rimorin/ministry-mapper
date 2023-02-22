@@ -16,11 +16,10 @@ import {
   Fade,
   Form,
   Modal,
-  Navbar,
-  Table
+  Navbar
 } from "react-bootstrap";
 import { floorDetails, valuesDetails, Policy } from "../../utils/interface";
-import { TableHeader, FloorHeader, UnitStatus } from "../../components/table";
+import { PublisherTable } from "../../components/table";
 import {
   DncDateField,
   GenericTextAreaField,
@@ -316,46 +315,24 @@ const Slip = ({
             </Navbar.Collapse>
           </Container>
         </Navbar>
-        <div className="sticky-body">
-          <Table bordered striped hover className="sticky-table">
-            <TableHeader floors={floors} maxUnitNumber={maxUnitNumberLength} />
-            <tbody>
-              {floors &&
-                floors.map((item, index) => (
-                  <tr key={`row-${index}`}>
-                    <FloorHeader index={index} floor={item.floor} />
-                    {item.units.map((element, _) => (
-                      <td
-                        className={`text-center align-middle inline-cell ${policy?.getUnitColor(
-                          element,
-                          completedPercent.completedValue
-                        )}`}
-                        onClick={(event) =>
-                          handleClickModal(
-                            event,
-                            item.floor,
-                            element.number,
-                            maxUnitNumberLength
-                          )
-                        }
-                        key={`${item.floor}-${element.number}`}
-                      >
-                        <UnitStatus
-                          type={element.type}
-                          note={element.note}
-                          status={element.status}
-                          nhcount={element.nhcount}
-                          languages={element.languages}
-                          trackRace={trackRace}
-                          trackLanguages={trackLanguages}
-                        />
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-            </tbody>
-          </Table>
-        </div>
+        <PublisherTable
+          postalCode={postalcode}
+          floors={floors}
+          maxUnitNumberLength={maxUnitNumberLength}
+          policy={policy}
+          completedPercent={completedPercent}
+          trackLanguages={trackLanguages}
+          trackRace={trackRace}
+          handleUnitStatusUpdate={(event) => {
+            const { floor, unitno } = event.currentTarget.dataset;
+            handleClickModal(
+              event,
+              floor || "",
+              unitno || "",
+              maxUnitNumberLength
+            );
+          }}
+        />
         <Modal show={isFeedback}>
           <Modal.Header>
             <Modal.Title>{`Feedback on ${postalName}`}</Modal.Title>
