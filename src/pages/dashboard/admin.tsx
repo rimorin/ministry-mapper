@@ -119,7 +119,8 @@ import {
   FOUR_WKS_PERSONAL_SLIP_DESTRUCT_HOURS,
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   MIN_START_FLOOR,
-  PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY
+  PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY,
+  DEFAULT_UNIT_SEQUENCE_NO
 } from "../../utils/constants";
 function Admin({ user }: adminProps) {
   const { code } = useParams();
@@ -728,6 +729,19 @@ function Admin({ user }: adminProps) {
     const blockAddresses = addressData.get(`${postalCode}`);
     if (!blockAddresses) return;
 
+    if (!isDelete) {
+      const existingUnitNo = await get(
+        ref(
+          database,
+          `/${postalCode}/units/${blockAddresses.floors[0].floor}/${unitNumber}`
+        )
+      );
+      if (existingUnitNo.exists()) {
+        alert(`Unit number, ${unitNumber} already exist.`);
+        return;
+      }
+    }
+
     const unitUpdates: unitMaps = {};
     for (const index in blockAddresses.floors) {
       const floorDetails = blockAddresses.floors[index];
@@ -742,7 +756,8 @@ function Admin({ user }: adminProps) {
               status: STATUS_CODES.DEFAULT,
               nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
               x_floor: floorDetails.floor,
-              languages: ""
+              languages: "",
+              sequence: DEFAULT_UNIT_SEQUENCE_NO
             };
       });
     }
