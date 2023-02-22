@@ -1,3 +1,20 @@
+# [1.4.0](https://github.com/rimorin/ministry-mapper/compare/v1.3.0...v1.4.0) (2023-02-22)
+
+
+### Bug Fixes
+
+* add existing number check when adding new unit no ([7f19b22](https://github.com/rimorin/ministry-mapper/commit/7f19b22f1574ef4768c4774c26c21a65c4147c9a))
+
+
+### Features
+
+* congregation level slip expiry hours setting ([d945f61](https://github.com/rimorin/ministry-mapper/commit/d945f618ddc9306235ac979dee628175cbf0b997))
+
+
+### Performance Improvements
+
+* remove unnecessary cong list refreshing ([f0b72d4](https://github.com/rimorin/ministry-mapper/commit/f0b72d4ffab5ae0381fbf96e2c4074b81aeb98d9))
+
 # [1.3.0](https://github.com/rimorin/ministry-mapper/compare/v1.2.5...v1.3.0) (2023-02-18)
 
 
