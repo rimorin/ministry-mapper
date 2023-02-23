@@ -1,6 +1,6 @@
 {
   "name": "ministry-mapper",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "private": true,
   "dependencies": {
     "@rollbar/react": "^0.11.1",

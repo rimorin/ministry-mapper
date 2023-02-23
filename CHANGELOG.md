@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/rimorin/ministry-mapper/compare/v1.4.0...v1.5.0) (2023-02-23)
+
+
+### Features
+
+* implement territory change option for addresses ([e58b1e0](https://github.com/rimorin/ministry-mapper/commit/e58b1e02856f5efff9df47f165812528f73d1ce2))
+
 # [1.4.0](https://github.com/rimorin/ministry-mapper/compare/v1.3.0...v1.4.0) (2023-02-22)
 
 
