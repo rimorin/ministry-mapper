@@ -123,6 +123,7 @@ export interface TerritoryListingProps {
     e: React.SyntheticEvent<unknown>
   ) => void;
   territories?: territoryDetails[];
+  hideSelectedTerritory?: boolean;
 }
 
 export interface LoginProps {

@@ -174,8 +174,14 @@ const TerritoryListing = memo(
     hideFunction,
     selectedTerritory,
     handleSelect,
-    territories
+    territories,
+    hideSelectedTerritory = false
   }: TerritoryListingProps) => {
+    const currentTerritories = territories
+      ? hideSelectedTerritory
+        ? territories.filter((element) => element.code !== selectedTerritory)
+        : territories
+      : undefined;
     return (
       <Offcanvas
         placement={"bottom"}
@@ -188,11 +194,11 @@ const TerritoryListing = memo(
         </Offcanvas.Header>
         <Offcanvas.Body>
           <ListGroup onSelect={handleSelect}>
-            {territories &&
-              territories.map((element) => (
+            {currentTerritories &&
+              currentTerritories.map((element) => (
                 <ListGroup.Item
                   action
-                  key={`listgroup-item-${element.code}`}
+                  key={`list-group-item-${element.code}`}
                   eventKey={`${element.code}`}
                   active={selectedTerritory === element.code}
                 >
