@@ -154,6 +154,8 @@ function Admin({ user }: adminProps) {
     useState<boolean>(false);
   const [trackRace, setTrackRace] = useState<boolean>(true);
   const [trackLanguages, setTrackLanguages] = useState<boolean>(true);
+  const [showChangeAddressTerritory, setShowChangeAddressTerritory] =
+    useState<boolean>(false);
   const [name, setName] = useState<String>();
   const [values, setValues] = useState<Object>({});
   const [territories, setTerritories] = useState(
@@ -313,30 +315,35 @@ function Admin({ user }: adminProps) {
     }
   };
 
+  const deleteTerritoryAddress = async (
+    territoryCode: String,
+    postalCode: String
+  ) => {
+    const addressesSnapshot = await getTerritoryAddress(territoryCode);
+    if (addressesSnapshot.exists()) {
+      const addressData = addressesSnapshot.val();
+      for (const addkey in addressData) {
+        const currentPostalcode = addressData[addkey];
+        if (currentPostalcode === postalCode) {
+          await pollingFunction(() =>
+            remove(
+              ref(
+                database,
+                `congregations/${code}/territories/${selectedTerritoryCode}/addresses/${addkey}`
+              )
+            )
+          );
+          break;
+        }
+      }
+    }
+  };
+
   const deleteBlock = async (postalCode: String, showAlert: boolean) => {
     if (!selectedTerritoryCode) return;
     try {
       await remove(ref(database, `${postalCode}`));
-      const addressesSnapshot = await getTerritoryAddress(
-        selectedTerritoryCode
-      );
-      if (addressesSnapshot.exists()) {
-        const addressData = addressesSnapshot.val();
-        for (const addkey in addressData) {
-          const currentPostalcode = addressData[addkey];
-          if (currentPostalcode === postalCode) {
-            await pollingFunction(() =>
-              remove(
-                ref(
-                  database,
-                  `congregations/${code}/territories/${selectedTerritoryCode}/addresses/${addkey}`
-                )
-              )
-            );
-            break;
-          }
-        }
-      }
+      await deleteTerritoryAddress(selectedTerritoryCode, postalCode);
       if (showAlert) alert(`Deleted postal address, ${postalCode}.`);
       await refreshCongregationTerritory(`${selectedTerritoryCode}`);
     } catch (error) {
@@ -1086,6 +1093,42 @@ function Admin({ user }: adminProps) {
     setShowTerritoryListing(!showTerritoryListing);
   }, [showTerritoryListing]);
 
+  const handleAddressTerritorySelect = useCallback(
+    async (
+      newTerritoryCode: string | null,
+      _: SyntheticEvent<unknown, Event>
+    ) => {
+      const details = values as valuesDetails;
+      const selectedPostalcode = `${details.postal}`;
+      await pollingFunction(() =>
+        set(
+          push(
+            ref(
+              database,
+              `congregations/${code}/territories/${`${newTerritoryCode}`}/addresses`
+            )
+          ),
+          selectedPostalcode
+        )
+      );
+      await deleteTerritoryAddress(
+        `${selectedTerritoryCode}`,
+        selectedPostalcode
+      );
+      toggleAddressTerritoryListing();
+      await refreshCongregationTerritory(`${selectedTerritoryCode}`);
+      alert(
+        `Changed territory of ${selectedPostalcode} from ${selectedTerritoryCode} to ${newTerritoryCode}.`
+      );
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [showChangeAddressTerritory]
+  );
+
+  const toggleAddressTerritoryListing = useCallback(() => {
+    setShowChangeAddressTerritory(!showChangeAddressTerritory);
+  }, [showChangeAddressTerritory]);
+
   const congregationTerritoryList = useMemo(
     () => Array.from(territories.values()),
     [territories]
@@ -1225,6 +1268,14 @@ function Admin({ user }: adminProps) {
           selectedTerritory={selectedTerritoryCode}
           hideFunction={toggleTerritoryListing}
           handleSelect={handleTerritorySelect}
+        />
+        <TerritoryListing
+          showListing={showChangeAddressTerritory}
+          territories={congregationTerritoryList}
+          selectedTerritory={selectedTerritoryCode}
+          hideFunction={toggleAddressTerritoryListing}
+          handleSelect={handleAddressTerritorySelect}
+          hideSelectedTerritory={true}
         />
         <Navbar bg="light" variant="light" expand="lg">
           <Container fluid>
@@ -1754,6 +1805,17 @@ function Admin({ user }: adminProps) {
                                 }}
                               >
                                 Change Postal Code
+                              </Dropdown.Item>
+                              <Dropdown.Item
+                                onClick={() => {
+                                  setValues({
+                                    ...values,
+                                    postal: currentPostalcode
+                                  });
+                                  toggleAddressTerritoryListing();
+                                }}
+                              >
+                                Change Territory
                               </Dropdown.Item>
                               <Dropdown.Item
                                 onClick={() => {
