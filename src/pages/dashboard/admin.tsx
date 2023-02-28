@@ -120,7 +120,6 @@ import {
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   MIN_START_FLOOR,
   PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY,
-  DEFAULT_UNIT_SEQUENCE_NO,
   TERRITORY_TYPES
 } from "../../utils/constants";
 function Admin({ user }: adminProps) {
@@ -2040,6 +2039,7 @@ function Admin({ user }: adminProps) {
                       trackLanguages={trackLanguages}
                       postalCode={`${currentPostalcode}`}
                       territoryType={addressElement.type}
+                      userAccessLevel={userAccessLevel}
                       handleUnitStatusUpdate={(event) => {
                         const {
                           floor,
