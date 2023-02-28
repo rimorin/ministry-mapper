@@ -19,7 +19,7 @@ import {
   Navbar
 } from "react-bootstrap";
 import { floorDetails, valuesDetails, Policy } from "../../utils/interface";
-import { PublisherTable } from "../../components/table";
+import { PublisherTerritoryTable } from "../../components/table";
 import {
   DncDateField,
   GenericTextAreaField,
@@ -56,7 +56,8 @@ import {
   NOT_HOME_STATUS_CODES,
   STATUS_CODES,
   RELOAD_INACTIVITY_DURATION,
-  RELOAD_CHECK_INTERVAL_MS
+  RELOAD_CHECK_INTERVAL_MS,
+  TERRITORY_TYPES
 } from "../../utils/constants";
 import "../../css/slip.css";
 
@@ -81,6 +82,9 @@ const Slip = ({
   const [postalZip, setPostalZip] = useState<String>();
   const [values, setValues] = useState<Object>({});
   const [policy, setPolicy] = useState<Policy>();
+  const [territoryType, setTerritoryType] = useState<number>(
+    TERRITORY_TYPES.PUBLIC
+  );
   const rollbar = useRollbar();
 
   const toggleModal = (isModal: boolean) => {
@@ -185,18 +189,6 @@ const Slip = ({
   };
 
   useEffect(() => {
-    const postalNameReference = child(ref(database), `/${postalcode}/name`);
-    const postalUnitReference = child(ref(database), `/${postalcode}/units`);
-    const postalZipReference = child(ref(database), `/${postalcode}/x_zip`);
-    const postalFeedbackReference = child(
-      ref(database),
-      `/${postalcode}/feedback`
-    );
-
-    const processData = async (data: any) => {
-      setFloors(await processAddressData(postalcode, data));
-    };
-
     checkTraceLangStatus(congregationcode).then((snapshot) => {
       const isTrackLanguages = snapshot.val();
       setTrackLanguages(isTrackLanguages);
@@ -216,38 +208,24 @@ const Slip = ({
         setPolicy(racePolicy);
       }
     });
-    onValue(
-      postalNameReference,
-      (snapshot) => {
-        if (snapshot.exists()) {
-          const postalData = snapshot.val();
-          setPostalName(postalData);
-          document.title = postalData;
-        }
-      },
-      { onlyOnce: true }
-    );
-    onValue(postalUnitReference, (snapshot) => {
+
+    const processData = async (data: any) => {
+      setFloors(await processAddressData(postalcode, data.units));
+    };
+    const postalDataReference = child(ref(database), `/${postalcode}`);
+
+    onValue(postalDataReference, (snapshot) => {
       if (snapshot.exists()) {
-        processData(snapshot.val());
+        const dataSnapshot = snapshot.val();
+        processData(dataSnapshot);
+        setValues((values) => ({ ...values, feedback: dataSnapshot.feedback }));
+        setPostalZip(dataSnapshot.x_zip);
+        setPostalName(dataSnapshot.name);
+        setTerritoryType(dataSnapshot.type);
+        document.title = dataSnapshot.name;
       }
       setIsPostalLoading(false);
     });
-    onValue(postalFeedbackReference, (snapshot) => {
-      if (snapshot.exists()) {
-        setValues((values) => ({ ...values, feedback: snapshot.val() }));
-      }
-    });
-    onValue(
-      postalZipReference,
-      (snapshot) => {
-        if (snapshot.exists()) {
-          const postalZip = snapshot.val();
-          setPostalZip(postalZip);
-        }
-      },
-      { onlyOnce: true }
-    );
 
     let currentTime = new Date().getTime();
     const setActivityTime = () => {
@@ -315,7 +293,7 @@ const Slip = ({
             </Navbar.Collapse>
           </Container>
         </Navbar>
-        <PublisherTable
+        <PublisherTerritoryTable
           postalCode={postalcode}
           floors={floors}
           maxUnitNumberLength={maxUnitNumberLength}
@@ -323,6 +301,7 @@ const Slip = ({
           completedPercent={completedPercent}
           trackLanguages={trackLanguages}
           trackRace={trackRace}
+          territoryType={territoryType}
           handleUnitStatusUpdate={(event) => {
             const { floor, unitno } = event.currentTarget.dataset;
             handleClickModal(
@@ -356,6 +335,7 @@ const Slip = ({
           <ModalUnitTitle
             unit={`${(values as valuesDetails).unitDisplay}`}
             floor={`${(values as valuesDetails).floorDisplay}`}
+            name={`${postalName}`}
           />
           <Form onSubmit={handleSubmitClick}>
             <Modal.Body>

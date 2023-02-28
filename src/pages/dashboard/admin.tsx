@@ -120,14 +120,16 @@ import {
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   MIN_START_FLOOR,
   PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY,
-  DEFAULT_UNIT_SEQUENCE_NO
+  DEFAULT_UNIT_SEQUENCE_NO,
+  TERRITORY_TYPES
 } from "../../utils/constants";
 function Admin({ user }: adminProps) {
   const { code } = useParams();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isFeedback, setIsFeedback] = useState<boolean>(false);
   const [isLinkRevoke, setIsLinkRevoke] = useState<boolean>(false);
-  const [isCreate, setIsCreate] = useState<boolean>(false);
+  const [isCreatePublic, setIsCreatePublic] = useState<boolean>(false);
+  const [isCreatePrivate, setIsCreatePrivate] = useState<boolean>(false);
   const [isAddressRename, setIsAddressRename] = useState<boolean>(false);
   const [isSettingPersonalLink, setIsSettingPersonalLink] =
     useState<boolean>(false);
@@ -252,7 +254,8 @@ function Admin({ user }: adminProps) {
               name: postalSnapshot.name,
               postalcode: postalCode,
               floors: floorData,
-              feedback: postalSnapshot.feedback
+              feedback: postalSnapshot.feedback,
+              type: postalSnapshot.type
             };
             setAddressData(
               (existingAddresses) =>
@@ -444,8 +447,8 @@ function Admin({ user }: adminProps) {
       case ADMIN_MODAL_TYPES.LINK:
         setIsLinkRevoke(!isLinkRevoke);
         break;
-      case ADMIN_MODAL_TYPES.CREATE_ADDRESS:
-        setIsCreate(!isCreate);
+      case ADMIN_MODAL_TYPES.CREATE_PUBLIC_ADDRESS:
+        setIsCreatePublic(!isCreatePublic);
         break;
       case ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME:
         setIsAddressRename(!isAddressRename);
@@ -471,6 +474,9 @@ function Admin({ user }: adminProps) {
       case ADMIN_MODAL_TYPES.UPDATE_TERRITORY_CODE:
         setIsChangeTerritoryCode(!isChangeTerritoryCode);
         break;
+      case ADMIN_MODAL_TYPES.CREATE_PRIVATE_ADDRESS:
+        setIsCreatePrivate(!isCreatePrivate);
+        break;
       default:
         setIsOpen(!isOpen);
     }
@@ -486,8 +492,11 @@ function Admin({ user }: adminProps) {
     status: String,
     nhcount: String,
     languages: String,
-    dnctime: number,
-    maxUnitNumber: number
+    dnctime: string | undefined,
+    maxUnitNumber: number,
+    sequence: string | undefined,
+    name: String,
+    territoryType = TERRITORY_TYPES.PUBLIC
   ) => {
     setValues({
       ...values,
@@ -501,7 +510,10 @@ function Admin({ user }: adminProps) {
       status: status,
       nhcount: nhcount,
       languages: languages,
-      dnctime: dnctime
+      dnctime: dnctime === undefined ? "" : Number(dnctime),
+      sequence: sequence === undefined ? "" : Number(sequence),
+      territoryType: territoryType,
+      name: name
     });
     setIsNotHome(status === STATUS_CODES.NOT_HOME);
     setIsDnc(status === STATUS_CODES.DO_NOT_CALL);
@@ -525,7 +537,8 @@ function Admin({ user }: adminProps) {
             status: details.status,
             nhcount: details.nhcount,
             languages: details.languages,
-            dnctime: details.dnctime
+            dnctime: details.dnctime,
+            sequence: details.sequence
           }
         )
       );
@@ -835,6 +848,7 @@ function Admin({ user }: adminProps) {
     const noOfFloors = details.floors || 1;
     const unitSequence = details.units;
     const newPostalName = details.name;
+    const addressType = Number(details.type);
 
     // Add empty details for 0 floor
     let floorDetails = [{}];
@@ -842,14 +856,15 @@ function Admin({ user }: adminProps) {
 
     for (let i = 0; i < noOfFloors; i++) {
       const floorMap = {} as any;
-      units?.forEach((unitNo) => {
+      units?.forEach((unitNo, index) => {
         const removedLeadingZeroUnitNo = parseInt(unitNo).toString();
         floorMap[removedLeadingZeroUnitNo] = {
           status: STATUS_CODES.DEFAULT,
           type: HOUSEHOLD_TYPES.CHINESE,
           note: "",
           nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
-          languages: ""
+          languages: "",
+          sequence: index
         };
       });
       floorDetails.push(floorMap);
@@ -878,12 +893,20 @@ function Admin({ user }: adminProps) {
         set(addressReference, {
           name: newPostalName,
           feedback: "",
-          units: floorDetails
+          units: floorDetails,
+          type: addressType
         })
       );
-      alert(`Created postal address, ${newPostalCode}.`);
+      let createdMsg = `Created postal address, ${newPostalCode}.`;
+      if (addressType === TERRITORY_TYPES.PRIVATE)
+        createdMsg = `Created private estate, ${newPostalName}`;
+      alert(createdMsg);
       await refreshCongregationTerritory(`${selectedTerritoryCode}`);
-      toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS);
+      if (addressType === TERRITORY_TYPES.PUBLIC)
+        toggleModal(ADMIN_MODAL_TYPES.CREATE_PUBLIC_ADDRESS);
+
+      if (addressType === TERRITORY_TYPES.PRIVATE)
+        toggleModal(ADMIN_MODAL_TYPES.CREATE_PRIVATE_ADDRESS);
     } catch (error) {
       errorHandler(error, rollbar);
     } finally {
@@ -1464,23 +1487,43 @@ function Admin({ user }: adminProps) {
                   requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
                   userPermission={userAccessLevel}
                 >
-                  <Button
-                    className="m-1"
-                    size="sm"
-                    variant="outline-primary"
-                    onClick={() => {
-                      setValues({
-                        ...values,
-                        name: "",
-                        units: "",
-                        floors: 1,
-                        newPostal: ""
-                      });
-                      toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS);
-                    }}
-                  >
-                    New Address
-                  </Button>
+                  <Dropdown className="m-1 d-inline-block">
+                    <Dropdown.Toggle variant="outline-primary" size="sm">
+                      New Address
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                      <Dropdown.Item
+                        onClick={() => {
+                          setValues({
+                            ...values,
+                            name: "",
+                            units: "",
+                            floors: 1,
+                            newPostal: "",
+                            type: TERRITORY_TYPES.PUBLIC
+                          });
+                          toggleModal(ADMIN_MODAL_TYPES.CREATE_PUBLIC_ADDRESS);
+                        }}
+                      >
+                        Public
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        onClick={() => {
+                          setValues({
+                            ...values,
+                            name: "",
+                            units: "",
+                            floors: 1,
+                            newPostal: "",
+                            type: TERRITORY_TYPES.PRIVATE
+                          });
+                          toggleModal(ADMIN_MODAL_TYPES.CREATE_PRIVATE_ADDRESS);
+                        }}
+                      >
+                        Private
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
                 </ComponentAuthorizer>
               )}
               <ComponentAuthorizer
@@ -1967,6 +2010,7 @@ function Admin({ user }: adminProps) {
                       trackRace={trackRace}
                       trackLanguages={trackLanguages}
                       postalCode={`${currentPostalcode}`}
+                      territoryType={addressElement.type}
                       handleUnitStatusUpdate={(event) => {
                         const {
                           floor,
@@ -1976,7 +2020,8 @@ function Admin({ user }: adminProps) {
                           hhstatus,
                           nhcount,
                           languages,
-                          dnctime
+                          dnctime,
+                          sequence
                         } = event.currentTarget.dataset;
                         handleClickModal(
                           event,
@@ -1988,8 +2033,11 @@ function Admin({ user }: adminProps) {
                           hhstatus || "",
                           nhcount || "",
                           languages || "",
-                          Number(dnctime),
-                          maxUnitNumberLength
+                          dnctime,
+                          maxUnitNumberLength,
+                          sequence,
+                          currentPostalname,
+                          addressElement.type
                         );
                       }}
                       adminUnitHeaderStyle={`${
@@ -2301,9 +2349,9 @@ function Admin({ user }: adminProps) {
           </Modal>
         )}
         {isAdmin && (
-          <Modal show={isCreate}>
+          <Modal show={isCreatePublic}>
             <Modal.Header>
-              <Modal.Title>Create Territory Address</Modal.Title>
+              <Modal.Title>Create Territory Public Address</Modal.Title>
             </Modal.Header>
             <Form onSubmit={handleCreateTerritoryAddress}>
               <Modal.Body>
@@ -2351,7 +2399,62 @@ function Admin({ user }: adminProps) {
               <Modal.Footer>
                 <Button
                   variant="secondary"
-                  onClick={() => toggleModal(ADMIN_MODAL_TYPES.CREATE_ADDRESS)}
+                  onClick={() =>
+                    toggleModal(ADMIN_MODAL_TYPES.CREATE_PUBLIC_ADDRESS)
+                  }
+                >
+                  Close
+                </Button>
+                <Button type="submit" variant="primary">
+                  Save
+                </Button>
+              </Modal.Footer>
+            </Form>
+          </Modal>
+        )}
+        {isAdmin && (
+          <Modal show={isCreatePrivate}>
+            <Modal.Header>
+              <Modal.Title>Create Territory Private Address</Modal.Title>
+            </Modal.Header>
+            <Form onSubmit={handleCreateTerritoryAddress}>
+              <Modal.Body>
+                <GenericTextField
+                  label="Postal Code"
+                  name="postalcode"
+                  handleChange={(e: ChangeEvent<HTMLElement>) => {
+                    const { value } = e.target as HTMLInputElement;
+                    setValues({ ...values, newPostal: value });
+                  }}
+                  changeValue={`${(values as valuesDetails).newPostal}`}
+                  required={true}
+                  placeholder={
+                    "Postal code for locating the estate. Eg, 730801, 752367, etc"
+                  }
+                />
+                <GenericTextField
+                  label="Address Name"
+                  name="name"
+                  handleChange={onFormChange}
+                  changeValue={`${(values as valuesDetails).name}`}
+                  required={true}
+                  placeholder={"For eg, Sembawang Boulevard Crescent"}
+                />
+                <GenericTextAreaField
+                  label="House Sequence"
+                  name="units"
+                  placeholder="House sequence with comma seperator. For eg, 1A,1B,2A ..."
+                  handleChange={onFormChange}
+                  changeValue={`${(values as valuesDetails).units}`}
+                  required={true}
+                />
+              </Modal.Body>
+              <Modal.Footer>
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    toggleModal(ADMIN_MODAL_TYPES.CREATE_PRIVATE_ADDRESS)
+                  }
                 >
                   Close
                 </Button>
@@ -2513,6 +2616,8 @@ function Admin({ user }: adminProps) {
             unit={`${(values as valuesDetails).unitDisplay}`}
             floor={`${(values as valuesDetails).floorDisplay}`}
             postal={(values as valuesDetails).postal}
+            type={(values as valuesDetails).territoryType}
+            name={`${(values as valuesDetails).name}`}
           />
           <Form onSubmit={handleSubmitClick}>
             <Modal.Body>
@@ -2578,11 +2683,68 @@ function Admin({ user }: adminProps) {
                 handleChange={onFormChange}
                 changeValue={`${(values as valuesDetails).note}`}
               />
+              <ComponentAuthorizer
+                requiredPermission={USER_ACCESS_LEVELS.CONDUCTOR}
+                userPermission={userAccessLevel}
+              >
+                <GenericTextField
+                  label="Territory Sequence"
+                  name="sequence"
+                  handleChange={onFormChange}
+                  changeValue={`${(values as valuesDetails).sequence}`}
+                />
+              </ComponentAuthorizer>
             </Modal.Body>
             <ModalFooter
               handleClick={() => toggleModal(ADMIN_MODAL_TYPES.UNIT)}
               isSaving={isSaving}
               userAccessLevel={userAccessLevel}
+              handleDelete={() => {
+                toggleModal(ADMIN_MODAL_TYPES.UNIT);
+                confirmAlert({
+                  customUI: ({ onClose }) => {
+                    return (
+                      <Container>
+                        <Card bg="warning" className="text-center">
+                          <Card.Header>Warning ⚠️</Card.Header>
+                          <Card.Body>
+                            <Card.Title>Are You Very Sure ?</Card.Title>
+                            <Card.Text>
+                              This action will delete private property number{" "}
+                              {(values as valuesDetails).unit} of{" "}
+                              {(values as valuesDetails).name}.
+                            </Card.Text>
+                            <Button
+                              className="m-1"
+                              variant="primary"
+                              onClick={() => {
+                                processPostalUnitNumber(
+                                  `${(values as valuesDetails).postal}`,
+                                  `${(values as valuesDetails).unit}`,
+                                  true
+                                );
+                                onClose();
+                              }}
+                            >
+                              Yes, Delete It.
+                            </Button>
+                            <Button
+                              className="ms-2"
+                              variant="primary"
+                              onClick={() => {
+                                onClose();
+                              }}
+                            >
+                              No
+                            </Button>
+                          </Card.Body>
+                        </Card>
+                      </Container>
+                    );
+                  }
+                });
+              }}
+              type={(values as valuesDetails).territoryType}
             />
           </Form>
         </Modal>

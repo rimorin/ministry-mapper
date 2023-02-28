@@ -24,18 +24,31 @@ import {
   MAX_TOP_FLOOR,
   HOUSEHOLD_LANGUAGES,
   STATUS_CODES,
-  NOT_HOME_STATUS_CODES
+  NOT_HOME_STATUS_CODES,
+  TERRITORY_TYPES
 } from "../utils/constants";
 import { ComponentAuthorizer } from "./navigation";
 
 const ModalFooter = ({
   handleClick,
+  handleDelete,
+  type,
   //Default to conductor access lvl so that individual slips can be writable.
   userAccessLevel = USER_ACCESS_LEVELS.CONDUCTOR,
   isSaving = false
 }: FooterProps) => {
   return (
     <Modal.Footer className="justify-content-around">
+      {type && type === TERRITORY_TYPES.PRIVATE && (
+        <ComponentAuthorizer
+          requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
+          userPermission={userAccessLevel}
+        >
+          <Button variant="secondary" onClick={handleDelete}>
+            Delete Property
+          </Button>
+        </ComponentAuthorizer>
+      )}
       <Button variant="secondary" onClick={handleClick}>
         Close
       </Button>
@@ -351,11 +364,15 @@ const DncDateField = ({ handleDateChange, changeDate }: FormProps) => {
   );
 };
 
-const ModalUnitTitle = ({ unit, floor, postal }: TitleProps) => {
+const ModalUnitTitle = ({ unit, floor, postal, name, type }: TitleProps) => {
   let titleString = `# ${floor} - ${unit}`;
 
   if (postal) {
     titleString = `${postal}, ${titleString}`;
+  }
+
+  if (type === TERRITORY_TYPES.PRIVATE) {
+    titleString = `${unit} - ${name}`;
   }
   return (
     <Modal.Header>
