@@ -1447,10 +1447,16 @@ function Admin({ user }: adminProps) {
                                         Are You Very Sure ?
                                       </Card.Title>
                                       <Card.Text>
-                                        This action will reset the status of all
-                                        addresses in the territory,{" "}
-                                        {selectedTerritoryCode} -{" "}
-                                        {selectedTerritoryName}.
+                                        <p>
+                                          This action will reset the status of
+                                          all addresses in the territory,{" "}
+                                          {selectedTerritoryCode} -{" "}
+                                          {selectedTerritoryName}.
+                                        </p>
+                                        <p>
+                                          Certain statuses such as DNC and
+                                          Invalid will not be affected.
+                                        </p>
                                       </Card.Text>
                                       <Button
                                         className="m-1"
@@ -1927,12 +1933,16 @@ function Admin({ user }: adminProps) {
                                                 Are You Very Sure ?
                                               </Card.Title>
                                               <Card.Text>
-                                                This action will reset all{" "}
-                                                {addressElement.type ===
-                                                TERRITORY_TYPES.PRIVATE
-                                                  ? "property"
-                                                  : "unit"}{" "}
-                                                status of {currentPostalname}.
+                                                <p>
+                                                  This action will reset all
+                                                  property status of{" "}
+                                                  {currentPostalname}.
+                                                </p>
+                                                <p>
+                                                  Certain statuses such as DNC
+                                                  and Invalid will not be
+                                                  affected.
+                                                </p>
                                               </Card.Text>
                                               <Button
                                                 className="m-1"
@@ -2295,7 +2305,7 @@ function Admin({ user }: adminProps) {
         {isAdmin && (
           <Modal show={isAddressRename}>
             <Modal.Header>
-              <Modal.Title>Change Block Name</Modal.Title>
+              <Modal.Title>Change Address Name</Modal.Title>
             </Modal.Header>
             <Form onSubmit={handleUpdateBlockName}>
               <Modal.Body>
@@ -2371,10 +2381,14 @@ function Admin({ user }: adminProps) {
         {isAdmin && (
           <Modal show={isCreatePublic}>
             <Modal.Header>
-              <Modal.Title>Create Territory Public Address</Modal.Title>
+              <Modal.Title>Create Public Address</Modal.Title>
             </Modal.Header>
             <Form onSubmit={handleCreateTerritoryAddress}>
               <Modal.Body>
+                <p>
+                  These are governmental owned residential properties that
+                  usually consist of rental flats.
+                </p>
                 <GenericTextField
                   label="Postal Code"
                   name="postalcode"
@@ -2435,10 +2449,15 @@ function Admin({ user }: adminProps) {
         {isAdmin && (
           <Modal show={isCreatePrivate}>
             <Modal.Header>
-              <Modal.Title>Create Territory Private Address</Modal.Title>
+              <Modal.Title>Create Private Address</Modal.Title>
             </Modal.Header>
             <Form onSubmit={handleCreateTerritoryAddress}>
               <Modal.Body>
+                <p>
+                  These are non-governmental owned residential properties such
+                  as terrace houses, semi-detached houses, bungalows or cluster
+                  houses.
+                </p>
                 <GenericTextField
                   label="Postal Code"
                   name="postalcode"
@@ -2448,10 +2467,8 @@ function Admin({ user }: adminProps) {
                   }}
                   changeValue={`${(values as valuesDetails).newPostal}`}
                   required={true}
-                  placeholder={
-                    "A postal code within the private estate. Eg, 769748, 769850, etc"
-                  }
-                  information="This postal code will be used for locating the estate."
+                  placeholder={"Estate postal code. Eg, 769748, 769850, etc"}
+                  information="A postal code within the private estate. This code will be used for locating the estate."
                 />
                 <GenericTextField
                   label="Address Name"
