@@ -2429,8 +2429,9 @@ function Admin({ user }: adminProps) {
                   changeValue={`${(values as valuesDetails).newPostal}`}
                   required={true}
                   placeholder={
-                    "Postal code for locating the estate. Eg, 730801, 752367, etc"
+                    "A postal code within the private estate. Eg, 769748, 769850, etc"
                   }
+                  information="This postal code will be used for locating the estate."
                 />
                 <GenericTextField
                   label="Address Name"

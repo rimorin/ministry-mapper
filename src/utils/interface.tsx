@@ -88,6 +88,7 @@ export interface FormProps {
   placeholder?: string;
   rows?: number;
   required?: boolean;
+  information?: string;
 }
 
 export interface FloorProps {
