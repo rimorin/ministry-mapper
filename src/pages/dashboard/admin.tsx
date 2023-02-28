@@ -2157,7 +2157,7 @@ function Admin({ user }: adminProps) {
                   required={true}
                 />
               </Modal.Body>
-              <Modal.Footer>
+              <Modal.Footer className="justify-content-around">
                 <Button
                   variant="secondary"
                   onClick={() =>
@@ -2185,7 +2185,7 @@ function Admin({ user }: adminProps) {
                   changeValue={`${(values as valuesDetails).link}`}
                 />
               </Modal.Body>
-              <Modal.Footer>
+              <Modal.Footer className="justify-content-around">
                 <Button
                   variant="secondary"
                   onClick={() => toggleModal(ADMIN_MODAL_TYPES.LINK)}
@@ -2243,7 +2243,7 @@ function Admin({ user }: adminProps) {
                   placeholder={"Territory code. For eg, M01, W12, etc."}
                 />
               </Modal.Body>
-              <Modal.Footer>
+              <Modal.Footer className="justify-content-around">
                 <Button
                   variant="secondary"
                   onClick={() =>
@@ -2288,7 +2288,7 @@ function Admin({ user }: adminProps) {
                   }
                 />
               </Modal.Body>
-              <Modal.Footer>
+              <Modal.Footer className="justify-content-around">
                 <Button
                   variant="secondary"
                   onClick={() => toggleModal(ADMIN_MODAL_TYPES.UPDATE_POSTAL)}
@@ -2317,7 +2317,7 @@ function Admin({ user }: adminProps) {
                   required={true}
                 />
               </Modal.Body>
-              <Modal.Footer>
+              <Modal.Footer className="justify-content-around">
                 <Button
                   variant="secondary"
                   onClick={() =>
@@ -2362,7 +2362,7 @@ function Admin({ user }: adminProps) {
                   }
                 />
               </Modal.Body>
-              <Modal.Footer>
+              <Modal.Footer className="justify-content-around">
                 <Button
                   variant="secondary"
                   onClick={() =>
@@ -2430,7 +2430,7 @@ function Admin({ user }: adminProps) {
                   required={true}
                 />
               </Modal.Body>
-              <Modal.Footer>
+              <Modal.Footer className="justify-content-around">
                 <Button
                   variant="secondary"
                   onClick={() =>
@@ -2487,7 +2487,7 @@ function Admin({ user }: adminProps) {
                   required={true}
                 />
               </Modal.Body>
-              <Modal.Footer>
+              <Modal.Footer className="justify-content-around">
                 <Button
                   variant="secondary"
                   onClick={() =>
@@ -2538,7 +2538,7 @@ function Admin({ user }: adminProps) {
                   required={true}
                 />
               </Modal.Body>
-              <Modal.Footer>
+              <Modal.Footer className="justify-content-around">
                 <Button
                   variant="secondary"
                   onClick={() => toggleModal(ADMIN_MODAL_TYPES.ADD_UNIT)}
@@ -2572,7 +2572,7 @@ function Admin({ user }: adminProps) {
                   changeValue={`${(values as valuesDetails).sequence}`}
                 />
               </Modal.Body>
-              <Modal.Footer>
+              <Modal.Footer className="justify-content-around">
                 <Button
                   variant="secondary"
                   onClick={() => toggleModal(ADMIN_MODAL_TYPES.UPDATE_UNIT)}
