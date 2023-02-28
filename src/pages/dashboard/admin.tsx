@@ -1881,22 +1881,34 @@ function Admin({ user }: adminProps) {
                                   );
                                 }}
                               >
-                                Add Unit No.
+                                Add{" "}
+                                {addressElement.type === TERRITORY_TYPES.PRIVATE
+                                  ? "Property"
+                                  : "Unit"}{" "}
+                                No.
                               </Dropdown.Item>
-                              <Dropdown.Item
-                                onClick={() => {
-                                  addFloorToBlock(currentPostalcode);
-                                }}
-                              >
-                                Add Higher Floor
-                              </Dropdown.Item>
-                              <Dropdown.Item
-                                onClick={() => {
-                                  addFloorToBlock(currentPostalcode, true);
-                                }}
-                              >
-                                Add Lower Floor
-                              </Dropdown.Item>
+                              {(!addressElement.type ||
+                                addressElement.type ===
+                                  TERRITORY_TYPES.PUBLIC) && (
+                                <Dropdown.Item
+                                  onClick={() => {
+                                    addFloorToBlock(currentPostalcode);
+                                  }}
+                                >
+                                  {addressElement.type} Add Higher Floor
+                                </Dropdown.Item>
+                              )}
+                              {(!addressElement.type ||
+                                addressElement.type ===
+                                  TERRITORY_TYPES.PUBLIC) && (
+                                <Dropdown.Item
+                                  onClick={() => {
+                                    addFloorToBlock(currentPostalcode, true);
+                                  }}
+                                >
+                                  Add Lower Floor
+                                </Dropdown.Item>
+                              )}
                               <Dropdown.Item
                                 onClick={() =>
                                   confirmAlert({
@@ -1915,7 +1927,11 @@ function Admin({ user }: adminProps) {
                                                 Are You Very Sure ?
                                               </Card.Title>
                                               <Card.Text>
-                                                This action will reset all unit
+                                                This action will reset all{" "}
+                                                {addressElement.type ===
+                                                TERRITORY_TYPES.PRIVATE
+                                                  ? "property"
+                                                  : "unit"}{" "}
                                                 status of {currentPostalname}.
                                               </Card.Text>
                                               <Button
