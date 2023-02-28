@@ -591,7 +591,8 @@ function Admin({ user }: adminProps) {
     unitlength: number,
     unitseq: number | undefined,
     unit: String,
-    maxUnitNumber: number
+    maxUnitNumber: number,
+    territoryType: number
   ) => {
     setValues({
       ...values,
@@ -599,7 +600,8 @@ function Admin({ user }: adminProps) {
       unit: unit,
       unitDisplay: zeroPad(`${unit}`, maxUnitNumber),
       unitlength: unitlength,
-      sequence: unitseq === undefined ? "" : unitseq
+      sequence: unitseq === undefined ? "" : unitseq,
+      territoryType: territoryType
     });
     toggleModal(ADMIN_MODAL_TYPES.UPDATE_UNIT);
   };
@@ -2053,7 +2055,8 @@ function Admin({ user }: adminProps) {
                           Number(length),
                           Number(sequence),
                           unitno || "",
-                          maxUnitNumberLength
+                          maxUnitNumberLength,
+                          addressElement.type
                         );
                       }}
                       handleFloorDelete={(event) => {
@@ -2471,13 +2474,28 @@ function Admin({ user }: adminProps) {
           <Modal show={isNewUnit}>
             <Modal.Header>
               <Modal.Title>
-                Add Unit To {`${(values as valuesDetails).postal}`}
+                {`Add ${
+                  (values as valuesDetails).territoryType ===
+                  TERRITORY_TYPES.PRIVATE
+                    ? "property"
+                    : "unit"
+                } to ${
+                  (values as valuesDetails).territoryType ===
+                  TERRITORY_TYPES.PRIVATE
+                    ? (values as valuesDetails).name
+                    : (values as valuesDetails).postal
+                }`}
               </Modal.Title>
             </Modal.Header>
             <Form onSubmit={handleCreateNewUnit}>
               <Modal.Body>
                 <GenericTextField
-                  label="Unit Number"
+                  label={`${
+                    (values as valuesDetails).territoryType ===
+                    TERRITORY_TYPES.PRIVATE
+                      ? "Property"
+                      : "Unit"
+                  } number`}
                   name="unit"
                   handleChange={(e: ChangeEvent<HTMLElement>) => {
                     const { value } = e.target as HTMLInputElement;
