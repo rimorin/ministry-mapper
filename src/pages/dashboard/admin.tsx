@@ -763,6 +763,7 @@ function Admin({ user }: adminProps) {
     }
 
     const unitUpdates: unitMaps = {};
+    const lastSequenceNo = blockAddresses.floors[0].units.length + 1;
     for (const index in blockAddresses.floors) {
       const floorDetails = blockAddresses.floors[index];
       floorDetails.units.forEach((_) => {
@@ -777,7 +778,7 @@ function Admin({ user }: adminProps) {
               nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
               x_floor: floorDetails.floor,
               languages: "",
-              sequence: DEFAULT_UNIT_SEQUENCE_NO
+              sequence: lastSequenceNo
             };
       });
     }
