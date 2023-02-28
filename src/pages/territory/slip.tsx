@@ -336,6 +336,7 @@ const Slip = ({
             unit={`${(values as valuesDetails).unitDisplay}`}
             floor={`${(values as valuesDetails).floorDisplay}`}
             name={`${postalName}`}
+            type={territoryType}
           />
           <Form onSubmit={handleSubmitClick}>
             <Modal.Body>

@@ -372,7 +372,7 @@ const ModalUnitTitle = ({ unit, floor, postal, name, type }: TitleProps) => {
   }
 
   if (type === TERRITORY_TYPES.PRIVATE) {
-    titleString = `${unit} - ${name}`;
+    titleString = `${unit}, ${name}`;
   }
   return (
     <Modal.Header>
