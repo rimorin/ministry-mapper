@@ -39,7 +39,7 @@ const ModalFooter = ({
 }: FooterProps) => {
   return (
     <Modal.Footer className="justify-content-around">
-      {type && type === TERRITORY_TYPES.PRIVATE && (
+      {type && type === TERRITORY_TYPES.PRIVATE ? (
         <ComponentAuthorizer
           requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
           userPermission={userAccessLevel}
@@ -48,6 +48,8 @@ const ModalFooter = ({
             Delete Property
           </Button>
         </ComponentAuthorizer>
+      ) : (
+        <></>
       )}
       <Button variant="secondary" onClick={handleClick}>
         Close
