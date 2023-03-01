@@ -89,7 +89,8 @@ import {
   checkTraceRaceStatus,
   parseHHLanguages,
   getLanguageDisplayByCode,
-  checkCongregationExpireHours
+  checkCongregationExpireHours,
+  processPropertyNumber
 } from "../../utils/helpers";
 import {
   EnvironmentIndicator,
@@ -878,8 +879,8 @@ function Admin({ user }: adminProps) {
     for (let i = 0; i < noOfFloors; i++) {
       const floorMap = {} as any;
       units?.forEach((unitNo, index) => {
-        const removedLeadingZeroUnitNo = parseInt(unitNo).toString();
-        floorMap[removedLeadingZeroUnitNo] = {
+        const processedUnitNumber = processPropertyNumber(unitNo, addressType);
+        floorMap[processedUnitNumber] = {
           status: STATUS_CODES.DEFAULT,
           type: HOUSEHOLD_TYPES.CHINESE,
           note: "",

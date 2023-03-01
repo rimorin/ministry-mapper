@@ -19,7 +19,8 @@ import {
   HOUSEHOLD_LANGUAGES,
   FIREBASE_FUNCTION_TIMEOUT,
   MIN_PERCENTAGE_DISPLAY,
-  NOT_HOME_STATUS_CODES
+  NOT_HOME_STATUS_CODES,
+  TERRITORY_TYPES
 } from "../utils/constants";
 
 const errorHandler = (error: any, rollbar: Rollbar, showAlert = true) => {
@@ -222,6 +223,16 @@ const getLanguageDisplayByCode = (code: string): string => {
   return display;
 };
 
+const processPropertyNumber = (unitNo: string, propertyType: number) => {
+  if (!unitNo) return "";
+
+  unitNo = unitNo.trim();
+  if (propertyType === TERRITORY_TYPES.PRIVATE) {
+    return unitNo.toUpperCase();
+  }
+  return parseInt(unitNo).toString();
+};
+
 export {
   getLanguageDisplayByCode,
   ZeroPad,
@@ -239,5 +250,6 @@ export {
   checkCongregationExpireHours,
   processLinkCounts,
   triggerPostalCodeListeners,
-  processAddressData
+  processAddressData,
+  processPropertyNumber
 };
