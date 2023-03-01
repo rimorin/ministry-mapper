@@ -522,6 +522,29 @@ function Admin({ user }: adminProps) {
   const handleSubmitClick = async (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
+    const updateData: {
+      type: String;
+      note: String;
+      status: String;
+      nhcount: String | undefined;
+      languages: String | undefined;
+      dnctime: number | undefined;
+      sequence?: String;
+    } = {
+      type: details.type,
+      note: details.note,
+      status: details.status,
+      nhcount: details.nhcount,
+      languages: details.languages,
+      dnctime: details.dnctime
+    };
+    // Include sequence update value only when administering private territories
+    if (
+      details.territoryType === TERRITORY_TYPES.PRIVATE &&
+      userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT
+    ) {
+      updateData.sequence = details.sequence;
+    }
     setIsSaving(true);
     try {
       await pollingFunction(() =>
@@ -530,15 +553,7 @@ function Admin({ user }: adminProps) {
             database,
             `/${details.postal}/units/${details.floor}/${details.unit}`
           ),
-          {
-            type: details.type,
-            note: details.note,
-            status: details.status,
-            nhcount: details.nhcount,
-            languages: details.languages,
-            dnctime: details.dnctime,
-            sequence: details.sequence
-          }
+          updateData
         )
       );
       toggleModal();
@@ -2735,17 +2750,20 @@ function Admin({ user }: adminProps) {
                 handleChange={onFormChange}
                 changeValue={`${(values as valuesDetails).note}`}
               />
-              <ComponentAuthorizer
-                requiredPermission={USER_ACCESS_LEVELS.CONDUCTOR}
-                userPermission={userAccessLevel}
-              >
-                <GenericTextField
-                  label="Territory Sequence"
-                  name="sequence"
-                  handleChange={onFormChange}
-                  changeValue={`${(values as valuesDetails).sequence}`}
-                />
-              </ComponentAuthorizer>
+              {(values as valuesDetails).territoryType ===
+                TERRITORY_TYPES.PRIVATE && (
+                <ComponentAuthorizer
+                  requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
+                  userPermission={userAccessLevel}
+                >
+                  <GenericTextField
+                    label="Territory Sequence"
+                    name="sequence"
+                    handleChange={onFormChange}
+                    changeValue={`${(values as valuesDetails).sequence}`}
+                  />
+                </ComponentAuthorizer>
+              )}
             </Modal.Body>
             <ModalFooter
               handleClick={() => toggleModal(ADMIN_MODAL_TYPES.UNIT)}
