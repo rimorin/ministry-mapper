@@ -235,7 +235,7 @@ const HHLangField = ({ handleChangeValues, changeValues }: FormProps) => {
   );
 };
 
-const HHStatusField = ({ handleChange, changeValue }: FormProps) => {
+const HHStatusField = ({ handleGroupChange, changeValue }: FormProps) => {
   return (
     <Form.Group
       className="mb-1 text-center"
@@ -246,7 +246,7 @@ const HHStatusField = ({ handleChange, changeValue }: FormProps) => {
         type="radio"
         value={changeValue}
         className="mb-3"
-        onChange={handleChange}
+        onChange={handleGroupChange}
       >
         <ToggleButton
           id="status-tb-0"
@@ -293,7 +293,7 @@ const HHStatusField = ({ handleChange, changeValue }: FormProps) => {
   );
 };
 
-const HHNotHomeField = ({ handleChange, changeValue }: FormProps) => {
+const HHNotHomeField = ({ handleGroupChange, changeValue }: FormProps) => {
   return (
     <Form.Group className="mb-1" controlId="formBasicNtHomebtnCheckbox">
       <Form.Label>Number of tries</Form.Label>
@@ -303,7 +303,7 @@ const HHNotHomeField = ({ handleChange, changeValue }: FormProps) => {
           type="radio"
           value={changeValue}
           className="mb-3 group-wrap"
-          onChange={handleChange}
+          onChange={handleGroupChange}
         >
           <ToggleButton
             id="nh-status-tb-0"

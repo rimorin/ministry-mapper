@@ -2675,14 +2675,13 @@ function Admin({ user }: adminProps) {
           <Form onSubmit={handleSubmitClick}>
             <Modal.Body>
               <HHStatusField
-                handleChange={(toggleValue) => {
+                handleGroupChange={(toggleValue, _) => {
                   let dnctime = null;
-                  const statusValue = toggleValue.toString();
                   setIsNotHome(false);
                   setIsDnc(false);
-                  if (statusValue === STATUS_CODES.NOT_HOME) {
+                  if (toggleValue === STATUS_CODES.NOT_HOME) {
                     setIsNotHome(true);
-                  } else if (statusValue === STATUS_CODES.DO_NOT_CALL) {
+                  } else if (toggleValue === STATUS_CODES.DO_NOT_CALL) {
                     setIsDnc(true);
                     dnctime = new Date().getTime();
                   }
@@ -2690,7 +2689,7 @@ function Admin({ user }: adminProps) {
                     ...values,
                     nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
                     dnctime: dnctime,
-                    status: statusValue
+                    status: toggleValue
                   });
                 }}
                 changeValue={`${(values as valuesDetails).status}`}
@@ -2709,8 +2708,8 @@ function Admin({ user }: adminProps) {
                 <div className="text-center">
                   <HHNotHomeField
                     changeValue={`${(values as valuesDetails).nhcount}`}
-                    handleChange={(toggleValue) => {
-                      setValues({ ...values, nhcount: toggleValue.toString() });
+                    handleGroupChange={(toggleValue, _) => {
+                      setValues({ ...values, nhcount: toggleValue });
                     }}
                   />
                 </div>

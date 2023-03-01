@@ -78,6 +78,10 @@ export interface addressDetails {
 
 export interface FormProps {
   handleChange?: (event: React.ChangeEvent<HTMLElement>) => void;
+  handleGroupChange?: (
+    value: string,
+    event: React.ChangeEvent<HTMLElement>
+  ) => void;
   handleChangeValues?: (values: any[]) => void;
   handleDateChange?: (date: Date) => void;
   changeDate?: number;
