@@ -341,12 +341,16 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const deleteBlock = async (postalCode: String, showAlert: boolean) => {
+  const deleteBlock = async (
+    postalCode: String,
+    name: String,
+    showAlert: boolean
+  ) => {
     if (!selectedTerritoryCode) return;
     try {
       await remove(ref(database, `${postalCode}`));
       await deleteTerritoryAddress(selectedTerritoryCode, postalCode);
-      if (showAlert) alert(`Deleted postal address, ${postalCode}.`);
+      if (showAlert) alert(`Deleted address, ${name}.`);
       await refreshCongregationTerritory(`${selectedTerritoryCode}`);
     } catch (error) {
       errorHandler(error, rollbar);
@@ -743,7 +747,7 @@ function Admin({ user }: adminProps) {
           newPostalCode
         )
       );
-      await pollingFunction(() => deleteBlock(oldPostalCode, false));
+      await pollingFunction(() => deleteBlock(oldPostalCode, "", false));
       await toggleModal(ADMIN_MODAL_TYPES.UPDATE_POSTAL);
     } catch (error) {
       errorHandler(error, rollbar);
@@ -2014,6 +2018,7 @@ function Admin({ user }: adminProps) {
                                                 onClick={() => {
                                                   deleteBlock(
                                                     currentPostalcode,
+                                                    currentPostalname,
                                                     true
                                                   );
                                                   onClose();
