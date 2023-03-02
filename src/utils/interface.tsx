@@ -52,6 +52,7 @@ export interface valuesDetails {
   dnctime?: number;
   sequence: string;
   unitlength?: number;
+  territoryType?: number;
 }
 
 export interface adminProps {
@@ -72,10 +73,15 @@ export interface addressDetails {
   postalcode: String;
   floors: Array<floorDetails>;
   feedback: String;
+  type: number;
 }
 
 export interface FormProps {
   handleChange?: (event: React.ChangeEvent<HTMLElement>) => void;
+  handleGroupChange?: (
+    value: string,
+    event: React.ChangeEvent<HTMLElement>
+  ) => void;
   handleChangeValues?: (values: any[]) => void;
   handleDateChange?: (date: Date) => void;
   changeDate?: number;
@@ -86,6 +92,7 @@ export interface FormProps {
   placeholder?: string;
   rows?: number;
   required?: boolean;
+  information?: string;
 }
 
 export interface FloorProps {
@@ -97,6 +104,8 @@ export interface TitleProps {
   floor: String;
   unit: String;
   postal?: String;
+  type?: number;
+  name: String;
 }
 
 export interface BrandingProps {
@@ -107,6 +116,8 @@ export interface FooterProps {
   handleClick?: (event: React.MouseEvent<HTMLElement>) => void;
   isSaving?: boolean;
   userAccessLevel?: number;
+  handleDelete?: (event: React.MouseEvent<HTMLElement>) => void;
+  type?: number;
 }
 
 export interface LegendProps {
@@ -194,7 +205,24 @@ export interface territoryTableProps {
   postalCode: string;
   adminUnitHeaderStyle?: string;
   userAccessLevel?: number;
+  territoryType?: number;
   handleUnitStatusUpdate: (event: React.MouseEvent<HTMLElement>) => void;
   handleUnitNoUpdate?: (event: React.MouseEvent<HTMLElement>) => void;
   handleFloorDelete?: (event: React.MouseEvent<HTMLElement>) => void;
+}
+
+export interface territoryLandedProps {
+  isAdmin: boolean;
+  houses: floorDetails;
+  policy: Policy | undefined;
+  completedPercent: {
+    completedValue: number;
+    completedDisplay: string;
+  };
+  trackRace: boolean;
+  trackLanguages: boolean;
+  postalCode: string;
+  adminUnitHeaderStyle?: string;
+  userAccessLevel?: number;
+  handleHouseUpdate: (event: React.MouseEvent<HTMLElement>) => void;
 }

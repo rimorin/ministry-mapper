@@ -67,3 +67,7 @@
     font-weight: bolder;
   }
 }
+
+.landed-unit {
+  height: 2rem;
+}

@@ -24,18 +24,33 @@ import {
   MAX_TOP_FLOOR,
   HOUSEHOLD_LANGUAGES,
   STATUS_CODES,
-  NOT_HOME_STATUS_CODES
+  NOT_HOME_STATUS_CODES,
+  TERRITORY_TYPES
 } from "../utils/constants";
 import { ComponentAuthorizer } from "./navigation";
 
 const ModalFooter = ({
   handleClick,
+  handleDelete,
+  type,
   //Default to conductor access lvl so that individual slips can be writable.
   userAccessLevel = USER_ACCESS_LEVELS.CONDUCTOR,
   isSaving = false
 }: FooterProps) => {
   return (
     <Modal.Footer className="justify-content-around">
+      {type && type === TERRITORY_TYPES.PRIVATE ? (
+        <ComponentAuthorizer
+          requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
+          userPermission={userAccessLevel}
+        >
+          <Button variant="secondary" onClick={handleDelete}>
+            Delete Property
+          </Button>
+        </ComponentAuthorizer>
+      ) : (
+        <></>
+      )}
       <Button variant="secondary" onClick={handleClick}>
         Close
       </Button>
@@ -79,7 +94,8 @@ const GenericTextField = ({
   name,
   label,
   required = false,
-  placeholder = ""
+  placeholder = "",
+  information = ""
 }: FormProps) => {
   return (
     <Form.Group className="mb-3" controlId={`basicForm${name}Text`}>
@@ -91,6 +107,7 @@ const GenericTextField = ({
         required={required}
         placeholder={placeholder}
       />
+      {information && <Form.Text muted>{information}</Form.Text>}
     </Form.Group>
   );
 };
@@ -218,7 +235,7 @@ const HHLangField = ({ handleChangeValues, changeValues }: FormProps) => {
   );
 };
 
-const HHStatusField = ({ handleChange, changeValue }: FormProps) => {
+const HHStatusField = ({ handleGroupChange, changeValue }: FormProps) => {
   return (
     <Form.Group
       className="mb-1 text-center"
@@ -229,7 +246,7 @@ const HHStatusField = ({ handleChange, changeValue }: FormProps) => {
         type="radio"
         value={changeValue}
         className="mb-3"
-        onChange={handleChange}
+        onChange={handleGroupChange}
       >
         <ToggleButton
           id="status-tb-0"
@@ -276,7 +293,7 @@ const HHStatusField = ({ handleChange, changeValue }: FormProps) => {
   );
 };
 
-const HHNotHomeField = ({ handleChange, changeValue }: FormProps) => {
+const HHNotHomeField = ({ handleGroupChange, changeValue }: FormProps) => {
   return (
     <Form.Group className="mb-1" controlId="formBasicNtHomebtnCheckbox">
       <Form.Label>Number of tries</Form.Label>
@@ -286,7 +303,7 @@ const HHNotHomeField = ({ handleChange, changeValue }: FormProps) => {
           type="radio"
           value={changeValue}
           className="mb-3 group-wrap"
-          onChange={handleChange}
+          onChange={handleGroupChange}
         >
           <ToggleButton
             id="nh-status-tb-0"
@@ -351,11 +368,15 @@ const DncDateField = ({ handleDateChange, changeDate }: FormProps) => {
   );
 };
 
-const ModalUnitTitle = ({ unit, floor, postal }: TitleProps) => {
+const ModalUnitTitle = ({ unit, floor, postal, name, type }: TitleProps) => {
   let titleString = `# ${floor} - ${unit}`;
 
   if (postal) {
     titleString = `${postal}, ${titleString}`;
+  }
+
+  if (type === TERRITORY_TYPES.PRIVATE) {
+    titleString = `${unit}, ${name}`;
   }
   return (
     <Modal.Header>
