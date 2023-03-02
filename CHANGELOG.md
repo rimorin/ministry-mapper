@@ -1,3 +1,23 @@
+# [1.6.0](https://github.com/rimorin/ministry-mapper/compare/v1.5.0...v1.6.0) (2023-03-02)
+
+
+### Bug Fixes
+
+* add unit modal naming ([3e188fc](https://github.com/rimorin/ministry-mapper/commit/3e188fcfe5e155b316aaa633bac4c1c6cfbc0dfb))
+* admin update unit modal display ([a884c8a](https://github.com/rimorin/ministry-mapper/commit/a884c8a87eded1163329792e4f3d254cd61de040))
+* allow alphanumeric house no for private properties ([a714861](https://github.com/rimorin/ministry-mapper/commit/a714861733f4f9a925f9de17cdd0bc616a824e71))
+* disable floor adding to private address ([140ff2f](https://github.com/rimorin/ministry-mapper/commit/140ff2f76882bd5c2bca793ec31e4cc0c8099875))
+* handle dataclone error ([307cce3](https://github.com/rimorin/ministry-mapper/commit/307cce3d4936f6e163a8ef8b421b529d2baa8fb9))
+* missing remove option for floors ([7d7c124](https://github.com/rimorin/ministry-mapper/commit/7d7c1241fa0de52efefde7418e87fd9aa3c07a58))
+* set proper seq when adding new unit/house ([9268ab9](https://github.com/rimorin/ministry-mapper/commit/9268ab9fdb7ea8518925c48c669929f62f8d0a1f))
+* territory sequence field permission and logic ([50e90b3](https://github.com/rimorin/ministry-mapper/commit/50e90b329a2964e6dedeb072794a650c91ec1c48))
+* territory slip private unit display ([c17b13b](https://github.com/rimorin/ministry-mapper/commit/c17b13b6212027b0685a856e0fc2a99464fe6ba0))
+
+
+### Features
+
+* implement private / landed estate tracking ([da2afbf](https://github.com/rimorin/ministry-mapper/commit/da2afbf06b29ccf7664e3ec1227f461a3b404e41))
+
 # [1.5.0](https://github.com/rimorin/ministry-mapper/compare/v1.4.0...v1.5.0) (2023-02-23)
 
 
