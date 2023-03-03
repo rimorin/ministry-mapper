@@ -594,9 +594,15 @@ function Admin({ user }: adminProps) {
   const handleClickFeedback = (
     _: MouseEvent<HTMLElement>,
     postalcode: String,
+    name: String,
     feedback: String
   ) => {
-    setValues({ ...values, feedback: feedback, postal: postalcode });
+    setValues({
+      ...values,
+      feedback: feedback,
+      postal: postalcode,
+      name: name
+    });
     toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
   };
 
@@ -1842,6 +1848,7 @@ function Admin({ user }: adminProps) {
                             handleClickFeedback(
                               event,
                               currentPostalcode,
+                              currentPostalname,
                               addressElement.feedback
                             );
                           }}
@@ -2666,7 +2673,7 @@ function Admin({ user }: adminProps) {
         <Modal show={isFeedback}>
           <Modal.Header>
             <Modal.Title>{`Feedback on ${
-              (values as valuesDetails).postal
+              (values as valuesDetails).name
             }`}</Modal.Title>
           </Modal.Header>
           <Form onSubmit={handleSubmitFeedback}>
