@@ -90,7 +90,8 @@ import {
   parseHHLanguages,
   getLanguageDisplayByCode,
   checkCongregationExpireHours,
-  processPropertyNumber
+  processPropertyNumber,
+  isValidPostal
 } from "../../utils/helpers";
 import {
   EnvironmentIndicator,
@@ -872,12 +873,16 @@ function Admin({ user }: adminProps) {
   ) => {
     event.preventDefault();
     const details = values as valuesDetails;
-    const newPostalCode = details.newPostal;
+    const newPostalCode = details.newPostal || "";
     const noOfFloors = details.floors || 1;
     const unitSequence = details.units;
     const newPostalName = details.name;
     const addressType = Number(details.type);
 
+    if (!isValidPostal(`${newPostalCode}`)) {
+      alert("Invalid postal number");
+      return;
+    }
     // Add empty details for 0 floor
     let floorDetails = [{}];
     const units = unitSequence?.split(",");
