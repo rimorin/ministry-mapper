@@ -880,7 +880,7 @@ function Admin({ user }: adminProps) {
     const addressType = Number(details.type);
 
     if (!isValidPostal(`${newPostalCode}`)) {
-      alert("Invalid postal number");
+      alert("Invalid postal code");
       return;
     }
     // Add empty details for 0 floor
@@ -2500,7 +2500,7 @@ function Admin({ user }: adminProps) {
                   }}
                   changeValue={`${(values as valuesDetails).newPostal}`}
                   required={true}
-                  placeholder={"Estate postal code. Eg, 769748, 769850, etc"}
+                  placeholder={"Estate postal code"}
                   information="A postal code within the private estate. This code will be used for locating the estate."
                 />
                 <GenericTextField
