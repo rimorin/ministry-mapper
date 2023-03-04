@@ -1435,7 +1435,7 @@ function Admin({ user }: adminProps) {
                                         Yes, Delete It.
                                       </Button>
                                       <Button
-                                        className="ms-2"
+                                        className="no-confirm-btn"
                                         variant="primary"
                                         onClick={() => {
                                           onClose();
@@ -1499,7 +1499,7 @@ function Admin({ user }: adminProps) {
                                         Yes, Reset them.
                                       </Button>
                                       <Button
-                                        className="ms-2"
+                                        className="no-confirm-btn"
                                         variant="primary"
                                         onClick={() => {
                                           onClose();
@@ -1986,7 +1986,7 @@ function Admin({ user }: adminProps) {
                                                 Yes, Reset It.
                                               </Button>
                                               <Button
-                                                className="ms-2"
+                                                className="no-confirm-btn"
                                                 variant="primary"
                                                 onClick={() => {
                                                   onClose();
@@ -2040,7 +2040,7 @@ function Admin({ user }: adminProps) {
                                                 Yes, Delete It.
                                               </Button>
                                               <Button
-                                                className="ms-2"
+                                                className="no-confirm-btn"
                                                 variant="primary"
                                                 onClick={() => {
                                                   onClose();
@@ -2152,7 +2152,7 @@ function Admin({ user }: adminProps) {
                                       Yes, Delete It.
                                     </Button>
                                     <Button
-                                      className="ms-2"
+                                      className="no-confirm-btn"
                                       variant="primary"
                                       onClick={() => {
                                         onClose();
@@ -2650,7 +2650,7 @@ function Admin({ user }: adminProps) {
                                   Yes, Delete It.
                                 </Button>
                                 <Button
-                                  className="ms-2"
+                                  className="no-confirm-btn"
                                   variant="primary"
                                   onClick={() => {
                                     onClose();
@@ -2817,7 +2817,7 @@ function Admin({ user }: adminProps) {
                               Yes, Delete It.
                             </Button>
                             <Button
-                              className="ms-2"
+                              className="no-confirm-btn"
                               variant="primary"
                               onClick={() => {
                                 onClose();
