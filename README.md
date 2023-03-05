@@ -25,7 +25,6 @@ Disadvantages of Ministry Mapper
 - Initial migration work of the territory data. Territory servants will have to take some time to enter their entire territory details into the system.
 - Internet dependency. Requires publishers to use their internet capable phones/tablets to use. System may not be applicable for countries where internet access is not readily available.
 - Slight learning curve. Elderly and non tech-savvy publishers may have to overcome the challenge of transiting from paper/pen to the use of a computing device to update territory records.
-- Currently optimised for countries where territories are mostly apartments/flats.
 
 ### Usage
 
