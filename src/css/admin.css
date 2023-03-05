@@ -12,3 +12,7 @@
   right: 25px;
   cursor: pointer;
 }
+
+.no-confirm-btn {
+  margin-left: 1.5rem;
+}

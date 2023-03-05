@@ -90,7 +90,8 @@ import {
   parseHHLanguages,
   getLanguageDisplayByCode,
   checkCongregationExpireHours,
-  processPropertyNumber
+  processPropertyNumber,
+  isValidPostal
 } from "../../utils/helpers";
 import {
   EnvironmentIndicator,
@@ -594,9 +595,15 @@ function Admin({ user }: adminProps) {
   const handleClickFeedback = (
     _: MouseEvent<HTMLElement>,
     postalcode: String,
+    name: String,
     feedback: String
   ) => {
-    setValues({ ...values, feedback: feedback, postal: postalcode });
+    setValues({
+      ...values,
+      feedback: feedback,
+      postal: postalcode,
+      name: name
+    });
     toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
   };
 
@@ -866,12 +873,16 @@ function Admin({ user }: adminProps) {
   ) => {
     event.preventDefault();
     const details = values as valuesDetails;
-    const newPostalCode = details.newPostal;
+    const newPostalCode = details.newPostal || "";
     const noOfFloors = details.floors || 1;
     const unitSequence = details.units;
     const newPostalName = details.name;
     const addressType = Number(details.type);
 
+    if (!isValidPostal(`${newPostalCode}`)) {
+      alert("Invalid postal code");
+      return;
+    }
     // Add empty details for 0 floor
     let floorDetails = [{}];
     const units = unitSequence?.split(",");
@@ -1424,7 +1435,7 @@ function Admin({ user }: adminProps) {
                                         Yes, Delete It.
                                       </Button>
                                       <Button
-                                        className="ms-2"
+                                        className="no-confirm-btn"
                                         variant="primary"
                                         onClick={() => {
                                           onClose();
@@ -1488,7 +1499,7 @@ function Admin({ user }: adminProps) {
                                         Yes, Reset them.
                                       </Button>
                                       <Button
-                                        className="ms-2"
+                                        className="no-confirm-btn"
                                         variant="primary"
                                         onClick={() => {
                                           onClose();
@@ -1842,6 +1853,7 @@ function Admin({ user }: adminProps) {
                             handleClickFeedback(
                               event,
                               currentPostalcode,
+                              currentPostalname,
                               addressElement.feedback
                             );
                           }}
@@ -1974,7 +1986,7 @@ function Admin({ user }: adminProps) {
                                                 Yes, Reset It.
                                               </Button>
                                               <Button
-                                                className="ms-2"
+                                                className="no-confirm-btn"
                                                 variant="primary"
                                                 onClick={() => {
                                                   onClose();
@@ -2028,7 +2040,7 @@ function Admin({ user }: adminProps) {
                                                 Yes, Delete It.
                                               </Button>
                                               <Button
-                                                className="ms-2"
+                                                className="no-confirm-btn"
                                                 variant="primary"
                                                 onClick={() => {
                                                   onClose();
@@ -2140,7 +2152,7 @@ function Admin({ user }: adminProps) {
                                       Yes, Delete It.
                                     </Button>
                                     <Button
-                                      className="ms-2"
+                                      className="no-confirm-btn"
                                       variant="primary"
                                       onClick={() => {
                                         onClose();
@@ -2488,7 +2500,7 @@ function Admin({ user }: adminProps) {
                   }}
                   changeValue={`${(values as valuesDetails).newPostal}`}
                   required={true}
-                  placeholder={"Estate postal code. Eg, 769748, 769850, etc"}
+                  placeholder={"Estate postal code"}
                   information="A postal code within the private estate. This code will be used for locating the estate."
                 />
                 <GenericTextField
@@ -2638,7 +2650,7 @@ function Admin({ user }: adminProps) {
                                   Yes, Delete It.
                                 </Button>
                                 <Button
-                                  className="ms-2"
+                                  className="no-confirm-btn"
                                   variant="primary"
                                   onClick={() => {
                                     onClose();
@@ -2666,7 +2678,7 @@ function Admin({ user }: adminProps) {
         <Modal show={isFeedback}>
           <Modal.Header>
             <Modal.Title>{`Feedback on ${
-              (values as valuesDetails).postal
+              (values as valuesDetails).name
             }`}</Modal.Title>
           </Modal.Header>
           <Form onSubmit={handleSubmitFeedback}>
@@ -2805,7 +2817,7 @@ function Admin({ user }: adminProps) {
                               Yes, Delete It.
                             </Button>
                             <Button
-                              className="ms-2"
+                              className="no-confirm-btn"
                               variant="primary"
                               onClick={() => {
                                 onClose();

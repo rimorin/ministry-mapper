@@ -20,7 +20,9 @@ import {
   FIREBASE_FUNCTION_TIMEOUT,
   MIN_PERCENTAGE_DISPLAY,
   NOT_HOME_STATUS_CODES,
-  TERRITORY_TYPES
+  TERRITORY_TYPES,
+  SPECIAL_CHARACTERS,
+  MINIMUM_POSTAL_LENGTH
 } from "../utils/constants";
 
 const errorHandler = (error: any, rollbar: Rollbar, showAlert = true) => {
@@ -233,6 +235,18 @@ const processPropertyNumber = (unitNo: string, propertyType: number) => {
   return parseInt(unitNo).toString();
 };
 
+const isValidPostal = (postalCode: string) => {
+  if (!postalCode) return false;
+
+  if (isNaN(Number(postalCode))) return false;
+
+  if (postalCode.length < MINIMUM_POSTAL_LENGTH) return false;
+
+  if (SPECIAL_CHARACTERS.test(postalCode)) return false;
+
+  return true;
+};
+
 export {
   getLanguageDisplayByCode,
   ZeroPad,
@@ -251,5 +265,6 @@ export {
   processLinkCounts,
   triggerPostalCodeListeners,
   processAddressData,
-  processPropertyNumber
+  processPropertyNumber,
+  isValidPostal
 };

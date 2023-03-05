@@ -118,6 +118,11 @@ const TERRITORY_TYPES = {
   BUSINESS: 2
 };
 
+//eslint-disable-next-line
+const SPECIAL_CHARACTERS = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
+// Hardcode for local SG postal standards
+const MINIMUM_POSTAL_LENGTH = 6;
+
 export {
   UA_DEVICE_MAKES,
   UNSUPPORTED_BROWSER_MSG,
@@ -146,5 +151,7 @@ export {
   PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY,
   DEFAULT_UNIT_SEQUENCE_NO,
   DEFAULT_UNIT_DNC_MS_TIME,
-  TERRITORY_TYPES
+  TERRITORY_TYPES,
+  SPECIAL_CHARACTERS,
+  MINIMUM_POSTAL_LENGTH
 };
