@@ -41,6 +41,7 @@ const errorMessage = (code: String) => {
     return "Your browser does not support web storage. Please enable it and try again";
   if (code === "auth/network-request-failed")
     return "Network error. Please either try again with a stable internet connection or contact support";
+  if (code === "auth/user-not-found") return "Invalid user.";
   return "Invalid Credentials";
 };
 
