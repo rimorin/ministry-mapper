@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/rimorin/ministry-mapper/compare/v1.6.0...v1.6.1) (2023-03-05)
+
+
+### Bug Fixes
+
+* add postal code check when creating new address ([9fbc4d3](https://github.com/rimorin/ministry-mapper/commit/9fbc4d3b14aadb7265ea3af6c6e285e4266c2a4f))
+
 # [1.6.0](https://github.com/rimorin/ministry-mapper/compare/v1.5.0...v1.6.0) (2023-03-02)
 
 
