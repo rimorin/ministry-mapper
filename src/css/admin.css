@@ -16,3 +16,8 @@
 .no-confirm-btn {
   margin-left: 1.5rem;
 }
+
+.dropdown-btn {
+  display: inline-block;
+  margin: 0.25rem;
+}
