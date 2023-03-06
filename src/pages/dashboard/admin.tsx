@@ -13,7 +13,7 @@ import {
   off
 } from "firebase/database";
 import "../../css/admin.css";
-import { signOut, User } from "firebase/auth";
+import { signOut, updatePassword, User } from "firebase/auth";
 import { nanoid } from "nanoid";
 import {
   MouseEvent,
@@ -70,9 +70,9 @@ import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
 import { RacePolicy, LanguagePolicy, LinkSession } from "../../utils/policies";
 import { zeroPad } from "react-countdown";
-import { ReactComponent as GearImage } from "../../assets/gear.svg";
 import getUA from "ua-parser-js";
 import { AdminTable } from "../../components/table";
+import PasswordChecklist from "react-password-checklist";
 import {
   pollingFunction,
   processAddressData,
@@ -122,7 +122,8 @@ import {
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   MIN_START_FLOOR,
   PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY,
-  TERRITORY_TYPES
+  TERRITORY_TYPES,
+  MINIMUM_PASSWORD_LENGTH
 } from "../../utils/constants";
 function Admin({ user }: adminProps) {
   const { code } = useParams();
@@ -159,6 +160,8 @@ function Admin({ user }: adminProps) {
   const [trackLanguages, setTrackLanguages] = useState<boolean>(true);
   const [showChangeAddressTerritory, setShowChangeAddressTerritory] =
     useState<boolean>(false);
+  const [isChangePassword, setIsChangePassword] = useState<boolean>(false);
+  const [isChangePasswordOk, setIsChangePasswordOk] = useState<boolean>(false);
   const [name, setName] = useState<String>();
   const [values, setValues] = useState<Object>({});
   const [territories, setTerritories] = useState(
@@ -481,6 +484,9 @@ function Admin({ user }: adminProps) {
         break;
       case ADMIN_MODAL_TYPES.CREATE_PRIVATE_ADDRESS:
         setIsCreatePrivate(!isCreatePrivate);
+        break;
+      case ADMIN_MODAL_TYPES.CHANGE_PASSWORD:
+        setIsChangePassword(!isChangePassword);
         break;
       default:
         setIsOpen(!isOpen);
@@ -993,6 +999,25 @@ function Admin({ user }: adminProps) {
       return;
     }
     toggleModal(ADMIN_MODAL_TYPES.LINK);
+  };
+
+  const handleChangePassword = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const newPassword = event.currentTarget.password.value;
+    try {
+      setIsSaving(true);
+      await updatePassword(user, newPassword);
+      alert("Password updated.");
+    } catch (error) {
+      errorHandler(error, rollbar);
+      return;
+    } finally {
+      setIsSaving(false);
+    }
+    toggleModal(ADMIN_MODAL_TYPES.CHANGE_PASSWORD);
   };
 
   const onFormChange = (e: ChangeEvent<HTMLElement>) => {
@@ -1584,16 +1609,36 @@ function Admin({ user }: adminProps) {
                   Revoke Link
                 </Button>
               </ComponentAuthorizer>
-              <Button
-                className="m-1"
+              <DropdownButton
+                align="end"
+                className="m-1 d-inline-block"
                 size="sm"
                 variant="outline-primary"
-                onClick={async () => {
-                  toggleModal(ADMIN_MODAL_TYPES.PROFILE);
-                }}
+                title="Account"
               >
-                <GearImage stroke="var(--bs-blue)" />
-              </Button>
+                <Dropdown.Item
+                  onClick={() => toggleModal(ADMIN_MODAL_TYPES.PROFILE)}
+                >
+                  Profile
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => {
+                    setIsChangePasswordOk(false);
+                    setValues({ ...values, password: "", cpassword: "" });
+                    toggleModal(ADMIN_MODAL_TYPES.CHANGE_PASSWORD);
+                  }}
+                >
+                  Change Password
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={async () => {
+                    clearAdminState();
+                    await signOut(auth);
+                  }}
+                >
+                  Logout
+                </Dropdown.Item>
+              </DropdownButton>
             </Navbar.Collapse>
           </Container>
         </Navbar>
@@ -2887,19 +2932,87 @@ function Admin({ user }: adminProps) {
             </Modal.Body>
             <Modal.Footer className="justify-content-around">
               <Button
-                variant="primary"
-                onClick={async () => {
-                  clearAdminState();
-                  await signOut(auth);
-                }}
-              >
-                Log Out
-              </Button>
-              <Button
                 variant="secondary"
                 onClick={() => toggleModal(ADMIN_MODAL_TYPES.PROFILE)}
               >
                 Close
+              </Button>
+            </Modal.Footer>
+          </Form>
+        </Modal>
+        <Modal show={isChangePassword}>
+          <Modal.Header>
+            <Modal.Title>Change Password</Modal.Title>
+          </Modal.Header>
+          <Form onSubmit={handleChangePassword}>
+            <Modal.Body>
+              <Form.Group className="mb-3" controlId="formBasicNewPassword">
+                <Form.Label>New Password</Form.Label>
+                <Form.Control
+                  type="password"
+                  name="password"
+                  onChange={(event) => {
+                    const { value } = event.target as HTMLInputElement;
+                    setValues({
+                      ...values,
+                      password: value
+                    });
+                  }}
+                  required
+                />
+              </Form.Group>
+              <Form.Group
+                className="mb-3"
+                controlId="formBasicConfirmNewPassword"
+              >
+                <Form.Label>Confirm New Password</Form.Label>
+                <Form.Control
+                  type="password"
+                  onChange={(event) => {
+                    const { value } = event.target as HTMLInputElement;
+                    setValues({
+                      ...values,
+                      cpassword: value
+                    });
+                  }}
+                  required
+                />
+              </Form.Group>
+              <PasswordChecklist
+                rules={[
+                  "minLength",
+                  "specialChar",
+                  "number",
+                  "capital",
+                  "match"
+                ]}
+                minLength={MINIMUM_PASSWORD_LENGTH}
+                value={(values as valuesDetails).password || ""}
+                valueAgain={(values as valuesDetails).cpassword || ""}
+                onChange={(isValid) => setIsChangePasswordOk(isValid)}
+              />
+            </Modal.Body>
+            <Modal.Footer className="justify-content-around">
+              <Button
+                variant="secondary"
+                onClick={() => toggleModal(ADMIN_MODAL_TYPES.CHANGE_PASSWORD)}
+              >
+                Close
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={!isChangePasswordOk}
+              >
+                {isSaving && (
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    aria-hidden="true"
+                  />
+                )}{" "}
+                Save
               </Button>
             </Modal.Footer>
           </Form>

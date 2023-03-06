@@ -53,6 +53,8 @@ export interface valuesDetails {
   sequence: string;
   unitlength?: number;
   territoryType?: number;
+  password?: string;
+  cpassword?: string;
 }
 
 export interface adminProps {
