@@ -12,7 +12,7 @@ import { LanguagePolicy, RacePolicy } from "./utils/policies";
 import { UnitStatus } from "./components/table";
 import { Legend } from "./components/navigation";
 import {
-  FrontPage,
+  FrontLogo,
   MaintenanceMode,
   NotFoundPage,
   UnauthorizedPage,
@@ -47,7 +47,7 @@ const rollbarRender = (ui: any) => {
 };
 
 test("renders frontpage", () => {
-  render(<FrontPage />);
+  render(<FrontLogo />);
   expect(screen.getByRole("img")).toBeInTheDocument();
 });
 

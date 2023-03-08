@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Container, Card, Image, Fade, Spinner } from "react-bootstrap";
 const Welcome = () => {
   return (
@@ -21,7 +22,7 @@ const Welcome = () => {
   );
 };
 
-const FrontPage = () => (
+const FrontLogo = memo(() => (
   <Container className="container-main">
     <Image
       width={"60%"}
@@ -30,7 +31,7 @@ const FrontPage = () => (
       src={`${process.env.PUBLIC_URL}/logo.png`}
     ></Image>
   </Container>
-);
+));
 
 const InvalidPage = () => (
   <Container className="container-main">
@@ -121,7 +122,7 @@ const Loader = () => (
 
 export {
   Welcome,
-  FrontPage,
+  FrontLogo,
   InvalidPage,
   MaintenanceMode,
   NotFoundPage,
