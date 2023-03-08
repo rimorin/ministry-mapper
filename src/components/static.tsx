@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Container, Card, Image, Fade, Spinner } from "react-bootstrap";
-const Welcome = () => {
+const Welcome = memo(() => {
   return (
     <Container className="container-main" style={{ height: "80vh" }}>
       <Card className="card-main" style={{ width: "100%" }}>
@@ -20,7 +20,7 @@ const Welcome = () => {
       </Card>
     </Container>
   );
-};
+});
 
 const FrontLogo = memo(() => (
   <Container className="container-main">
@@ -33,7 +33,26 @@ const FrontLogo = memo(() => (
   </Container>
 ));
 
-const InvalidPage = () => (
+const VerificationPage = memo(() => (
+  <Container className="container-main">
+    <Fade appear={true} in={true}>
+      <Card className="card-main">
+        <Card.Img
+          alt="Ministry Mapper logo"
+          className="mm-logo"
+          src={`${process.env.PUBLIC_URL}/android-chrome-192x192.png`}
+        />
+        <Card.Body>
+          <Card.Title className="text-center">
+            Please verify your email account before proceeding 🪪
+          </Card.Title>
+        </Card.Body>
+      </Card>
+    </Fade>
+  </Container>
+));
+
+const InvalidPage = memo(() => (
   <Container className="container-main">
     <Fade appear={true} in={true}>
       <Card className="card-main">
@@ -50,9 +69,9 @@ const InvalidPage = () => (
       </Card>
     </Fade>
   </Container>
-);
+));
 
-const MaintenanceMode = () => (
+const MaintenanceMode = memo(() => (
   <Container className="container-main">
     <Card className="card-main">
       <Card.Img
@@ -71,7 +90,7 @@ const MaintenanceMode = () => (
       </Card.Body>
     </Card>
   </Container>
-);
+));
 
 const NotFoundPage = () => (
   <Container className="container-main">
@@ -91,7 +110,7 @@ const NotFoundPage = () => (
   </Container>
 );
 
-const UnauthorizedPage = () => (
+const UnauthorizedPage = memo(() => (
   <Container className="container-main">
     <Card className="card-main">
       <Card.Img
@@ -109,7 +128,7 @@ const UnauthorizedPage = () => (
       </Card.Body>
     </Card>
   </Container>
-);
+));
 
 const Loader = () => (
   <Container
@@ -127,5 +146,6 @@ export {
   MaintenanceMode,
   NotFoundPage,
   UnauthorizedPage,
+  VerificationPage,
   Loader
 };
