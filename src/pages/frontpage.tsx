@@ -18,7 +18,7 @@ import { FirebaseError } from "firebase/app";
 import { useRollbar } from "@rollbar/react";
 import { errorHandler, errorMessage } from "../utils/helpers";
 import PasswordChecklist from "react-password-checklist";
-import { MINIMUM_PASSWORD_LENGTH } from "../utils/constants";
+import { MINIMUM_PASSWORD_LENGTH, PASSWORD_POLICY } from "../utils/constants";
 import { NavBarBranding } from "../components/navigation";
 import { FrontLogo } from "../components/static";
 
@@ -146,13 +146,7 @@ const FrontPage = () => {
                 />
               </Form.Group>
               <PasswordChecklist
-                rules={[
-                  "minLength",
-                  "specialChar",
-                  "number",
-                  "capital",
-                  "match"
-                ]}
+                rules={PASSWORD_POLICY}
                 minLength={MINIMUM_PASSWORD_LENGTH}
                 value={loginPassword}
                 valueAgain={cloginPassword}

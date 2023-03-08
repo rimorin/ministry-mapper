@@ -123,7 +123,8 @@ import {
   MIN_START_FLOOR,
   PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY,
   TERRITORY_TYPES,
-  MINIMUM_PASSWORD_LENGTH
+  MINIMUM_PASSWORD_LENGTH,
+  PASSWORD_POLICY
 } from "../../utils/constants";
 function Admin({ user }: adminProps) {
   const { code } = useParams();
@@ -2969,13 +2970,7 @@ function Admin({ user }: adminProps) {
                 />
               </Form.Group>
               <PasswordChecklist
-                rules={[
-                  "minLength",
-                  "specialChar",
-                  "number",
-                  "capital",
-                  "match"
-                ]}
+                rules={PASSWORD_POLICY}
                 minLength={MINIMUM_PASSWORD_LENGTH}
                 value={(values as valuesDetails).password || ""}
                 valueAgain={(values as valuesDetails).cpassword || ""}
