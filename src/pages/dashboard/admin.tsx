@@ -542,7 +542,7 @@ function Admin({ user }: adminProps) {
       nhcount: String | undefined;
       languages: String | undefined;
       dnctime: number | undefined;
-      sequence?: String;
+      sequence?: number;
     } = {
       type: details.type,
       note: details.note,
@@ -554,9 +554,10 @@ function Admin({ user }: adminProps) {
     // Include sequence update value only when administering private territories
     if (
       details.territoryType === TERRITORY_TYPES.PRIVATE &&
-      userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT
+      userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT &&
+      details.sequence
     ) {
-      updateData.sequence = details.sequence;
+      updateData.sequence = Number(details.sequence);
     }
     setIsSaving(true);
     try {
