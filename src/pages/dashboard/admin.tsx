@@ -58,7 +58,7 @@ import {
   DncDateField,
   FloorField,
   GenericTextAreaField,
-  GenericTextField,
+  GenericInputField,
   HHLangField,
   HHNotHomeField,
   HHStatusField,
@@ -2219,7 +2219,7 @@ function Admin({ user }: adminProps) {
             </Modal.Header>
             <Form onSubmit={handleUpdateTerritoryName}>
               <Modal.Body>
-                <GenericTextField
+                <GenericInputField
                   label="Name"
                   name="name"
                   handleChange={onFormChange}
@@ -2301,7 +2301,7 @@ function Admin({ user }: adminProps) {
                     defaultValue={`${selectedTerritoryCode}`}
                   />
                 </Form.Group>
-                <GenericTextField
+                <GenericInputField
                   label="New Territory Code"
                   name="code"
                   handleChange={(e: ChangeEvent<HTMLElement>) => {
@@ -2344,7 +2344,8 @@ function Admin({ user }: adminProps) {
                     defaultValue={`${(values as valuesDetails).postal}`}
                   />
                 </Form.Group>
-                <GenericTextField
+                <GenericInputField
+                  inputType="number"
                   label="New Postal Code"
                   name="postalcode"
                   handleChange={(e: ChangeEvent<HTMLElement>) => {
@@ -2379,7 +2380,7 @@ function Admin({ user }: adminProps) {
             </Modal.Header>
             <Form onSubmit={handleUpdateBlockName}>
               <Modal.Body>
-                <GenericTextField
+                <GenericInputField
                   label="Name"
                   name="name"
                   handleChange={onFormChange}
@@ -2410,7 +2411,7 @@ function Admin({ user }: adminProps) {
             </Modal.Header>
             <Form onSubmit={handleCreateTerritory}>
               <Modal.Body>
-                <GenericTextField
+                <GenericInputField
                   label="Territory Code"
                   name="code"
                   handleChange={(e: ChangeEvent<HTMLElement>) => {
@@ -2421,7 +2422,7 @@ function Admin({ user }: adminProps) {
                   required={true}
                   placeholder={"Territory code. For eg, M01, W12, etc."}
                 />
-                <GenericTextField
+                <GenericInputField
                   label="Name"
                   name="name"
                   handleChange={onFormChange}
@@ -2459,7 +2460,8 @@ function Admin({ user }: adminProps) {
                   These are governmental owned residential properties that
                   usually consist of rental flats.
                 </p>
-                <GenericTextField
+                <GenericInputField
+                  inputType="number"
                   label="Postal Code"
                   name="postalcode"
                   handleChange={(e: ChangeEvent<HTMLElement>) => {
@@ -2472,7 +2474,7 @@ function Admin({ user }: adminProps) {
                     "Block/Building postal code. Eg, 730801, 752367, etc"
                   }
                 />
-                <GenericTextField
+                <GenericInputField
                   label="Address Name"
                   name="name"
                   handleChange={onFormChange}
@@ -2528,7 +2530,8 @@ function Admin({ user }: adminProps) {
                   as terrace houses, semi-detached houses, bungalows or cluster
                   houses.
                 </p>
-                <GenericTextField
+                <GenericInputField
+                  inputType="number"
                   label="Postal Code"
                   name="postalcode"
                   handleChange={(e: ChangeEvent<HTMLElement>) => {
@@ -2540,7 +2543,7 @@ function Admin({ user }: adminProps) {
                   placeholder={"Estate postal code"}
                   information="A postal code within the private estate. This code will be used for locating the estate."
                 />
-                <GenericTextField
+                <GenericInputField
                   label="Address Name"
                   name="name"
                   handleChange={onFormChange}
@@ -2592,7 +2595,7 @@ function Admin({ user }: adminProps) {
             </Modal.Header>
             <Form onSubmit={handleCreateNewUnit}>
               <Modal.Body>
-                <GenericTextField
+                <GenericInputField
                   label={`${
                     (values as valuesDetails).territoryType ===
                     TERRITORY_TYPES.PRIVATE
@@ -2631,7 +2634,8 @@ function Admin({ user }: adminProps) {
             </Modal.Header>
             <Form onSubmit={handleUpdateUnit}>
               <Modal.Body>
-                <GenericTextField
+                <GenericInputField
+                  inputType="number"
                   label="Sequence Number"
                   name="sequence"
                   placeholder="Optional unit row sequence number"
@@ -2811,7 +2815,8 @@ function Admin({ user }: adminProps) {
                   requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
                   userPermission={userAccessLevel}
                 >
-                  <GenericTextField
+                  <GenericInputField
+                    inputType="number"
                     label="Territory Sequence"
                     name="sequence"
                     handleChange={onFormChange}

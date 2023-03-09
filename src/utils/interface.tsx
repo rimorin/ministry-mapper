@@ -95,6 +95,7 @@ export interface FormProps {
   rows?: number;
   required?: boolean;
   information?: string;
+  inputType?: string;
 }
 
 export interface FloorProps {
