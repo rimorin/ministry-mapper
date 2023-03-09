@@ -99,6 +99,16 @@ test("renders admin welcome page", () => {
   expect(screen.getByText("Welcome To Ministry Mapper")).toBeInTheDocument();
 });
 
+test("renders admin welcome page with name", () => {
+  const name = "JE";
+  render(<Welcome name={name} />);
+  expect(screen.getByRole("img")).toBeInTheDocument();
+  expect(
+    screen.getByText("Please select a territory from the above listing.")
+  ).toBeInTheDocument();
+  expect(screen.getByText(`Welcome ${name}`)).toBeInTheDocument();
+});
+
 test("renders loading indicator", () => {
   render(<Loader />);
   expect(screen.getByRole("status")).toBeInTheDocument();

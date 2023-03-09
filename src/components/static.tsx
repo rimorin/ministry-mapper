@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Container, Card, Image, Fade, Spinner } from "react-bootstrap";
-const Welcome = memo(() => {
+const Welcome = memo(({ name }: { name?: String }) => {
   return (
     <Container className="container-main" style={{ height: "80vh" }}>
       <Card className="card-main" style={{ width: "100%" }}>
@@ -11,7 +11,7 @@ const Welcome = memo(() => {
         />
         <Card.Body>
           <Card.Title className="text-center">
-            Welcome To Ministry Mapper
+            Welcome {name || "To Ministry Mapper"}
           </Card.Title>
           <Card.Text className="text-justify">
             Please select a territory from the above listing.

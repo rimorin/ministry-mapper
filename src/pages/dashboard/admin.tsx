@@ -1640,7 +1640,7 @@ function Admin({ user }: adminProps) {
             </Navbar.Collapse>
           </Container>
         </Navbar>
-        {!selectedTerritoryCode && <Welcome />}
+        {!selectedTerritoryCode && <Welcome name={`${user.displayName}`} />}
         <TerritoryHeader name={selectedTerritoryName} />
         {/* There is no need to open all accordion for read-only users. */}
         <Accordion
@@ -2879,11 +2879,19 @@ function Admin({ user }: adminProps) {
           <Form>
             <Modal.Body>
               <Form.Group className="mb-3">
-                <Form.Label htmlFor="userid">User</Form.Label>
+                <Form.Label htmlFor="userid">Email</Form.Label>
                 <Form.Control
                   readOnly
                   id="userid"
                   defaultValue={`${user.email}`}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label htmlFor="userid">Name</Form.Label>
+                <Form.Control
+                  readOnly
+                  id="userid"
+                  defaultValue={`${user.displayName}`}
                 />
               </Form.Group>
               <Form.Group className="mb-3">
