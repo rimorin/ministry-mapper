@@ -88,19 +88,21 @@ const HHType = () => (
   </>
 );
 
-const GenericTextField = ({
+const GenericInputField = ({
   handleChange,
   changeValue,
   name,
   label,
   required = false,
   placeholder = "",
-  information = ""
+  information = "",
+  inputType = "string"
 }: FormProps) => {
   return (
     <Form.Group className="mb-3" controlId={`basicForm${name}Text`}>
       <Form.Label>{label}</Form.Label>
       <Form.Control
+        type={inputType}
         onChange={handleChange}
         name={name}
         value={changeValue}
@@ -394,7 +396,7 @@ export {
   DncDateField,
   HHLangField,
   FloorField,
-  GenericTextField,
+  GenericInputField,
   GenericTextAreaField,
   ModalFooter,
   ModalUnitTitle

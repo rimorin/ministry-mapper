@@ -2,7 +2,7 @@ import { child, ref, onValue } from "firebase/database";
 import { useState, useEffect } from "react";
 import { Container } from "react-bootstrap";
 import { Routes, Route } from "react-router-dom";
-import { NotFoundPage, FrontPage, MaintenanceMode } from "../components/static";
+import { NotFoundPage, MaintenanceMode } from "../components/static";
 import { database } from "../firebase";
 import Dashboard from "./dashboard/index";
 import Territory from "./territory/index";
@@ -11,6 +11,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "react-calendar/dist/Calendar.css";
 import "../css/main.css";
 import "../css/common.css";
+import FrontPage from "./frontpage";
 
 function Main() {
   const [isMaintenance, setIsMaintenance] = useState<boolean>(false);

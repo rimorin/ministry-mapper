@@ -53,6 +53,8 @@ export interface valuesDetails {
   sequence: string;
   unitlength?: number;
   territoryType?: number;
+  password?: string;
+  cpassword?: string;
 }
 
 export interface adminProps {
@@ -93,6 +95,7 @@ export interface FormProps {
   rows?: number;
   required?: boolean;
   information?: string;
+  inputType?: string;
 }
 
 export interface FloorProps {

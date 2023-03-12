@@ -13,7 +13,7 @@ import {
   off
 } from "firebase/database";
 import "../../css/admin.css";
-import { signOut, User } from "firebase/auth";
+import { signOut, updatePassword, User } from "firebase/auth";
 import { nanoid } from "nanoid";
 import {
   MouseEvent,
@@ -58,7 +58,7 @@ import {
   DncDateField,
   FloorField,
   GenericTextAreaField,
-  GenericTextField,
+  GenericInputField,
   HHLangField,
   HHNotHomeField,
   HHStatusField,
@@ -70,9 +70,9 @@ import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
 import { RacePolicy, LanguagePolicy, LinkSession } from "../../utils/policies";
 import { zeroPad } from "react-countdown";
-import { ReactComponent as GearImage } from "../../assets/gear.svg";
 import getUA from "ua-parser-js";
 import { AdminTable } from "../../components/table";
+import PasswordChecklist from "react-password-checklist";
 import {
   pollingFunction,
   processAddressData,
@@ -122,7 +122,9 @@ import {
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   MIN_START_FLOOR,
   PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY,
-  TERRITORY_TYPES
+  TERRITORY_TYPES,
+  MINIMUM_PASSWORD_LENGTH,
+  PASSWORD_POLICY
 } from "../../utils/constants";
 function Admin({ user }: adminProps) {
   const { code } = useParams();
@@ -159,6 +161,8 @@ function Admin({ user }: adminProps) {
   const [trackLanguages, setTrackLanguages] = useState<boolean>(true);
   const [showChangeAddressTerritory, setShowChangeAddressTerritory] =
     useState<boolean>(false);
+  const [isChangePassword, setIsChangePassword] = useState<boolean>(false);
+  const [isChangePasswordOk, setIsChangePasswordOk] = useState<boolean>(false);
   const [name, setName] = useState<String>();
   const [values, setValues] = useState<Object>({});
   const [territories, setTerritories] = useState(
@@ -482,6 +486,9 @@ function Admin({ user }: adminProps) {
       case ADMIN_MODAL_TYPES.CREATE_PRIVATE_ADDRESS:
         setIsCreatePrivate(!isCreatePrivate);
         break;
+      case ADMIN_MODAL_TYPES.CHANGE_PASSWORD:
+        setIsChangePassword(!isChangePassword);
+        break;
       default:
         setIsOpen(!isOpen);
     }
@@ -535,7 +542,7 @@ function Admin({ user }: adminProps) {
       nhcount: String | undefined;
       languages: String | undefined;
       dnctime: number | undefined;
-      sequence?: String;
+      sequence?: number;
     } = {
       type: details.type,
       note: details.note,
@@ -547,9 +554,10 @@ function Admin({ user }: adminProps) {
     // Include sequence update value only when administering private territories
     if (
       details.territoryType === TERRITORY_TYPES.PRIVATE &&
-      userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT
+      userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT &&
+      details.sequence
     ) {
-      updateData.sequence = details.sequence;
+      updateData.sequence = Number(details.sequence);
     }
     setIsSaving(true);
     try {
@@ -995,6 +1003,25 @@ function Admin({ user }: adminProps) {
     toggleModal(ADMIN_MODAL_TYPES.LINK);
   };
 
+  const handleChangePassword = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const newPassword = event.currentTarget.password.value;
+    try {
+      setIsSaving(true);
+      await updatePassword(user, newPassword);
+      alert("Password updated.");
+    } catch (error) {
+      errorHandler(error, rollbar);
+      return;
+    } finally {
+      setIsSaving(false);
+    }
+    toggleModal(ADMIN_MODAL_TYPES.CHANGE_PASSWORD);
+  };
+
   const onFormChange = (e: ChangeEvent<HTMLElement>) => {
     const { name, value } = e.target as HTMLInputElement;
     setValues({ ...values, [name]: value });
@@ -1385,140 +1412,136 @@ function Admin({ user }: adminProps) {
                   requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
                   userPermission={userAccessLevel}
                 >
-                  <Dropdown className="m-1 d-inline-block">
-                    <Dropdown.Toggle variant="outline-primary" size="sm">
-                      Territory
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu>
-                      <Dropdown.Item
-                        onClick={() => {
-                          setValues({ ...values, name: "", code: "" });
-                          toggleModal(ADMIN_MODAL_TYPES.CREATE_TERRITORY);
-                        }}
-                      >
-                        Create New
-                      </Dropdown.Item>
-                      <Dropdown.Item
-                        onClick={() => {
-                          setValues({ ...values, code: "" });
-                          toggleModal(ADMIN_MODAL_TYPES.UPDATE_TERRITORY_CODE);
-                        }}
-                      >
-                        Change Code
-                      </Dropdown.Item>
-                      <Dropdown.Item
-                        onClick={() =>
-                          confirmAlert({
-                            customUI: ({ onClose }) => {
-                              return (
-                                <Container>
-                                  <Card bg="warning" className="text-center">
-                                    <Card.Header>Warning ⚠️</Card.Header>
-                                    <Card.Body>
-                                      <Card.Title>
-                                        Are You Very Sure ?
-                                      </Card.Title>
-                                      <Card.Text>
-                                        This action will delete the territory,{" "}
+                  <DropdownButton
+                    className="dropdown-btn"
+                    variant="outline-primary"
+                    size="sm"
+                    title="Territory"
+                  >
+                    <Dropdown.Item
+                      onClick={() => {
+                        setValues({ ...values, name: "", code: "" });
+                        toggleModal(ADMIN_MODAL_TYPES.CREATE_TERRITORY);
+                      }}
+                    >
+                      Create New
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={() => {
+                        setValues({ ...values, code: "" });
+                        toggleModal(ADMIN_MODAL_TYPES.UPDATE_TERRITORY_CODE);
+                      }}
+                    >
+                      Change Code
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={() =>
+                        confirmAlert({
+                          customUI: ({ onClose }) => {
+                            return (
+                              <Container>
+                                <Card bg="warning" className="text-center">
+                                  <Card.Header>Warning ⚠️</Card.Header>
+                                  <Card.Body>
+                                    <Card.Title>Are You Very Sure ?</Card.Title>
+                                    <Card.Text>
+                                      This action will delete the territory,{" "}
+                                      {selectedTerritoryCode} -{" "}
+                                      {selectedTerritoryName} and all its
+                                      addresses.
+                                    </Card.Text>
+                                    <Button
+                                      className="m-1"
+                                      variant="primary"
+                                      onClick={() => {
+                                        deleteTerritory();
+                                        onClose();
+                                      }}
+                                    >
+                                      Yes, Delete It.
+                                    </Button>
+                                    <Button
+                                      className="no-confirm-btn"
+                                      variant="primary"
+                                      onClick={() => {
+                                        onClose();
+                                      }}
+                                    >
+                                      No
+                                    </Button>
+                                  </Card.Body>
+                                </Card>
+                              </Container>
+                            );
+                          }
+                        })
+                      }
+                    >
+                      Delete Current
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={() => {
+                        setValues({
+                          ...values,
+                          name: selectedTerritoryName
+                        });
+                        toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
+                      }}
+                    >
+                      Edit Current Name
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={() =>
+                        confirmAlert({
+                          customUI: ({ onClose }) => {
+                            return (
+                              <Container>
+                                <Card bg="warning" className="text-center">
+                                  <Card.Header>Warning ⚠️</Card.Header>
+                                  <Card.Body>
+                                    <Card.Title>Are You Very Sure ?</Card.Title>
+                                    <Card.Text>
+                                      <p>
+                                        This action will reset the status of all
+                                        addresses in the territory,{" "}
                                         {selectedTerritoryCode} -{" "}
-                                        {selectedTerritoryName} and all its
-                                        addresses.
-                                      </Card.Text>
-                                      <Button
-                                        className="m-1"
-                                        variant="primary"
-                                        onClick={() => {
-                                          deleteTerritory();
-                                          onClose();
-                                        }}
-                                      >
-                                        Yes, Delete It.
-                                      </Button>
-                                      <Button
-                                        className="no-confirm-btn"
-                                        variant="primary"
-                                        onClick={() => {
-                                          onClose();
-                                        }}
-                                      >
-                                        No
-                                      </Button>
-                                    </Card.Body>
-                                  </Card>
-                                </Container>
-                              );
-                            }
-                          })
-                        }
-                      >
-                        Delete Current
-                      </Dropdown.Item>
-                      <Dropdown.Item
-                        onClick={() => {
-                          setValues({
-                            ...values,
-                            name: selectedTerritoryName
-                          });
-                          toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY);
-                        }}
-                      >
-                        Edit Current Name
-                      </Dropdown.Item>
-                      <Dropdown.Item
-                        onClick={() =>
-                          confirmAlert({
-                            customUI: ({ onClose }) => {
-                              return (
-                                <Container>
-                                  <Card bg="warning" className="text-center">
-                                    <Card.Header>Warning ⚠️</Card.Header>
-                                    <Card.Body>
-                                      <Card.Title>
-                                        Are You Very Sure ?
-                                      </Card.Title>
-                                      <Card.Text>
-                                        <p>
-                                          This action will reset the status of
-                                          all addresses in the territory,{" "}
-                                          {selectedTerritoryCode} -{" "}
-                                          {selectedTerritoryName}.
-                                        </p>
-                                        <p>
-                                          Certain statuses such as DNC and
-                                          Invalid will not be affected.
-                                        </p>
-                                      </Card.Text>
-                                      <Button
-                                        className="m-1"
-                                        variant="primary"
-                                        onClick={() => {
-                                          resetTerritory();
-                                          onClose();
-                                        }}
-                                      >
-                                        Yes, Reset them.
-                                      </Button>
-                                      <Button
-                                        className="no-confirm-btn"
-                                        variant="primary"
-                                        onClick={() => {
-                                          onClose();
-                                        }}
-                                      >
-                                        No
-                                      </Button>
-                                    </Card.Body>
-                                  </Card>
-                                </Container>
-                              );
-                            }
-                          })
-                        }
-                      >
-                        Reset status
-                      </Dropdown.Item>
-                    </Dropdown.Menu>
-                  </Dropdown>
+                                        {selectedTerritoryName}.
+                                      </p>
+                                      <p>
+                                        Certain statuses such as DNC and Invalid
+                                        will not be affected.
+                                      </p>
+                                    </Card.Text>
+                                    <Button
+                                      className="m-1"
+                                      variant="primary"
+                                      onClick={() => {
+                                        resetTerritory();
+                                        onClose();
+                                      }}
+                                    >
+                                      Yes, Reset them.
+                                    </Button>
+                                    <Button
+                                      className="no-confirm-btn"
+                                      variant="primary"
+                                      onClick={() => {
+                                        onClose();
+                                      }}
+                                    >
+                                      No
+                                    </Button>
+                                  </Card.Body>
+                                </Card>
+                              </Container>
+                            );
+                          }
+                        })
+                      }
+                    >
+                      Reset status
+                    </Dropdown.Item>
+                  </DropdownButton>
                 </ComponentAuthorizer>
               )}
               {selectedTerritoryCode && (
@@ -1526,43 +1549,44 @@ function Admin({ user }: adminProps) {
                   requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
                   userPermission={userAccessLevel}
                 >
-                  <Dropdown className="m-1 d-inline-block">
-                    <Dropdown.Toggle variant="outline-primary" size="sm">
-                      New Address
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu>
-                      <Dropdown.Item
-                        onClick={() => {
-                          setValues({
-                            ...values,
-                            name: "",
-                            units: "",
-                            floors: 1,
-                            newPostal: "",
-                            type: TERRITORY_TYPES.PUBLIC
-                          });
-                          toggleModal(ADMIN_MODAL_TYPES.CREATE_PUBLIC_ADDRESS);
-                        }}
-                      >
-                        Public
-                      </Dropdown.Item>
-                      <Dropdown.Item
-                        onClick={() => {
-                          setValues({
-                            ...values,
-                            name: "",
-                            units: "",
-                            floors: 1,
-                            newPostal: "",
-                            type: TERRITORY_TYPES.PRIVATE
-                          });
-                          toggleModal(ADMIN_MODAL_TYPES.CREATE_PRIVATE_ADDRESS);
-                        }}
-                      >
-                        Private
-                      </Dropdown.Item>
-                    </Dropdown.Menu>
-                  </Dropdown>
+                  <DropdownButton
+                    className="dropdown-btn"
+                    variant="outline-primary"
+                    size="sm"
+                    title="New Address"
+                    align="end"
+                  >
+                    <Dropdown.Item
+                      onClick={() => {
+                        setValues({
+                          ...values,
+                          name: "",
+                          units: "",
+                          floors: 1,
+                          newPostal: "",
+                          type: TERRITORY_TYPES.PUBLIC
+                        });
+                        toggleModal(ADMIN_MODAL_TYPES.CREATE_PUBLIC_ADDRESS);
+                      }}
+                    >
+                      Public
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={() => {
+                        setValues({
+                          ...values,
+                          name: "",
+                          units: "",
+                          floors: 1,
+                          newPostal: "",
+                          type: TERRITORY_TYPES.PRIVATE
+                        });
+                        toggleModal(ADMIN_MODAL_TYPES.CREATE_PRIVATE_ADDRESS);
+                      }}
+                    >
+                      Private
+                    </Dropdown.Item>
+                  </DropdownButton>
                 </ComponentAuthorizer>
               )}
               <ComponentAuthorizer
@@ -1584,20 +1608,40 @@ function Admin({ user }: adminProps) {
                   Revoke Link
                 </Button>
               </ComponentAuthorizer>
-              <Button
-                className="m-1"
+              <DropdownButton
+                className="dropdown-btn"
                 size="sm"
                 variant="outline-primary"
-                onClick={async () => {
-                  toggleModal(ADMIN_MODAL_TYPES.PROFILE);
-                }}
+                title="Account"
+                align="end"
               >
-                <GearImage stroke="var(--bs-blue)" />
-              </Button>
+                <Dropdown.Item
+                  onClick={() => toggleModal(ADMIN_MODAL_TYPES.PROFILE)}
+                >
+                  Profile
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => {
+                    setIsChangePasswordOk(false);
+                    setValues({ ...values, password: "", cpassword: "" });
+                    toggleModal(ADMIN_MODAL_TYPES.CHANGE_PASSWORD);
+                  }}
+                >
+                  Change Password
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={async () => {
+                    clearAdminState();
+                    await signOut(auth);
+                  }}
+                >
+                  Logout
+                </Dropdown.Item>
+              </DropdownButton>
             </Navbar.Collapse>
           </Container>
         </Navbar>
-        {!selectedTerritoryCode && <Welcome />}
+        {!selectedTerritoryCode && <Welcome name={`${user.displayName}`} />}
         <TerritoryHeader name={selectedTerritoryName} />
         {/* There is no need to open all accordion for read-only users. */}
         <Accordion
@@ -1661,6 +1705,7 @@ function Admin({ user }: adminProps) {
                         >
                           <DropdownButton
                             key={`assigndrop-${currentPostalcode}`}
+                            className="dropdown-btn"
                             size="sm"
                             variant="outline-primary"
                             title={
@@ -1686,7 +1731,6 @@ function Admin({ user }: adminProps) {
                                 Personal
                               </>
                             }
-                            className="m-1 d-inline-block"
                           >
                             <Dropdown.Item
                               onClick={() => {
@@ -1874,192 +1918,185 @@ function Admin({ user }: adminProps) {
                           }
                           userPermission={userAccessLevel}
                         >
-                          <Dropdown align="end" className="m-1">
-                            <Dropdown.Toggle
-                              variant="outline-primary"
-                              size="sm"
+                          <DropdownButton
+                            className="dropdown-btn"
+                            align="end"
+                            variant="outline-primary"
+                            size="sm"
+                            title="Address"
+                          >
+                            <Dropdown.Item
+                              onClick={() => {
+                                handleClickChangePostal(currentPostalcode);
+                              }}
                             >
-                              Address
-                            </Dropdown.Toggle>
-                            <Dropdown.Menu>
+                              Change Postal Code
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              onClick={() => {
+                                setValues({
+                                  ...values,
+                                  postal: currentPostalcode
+                                });
+                                toggleAddressTerritoryListing();
+                              }}
+                            >
+                              Change Territory
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              onClick={() => {
+                                handleClickChangeAddressName(
+                                  currentPostalcode,
+                                  currentPostalname
+                                );
+                              }}
+                            >
+                              Rename
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              onClick={() => {
+                                handleClickAddUnit(
+                                  currentPostalcode,
+                                  addressElement.floors.length
+                                );
+                              }}
+                            >
+                              Add{" "}
+                              {addressElement.type === TERRITORY_TYPES.PRIVATE
+                                ? "Property"
+                                : "Unit"}{" "}
+                              No.
+                            </Dropdown.Item>
+                            {(!addressElement.type ||
+                              addressElement.type ===
+                                TERRITORY_TYPES.PUBLIC) && (
                               <Dropdown.Item
                                 onClick={() => {
-                                  handleClickChangePostal(currentPostalcode);
+                                  addFloorToBlock(currentPostalcode);
                                 }}
                               >
-                                Change Postal Code
+                                {addressElement.type} Add Higher Floor
                               </Dropdown.Item>
+                            )}
+                            {(!addressElement.type ||
+                              addressElement.type ===
+                                TERRITORY_TYPES.PUBLIC) && (
                               <Dropdown.Item
                                 onClick={() => {
-                                  setValues({
-                                    ...values,
-                                    postal: currentPostalcode
-                                  });
-                                  toggleAddressTerritoryListing();
+                                  addFloorToBlock(currentPostalcode, true);
                                 }}
                               >
-                                Change Territory
+                                Add Lower Floor
                               </Dropdown.Item>
-                              <Dropdown.Item
-                                onClick={() => {
-                                  handleClickChangeAddressName(
-                                    currentPostalcode,
-                                    currentPostalname
-                                  );
-                                }}
-                              >
-                                Rename
-                              </Dropdown.Item>
-                              <Dropdown.Item
-                                onClick={() => {
-                                  handleClickAddUnit(
-                                    currentPostalcode,
-                                    addressElement.floors.length
-                                  );
-                                }}
-                              >
-                                Add{" "}
-                                {addressElement.type === TERRITORY_TYPES.PRIVATE
-                                  ? "Property"
-                                  : "Unit"}{" "}
-                                No.
-                              </Dropdown.Item>
-                              {(!addressElement.type ||
-                                addressElement.type ===
-                                  TERRITORY_TYPES.PUBLIC) && (
-                                <Dropdown.Item
-                                  onClick={() => {
-                                    addFloorToBlock(currentPostalcode);
-                                  }}
-                                >
-                                  {addressElement.type} Add Higher Floor
-                                </Dropdown.Item>
-                              )}
-                              {(!addressElement.type ||
-                                addressElement.type ===
-                                  TERRITORY_TYPES.PUBLIC) && (
-                                <Dropdown.Item
-                                  onClick={() => {
-                                    addFloorToBlock(currentPostalcode, true);
-                                  }}
-                                >
-                                  Add Lower Floor
-                                </Dropdown.Item>
-                              )}
-                              <Dropdown.Item
-                                onClick={() =>
-                                  confirmAlert({
-                                    customUI: ({ onClose }) => {
-                                      return (
-                                        <Container>
-                                          <Card
-                                            bg="warning"
-                                            className="text-center"
-                                          >
-                                            <Card.Header>
-                                              Warning ⚠️
-                                            </Card.Header>
-                                            <Card.Body>
-                                              <Card.Title>
-                                                Are You Very Sure ?
-                                              </Card.Title>
-                                              <Card.Text>
-                                                <p>
-                                                  This action will reset all
-                                                  property status of{" "}
-                                                  {currentPostalname}.
-                                                </p>
-                                                <p>
-                                                  Certain statuses such as DNC
-                                                  and Invalid will not be
-                                                  affected.
-                                                </p>
-                                              </Card.Text>
-                                              <Button
-                                                className="m-1"
-                                                variant="primary"
-                                                onClick={() => {
-                                                  resetBlock(currentPostalcode);
-                                                  onClose();
-                                                }}
-                                              >
-                                                Yes, Reset It.
-                                              </Button>
-                                              <Button
-                                                className="no-confirm-btn"
-                                                variant="primary"
-                                                onClick={() => {
-                                                  onClose();
-                                                }}
-                                              >
-                                                No
-                                              </Button>
-                                            </Card.Body>
-                                          </Card>
-                                        </Container>
-                                      );
-                                    }
-                                  })
-                                }
-                              >
-                                Reset Status
-                              </Dropdown.Item>
-                              <Dropdown.Item
-                                onClick={() =>
-                                  confirmAlert({
-                                    customUI: ({ onClose }) => {
-                                      return (
-                                        <Container>
-                                          <Card
-                                            bg="warning"
-                                            className="text-center"
-                                          >
-                                            <Card.Header>
-                                              Warning ⚠️
-                                            </Card.Header>
-                                            <Card.Body>
-                                              <Card.Title>
-                                                Are You Very Sure ?
-                                              </Card.Title>
-                                              <Card.Text>
-                                                The action will completely
-                                                delete, {currentPostalname}.
-                                              </Card.Text>
-                                              <Button
-                                                className="m-1"
-                                                variant="primary"
-                                                onClick={() => {
-                                                  deleteBlock(
-                                                    currentPostalcode,
-                                                    currentPostalname,
-                                                    true
-                                                  );
-                                                  onClose();
-                                                }}
-                                              >
-                                                Yes, Delete It.
-                                              </Button>
-                                              <Button
-                                                className="no-confirm-btn"
-                                                variant="primary"
-                                                onClick={() => {
-                                                  onClose();
-                                                }}
-                                              >
-                                                No
-                                              </Button>
-                                            </Card.Body>
-                                          </Card>
-                                        </Container>
-                                      );
-                                    }
-                                  })
-                                }
-                              >
-                                Delete
-                              </Dropdown.Item>
-                            </Dropdown.Menu>
-                          </Dropdown>
+                            )}
+                            <Dropdown.Item
+                              onClick={() =>
+                                confirmAlert({
+                                  customUI: ({ onClose }) => {
+                                    return (
+                                      <Container>
+                                        <Card
+                                          bg="warning"
+                                          className="text-center"
+                                        >
+                                          <Card.Header>Warning ⚠️</Card.Header>
+                                          <Card.Body>
+                                            <Card.Title>
+                                              Are You Very Sure ?
+                                            </Card.Title>
+                                            <Card.Text>
+                                              <p>
+                                                This action will reset all
+                                                property status of{" "}
+                                                {currentPostalname}.
+                                              </p>
+                                              <p>
+                                                Certain statuses such as DNC and
+                                                Invalid will not be affected.
+                                              </p>
+                                            </Card.Text>
+                                            <Button
+                                              className="m-1"
+                                              variant="primary"
+                                              onClick={() => {
+                                                resetBlock(currentPostalcode);
+                                                onClose();
+                                              }}
+                                            >
+                                              Yes, Reset It.
+                                            </Button>
+                                            <Button
+                                              className="no-confirm-btn"
+                                              variant="primary"
+                                              onClick={() => {
+                                                onClose();
+                                              }}
+                                            >
+                                              No
+                                            </Button>
+                                          </Card.Body>
+                                        </Card>
+                                      </Container>
+                                    );
+                                  }
+                                })
+                              }
+                            >
+                              Reset Status
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              onClick={() =>
+                                confirmAlert({
+                                  customUI: ({ onClose }) => {
+                                    return (
+                                      <Container>
+                                        <Card
+                                          bg="warning"
+                                          className="text-center"
+                                        >
+                                          <Card.Header>Warning ⚠️</Card.Header>
+                                          <Card.Body>
+                                            <Card.Title>
+                                              Are You Very Sure ?
+                                            </Card.Title>
+                                            <Card.Text>
+                                              The action will completely delete,{" "}
+                                              {currentPostalname}.
+                                            </Card.Text>
+                                            <Button
+                                              className="m-1"
+                                              variant="primary"
+                                              onClick={() => {
+                                                deleteBlock(
+                                                  currentPostalcode,
+                                                  currentPostalname,
+                                                  true
+                                                );
+                                                onClose();
+                                              }}
+                                            >
+                                              Yes, Delete It.
+                                            </Button>
+                                            <Button
+                                              className="no-confirm-btn"
+                                              variant="primary"
+                                              onClick={() => {
+                                                onClose();
+                                              }}
+                                            >
+                                              No
+                                            </Button>
+                                          </Card.Body>
+                                        </Card>
+                                      </Container>
+                                    );
+                                  }
+                                })
+                              }
+                            >
+                              Delete
+                            </Dropdown.Item>
+                          </DropdownButton>
                         </ComponentAuthorizer>
                       </Container>
                     </Navbar>
@@ -2182,7 +2219,7 @@ function Admin({ user }: adminProps) {
             </Modal.Header>
             <Form onSubmit={handleUpdateTerritoryName}>
               <Modal.Body>
-                <GenericTextField
+                <GenericInputField
                   label="Name"
                   name="name"
                   handleChange={onFormChange}
@@ -2264,7 +2301,7 @@ function Admin({ user }: adminProps) {
                     defaultValue={`${selectedTerritoryCode}`}
                   />
                 </Form.Group>
-                <GenericTextField
+                <GenericInputField
                   label="New Territory Code"
                   name="code"
                   handleChange={(e: ChangeEvent<HTMLElement>) => {
@@ -2307,7 +2344,8 @@ function Admin({ user }: adminProps) {
                     defaultValue={`${(values as valuesDetails).postal}`}
                   />
                 </Form.Group>
-                <GenericTextField
+                <GenericInputField
+                  inputType="number"
                   label="New Postal Code"
                   name="postalcode"
                   handleChange={(e: ChangeEvent<HTMLElement>) => {
@@ -2342,7 +2380,7 @@ function Admin({ user }: adminProps) {
             </Modal.Header>
             <Form onSubmit={handleUpdateBlockName}>
               <Modal.Body>
-                <GenericTextField
+                <GenericInputField
                   label="Name"
                   name="name"
                   handleChange={onFormChange}
@@ -2373,7 +2411,7 @@ function Admin({ user }: adminProps) {
             </Modal.Header>
             <Form onSubmit={handleCreateTerritory}>
               <Modal.Body>
-                <GenericTextField
+                <GenericInputField
                   label="Territory Code"
                   name="code"
                   handleChange={(e: ChangeEvent<HTMLElement>) => {
@@ -2384,7 +2422,7 @@ function Admin({ user }: adminProps) {
                   required={true}
                   placeholder={"Territory code. For eg, M01, W12, etc."}
                 />
-                <GenericTextField
+                <GenericInputField
                   label="Name"
                   name="name"
                   handleChange={onFormChange}
@@ -2422,7 +2460,8 @@ function Admin({ user }: adminProps) {
                   These are governmental owned residential properties that
                   usually consist of rental flats.
                 </p>
-                <GenericTextField
+                <GenericInputField
+                  inputType="number"
                   label="Postal Code"
                   name="postalcode"
                   handleChange={(e: ChangeEvent<HTMLElement>) => {
@@ -2435,7 +2474,7 @@ function Admin({ user }: adminProps) {
                     "Block/Building postal code. Eg, 730801, 752367, etc"
                   }
                 />
-                <GenericTextField
+                <GenericInputField
                   label="Address Name"
                   name="name"
                   handleChange={onFormChange}
@@ -2491,7 +2530,8 @@ function Admin({ user }: adminProps) {
                   as terrace houses, semi-detached houses, bungalows or cluster
                   houses.
                 </p>
-                <GenericTextField
+                <GenericInputField
+                  inputType="number"
                   label="Postal Code"
                   name="postalcode"
                   handleChange={(e: ChangeEvent<HTMLElement>) => {
@@ -2503,7 +2543,7 @@ function Admin({ user }: adminProps) {
                   placeholder={"Estate postal code"}
                   information="A postal code within the private estate. This code will be used for locating the estate."
                 />
-                <GenericTextField
+                <GenericInputField
                   label="Address Name"
                   name="name"
                   handleChange={onFormChange}
@@ -2555,7 +2595,7 @@ function Admin({ user }: adminProps) {
             </Modal.Header>
             <Form onSubmit={handleCreateNewUnit}>
               <Modal.Body>
-                <GenericTextField
+                <GenericInputField
                   label={`${
                     (values as valuesDetails).territoryType ===
                     TERRITORY_TYPES.PRIVATE
@@ -2594,7 +2634,8 @@ function Admin({ user }: adminProps) {
             </Modal.Header>
             <Form onSubmit={handleUpdateUnit}>
               <Modal.Body>
-                <GenericTextField
+                <GenericInputField
+                  inputType="number"
                   label="Sequence Number"
                   name="sequence"
                   placeholder="Optional unit row sequence number"
@@ -2774,7 +2815,8 @@ function Admin({ user }: adminProps) {
                   requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
                   userPermission={userAccessLevel}
                 >
-                  <GenericTextField
+                  <GenericInputField
+                    inputType="number"
                     label="Territory Sequence"
                     name="sequence"
                     handleChange={onFormChange}
@@ -2843,11 +2885,19 @@ function Admin({ user }: adminProps) {
           <Form>
             <Modal.Body>
               <Form.Group className="mb-3">
-                <Form.Label htmlFor="userid">User</Form.Label>
+                <Form.Label htmlFor="userid">Email</Form.Label>
                 <Form.Control
                   readOnly
                   id="userid"
                   defaultValue={`${user.email}`}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label htmlFor="userid">Name</Form.Label>
+                <Form.Control
+                  readOnly
+                  id="userid"
+                  defaultValue={`${user.displayName}`}
                 />
               </Form.Group>
               <Form.Group className="mb-3">
@@ -2887,19 +2937,81 @@ function Admin({ user }: adminProps) {
             </Modal.Body>
             <Modal.Footer className="justify-content-around">
               <Button
-                variant="primary"
-                onClick={async () => {
-                  clearAdminState();
-                  await signOut(auth);
-                }}
-              >
-                Log Out
-              </Button>
-              <Button
                 variant="secondary"
                 onClick={() => toggleModal(ADMIN_MODAL_TYPES.PROFILE)}
               >
                 Close
+              </Button>
+            </Modal.Footer>
+          </Form>
+        </Modal>
+        <Modal show={isChangePassword}>
+          <Modal.Header>
+            <Modal.Title>Change Password</Modal.Title>
+          </Modal.Header>
+          <Form onSubmit={handleChangePassword}>
+            <Modal.Body>
+              <Form.Group className="mb-3" controlId="formBasicNewPassword">
+                <Form.Label>New Password</Form.Label>
+                <Form.Control
+                  type="password"
+                  name="password"
+                  onChange={(event) => {
+                    const { value } = event.target as HTMLInputElement;
+                    setValues({
+                      ...values,
+                      password: value
+                    });
+                  }}
+                  required
+                />
+              </Form.Group>
+              <Form.Group
+                className="mb-3"
+                controlId="formBasicConfirmNewPassword"
+              >
+                <Form.Label>Confirm New Password</Form.Label>
+                <Form.Control
+                  type="password"
+                  onChange={(event) => {
+                    const { value } = event.target as HTMLInputElement;
+                    setValues({
+                      ...values,
+                      cpassword: value
+                    });
+                  }}
+                  required
+                />
+              </Form.Group>
+              <PasswordChecklist
+                rules={PASSWORD_POLICY}
+                minLength={MINIMUM_PASSWORD_LENGTH}
+                value={(values as valuesDetails).password || ""}
+                valueAgain={(values as valuesDetails).cpassword || ""}
+                onChange={(isValid) => setIsChangePasswordOk(isValid)}
+              />
+            </Modal.Body>
+            <Modal.Footer className="justify-content-around">
+              <Button
+                variant="secondary"
+                onClick={() => toggleModal(ADMIN_MODAL_TYPES.CHANGE_PASSWORD)}
+              >
+                Close
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={!isChangePasswordOk}
+              >
+                {isSaving && (
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    aria-hidden="true"
+                  />
+                )}{" "}
+                Save
               </Button>
             </Modal.Footer>
           </Form>

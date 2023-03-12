@@ -12,7 +12,7 @@ import { LanguagePolicy, RacePolicy } from "./utils/policies";
 import { UnitStatus } from "./components/table";
 import { Legend } from "./components/navigation";
 import {
-  FrontPage,
+  FrontLogo,
   MaintenanceMode,
   NotFoundPage,
   UnauthorizedPage,
@@ -47,7 +47,7 @@ const rollbarRender = (ui: any) => {
 };
 
 test("renders frontpage", () => {
-  render(<FrontPage />);
+  render(<FrontLogo />);
   expect(screen.getByRole("img")).toBeInTheDocument();
 });
 
@@ -97,6 +97,16 @@ test("renders admin welcome page", () => {
     screen.getByText("Please select a territory from the above listing.")
   ).toBeInTheDocument();
   expect(screen.getByText("Welcome To Ministry Mapper")).toBeInTheDocument();
+});
+
+test("renders admin welcome page with name", () => {
+  const name = "JE";
+  render(<Welcome name={name} />);
+  expect(screen.getByRole("img")).toBeInTheDocument();
+  expect(
+    screen.getByText("Please select a territory from the above listing.")
+  ).toBeInTheDocument();
+  expect(screen.getByText(`Welcome ${name}`)).toBeInTheDocument();
 });
 
 test("renders loading indicator", () => {

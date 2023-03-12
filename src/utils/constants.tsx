@@ -1,3 +1,5 @@
+import { RuleNames } from "react-password-checklist";
+
 //STILL_NOT_HOME not longer in use.
 const STATUS_CODES = {
   DEFAULT: "-1",
@@ -52,7 +54,8 @@ const ADMIN_MODAL_TYPES = {
   PROFILE: 9,
   UPDATE_POSTAL: 10,
   UPDATE_TERRITORY_CODE: 11,
-  CREATE_PRIVATE_ADDRESS: 12
+  CREATE_PRIVATE_ADDRESS: 12,
+  CHANGE_PASSWORD: 13
 };
 
 const LINK_TYPES = {
@@ -123,6 +126,14 @@ const SPECIAL_CHARACTERS = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
 // Hardcode for local SG postal standards
 const MINIMUM_POSTAL_LENGTH = 6;
 
+const MINIMUM_PASSWORD_LENGTH = 6;
+const PASSWORD_POLICY = [
+  "minLength",
+  "number",
+  "capital",
+  "match"
+] as RuleNames[];
+
 export {
   UA_DEVICE_MAKES,
   UNSUPPORTED_BROWSER_MSG,
@@ -153,5 +164,7 @@ export {
   DEFAULT_UNIT_DNC_MS_TIME,
   TERRITORY_TYPES,
   SPECIAL_CHARACTERS,
-  MINIMUM_POSTAL_LENGTH
+  MINIMUM_POSTAL_LENGTH,
+  MINIMUM_PASSWORD_LENGTH,
+  PASSWORD_POLICY
 };

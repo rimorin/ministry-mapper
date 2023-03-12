@@ -71,3 +71,11 @@
 .landed-unit {
   height: 2rem;
 }
+
+.forgot-password {
+  cursor: pointer;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
