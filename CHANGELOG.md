@@ -1,3 +1,19 @@
+# [1.7.0](https://github.com/rimorin/ministry-mapper/compare/v1.6.1...v1.7.0) (2023-03-12)
+
+
+### Bug Fixes
+
+* numeric seq data when editing seq no in private address ([0036f05](https://github.com/rimorin/ministry-mapper/commit/0036f05b74c66f4970294d6caeef1681e984135a))
+
+
+### Features
+
+* implement account creation module ([cff1d6e](https://github.com/rimorin/ministry-mapper/commit/cff1d6e56088af9633978749e6a55cb62ca82669))
+* implement change password for conductor/admin accounts ([f0f1712](https://github.com/rimorin/ministry-mapper/commit/f0f1712b1d5537318ee683d55b4dc0b210f10c6d))
+* implement forgot password in login screen ([7ee0c98](https://github.com/rimorin/ministry-mapper/commit/7ee0c9825c8ec72d79cb4cea24e377883246d028))
+* implement user name display ([842243e](https://github.com/rimorin/ministry-mapper/commit/842243ee2af340cf79a67b574d33d477cd04b191))
+* implement validity check on user email during login ([83e4302](https://github.com/rimorin/ministry-mapper/commit/83e4302510b3004352473b67f3fcb91b6cc341ef))
+
 ## [1.6.1](https://github.com/rimorin/ministry-mapper/compare/v1.6.0...v1.6.1) (2023-03-05)
 
 
