@@ -229,3 +229,7 @@ export interface territoryLandedProps {
   userAccessLevel?: number;
   handleHouseUpdate: (event: React.MouseEvent<HTMLElement>) => void;
 }
+
+export interface SignInDifferentProps {
+  handleClick?: (event: React.MouseEvent<HTMLElement>) => void;
+}

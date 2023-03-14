@@ -100,9 +100,10 @@ import {
   AggregationBadge,
   ComponentAuthorizer,
   TerritoryHeader,
-  BackToTopButton
+  BackToTopButton,
+  UnauthorizedPage
 } from "../../components/navigation";
-import { Loader, UnauthorizedPage, Welcome } from "../../components/static";
+import { Loader, Welcome } from "../../components/static";
 import {
   STATUS_CODES,
   HOUSEHOLD_TYPES,
@@ -197,6 +198,11 @@ function Admin({ user }: adminProps) {
     refreshAddressState();
     const congregationReference = child(ref(database), `congregations/${code}`);
     off(congregationReference);
+  };
+
+  const logoutUser = async () => {
+    clearAdminState();
+    await signOut(auth);
   };
 
   const processSelectedTerritory = async (selectedTerritoryCode: String) => {
@@ -1336,7 +1342,7 @@ function Admin({ user }: adminProps) {
   );
 
   if (isLoading) return <Loader />;
-  if (isUnauthorised) return <UnauthorizedPage />;
+  if (isUnauthorised) return <UnauthorizedPage handleClick={logoutUser} />;
   const isDataCompletelyFetched = addressData.size === sortedAddressList.length;
   const isAdmin = userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT;
   const isReadonly = userAccessLevel === USER_ACCESS_LEVELS.READ_ONLY;
@@ -1629,14 +1635,7 @@ function Admin({ user }: adminProps) {
                 >
                   Change Password
                 </Dropdown.Item>
-                <Dropdown.Item
-                  onClick={async () => {
-                    clearAdminState();
-                    await signOut(auth);
-                  }}
-                >
-                  Logout
-                </Dropdown.Item>
+                <Dropdown.Item onClick={logoutUser}>Logout</Dropdown.Item>
               </DropdownButton>
             </Navbar.Collapse>
           </Container>

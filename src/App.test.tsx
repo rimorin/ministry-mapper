@@ -10,12 +10,11 @@ import {
 import { Provider } from "@rollbar/react";
 import { LanguagePolicy, RacePolicy } from "./utils/policies";
 import { UnitStatus } from "./components/table";
-import { Legend } from "./components/navigation";
+import { Legend, UnauthorizedPage } from "./components/navigation";
 import {
   FrontLogo,
   MaintenanceMode,
   NotFoundPage,
-  UnauthorizedPage,
   InvalidPage,
   Welcome,
   Loader
@@ -74,7 +73,7 @@ test("renders not found page", () => {
 });
 
 test("renders unauthorised page", () => {
-  render(<UnauthorizedPage />);
+  render(<UnauthorizedPage handleClick={() => {}} />);
   expect(screen.getByRole("img")).toBeInTheDocument();
   expect(screen.getByText("401 Unauthorized Access 🔐")).toBeInTheDocument();
   expect(
