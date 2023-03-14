@@ -10,7 +10,8 @@ import {
   Button,
   OverlayTrigger,
   Container,
-  Fade
+  Fade,
+  Card
 } from "react-bootstrap";
 import {
   BrandingProps,
@@ -20,7 +21,8 @@ import {
   ExpiryButtonProp,
   AuthorizerProp,
   territoryHeaderProp,
-  backToTopProp
+  backToTopProp,
+  SignInDifferentProps
 } from "../utils/interface";
 import Countdown from "react-countdown";
 import { memo } from "react";
@@ -263,6 +265,29 @@ const BackToTopButton = memo(({ showButton }: backToTopProp) => (
   </Fade>
 ));
 
+const UnauthorizedPage = ({ handleClick, name }: SignInDifferentProps) => (
+  <Container className="container-main">
+    <Card className="card-main">
+      <Card.Img
+        alt="Ministry Mapper logo"
+        className="mm-logo"
+        src={`${process.env.PUBLIC_URL}/android-chrome-192x192.png`}
+      />
+      <Card.Body>
+        <Card.Title className="text-center">
+          401 Unauthorized Access 🔐
+        </Card.Title>
+        <Card.Text className="text-justify">
+          We are sorry {name}! You are not authorised to access this page.
+        </Card.Text>
+      </Card.Body>
+      <Button variant="secondary" onClick={handleClick}>
+        Use Another Account
+      </Button>
+    </Card>
+  </Container>
+);
+
 export {
   NavBarBranding,
   Legend,
@@ -273,5 +298,6 @@ export {
   ComponentAuthorizer,
   EnvironmentIndicator,
   TerritoryHeader,
-  BackToTopButton
+  BackToTopButton,
+  UnauthorizedPage
 };
