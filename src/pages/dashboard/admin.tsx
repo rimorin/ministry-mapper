@@ -1342,7 +1342,10 @@ function Admin({ user }: adminProps) {
   );
 
   if (isLoading) return <Loader />;
-  if (isUnauthorised) return <UnauthorizedPage handleClick={logoutUser} />;
+  if (isUnauthorised)
+    return (
+      <UnauthorizedPage handleClick={logoutUser} name={`${user.displayName}`} />
+    );
   const isDataCompletelyFetched = addressData.size === sortedAddressList.length;
   const isAdmin = userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT;
   const isReadonly = userAccessLevel === USER_ACCESS_LEVELS.READ_ONLY;

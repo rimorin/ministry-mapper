@@ -265,7 +265,7 @@ const BackToTopButton = memo(({ showButton }: backToTopProp) => (
   </Fade>
 ));
 
-const UnauthorizedPage = memo(({ handleClick }: SignInDifferentProps) => (
+const UnauthorizedPage = ({ handleClick, name }: SignInDifferentProps) => (
   <Container className="container-main">
     <Card className="card-main">
       <Card.Img
@@ -278,7 +278,7 @@ const UnauthorizedPage = memo(({ handleClick }: SignInDifferentProps) => (
           401 Unauthorized Access 🔐
         </Card.Title>
         <Card.Text className="text-justify">
-          We are sorry, you are not authorised to access this page.
+          We are sorry {name}! You are not authorised to access this page.
         </Card.Text>
       </Card.Body>
       <Button variant="secondary" onClick={handleClick}>
@@ -286,7 +286,7 @@ const UnauthorizedPage = memo(({ handleClick }: SignInDifferentProps) => (
       </Button>
     </Card>
   </Container>
-));
+);
 
 export {
   NavBarBranding,

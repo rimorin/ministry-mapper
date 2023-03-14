@@ -231,5 +231,6 @@ export interface territoryLandedProps {
 }
 
 export interface SignInDifferentProps {
+  name: string;
   handleClick?: (event: React.MouseEvent<HTMLElement>) => void;
 }
