@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/rimorin/ministry-mapper/compare/v1.7.0...v1.7.1) (2023-03-14)
+
+
+### Bug Fixes
+
+* allow unauthorised user to 'use another account' ([e3e260e](https://github.com/rimorin/ministry-mapper/commit/e3e260eb543a58de44d75d277352c4842548afde))
+
 # [1.7.0](https://github.com/rimorin/ministry-mapper/compare/v1.6.1...v1.7.0) (2023-03-12)
 
 
