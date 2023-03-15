@@ -1977,7 +1977,7 @@ function Admin({ user }: adminProps) {
                                   addFloorToBlock(currentPostalcode);
                                 }}
                               >
-                                {addressElement.type} Add Higher Floor
+                                Add Higher Floor
                               </Dropdown.Item>
                             )}
                             {(!addressElement.type ||
