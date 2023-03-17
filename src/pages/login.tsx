@@ -54,6 +54,7 @@ const Login = () => {
       const { value } = event.currentTarget.email;
       await sendPasswordResetEmail(auth, value);
       toggleForgotPassword();
+      rollbar.info(`User attempting to reset password! Email: ${value}`);
       alert(`Password reset email sent to ${value}.`);
     } catch (error) {
       errorHandler(errorMessage((error as FirebaseError).code), rollbar);
