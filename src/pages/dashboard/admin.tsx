@@ -654,9 +654,10 @@ function Admin({ user }: adminProps) {
       await pollingFunction(() =>
         set(ref(database, `/${details.postal}/feedback`), details.feedback)
       );
-      rollbar.info(
-        `Conductor feedback on postalcode ${details.postal} of the ${code} congregation: ${details.feedback}`
-      );
+      if (details.feedback)
+        rollbar.info(
+          `Conductor feedback on postalcode ${details.postal} of the ${code} congregation: ${details.feedback}`
+        );
       toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
     } catch (error) {
       errorHandler(error, rollbar);

@@ -171,9 +171,10 @@ const Slip = ({
       await pollingFunction(() =>
         set(ref(database, `/${postalcode}/feedback`), details.feedback)
       );
-      rollbar.info(
-        `Publisher feedback on postalcode ${postalcode} of the ${congregationcode} congregation: ${details.feedback}`
-      );
+      if (details.feedback)
+        rollbar.info(
+          `Publisher feedback on postalcode ${postalcode} of the ${congregationcode} congregation: ${details.feedback}`
+        );
       toggleModal(false);
     } catch (error) {
       errorHandler(error, rollbar);
