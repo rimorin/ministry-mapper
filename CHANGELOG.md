@@ -1,3 +1,10 @@
+## [1.7.2](https://github.com/rimorin/ministry-mapper/compare/v1.7.1...v1.7.2) (2023-03-17)
+
+
+### Bug Fixes
+
+* null check for feedback info notification ([38d02b4](https://github.com/rimorin/ministry-mapper/commit/38d02b4a9ff025ea8e4ca77bd35af7efccf37543))
+
 ## [1.7.1](https://github.com/rimorin/ministry-mapper/compare/v1.7.0...v1.7.1) (2023-03-14)
 
 
