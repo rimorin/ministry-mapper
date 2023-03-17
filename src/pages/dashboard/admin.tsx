@@ -654,6 +654,9 @@ function Admin({ user }: adminProps) {
       await pollingFunction(() =>
         set(ref(database, `/${details.postal}/feedback`), details.feedback)
       );
+      rollbar.info(
+        `Conductor feedback on postalcode ${details.postal} of the ${code} congregation: ${details.feedback}`
+      );
       toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
     } catch (error) {
       errorHandler(error, rollbar);
@@ -1001,6 +1004,7 @@ function Admin({ user }: adminProps) {
     try {
       const linkId = link.substring(link.lastIndexOf("/") + 1);
       await pollingFunction(() => remove(ref(database, `links/${linkId}`)));
+      rollbar.info(`Publisher slip has been revoked! Link: ${link}`);
       alert(`Revoked territory link token, ${linkId}.`);
     } catch (error) {
       errorHandler(error, rollbar);
@@ -1018,6 +1022,9 @@ function Admin({ user }: adminProps) {
     try {
       setIsSaving(true);
       await updatePassword(user, newPassword);
+      rollbar.info(
+        `User updated password! Email: ${user.email}, Name: ${user.displayName}`
+      );
       alert("Password updated.");
     } catch (error) {
       errorHandler(error, rollbar);
@@ -1977,7 +1984,7 @@ function Admin({ user }: adminProps) {
                                   addFloorToBlock(currentPostalcode);
                                 }}
                               >
-                                {addressElement.type} Add Higher Floor
+                                Add Higher Floor
                               </Dropdown.Item>
                             )}
                             {(!addressElement.type ||

@@ -53,6 +53,7 @@ const FrontPage = () => {
       await updateProfile(credentials.user, {
         displayName: name
       });
+      rollbar.info(`New User Created! Email: ${loginEmail}, Name: ${name}`);
       await sendEmailVerification(credentials.user);
       alert(
         "Account created! Please check your email for verification procedures."
