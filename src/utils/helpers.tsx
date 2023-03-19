@@ -110,15 +110,19 @@ const pollingFunction = async (
   callback: () => any,
   intervalMs = FIREBASE_FUNCTION_TIMEOUT
 ) => {
-  const reconnectRtdbInterval = setInterval(() => {
-    goOffline(database);
-    goOnline(database);
-  }, intervalMs);
+  const reconnectRtdbInterval = SetPollerInterval(intervalMs);
   try {
     return await callback();
   } finally {
     clearInterval(reconnectRtdbInterval);
   }
+};
+
+const SetPollerInterval = (intervalMs = FIREBASE_FUNCTION_TIMEOUT) => {
+  return setInterval(() => {
+    goOffline(database);
+    goOnline(database);
+  }, intervalMs);
 };
 
 const checkTraceRaceStatus = async (code: string) => {
@@ -267,5 +271,6 @@ export {
   triggerPostalCodeListeners,
   processAddressData,
   processPropertyNumber,
-  isValidPostal
+  isValidPostal,
+  SetPollerInterval
 };
