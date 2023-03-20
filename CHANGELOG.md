@@ -1,3 +1,10 @@
+## [1.7.3](https://github.com/rimorin/ministry-mapper/compare/v1.7.2...v1.7.3) (2023-03-20)
+
+
+### Bug Fixes
+
+* implement poller for listener functions ([6723faa](https://github.com/rimorin/ministry-mapper/commit/6723faab39504b9c664dac73d78fa58f14cefd58))
+
 ## [1.7.2](https://github.com/rimorin/ministry-mapper/compare/v1.7.1...v1.7.2) (2023-03-17)
 
 
