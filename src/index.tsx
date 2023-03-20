@@ -14,7 +14,6 @@ const DEFEAULT_ROLLBAR_ENVIRONMENT = "staging";
 
 const rollbarConfig = {
   accessToken: REACT_APP_ROLLBAR_ACCESS_TOKEN,
-  ignoreDuplicateErrors: false,
   payload: {
     environment: REACT_APP_ROLLBAR_ENVIRONMENT || DEFEAULT_ROLLBAR_ENVIRONMENT,
     client: {
