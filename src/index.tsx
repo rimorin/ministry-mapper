@@ -7,20 +7,19 @@ import { Provider } from "@rollbar/react";
 const {
   REACT_APP_ROLLBAR_ACCESS_TOKEN,
   REACT_APP_ROLLBAR_ENVIRONMENT,
-  REACT_APP_DOMAIN_BASENAME
+  REACT_APP_VERSION
 } = process.env;
 
 const DEFEAULT_ROLLBAR_ENVIRONMENT = "staging";
 
 const rollbarConfig = {
   accessToken: REACT_APP_ROLLBAR_ACCESS_TOKEN,
-  ignoreDuplicateErrors: false,
   payload: {
     environment: REACT_APP_ROLLBAR_ENVIRONMENT || DEFEAULT_ROLLBAR_ENVIRONMENT,
     client: {
       javascript: {
         source_map_enabled: true,
-        code_version: process.env.REACT_APP_VERSION
+        code_version: REACT_APP_VERSION
       }
     }
   }
@@ -30,11 +29,7 @@ const root = createRoot(document.getElementById("root") as HTMLElement);
 root.render(
   <StrictMode>
     <Provider config={rollbarConfig}>
-      <BrowserRouter
-        basename={
-          REACT_APP_DOMAIN_BASENAME ? REACT_APP_DOMAIN_BASENAME : undefined
-        }
-      >
+      <BrowserRouter>
         <App />
       </BrowserRouter>
     </Provider>
