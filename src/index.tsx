@@ -7,7 +7,8 @@ import { Provider } from "@rollbar/react";
 const {
   REACT_APP_ROLLBAR_ACCESS_TOKEN,
   REACT_APP_ROLLBAR_ENVIRONMENT,
-  REACT_APP_DOMAIN_BASENAME
+  REACT_APP_DOMAIN_BASENAME,
+  REACT_APP_VERSION
 } = process.env;
 
 const DEFEAULT_ROLLBAR_ENVIRONMENT = "staging";
@@ -19,7 +20,7 @@ const rollbarConfig = {
     client: {
       javascript: {
         source_map_enabled: true,
-        code_version: process.env.REACT_APP_VERSION
+        code_version: REACT_APP_VERSION
       }
     }
   }
