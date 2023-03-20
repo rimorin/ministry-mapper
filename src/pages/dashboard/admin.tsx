@@ -91,7 +91,8 @@ import {
   getLanguageDisplayByCode,
   checkCongregationExpireHours,
   processPropertyNumber,
-  isValidPostal
+  isValidPostal,
+  SetPollerInterval
 } from "../../utils/helpers";
 import {
   EnvironmentIndicator,
@@ -246,11 +247,13 @@ function Admin({ user }: adminProps) {
       return false;
     });
     setSortedAddressList(detailsListing);
+    const pollerId = SetPollerInterval();
     for (const details of detailsListing) {
       const postalCode = details.code;
       setAccordionKeys((existingKeys) => [...existingKeys, `${postalCode}`]);
       unsubscribers.push(
         onValue(child(ref(database), `/${postalCode}`), async (snapshot) => {
+          clearInterval(pollerId);
           if (snapshot.exists()) {
             const postalSnapshot = snapshot.val();
             const floorData = await processAddressData(
@@ -1305,15 +1308,18 @@ function Admin({ user }: adminProps) {
     setIsSpecialDevice(getUA().device.vendor === UA_DEVICE_MAKES.HUAWEI);
 
     const congregationReference = child(ref(database), `congregations/${code}`);
+    const pollerId = SetPollerInterval();
     onValue(
       congregationReference,
       (snapshot) => {
+        clearInterval(pollerId);
         setIsLoading(false);
         if (snapshot.exists()) {
           processCongregationTerritories(snapshot.val());
         }
       },
       (reason) => {
+        clearInterval(pollerId);
         setIsLoading(false);
         errorHandler(reason, rollbar, false);
       }

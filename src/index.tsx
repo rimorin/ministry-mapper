@@ -14,10 +14,15 @@ const DEFEAULT_ROLLBAR_ENVIRONMENT = "staging";
 
 const rollbarConfig = {
   accessToken: REACT_APP_ROLLBAR_ACCESS_TOKEN,
-  captureUncaught: true,
-  captureUnhandledRejections: true,
+  ignoreDuplicateErrors: false,
   payload: {
-    environment: REACT_APP_ROLLBAR_ENVIRONMENT || DEFEAULT_ROLLBAR_ENVIRONMENT
+    environment: REACT_APP_ROLLBAR_ENVIRONMENT || DEFEAULT_ROLLBAR_ENVIRONMENT,
+    client: {
+      javascript: {
+        source_map_enabled: true,
+        code_version: process.env.REACT_APP_VERSION
+      }
+    }
   }
 };
 

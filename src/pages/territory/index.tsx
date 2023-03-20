@@ -5,6 +5,7 @@ import { child, onValue, ref } from "firebase/database";
 import Slip from "./slip";
 import { LinkSession } from "../../utils/policies";
 import { Loader, NotFoundPage, InvalidPage } from "../../components/static";
+import { SetPollerInterval } from "../../utils/helpers";
 
 function Territory() {
   const { id, postalcode, congregationcode } = useParams();
@@ -18,7 +19,9 @@ function Territory() {
   useEffect(() => {
     const linkReference = child(ref(database), `/links/${id}`);
     const postalData = child(ref(database), `/${postalcode}`);
+    const pollerId = SetPollerInterval();
     onValue(linkReference, (snapshot) => {
+      clearInterval(pollerId);
       setIsTokenLoading(false);
       if (snapshot.exists()) {
         const linkrec = new LinkSession();
@@ -35,6 +38,7 @@ function Territory() {
     onValue(
       postalData,
       (snapshot) => {
+        clearInterval(pollerId);
         if (!snapshot.exists()) {
           setIsValidPostalcode(false);
         }

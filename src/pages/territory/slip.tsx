@@ -42,7 +42,8 @@ import {
   checkTraceRaceStatus,
   getMaxUnitLength,
   getCompletedPercent,
-  parseHHLanguages
+  parseHHLanguages,
+  SetPollerInterval
 } from "../../utils/helpers";
 import {
   Legend,
@@ -217,7 +218,7 @@ const Slip = ({
       setFloors(await processAddressData(postalcode, data.units));
     };
     const postalDataReference = child(ref(database), `/${postalcode}`);
-
+    const pollerId = SetPollerInterval();
     onValue(postalDataReference, (snapshot) => {
       if (snapshot.exists()) {
         const dataSnapshot = snapshot.val();
@@ -228,6 +229,7 @@ const Slip = ({
         setTerritoryType(dataSnapshot.type);
         document.title = dataSnapshot.name;
       }
+      clearInterval(pollerId);
       setIsPostalLoading(false);
     });
 
