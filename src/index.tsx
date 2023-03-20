@@ -7,7 +7,6 @@ import { Provider } from "@rollbar/react";
 const {
   REACT_APP_ROLLBAR_ACCESS_TOKEN,
   REACT_APP_ROLLBAR_ENVIRONMENT,
-  REACT_APP_DOMAIN_BASENAME,
   REACT_APP_VERSION
 } = process.env;
 
@@ -30,11 +29,7 @@ const root = createRoot(document.getElementById("root") as HTMLElement);
 root.render(
   <StrictMode>
     <Provider config={rollbarConfig}>
-      <BrowserRouter
-        basename={
-          REACT_APP_DOMAIN_BASENAME ? REACT_APP_DOMAIN_BASENAME : undefined
-        }
-      >
+      <BrowserRouter>
         <App />
       </BrowserRouter>
     </Provider>
