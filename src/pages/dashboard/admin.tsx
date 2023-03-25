@@ -227,14 +227,9 @@ function Admin({ user }: adminProps) {
         )
       )
     );
-
-    if (!territoryNameResult.exists()) return;
-    const territoryName = territoryNameResult.val();
     setSelectedTerritoryCode(selectedTerritoryCode);
-    setSelectedTerritoryName(territoryName);
-    //Set selected states followed by result check
-    if (!territoryAddsResult.exists()) return;
-    // detach unsub listeners first then clear
+    setSelectedTerritoryName(territoryNameResult.val());
+    // detach unsubscribers listeners first then clear them.
     refreshAddressState();
     unsubscribers = [] as Array<Unsubscribe>;
     let detailsListing = [] as Array<territoryDetails>;
