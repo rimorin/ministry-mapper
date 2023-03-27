@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { auth } from "../../firebase";
 import Admin from "./admin";
 import Login from "../login";
-import { Loader, VerificationPage } from "../../components/static";
-import { User } from "firebase/auth";
+import { Loader } from "../../components/static";
+import { signOut, User } from "firebase/auth";
 import { useParams } from "react-router-dom";
 import { useRollbar } from "@rollbar/react";
+import { VerificationPage } from "../../components/navigation";
 
 function Dashboard() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -23,7 +24,12 @@ function Dashboard() {
     rollbar.info(
       `Unverified user attempting to access ${code}! Email: ${loginUser.email}, Name: ${loginUser.displayName}`
     );
-    return <VerificationPage />;
+    return (
+      <VerificationPage
+        handleClick={() => signOut(auth)}
+        name={`${loginUser.displayName}`}
+      />
+    );
   }
   return loginUser ? <Admin user={loginUser} /> : <Login />;
 }

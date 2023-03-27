@@ -266,6 +266,12 @@ const BackToTopButton = memo(({ showButton }: backToTopProp) => (
   </Fade>
 ));
 
+const UseAnotherButton = ({ handleClick }: SignInDifferentProps) => (
+  <Button variant="secondary" onClick={handleClick}>
+    Use Another Account
+  </Button>
+);
+
 const UnauthorizedPage = ({ handleClick, name }: SignInDifferentProps) => (
   <Container className="container-main">
     <Card className="card-main">
@@ -282,10 +288,29 @@ const UnauthorizedPage = ({ handleClick, name }: SignInDifferentProps) => (
           We are sorry {name}! You are not authorised to access this page.
         </Card.Text>
       </Card.Body>
-      <Button variant="secondary" onClick={handleClick}>
-        Use Another Account
-      </Button>
+      <UseAnotherButton handleClick={handleClick} />
     </Card>
+  </Container>
+);
+
+const VerificationPage = ({ handleClick, name }: SignInDifferentProps) => (
+  <Container className="container-main">
+    <Fade appear={true} in={true}>
+      <Card className="card-main">
+        <Card.Img
+          alt="Ministry Mapper logo"
+          className="mm-logo"
+          src={`${process.env.PUBLIC_URL}/android-chrome-192x192.png`}
+        />
+        <Card.Body>
+          <Card.Title className="text-center">
+            We are sorry {name}! Please verify your email account before
+            proceeding 🪪
+          </Card.Title>
+        </Card.Body>
+        <UseAnotherButton handleClick={handleClick} />
+      </Card>
+    </Fade>
   </Container>
 );
 
@@ -300,5 +325,6 @@ export {
   EnvironmentIndicator,
   TerritoryHeader,
   BackToTopButton,
-  UnauthorizedPage
+  UnauthorizedPage,
+  VerificationPage
 };
