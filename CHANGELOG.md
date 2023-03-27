@@ -1,3 +1,11 @@
+## [1.7.4](https://github.com/rimorin/ministry-mapper/compare/v1.7.3...v1.7.4) (2023-03-27)
+
+
+### Bug Fixes
+
+* allow user to try another account if it can't be verified ([a976e93](https://github.com/rimorin/ministry-mapper/commit/a976e93b747a4e27acd6efad462ad6b0f7ec8d1d))
+* issue where territory listing doesnt refresh when there is only address ([3a1f210](https://github.com/rimorin/ministry-mapper/commit/3a1f210b02e08466b5aeb1637049589b73750173))
+
 ## [1.7.3](https://github.com/rimorin/ministry-mapper/compare/v1.7.2...v1.7.3) (2023-03-20)
 
 
