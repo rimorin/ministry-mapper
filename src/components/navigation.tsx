@@ -106,7 +106,8 @@ const NavBarBranding = memo(({ naming }: BrandingProps) => {
 });
 
 const EnvironmentIndicator = memo(() => {
-  if (process.env.REACT_APP_ROLLBAR_ENVIRONMENT === "production") return <></>;
+  if (process.env.REACT_APP_ROLLBAR_ENVIRONMENT?.startsWith("production"))
+    return <></>;
   return (
     <ProgressBar
       now={100}

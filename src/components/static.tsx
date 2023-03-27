@@ -1,5 +1,7 @@
 import { memo } from "react";
-import { Container, Card, Image, Fade, Spinner } from "react-bootstrap";
+import { Button, Container, Card, Image, Fade, Spinner } from "react-bootstrap";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
 const Welcome = memo(({ name }: { name?: String }) => {
   return (
     <Container className="container-main" style={{ height: "80vh" }}>
@@ -46,6 +48,15 @@ const VerificationPage = memo(() => (
           <Card.Title className="text-center">
             Please verify your email account before proceeding 🪪
           </Card.Title>
+          <Button
+            className="mx-2"
+            variant="outline-primary"
+            onClick={async () => {
+              await signOut(auth);
+            }}
+          >
+            Logout
+          </Button>
         </Card.Body>
       </Card>
     </Fade>
