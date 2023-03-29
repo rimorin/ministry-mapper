@@ -1917,7 +1917,7 @@ function Admin({ user }: adminProps) {
                           {addressElement.feedback && (
                             <>
                               {" "}
-                              <Badge pill bg="secondary">
+                              <Badge pill bg="secondary" className="blinking">
                                 ⭐
                               </Badge>
                             </>
