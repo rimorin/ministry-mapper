@@ -370,7 +370,14 @@ const DncDateField = ({ handleDateChange, changeDate }: FormProps) => {
   );
 };
 
-const ModalUnitTitle = ({ unit, floor, postal, name, type }: TitleProps) => {
+const ModalUnitTitle = ({
+  unit,
+  unitPostal,
+  floor,
+  postal,
+  name,
+  type
+}: TitleProps) => {
   let titleString = `# ${floor} - ${unit}`;
 
   if (postal) {
@@ -382,7 +389,21 @@ const ModalUnitTitle = ({ unit, floor, postal, name, type }: TitleProps) => {
   }
   return (
     <Modal.Header>
-      <Modal.Title>{titleString}</Modal.Title>
+      <Modal.Title>
+        {titleString}
+        {unitPostal !== "undefined" && (
+          <span>
+            {", "}
+            <a
+              href={`http://maps.google.com.sg/maps?q=${unitPostal}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              S{unitPostal}
+            </a>
+          </span>
+        )}
+      </Modal.Title>
     </Modal.Header>
   );
 };

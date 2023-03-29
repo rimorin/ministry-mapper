@@ -9,6 +9,7 @@ export interface unitDetails {
   languages: String;
   dnctime: number;
   sequence?: number;
+  unitPostal?: string;
 }
 
 export interface nothomeProps {
@@ -55,6 +56,7 @@ export interface valuesDetails {
   territoryType?: number;
   password?: string;
   cpassword?: string;
+  unitPostal?: string;
 }
 
 export interface adminProps {
@@ -109,6 +111,7 @@ export interface TitleProps {
   postal?: String;
   type?: number;
   name: String;
+  unitPostal?: string;
 }
 
 export interface BrandingProps {

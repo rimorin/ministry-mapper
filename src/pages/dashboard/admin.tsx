@@ -45,6 +45,7 @@ import { database, auth } from "../../firebase";
 import {
   Policy,
   valuesDetails,
+  floorDetails,
   territoryDetails,
   addressDetails,
   adminProps,
@@ -502,6 +503,7 @@ function Admin({ user }: adminProps) {
     _: MouseEvent<HTMLElement>,
     postal: String,
     floor: String,
+    floors: Array<floorDetails>,
     unit: String,
     type: String,
     note: String,
@@ -514,11 +516,14 @@ function Admin({ user }: adminProps) {
     name: String,
     territoryType = TERRITORY_TYPES.PUBLIC
   ) => {
+    const floorUnits = floors.find((e) => e.floor === floor);
+    const unitDetails = floorUnits?.units.find((e) => e.number === unit);
     setValues({
       ...values,
       floor: floor,
       floorDisplay: ZeroPad(floor, DEFAULT_FLOOR_PADDING),
       unit: unit,
+      unitPostal: unitDetails?.unitPostal,
       unitDisplay: ZeroPad(unit, maxUnitNumber),
       type: type,
       note: note,
@@ -2137,6 +2142,7 @@ function Admin({ user }: adminProps) {
                           event,
                           currentPostalcode,
                           floor || "",
+                          addressElement.floors,
                           unitno || "",
                           hhtype || "",
                           hhnote || "",
@@ -2752,6 +2758,7 @@ function Admin({ user }: adminProps) {
         <Modal show={isOpen}>
           <ModalUnitTitle
             unit={`${(values as valuesDetails).unitDisplay}`}
+            unitPostal={`${(values as valuesDetails).unitPostal}`}
             floor={`${(values as valuesDetails).floorDisplay}`}
             postal={(values as valuesDetails).postal}
             type={(values as valuesDetails).territoryType}

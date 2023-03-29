@@ -115,6 +115,7 @@ const Slip = ({
       floorDisplay: ZeroPad(floor, DEFAULT_FLOOR_PADDING),
       unit: unit,
       unitDisplay: ZeroPad(unit, maxUnitNumber),
+      unitPostal: unitDetails?.unitPostal,
       type: unitDetails?.type,
       note: unitDetails?.note,
       status: unitDetails?.status,
@@ -340,6 +341,7 @@ const Slip = ({
         <Modal show={isOpen}>
           <ModalUnitTitle
             unit={`${(values as valuesDetails).unitDisplay}`}
+            unitPostal={`${(values as valuesDetails).unitPostal}`}
             floor={`${(values as valuesDetails).floorDisplay}`}
             name={`${postalName}`}
             type={territoryType}
