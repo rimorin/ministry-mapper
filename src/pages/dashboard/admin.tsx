@@ -1279,20 +1279,14 @@ function Admin({ user }: adminProps) {
       const isTrackLanguages = snapshot.val();
       setTrackLanguages(isTrackLanguages);
       if (isTrackLanguages) {
-        const tokenData = await user.getIdTokenResult(true);
-        const languagePolicy = new LanguagePolicy();
-        languagePolicy.fromClaims(tokenData.claims);
-        setPolicy(languagePolicy);
+        setPolicy(new LanguagePolicy(await user.getIdTokenResult(true)));
       }
     });
     checkTraceRaceStatus(`${code}`).then(async (snapshot) => {
       const isTrackRace = snapshot.val();
       setTrackRace(isTrackRace);
       if (isTrackRace) {
-        const tokenData = await user.getIdTokenResult(true);
-        const racePolicy = new RacePolicy();
-        racePolicy.fromClaims(tokenData.claims);
-        setPolicy(racePolicy);
+        setPolicy(new RacePolicy(await user.getIdTokenResult(true)));
       }
     });
     checkCongregationExpireHours(`${code}`).then((snapshot) => {
