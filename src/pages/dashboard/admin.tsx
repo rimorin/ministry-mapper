@@ -1845,10 +1845,7 @@ function Admin({ user }: adminProps) {
                               onClick={async () => {
                                 setIsSettingViewLink(true);
                                 try {
-                                  const territoryWindow = window.open(
-                                    "",
-                                    "_blank"
-                                  );
+                                  const territoryWindow = window.open("");
                                   if (territoryWindow) {
                                     territoryWindow.document.body.innerHTML =
                                       TERRITORY_VIEW_WINDOW_WELCOME_TEXT;
@@ -1887,8 +1884,7 @@ function Admin({ user }: adminProps) {
                           className="m-1"
                           onClick={(e) => {
                             window.open(
-                              `http://maps.google.com.sg/maps?q=${zipcode}`,
-                              "_blank"
+                              `http://maps.google.com.sg/maps?q=${zipcode}`
                             );
                           }}
                         >
