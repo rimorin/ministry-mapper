@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/rimorin/ministry-mapper/compare/v1.7.4...v1.8.0) (2023-03-31)
+
+
+### Features
+
+* blinking feedback for conductor/admin ([82cbd64](https://github.com/rimorin/ministry-mapper/commit/82cbd64e94ef9f2c5f16ea50b1a79583002f14d5))
+
 ## [1.7.4](https://github.com/rimorin/ministry-mapper/compare/v1.7.3...v1.7.4) (2023-03-27)
 
 
