@@ -4,7 +4,8 @@ import {
   HOUSEHOLD_TYPES,
   STATUS_CODES,
   HOUSEHOLD_LANGUAGES,
-  LINK_TYPES
+  LINK_TYPES,
+  DEFAULT_CONGREGATION_MAX_TRIES
 } from "./constants";
 import { unitDetails, Policy } from "./interface";
 
@@ -133,7 +134,7 @@ export class LinkSession {
     this.tokenEndtime = 0;
     this.postalCode = "";
     this.homeLanguage = HOUSEHOLD_LANGUAGES.ENGLISH.CODE;
-    this.maxTries = 2;
+    this.maxTries = DEFAULT_CONGREGATION_MAX_TRIES;
     this.linkType = LINK_TYPES.VIEW;
     if (!linkData) return;
     if (linkData.tokenEndtime === undefined) {
