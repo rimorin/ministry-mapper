@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/rimorin/ministry-mapper/compare/v1.8.0...v1.9.0) (2023-04-01)
+
+
+### Features
+
+* implement about page ([9244883](https://github.com/rimorin/ministry-mapper/commit/92448836a70c685cbd6159b2b02acfd850fdf4a9))
+
 # [1.8.0](https://github.com/rimorin/ministry-mapper/compare/v1.7.4...v1.8.0) (2023-03-31)
 
 
