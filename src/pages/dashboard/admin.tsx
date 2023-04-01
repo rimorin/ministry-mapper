@@ -1279,20 +1279,14 @@ function Admin({ user }: adminProps) {
       const isTrackLanguages = snapshot.val();
       setTrackLanguages(isTrackLanguages);
       if (isTrackLanguages) {
-        const tokenData = await user.getIdTokenResult(true);
-        const languagePolicy = new LanguagePolicy();
-        languagePolicy.fromClaims(tokenData.claims);
-        setPolicy(languagePolicy);
+        setPolicy(new LanguagePolicy(await user.getIdTokenResult(true)));
       }
     });
     checkTraceRaceStatus(`${code}`).then(async (snapshot) => {
       const isTrackRace = snapshot.val();
       setTrackRace(isTrackRace);
       if (isTrackRace) {
-        const tokenData = await user.getIdTokenResult(true);
-        const racePolicy = new RacePolicy();
-        racePolicy.fromClaims(tokenData.claims);
-        setPolicy(racePolicy);
+        setPolicy(new RacePolicy(await user.getIdTokenResult(true)));
       }
     });
     checkCongregationExpireHours(`${code}`).then((snapshot) => {
@@ -1851,10 +1845,7 @@ function Admin({ user }: adminProps) {
                               onClick={async () => {
                                 setIsSettingViewLink(true);
                                 try {
-                                  const territoryWindow = window.open(
-                                    "",
-                                    "_blank"
-                                  );
+                                  const territoryWindow = window.open("");
                                   if (territoryWindow) {
                                     territoryWindow.document.body.innerHTML =
                                       TERRITORY_VIEW_WINDOW_WELCOME_TEXT;
@@ -1893,8 +1884,7 @@ function Admin({ user }: adminProps) {
                           className="m-1"
                           onClick={(e) => {
                             window.open(
-                              `http://maps.google.com.sg/maps?q=${zipcode}`,
-                              "_blank"
+                              `http://maps.google.com.sg/maps?q=${zipcode}`
                             );
                           }}
                         >
