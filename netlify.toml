@@ -1,6 +1,0 @@
-# Netlify config for react router
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  force = true
