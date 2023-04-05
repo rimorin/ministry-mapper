@@ -160,6 +160,7 @@ const processAddressData = async (postal: String, data: any) => {
       const unitNumber = element.key;
       unitsDetails.push({
         unitPostal: unitValues.x_zip,
+        newUnitPostal: unitValues.x_zip,
         number: unitNumber,
         note: unitValues.note,
         type: unitValues.type || "",

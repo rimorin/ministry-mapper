@@ -10,6 +10,7 @@ export interface unitDetails {
   dnctime: number;
   sequence?: number;
   unitPostal?: string;
+  newUnitPostal?: string;
 }
 
 export interface nothomeProps {
@@ -57,6 +58,7 @@ export interface valuesDetails {
   password?: string;
   cpassword?: string;
   unitPostal?: string;
+  newUnitPostal?: string;
 }
 
 export interface adminProps {
@@ -124,6 +126,7 @@ export interface FooterProps {
   userAccessLevel?: number;
   handleDelete?: (event: React.MouseEvent<HTMLElement>) => void;
   type?: number;
+  unitPostal?: string;
 }
 
 export interface LegendProps {

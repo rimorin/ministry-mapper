@@ -1,7 +1,5 @@
 import { memo } from "react";
-import { Button, Container, Card, Image, Fade, Spinner } from "react-bootstrap";
-import { signOut } from "firebase/auth";
-import { auth } from "../firebase";
+import { Container, Card, Image, Fade, Spinner } from "react-bootstrap";
 const Welcome = memo(({ name }: { name?: String }) => {
   return (
     <Container className="container-main" style={{ height: "80vh" }}>
@@ -32,34 +30,6 @@ const FrontLogo = memo(() => (
       fluid
       src={`${process.env.PUBLIC_URL}/logo.png`}
     ></Image>
-  </Container>
-));
-
-const VerificationPage = memo(() => (
-  <Container className="container-main">
-    <Fade appear={true} in={true}>
-      <Card className="card-main">
-        <Card.Img
-          alt="Ministry Mapper logo"
-          className="mm-logo"
-          src={`${process.env.PUBLIC_URL}/android-chrome-192x192.png`}
-        />
-        <Card.Body>
-          <Card.Title className="text-center">
-            Please verify your email account before proceeding 🪪
-          </Card.Title>
-          <Button
-            className="mx-2"
-            variant="outline-primary"
-            onClick={async () => {
-              await signOut(auth);
-            }}
-          >
-            Logout
-          </Button>
-        </Card.Body>
-      </Card>
-    </Fade>
   </Container>
 ));
 
@@ -136,6 +106,5 @@ export {
   InvalidPage,
   MaintenanceMode,
   NotFoundPage,
-  VerificationPage,
   Loader
 };

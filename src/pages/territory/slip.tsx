@@ -413,6 +413,8 @@ const Slip = ({
             <ModalFooter
               handleClick={(e) => handleClick(e, true)}
               isSaving={isSaving}
+              unitPostal={`${(values as valuesDetails).unitPostal}`}
+              type={territoryType}
             />
           </Form>
         </Modal>

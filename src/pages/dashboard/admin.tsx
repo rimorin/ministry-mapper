@@ -523,7 +523,12 @@ function Admin({ user }: adminProps) {
       floor: floor,
       floorDisplay: ZeroPad(floor, DEFAULT_FLOOR_PADDING),
       unit: unit,
-      unitPostal: unitDetails?.unitPostal,
+      unitPostal:
+        unitDetails?.unitPostal === undefined ? "" : unitDetails?.unitPostal,
+      newUnitPostal:
+        unitDetails?.newUnitPostal === undefined
+          ? ""
+          : unitDetails?.newUnitPostal,
       unitDisplay: ZeroPad(unit, maxUnitNumber),
       type: type,
       note: note,
@@ -552,6 +557,7 @@ function Admin({ user }: adminProps) {
       languages: String | undefined;
       dnctime: number | undefined;
       sequence?: number;
+      x_zip?: string;
     } = {
       type: details.type,
       note: details.note,
@@ -561,12 +567,14 @@ function Admin({ user }: adminProps) {
       dnctime: details.dnctime
     };
     // Include sequence update value only when administering private territories
-    if (
+    const administeringPrivate =
       details.territoryType === TERRITORY_TYPES.PRIVATE &&
-      userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT &&
-      details.sequence
-    ) {
+      userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT;
+    if (administeringPrivate && details.sequence) {
       updateData.sequence = Number(details.sequence);
+    }
+    if (administeringPrivate && details.unitPostal !== details.newUnitPostal) {
+      updateData.x_zip = details.newUnitPostal;
     }
     setIsSaving(true);
     try {
@@ -2833,17 +2841,27 @@ function Admin({ user }: adminProps) {
                   requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
                   userPermission={userAccessLevel}
                 >
-                  <GenericInputField
-                    inputType="number"
-                    label="Territory Sequence"
-                    name="sequence"
-                    handleChange={onFormChange}
-                    changeValue={`${(values as valuesDetails).sequence}`}
-                  />
+                  <>
+                    <GenericInputField
+                      inputType="number"
+                      label="Territory Sequence"
+                      name="sequence"
+                      handleChange={onFormChange}
+                      changeValue={`${(values as valuesDetails).sequence}`}
+                    />
+                    <GenericInputField
+                      inputType="string"
+                      label="Unit Postal"
+                      name="newUnitPostal"
+                      handleChange={onFormChange}
+                      changeValue={`${(values as valuesDetails).newUnitPostal}`}
+                    />
+                  </>
                 </ComponentAuthorizer>
               )}
             </Modal.Body>
             <ModalFooter
+              unitPostal={`${(values as valuesDetails).unitPostal}`}
               handleClick={() => toggleModal(ADMIN_MODAL_TYPES.UNIT)}
               isSaving={isSaving}
               userAccessLevel={userAccessLevel}
