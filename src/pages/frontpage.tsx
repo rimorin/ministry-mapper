@@ -18,7 +18,11 @@ import { FirebaseError } from "firebase/app";
 import { useRollbar } from "@rollbar/react";
 import { errorHandler, errorMessage } from "../utils/helpers";
 import PasswordChecklist from "react-password-checklist";
-import { MINIMUM_PASSWORD_LENGTH, PASSWORD_POLICY } from "../utils/constants";
+import {
+  MINIMUM_PASSWORD_LENGTH,
+  MINISTRY_MAPPER_INFORMATION_PAGE,
+  PASSWORD_POLICY
+} from "../utils/constants";
 import { NavBarBranding } from "../components/navigation";
 import { FrontLogo } from "../components/static";
 
@@ -85,17 +89,27 @@ const FrontPage = () => {
         <Navbar bg="light" expand="sm">
           <Container fluid>
             <NavBarBranding naming="" />
-            <Button
-              className="m-1"
-              size="sm"
-              variant="outline-primary"
-              onClick={() => {
-                resetCreationForm();
-                toggleCreationForm();
-              }}
-            >
-              Create Account
-            </Button>
+            <div>
+              <Button
+                className="m-1"
+                size="sm"
+                variant="outline-primary"
+                onClick={() => window.open(MINISTRY_MAPPER_INFORMATION_PAGE)}
+              >
+                About
+              </Button>
+              <Button
+                className="m-1"
+                size="sm"
+                variant="outline-primary"
+                onClick={() => {
+                  resetCreationForm();
+                  toggleCreationForm();
+                }}
+              >
+                Create Account
+              </Button>
+            </div>
           </Container>
         </Navbar>
         <FrontLogo />

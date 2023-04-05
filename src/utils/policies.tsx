@@ -4,7 +4,8 @@ import {
   HOUSEHOLD_TYPES,
   STATUS_CODES,
   HOUSEHOLD_LANGUAGES,
-  LINK_TYPES
+  LINK_TYPES,
+  DEFAULT_CONGREGATION_MAX_TRIES
 } from "./constants";
 import { unitDetails, Policy } from "./interface";
 
@@ -23,8 +24,17 @@ const processAvailableColour = (
 
 export class RacePolicy implements Policy {
   maxTries: number;
-  constructor(maxtries = parseInt(NOT_HOME_STATUS_CODES.SECOND_TRY)) {
+  constructor(
+    userData?: any,
+    maxtries = parseInt(NOT_HOME_STATUS_CODES.SECOND_TRY)
+  ) {
     this.maxTries = maxtries;
+    if (!userData) return;
+    const userClaims = userData.claims;
+    if (!userClaims) return;
+    if (userClaims.maxTries !== undefined) {
+      this.maxTries = userData.maxTries;
+    }
   }
   isCountable(unit: unitDetails): boolean {
     return (
@@ -52,22 +62,27 @@ export class RacePolicy implements Policy {
   getMaxTries(): number {
     return this.maxTries;
   }
-  fromClaims(claims: any): void {
-    if (claims.maxTries !== undefined) {
-      this.maxTries = claims.maxTries;
-    }
-  }
 }
 
 export class LanguagePolicy implements Policy {
   maxTries: number;
   homeLanguage: string;
   constructor(
+    userData?: any,
     maxtries = parseInt(NOT_HOME_STATUS_CODES.SECOND_TRY),
     homelanguage = HOUSEHOLD_LANGUAGES.ENGLISH.CODE
   ) {
     this.maxTries = maxtries;
     this.homeLanguage = homelanguage;
+    if (!userData) return;
+    const userClaims = userData.claims;
+    if (!userClaims) return;
+    if (userClaims.maxTries !== undefined) {
+      this.maxTries = userClaims.maxTries;
+    }
+    if (userClaims.homeLanguage !== undefined) {
+      this.homeLanguage = userClaims.homeLanguage;
+    }
   }
   isHomeLanguage(unit: unitDetails): boolean {
     const languageValue = unit.languages.toUpperCase().trim();
@@ -107,14 +122,6 @@ export class LanguagePolicy implements Policy {
   getMaxTries(): number {
     return this.maxTries;
   }
-  fromClaims(claims: any): void {
-    if (claims.maxTries !== undefined) {
-      this.maxTries = claims.maxTries;
-    }
-    if (claims.homeLanguage !== undefined) {
-      this.homeLanguage = claims.homeLanguage;
-    }
-  }
 }
 
 export class LinkSession {
@@ -123,22 +130,21 @@ export class LinkSession {
   homeLanguage: string;
   maxTries: number;
   linkType: number;
-  constructor() {
+  constructor(linkData?: any) {
     this.tokenEndtime = 0;
     this.postalCode = "";
     this.homeLanguage = HOUSEHOLD_LANGUAGES.ENGLISH.CODE;
-    this.maxTries = 2;
+    this.maxTries = DEFAULT_CONGREGATION_MAX_TRIES;
     this.linkType = LINK_TYPES.VIEW;
-  }
-  fromSnapshot(linkval: any) {
-    if (linkval.tokenEndtime === undefined) {
-      this.tokenEndtime = linkval;
+    if (!linkData) return;
+    if (linkData.tokenEndtime === undefined) {
+      this.tokenEndtime = linkData;
     } else {
-      this.tokenEndtime = linkval.tokenEndtime;
-      this.postalCode = linkval.postalCode;
-      this.linkType = linkval.linkType;
-      this.maxTries = linkval.maxTries;
-      this.homeLanguage = linkval.homeLanguage;
+      this.tokenEndtime = linkData.tokenEndtime;
+      this.postalCode = linkData.postalCode;
+      this.linkType = linkData.linkType;
+      this.maxTries = linkData.maxTries;
+      this.homeLanguage = linkData.homeLanguage;
     }
   }
 }

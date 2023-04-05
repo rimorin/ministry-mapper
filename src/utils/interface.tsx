@@ -165,7 +165,6 @@ export interface Policy {
   getUnitColor(unit: unitDetails, progress: number): string;
   getHomeLanguage(): string;
   getMaxTries(): number;
-  fromClaims(claims: any): void;
 }
 
 export interface AuthorizerProp {

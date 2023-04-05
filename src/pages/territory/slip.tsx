@@ -283,10 +283,7 @@ const Slip = ({
               <Button
                 className="me-2 mb-1 fluid-button"
                 onClick={() => {
-                  window.open(
-                    `http://maps.google.com.sg/maps?q=${zipcode}`,
-                    "_blank"
-                  );
+                  window.open(`http://maps.google.com.sg/maps?q=${zipcode}`);
                 }}
               >
                 Direction
