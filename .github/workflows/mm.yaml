@@ -211,8 +211,7 @@ jobs:
                   "color": "good",
                   "fields": [
                     {
-                      "title": "*Triggered staging cloudflare deployment job*",
-                      "value": "${{ secrets.CLOUDFLARE_PAGES_PROJECT_PATH }}/${{ fromJson(steps.cloudflareRequest.outputs.response).result.id }}"
+                      "title": "*Triggered staging cloudflare deployment job*"
                     }
                   ]
                 }
@@ -272,8 +271,7 @@ jobs:
                   "color": "good",
                   "fields": [
                     {
-                      "title": "*Triggered production cloudflare deployment job*",
-                      "value": "${{ secrets.CLOUDFLARE_PAGES_PROJECT_PATH }}/${{ fromJson(steps.cloudflareRequest.outputs.response).result.id }}"
+                      "title": "*Triggered production cloudflare deployment job*"
                     }
                   ]
                 }
@@ -316,8 +314,7 @@ jobs:
                   "color": "good",
                   "fields": [
                     {
-                      "title": "*Triggered production vercel deployment job*",
-                      "value": "${{ secrets.VERCEL_PROJECT_PATH }}/${{ fromJson(steps.vercelRequest.outputs.response).job.id }}"
+                      "title": "*Triggered production vercel deployment job*"
                     }
                   ]
                 }
