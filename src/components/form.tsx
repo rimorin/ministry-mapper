@@ -13,6 +13,7 @@ import {
   FloorProps,
   FooterProps,
   FormProps,
+  InstructionsProps,
   TitleProps
 } from "../utils/interface";
 
@@ -36,6 +37,7 @@ const ModalFooter = ({
   type,
   //Default to conductor access lvl so that individual slips can be writable.
   userAccessLevel = USER_ACCESS_LEVELS.CONDUCTOR,
+  requiredAcLForSave = USER_ACCESS_LEVELS.CONDUCTOR,
   isSaving = false
 }: FooterProps) => {
   return (
@@ -71,7 +73,9 @@ const ModalFooter = ({
         Close
       </Button>
       <ComponentAuthorizer
-        requiredPermission={USER_ACCESS_LEVELS.CONDUCTOR}
+        requiredPermission={
+          requiredAcLForSave ? requiredAcLForSave : USER_ACCESS_LEVELS.CONDUCTOR
+        }
         userPermission={userAccessLevel}
       >
         <Button type="submit" variant="primary">
@@ -151,7 +155,8 @@ const GenericTextAreaField = ({
   name,
   placeholder,
   rows = 3,
-  required = false
+  required = false,
+  readOnly = false
 }: FormProps) => {
   return (
     <Form.Group className="mb-3" controlId={`formBasic${name}TextAreaField`}>
@@ -164,6 +169,7 @@ const GenericTextAreaField = ({
         placeholder={placeholder}
         value={changeValue}
         required={required}
+        readOnly={readOnly}
       />
     </Form.Group>
   );
@@ -413,6 +419,33 @@ const ModalUnitTitle = ({
   );
 };
 
+const InstructionsButton = ({
+  instructions,
+  userAcl,
+  handleSave
+}: InstructionsProps) => {
+  if (userAcl !== USER_ACCESS_LEVELS.TERRITORY_SERVANT && !instructions)
+    return <></>;
+  return (
+    <Button
+      size="sm"
+      variant="outline-primary"
+      className="m-1"
+      onClick={handleSave}
+    >
+      <span
+        className={
+          instructions && userAcl !== USER_ACCESS_LEVELS.TERRITORY_SERVANT
+            ? "blinking"
+            : ""
+        }
+      >
+        Instructions
+      </span>
+    </Button>
+  );
+};
+
 export {
   HHType,
   HHTypeField,
@@ -425,5 +458,6 @@ export {
   GenericInputField,
   GenericTextAreaField,
   ModalFooter,
-  ModalUnitTitle
+  ModalUnitTitle,
+  InstructionsButton
 };

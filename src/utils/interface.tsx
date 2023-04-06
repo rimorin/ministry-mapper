@@ -59,6 +59,7 @@ export interface valuesDetails {
   cpassword?: string;
   unitPostal?: string;
   newUnitPostal?: string;
+  instructions?: String;
 }
 
 export interface adminProps {
@@ -80,6 +81,7 @@ export interface addressDetails {
   floors: Array<floorDetails>;
   feedback: String;
   type: number;
+  instructions: String;
 }
 
 export interface FormProps {
@@ -100,6 +102,7 @@ export interface FormProps {
   required?: boolean;
   information?: string;
   inputType?: string;
+  readOnly?: boolean;
 }
 
 export interface FloorProps {
@@ -126,7 +129,17 @@ export interface FooterProps {
   userAccessLevel?: number;
   handleDelete?: (event: React.MouseEvent<HTMLElement>) => void;
   type?: number;
+<<<<<<< HEAD
   unitPostal?: string;
+=======
+  requiredAcLForSave?: number;
+}
+
+export interface InstructionsProps {
+  instructions: String;
+  userAcl?: number;
+  handleSave: (event: React.MouseEvent<HTMLElement>) => void;
+>>>>>>> master
 }
 
 export interface LegendProps {
