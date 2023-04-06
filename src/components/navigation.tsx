@@ -8,7 +8,6 @@ import {
   Badge,
   Spinner,
   Button,
-  OverlayTrigger,
   Container,
   Fade,
   Card
@@ -18,7 +17,6 @@ import {
   LegendProps,
   TerritoryListingProps,
   aggregateProp,
-  ExpiryButtonProp,
   AuthorizerProp,
   territoryHeaderProp,
   backToTopProp,
@@ -76,19 +74,6 @@ const ExpiryTimePopover = (endtime: number) => {
     </Popover>
   );
 };
-
-const ExpiryButton = memo(({ endtime }: ExpiryButtonProp) => {
-  return (
-    <OverlayTrigger
-      trigger="click"
-      placement="auto"
-      overlay={ExpiryTimePopover(endtime)}
-      rootClose={true}
-    >
-      <Button className="me-2 mb-1 fluid-button">Time</Button>
-    </OverlayTrigger>
-  );
-});
 
 const NavBarBranding = memo(({ naming }: BrandingProps) => {
   return (
@@ -318,7 +303,6 @@ export {
   Legend,
   TerritoryListing,
   ExpiryTimePopover,
-  ExpiryButton,
   AggregationBadge,
   ComponentAuthorizer,
   EnvironmentIndicator,
