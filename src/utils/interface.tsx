@@ -129,9 +129,7 @@ export interface FooterProps {
   userAccessLevel?: number;
   handleDelete?: (event: React.MouseEvent<HTMLElement>) => void;
   type?: number;
-<<<<<<< HEAD
   unitPostal?: string;
-=======
   requiredAcLForSave?: number;
 }
 
@@ -139,7 +137,6 @@ export interface InstructionsProps {
   instructions: String;
   userAcl?: number;
   handleSave: (event: React.MouseEvent<HTMLElement>) => void;
->>>>>>> master
 }
 
 export interface LegendProps {
