@@ -10,13 +10,13 @@ import {
 import { ref, child, onValue, set, update } from "firebase/database";
 import { database } from "../../firebase";
 import {
-  Button,
   Collapse,
   Container,
   Fade,
   Form,
   Modal,
-  Navbar
+  Navbar,
+  NavDropdown
 } from "react-bootstrap";
 import { floorDetails, valuesDetails, Policy } from "../../utils/interface";
 import { PublisherTerritoryTable } from "../../components/table";
@@ -48,8 +48,7 @@ import {
 import {
   Legend,
   EnvironmentIndicator,
-  NavBarBranding,
-  ExpiryButton
+  NavBarBranding
 } from "../../components/navigation";
 import { Loader } from "../../components/static";
 import {
@@ -58,9 +57,13 @@ import {
   STATUS_CODES,
   RELOAD_INACTIVITY_DURATION,
   RELOAD_CHECK_INTERVAL_MS,
-  TERRITORY_TYPES
+  TERRITORY_TYPES,
+  USER_ACCESS_LEVELS,
+  ADMIN_MODAL_TYPES
 } from "../../utils/constants";
 import "../../css/slip.css";
+import Countdown from "react-countdown";
+import { ReactComponent as InfoImg } from "../../assets/information.svg";
 
 const Slip = ({
   tokenEndtime = 0,
@@ -86,18 +89,21 @@ const Slip = ({
   const [territoryType, setTerritoryType] = useState<number>(
     TERRITORY_TYPES.PUBLIC
   );
+  const [isInstructions, setIsInstructions] = useState<boolean>(false);
+
   const rollbar = useRollbar();
 
-  const toggleModal = (isModal: boolean) => {
-    if (isModal) {
-      setIsOpen(!isOpen);
-    } else {
-      setIsFeedback(!isFeedback);
+  const toggleModal = (modalType: number) => {
+    switch (modalType) {
+      case ADMIN_MODAL_TYPES.FEEDBACK:
+        setIsFeedback(!isFeedback);
+        break;
+      case ADMIN_MODAL_TYPES.INSTRUCTIONS:
+        setIsInstructions(!isInstructions);
+        break;
+      default:
+        setIsOpen(!isOpen);
     }
-  };
-
-  const handleClick = (_: MouseEvent<HTMLElement>, isModal: boolean) => {
-    toggleModal(isModal);
   };
 
   const handleClickModal = (
@@ -124,7 +130,7 @@ const Slip = ({
     });
     setIsNotHome(unitStatus === STATUS_CODES.NOT_HOME);
     setIsDnc(unitStatus === STATUS_CODES.DO_NOT_CALL);
-    toggleModal(true);
+    toggleModal(ADMIN_MODAL_TYPES.UNIT);
   };
 
   const handleSubmitClick = async (event: FormEvent<HTMLElement>) => {
@@ -148,16 +154,12 @@ const Slip = ({
           }
         )
       );
-      toggleModal(true);
+      toggleModal(ADMIN_MODAL_TYPES.UNIT);
     } catch (error) {
       errorHandler(error, rollbar);
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const handleClickFeedback = (event: MouseEvent<HTMLElement>) => {
-    toggleModal(false);
   };
 
   const toggleLegend = useCallback(() => {
@@ -176,7 +178,7 @@ const Slip = ({
         rollbar.info(
           `Publisher feedback on postalcode ${postalcode} of the ${congregationcode} congregation: ${details.feedback}`
         );
-      toggleModal(false);
+      toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
     } catch (error) {
       errorHandler(error, rollbar);
     } finally {
@@ -223,7 +225,11 @@ const Slip = ({
       if (snapshot.exists()) {
         const dataSnapshot = snapshot.val();
         processData(dataSnapshot);
-        setValues((values) => ({ ...values, feedback: dataSnapshot.feedback }));
+        setValues((values) => ({
+          ...values,
+          feedback: dataSnapshot.feedback,
+          instructions: dataSnapshot.instructions
+        }));
         setPostalZip(dataSnapshot.x_zip);
         setPostalName(dataSnapshot.name);
         setTerritoryType(dataSnapshot.type);
@@ -262,6 +268,7 @@ const Slip = ({
   if (isPostalLoading) return <Loader />;
 
   const zipcode = postalZip == null ? postalcode : postalZip;
+  const instructions = (values as valuesDetails).instructions;
   return (
     <Fade appear={true} in={true}>
       <>
@@ -270,30 +277,60 @@ const Slip = ({
         <Navbar bg="light" expand="sm">
           <Container fluid>
             <NavBarBranding naming={`${postalName}`} />
-            <Navbar.Toggle aria-controls="basic-navbar-nav" />
-            <Navbar.Collapse
-              id="basic-navbar-nav"
-              className="justify-content-end mt-1"
+            <NavDropdown
+              title={
+                <InfoImg className={`${instructions ? "blinking" : ""}`} />
+              }
+              align="end"
             >
-              <ExpiryButton endtime={tokenEndtime} />
-              <Button className="me-2 mb-1 fluid-button" onClick={toggleLegend}>
-                Legend
-              </Button>
-              <Button
-                className="me-2 mb-1 fluid-button"
-                onClick={() => {
-                  window.open(`http://maps.google.com.sg/maps?q=${zipcode}`);
-                }}
+              {instructions && (
+                <NavDropdown.Item
+                  onClick={() => toggleModal(ADMIN_MODAL_TYPES.INSTRUCTIONS)}
+                >
+                  <span className="text-highlight">Instructions</span>
+                </NavDropdown.Item>
+              )}
+              <NavDropdown.Item onClick={toggleLegend}>Legend</NavDropdown.Item>
+              <NavDropdown.Item
+                onClick={() =>
+                  window.open(`http://maps.google.com.sg/maps?q=${zipcode}`)
+                }
               >
                 Direction
-              </Button>
-              <Button
-                className="me-2 mb-1 fluid-button"
-                onClick={handleClickFeedback}
+              </NavDropdown.Item>
+              <NavDropdown.Item
+                onClick={() => toggleModal(ADMIN_MODAL_TYPES.FEEDBACK)}
               >
                 Feedback
-              </Button>
-            </Navbar.Collapse>
+              </NavDropdown.Item>
+              <NavDropdown.Divider />
+              <NavDropdown.Item className="fluid-branding" disabled>
+                <Countdown
+                  className="m-1"
+                  date={tokenEndtime}
+                  daysInHours={true}
+                  renderer={(props) => {
+                    const daysDisplay =
+                      props.days !== 0 ? <>{props.days}d </> : <></>;
+                    const hoursDisplay =
+                      props.hours !== 0 ? <>{props.hours}h </> : <></>;
+                    const minsDisplay =
+                      props.minutes !== 0 ? <>{props.minutes}m </> : <></>;
+                    return (
+                      <>
+                        ⏱️{" "}
+                        <span>
+                          {daysDisplay}
+                          {hoursDisplay}
+                          {minsDisplay}
+                          {props.formatted.seconds}s
+                        </span>
+                      </>
+                    );
+                  }}
+                />
+              </NavDropdown.Item>
+            </NavDropdown>
           </Container>
         </Navbar>
         <PublisherTerritoryTable
@@ -329,7 +366,7 @@ const Slip = ({
               />
             </Modal.Body>
             <ModalFooter
-              handleClick={(e) => handleClick(e, false)}
+              handleClick={() => toggleModal(ADMIN_MODAL_TYPES.FEEDBACK)}
               isSaving={isSaving}
             />
           </Form>
@@ -406,8 +443,28 @@ const Slip = ({
               />
             </Modal.Body>
             <ModalFooter
-              handleClick={(e) => handleClick(e, true)}
+              handleClick={() => toggleModal(ADMIN_MODAL_TYPES.UNIT)}
               isSaving={isSaving}
+            />
+          </Form>
+        </Modal>
+        <Modal show={isInstructions}>
+          <Modal.Header>
+            <Modal.Title>{`Instructions on ${postalName}`}</Modal.Title>
+          </Modal.Header>
+          <Form>
+            <Modal.Body>
+              <GenericTextAreaField
+                name="instructions"
+                rows={5}
+                changeValue={`${(values as valuesDetails).instructions}`}
+                readOnly
+              />
+            </Modal.Body>
+            <ModalFooter
+              handleClick={() => toggleModal(ADMIN_MODAL_TYPES.INSTRUCTIONS)}
+              userAccessLevel={USER_ACCESS_LEVELS.READ_ONLY}
+              requiredAcLForSave={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
             />
           </Form>
         </Modal>
