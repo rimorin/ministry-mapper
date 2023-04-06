@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/rimorin/ministry-mapper/compare/v1.9.0...v1.10.0) (2023-04-06)
+
+
+### Features
+
+* implement address additional instructions ([6bbfa5e](https://github.com/rimorin/ministry-mapper/commit/6bbfa5e48eef539a3da8ae3ffa473f6b4bfeed22))
+
 # [1.9.0](https://github.com/rimorin/ministry-mapper/compare/v1.8.0...v1.9.0) (2023-04-01)
 
 
