@@ -79,3 +79,19 @@
 .forgot-password:hover {
   text-decoration: underline;
 }
+
+.blinking {
+  animation: blinker 1s linear infinite;
+  font-weight: 500;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
+
+.text-highlight {
+  text-shadow: 2px 3px 3px rgba(0, 0, 0, 0.3);
+  font-weight: bold;
+}

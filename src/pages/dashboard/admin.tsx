@@ -64,7 +64,8 @@ import {
   HHStatusField,
   HHTypeField,
   ModalFooter,
-  ModalUnitTitle
+  ModalUnitTitle,
+  InstructionsButton
 } from "../../components/form";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
@@ -184,6 +185,7 @@ function Admin({ user }: adminProps) {
   const [defaultExpiryHours, setDefaultExpiryHours] = useState<number>(
     DEFAULT_SELF_DESTRUCT_HOURS
   );
+  const [isInstructions, setIsInstructions] = useState<boolean>(false);
   const domain = process.env.PUBLIC_URL;
   const rollbar = useRollbar();
   let unsubscribers = new Array<Unsubscribe>();
@@ -264,7 +266,8 @@ function Admin({ user }: adminProps) {
               postalcode: postalCode,
               floors: floorData,
               feedback: postalSnapshot.feedback,
-              type: postalSnapshot.type
+              type: postalSnapshot.type,
+              instructions: postalSnapshot.instructions
             };
             setAddressData(
               (existingAddresses) =>
@@ -493,6 +496,9 @@ function Admin({ user }: adminProps) {
       case ADMIN_MODAL_TYPES.CHANGE_PASSWORD:
         setIsChangePassword(!isChangePassword);
         break;
+      case ADMIN_MODAL_TYPES.INSTRUCTIONS:
+        setIsInstructions(!isInstructions);
+        break;
       default:
         setIsOpen(!isOpen);
     }
@@ -604,6 +610,21 @@ function Admin({ user }: adminProps) {
     });
   };
 
+  const handleClickInstructions = (
+    _: MouseEvent<HTMLElement>,
+    postalcode: String,
+    name: String,
+    instructions: String
+  ) => {
+    setValues({
+      ...values,
+      instructions: instructions || "",
+      postal: postalcode,
+      name: name
+    });
+    toggleModal(ADMIN_MODAL_TYPES.INSTRUCTIONS);
+  };
+
   const handleClickFeedback = (
     _: MouseEvent<HTMLElement>,
     postalcode: String,
@@ -657,6 +678,29 @@ function Admin({ user }: adminProps) {
           `Conductor feedback on postalcode ${details.postal} of the ${code} congregation: ${details.feedback}`
         );
       toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
+    } catch (error) {
+      errorHandler(error, rollbar);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSubmitInstructions = async (event: FormEvent<HTMLElement>) => {
+    event.preventDefault();
+    const details = values as valuesDetails;
+    setIsSaving(true);
+    try {
+      await pollingFunction(() =>
+        set(
+          ref(database, `/${details.postal}/instructions`),
+          details.instructions
+        )
+      );
+      if (details.instructions)
+        rollbar.info(
+          `Admin instructions on postalcode ${details.postal} of the ${code} congregation: ${details.instructions}`
+        );
+      toggleModal(ADMIN_MODAL_TYPES.INSTRUCTIONS);
     } catch (error) {
       errorHandler(error, rollbar);
     } finally {
@@ -1903,16 +1947,26 @@ function Admin({ user }: adminProps) {
                             );
                           }}
                         >
-                          Feedback
-                          {addressElement.feedback && (
-                            <>
-                              {" "}
-                              <Badge pill bg="secondary" className="blinking">
-                                ⭐
-                              </Badge>
-                            </>
-                          )}
+                          <span
+                            className={
+                              addressElement.feedback ? "blinking" : ""
+                            }
+                          >
+                            Feedback
+                          </span>
                         </Button>
+                        <InstructionsButton
+                          instructions={addressElement.instructions}
+                          handleSave={(event) => {
+                            handleClickInstructions(
+                              event,
+                              currentPostalcode,
+                              currentPostalname,
+                              addressElement.instructions
+                            );
+                          }}
+                          userAcl={userAccessLevel}
+                        />
                         <ComponentAuthorizer
                           requiredPermission={
                             USER_ACCESS_LEVELS.TERRITORY_SERVANT
@@ -3015,6 +3069,32 @@ function Admin({ user }: adminProps) {
                 Save
               </Button>
             </Modal.Footer>
+          </Form>
+        </Modal>
+        <Modal show={isInstructions}>
+          <Modal.Header>
+            <Modal.Title>{`Instructions on ${
+              (values as valuesDetails).name
+            }`}</Modal.Title>
+          </Modal.Header>
+          <Form onSubmit={handleSubmitInstructions}>
+            <Modal.Body>
+              <GenericTextAreaField
+                name="instructions"
+                rows={5}
+                handleChange={onFormChange}
+                changeValue={`${(values as valuesDetails).instructions}`}
+                readOnly={
+                  userAccessLevel !== USER_ACCESS_LEVELS.TERRITORY_SERVANT
+                }
+              />
+            </Modal.Body>
+            <ModalFooter
+              handleClick={() => toggleModal(ADMIN_MODAL_TYPES.INSTRUCTIONS)}
+              userAccessLevel={userAccessLevel}
+              requiredAcLForSave={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
+              isSaving={isSaving}
+            />
           </Form>
         </Modal>
       </>
