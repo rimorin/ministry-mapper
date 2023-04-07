@@ -65,7 +65,8 @@ import {
   HHTypeField,
   ModalFooter,
   ModalUnitTitle,
-  InstructionsButton
+  InstructionsButton,
+  ModalSubmitButton
 } from "../../components/form";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
@@ -1044,6 +1045,7 @@ function Admin({ user }: adminProps) {
     event.preventDefault();
     const details = values as valuesDetails;
     const link = details.link || "";
+    setIsSaving(true);
     try {
       const linkId = link.substring(link.lastIndexOf("/") + 1);
       await pollingFunction(() => remove(ref(database, `links/${linkId}`)));
@@ -1052,6 +1054,8 @@ function Admin({ user }: adminProps) {
     } catch (error) {
       errorHandler(error, rollbar);
       return;
+    } finally {
+      setIsSaving(false);
     }
     toggleModal(ADMIN_MODAL_TYPES.LINK);
   };
@@ -2282,19 +2286,13 @@ function Admin({ user }: adminProps) {
                   required={true}
                 />
               </Modal.Body>
-              <Modal.Footer className="justify-content-around">
-                <Button
-                  variant="secondary"
-                  onClick={() =>
-                    toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY)
-                  }
-                >
-                  Close
-                </Button>
-                <Button type="submit" variant="primary">
-                  Save
-                </Button>
-              </Modal.Footer>
+              <ModalFooter
+                handleClick={() =>
+                  toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY)
+                }
+                userAccessLevel={userAccessLevel}
+                isSaving={isSaving}
+              />
             </Form>
           </Modal>
         )}
@@ -2332,9 +2330,7 @@ function Admin({ user }: adminProps) {
                 >
                   Paste Link
                 </Button>
-                <Button type="submit" variant="primary">
-                  Revoke
-                </Button>
+                <ModalSubmitButton isSaving={isSaving} btnLabel="Revoke" />
               </Modal.Footer>
             </Form>
           </Modal>
@@ -2368,19 +2364,14 @@ function Admin({ user }: adminProps) {
                   placeholder={"Territory code. For eg, M01, W12, etc."}
                 />
               </Modal.Body>
-              <Modal.Footer className="justify-content-around">
-                <Button
-                  variant="secondary"
-                  onClick={() =>
-                    toggleModal(ADMIN_MODAL_TYPES.UPDATE_TERRITORY_CODE)
-                  }
-                >
-                  Close
-                </Button>
-                <Button type="submit" variant="primary">
-                  Change
-                </Button>
-              </Modal.Footer>
+              <ModalFooter
+                handleClick={() =>
+                  toggleModal(ADMIN_MODAL_TYPES.UPDATE_TERRITORY_CODE)
+                }
+                userAccessLevel={userAccessLevel}
+                isSaving={isSaving}
+                submitLabel="Change"
+              />
             </Form>
           </Modal>
         )}
@@ -2414,17 +2405,12 @@ function Admin({ user }: adminProps) {
                   }
                 />
               </Modal.Body>
-              <Modal.Footer className="justify-content-around">
-                <Button
-                  variant="secondary"
-                  onClick={() => toggleModal(ADMIN_MODAL_TYPES.UPDATE_POSTAL)}
-                >
-                  Close
-                </Button>
-                <Button type="submit" variant="primary">
-                  Change
-                </Button>
-              </Modal.Footer>
+              <ModalFooter
+                handleClick={() => toggleModal(ADMIN_MODAL_TYPES.UPDATE_POSTAL)}
+                userAccessLevel={userAccessLevel}
+                isSaving={isSaving}
+                submitLabel="Change"
+              />
             </Form>
           </Modal>
         )}
@@ -2443,19 +2429,13 @@ function Admin({ user }: adminProps) {
                   required={true}
                 />
               </Modal.Body>
-              <Modal.Footer className="justify-content-around">
-                <Button
-                  variant="secondary"
-                  onClick={() =>
-                    toggleModal(ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME)
-                  }
-                >
-                  Close
-                </Button>
-                <Button type="submit" variant="primary">
-                  Save
-                </Button>
-              </Modal.Footer>
+              <ModalFooter
+                handleClick={() =>
+                  toggleModal(ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME)
+                }
+                userAccessLevel={userAccessLevel}
+                isSaving={isSaving}
+              />
             </Form>
           </Modal>
         )}
@@ -2488,19 +2468,13 @@ function Admin({ user }: adminProps) {
                   }
                 />
               </Modal.Body>
-              <Modal.Footer className="justify-content-around">
-                <Button
-                  variant="secondary"
-                  onClick={() =>
-                    toggleModal(ADMIN_MODAL_TYPES.CREATE_TERRITORY)
-                  }
-                >
-                  Close
-                </Button>
-                <Button type="submit" variant="primary">
-                  Save
-                </Button>
-              </Modal.Footer>
+              <ModalFooter
+                handleClick={() =>
+                  toggleModal(ADMIN_MODAL_TYPES.CREATE_TERRITORY)
+                }
+                userAccessLevel={userAccessLevel}
+                isSaving={isSaving}
+              />
             </Form>
           </Modal>
         )}
@@ -2557,19 +2531,13 @@ function Admin({ user }: adminProps) {
                   required={true}
                 />
               </Modal.Body>
-              <Modal.Footer className="justify-content-around">
-                <Button
-                  variant="secondary"
-                  onClick={() =>
-                    toggleModal(ADMIN_MODAL_TYPES.CREATE_PUBLIC_ADDRESS)
-                  }
-                >
-                  Close
-                </Button>
-                <Button type="submit" variant="primary">
-                  Save
-                </Button>
-              </Modal.Footer>
+              <ModalFooter
+                handleClick={() =>
+                  toggleModal(ADMIN_MODAL_TYPES.CREATE_PUBLIC_ADDRESS)
+                }
+                userAccessLevel={userAccessLevel}
+                isSaving={isSaving}
+              />
             </Form>
           </Modal>
         )}
@@ -2615,19 +2583,13 @@ function Admin({ user }: adminProps) {
                   required={true}
                 />
               </Modal.Body>
-              <Modal.Footer className="justify-content-around">
-                <Button
-                  variant="secondary"
-                  onClick={() =>
-                    toggleModal(ADMIN_MODAL_TYPES.CREATE_PRIVATE_ADDRESS)
-                  }
-                >
-                  Close
-                </Button>
-                <Button type="submit" variant="primary">
-                  Save
-                </Button>
-              </Modal.Footer>
+              <ModalFooter
+                handleClick={() =>
+                  toggleModal(ADMIN_MODAL_TYPES.CREATE_PRIVATE_ADDRESS)
+                }
+                userAccessLevel={userAccessLevel}
+                isSaving={isSaving}
+              />
             </Form>
           </Modal>
         )}
@@ -2666,17 +2628,11 @@ function Admin({ user }: adminProps) {
                   required={true}
                 />
               </Modal.Body>
-              <Modal.Footer className="justify-content-around">
-                <Button
-                  variant="secondary"
-                  onClick={() => toggleModal(ADMIN_MODAL_TYPES.ADD_UNIT)}
-                >
-                  Close
-                </Button>
-                <Button type="submit" variant="primary">
-                  Save
-                </Button>
-              </Modal.Footer>
+              <ModalFooter
+                handleClick={() => toggleModal(ADMIN_MODAL_TYPES.ADD_UNIT)}
+                userAccessLevel={userAccessLevel}
+                isSaving={isSaving}
+              />
             </Form>
           </Modal>
         )}
@@ -2764,9 +2720,7 @@ function Admin({ user }: adminProps) {
                 >
                   Delete Unit
                 </Button>
-                <Button type="submit" variant="primary">
-                  Save
-                </Button>
+                <ModalSubmitButton isSaving={isSaving} />
               </Modal.Footer>
             </Form>
           </Modal>
@@ -3053,21 +3007,10 @@ function Admin({ user }: adminProps) {
               >
                 Close
               </Button>
-              <Button
-                type="submit"
-                variant="primary"
+              <ModalSubmitButton
+                isSaving={isSaving}
                 disabled={!isChangePasswordOk}
-              >
-                {isSaving && (
-                  <Spinner
-                    as="span"
-                    animation="border"
-                    size="sm"
-                    aria-hidden="true"
-                  />
-                )}{" "}
-                Save
-              </Button>
+              />
             </Modal.Footer>
           </Form>
         </Modal>

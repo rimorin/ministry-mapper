@@ -119,12 +119,19 @@ export interface BrandingProps {
 }
 
 export interface FooterProps {
-  handleClick?: (event: React.MouseEvent<HTMLElement>) => void;
   isSaving?: boolean;
   userAccessLevel?: number;
-  handleDelete?: (event: React.MouseEvent<HTMLElement>) => void;
   type?: number;
   requiredAcLForSave?: number;
+  submitLabel?: string;
+  handleClick?: (event: React.MouseEvent<HTMLElement>) => void;
+  handleDelete?: (event: React.MouseEvent<HTMLElement>) => void;
+}
+
+export interface SubmitBtnProps {
+  isSaving: boolean;
+  btnLabel?: string;
+  disabled?: boolean;
 }
 
 export interface InstructionsProps {

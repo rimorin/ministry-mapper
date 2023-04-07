@@ -14,6 +14,7 @@ import {
   FooterProps,
   FormProps,
   InstructionsProps,
+  SubmitBtnProps,
   TitleProps
 } from "../utils/interface";
 
@@ -37,7 +38,8 @@ const ModalFooter = ({
   //Default to conductor access lvl so that individual slips can be writable.
   userAccessLevel = USER_ACCESS_LEVELS.CONDUCTOR,
   requiredAcLForSave = USER_ACCESS_LEVELS.CONDUCTOR,
-  isSaving = false
+  isSaving = false,
+  submitLabel = "Save"
 }: FooterProps) => {
   return (
     <Modal.Footer className="justify-content-around">
@@ -62,19 +64,24 @@ const ModalFooter = ({
         }
         userPermission={userAccessLevel}
       >
-        <Button type="submit" variant="primary">
-          {isSaving && (
-            <Spinner
-              as="span"
-              animation="border"
-              size="sm"
-              aria-hidden="true"
-            />
-          )}{" "}
-          Save
-        </Button>
+        <ModalSubmitButton isSaving={isSaving} btnLabel={submitLabel} />
       </ComponentAuthorizer>
     </Modal.Footer>
+  );
+};
+
+const ModalSubmitButton = ({
+  isSaving = false,
+  btnLabel = "Save",
+  disabled = false
+}: SubmitBtnProps) => {
+  return (
+    <Button type="submit" variant="primary" disabled={isSaving || disabled}>
+      {isSaving && (
+        <Spinner as="span" animation="border" size="sm" aria-hidden="true" />
+      )}{" "}
+      {btnLabel}
+    </Button>
   );
 };
 
@@ -433,5 +440,6 @@ export {
   GenericTextAreaField,
   ModalFooter,
   ModalUnitTitle,
-  InstructionsButton
+  InstructionsButton,
+  ModalSubmitButton
 };
