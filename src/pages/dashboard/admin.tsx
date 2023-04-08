@@ -2208,7 +2208,7 @@ function Admin({ user }: adminProps) {
                         handleClickUpdateUnit(
                           currentPostalcode,
                           Number(length),
-                          Number(sequence),
+                          sequence === undefined ? undefined : Number(sequence),
                           unitno || "",
                           maxUnitNumberLength,
                           addressElement.type

@@ -310,7 +310,7 @@ const AdminTable = ({
                   className={`${adminUnitHeaderStyle}text-center align-middle`}
                   onClick={handleUnitNoUpdate}
                   data-length={floors[0].units.length}
-                  data-sequence={item.sequence || DEFAULT_UNIT_SEQUENCE_NO}
+                  data-sequence={item.sequence}
                   data-unitno={item.number}
                 >
                   {ZeroPad(item.number, maxUnitNumberLength)}
