@@ -39,7 +39,8 @@ const ModalFooter = ({
   userAccessLevel = USER_ACCESS_LEVELS.CONDUCTOR,
   requiredAcLForSave = USER_ACCESS_LEVELS.CONDUCTOR,
   isSaving = false,
-  submitLabel = "Save"
+  submitLabel = "Save",
+  disableSubmitBtn = false
 }: FooterProps) => {
   return (
     <Modal.Footer className="justify-content-around">
@@ -64,7 +65,11 @@ const ModalFooter = ({
         }
         userPermission={userAccessLevel}
       >
-        <ModalSubmitButton isSaving={isSaving} btnLabel={submitLabel} />
+        <ModalSubmitButton
+          isSaving={isSaving}
+          btnLabel={submitLabel}
+          disabled={disableSubmitBtn}
+        />
       </ComponentAuthorizer>
     </Modal.Footer>
   );

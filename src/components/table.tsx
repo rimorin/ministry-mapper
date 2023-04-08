@@ -6,7 +6,6 @@ import {
   HOUSEHOLD_TYPES,
   USER_ACCESS_LEVELS,
   DEFAULT_UNIT_DNC_MS_TIME,
-  DEFAULT_UNIT_SEQUENCE_NO,
   TERRITORY_TYPES
 } from "../utils/constants";
 import { ZeroPad } from "../utils/helpers";

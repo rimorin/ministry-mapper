@@ -120,6 +120,7 @@ export interface BrandingProps {
 
 export interface FooterProps {
   isSaving?: boolean;
+  disableSubmitBtn?: boolean;
   userAccessLevel?: number;
   type?: number;
   requiredAcLForSave?: number;

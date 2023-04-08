@@ -3000,18 +3000,12 @@ function Admin({ user }: adminProps) {
                 onChange={(isValid) => setIsChangePasswordOk(isValid)}
               />
             </Modal.Body>
-            <Modal.Footer className="justify-content-around">
-              <Button
-                variant="secondary"
-                onClick={() => toggleModal(ADMIN_MODAL_TYPES.CHANGE_PASSWORD)}
-              >
-                Close
-              </Button>
-              <ModalSubmitButton
-                isSaving={isSaving}
-                disabled={!isChangePasswordOk}
-              />
-            </Modal.Footer>
+            <ModalFooter
+              handleClick={() => toggleModal(ADMIN_MODAL_TYPES.CHANGE_PASSWORD)}
+              userAccessLevel={userAccessLevel}
+              isSaving={isSaving}
+              disableSubmitBtn={!isChangePasswordOk}
+            />
           </Form>
         </Modal>
         <Modal show={isInstructions}>
