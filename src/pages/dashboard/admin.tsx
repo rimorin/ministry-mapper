@@ -2897,6 +2897,7 @@ function Admin({ user }: adminProps) {
                       inputType="string"
                       label="Unit Postal"
                       name="newUnitPostal"
+                      placeholder="Optional postal code"
                       handleChange={onFormChange}
                       changeValue={`${(values as valuesDetails).newUnitPostal}`}
                     />
