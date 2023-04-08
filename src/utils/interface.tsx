@@ -243,3 +243,7 @@ export interface SignInDifferentProps {
   name?: string;
   handleClick?: (event: React.MouseEvent<HTMLElement>) => void;
 }
+
+export interface VerificationProps extends SignInDifferentProps {
+  handleResendMail?: (event: React.MouseEvent<HTMLElement>) => void;
+}
