@@ -121,7 +121,10 @@ const Slip = ({
       floorDisplay: ZeroPad(floor, DEFAULT_FLOOR_PADDING),
       unit: unit,
       unitDisplay: ZeroPad(unit, maxUnitNumber),
-      unitPostal: unitDetails?.unitPostal,
+      propertyPostal:
+        unitDetails?.propertyPostal === undefined
+          ? ""
+          : unitDetails?.propertyPostal,
       type: unitDetails?.type,
       note: unitDetails?.note,
       status: unitDetails?.status,
@@ -375,7 +378,7 @@ const Slip = ({
         <Modal show={isOpen}>
           <ModalUnitTitle
             unit={`${(values as valuesDetails).unitDisplay}`}
-            unitPostal={`${(values as valuesDetails).unitPostal}`}
+            propertyPostal={`${(values as valuesDetails).propertyPostal}`}
             floor={`${(values as valuesDetails).floorDisplay}`}
             name={`${postalName}`}
             type={territoryType}
@@ -447,7 +450,7 @@ const Slip = ({
             <ModalFooter
               handleClick={() => toggleModal(ADMIN_MODAL_TYPES.UNIT)}
               isSaving={isSaving}
-              unitPostal={`${(values as valuesDetails).unitPostal}`}
+              propertyPostal={`${(values as valuesDetails).propertyPostal}`}
               type={territoryType}
             />
           </Form>

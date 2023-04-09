@@ -31,7 +31,7 @@ import {
 import { ComponentAuthorizer } from "./navigation";
 
 const ModalFooter = ({
-  unitPostal,
+  propertyPostal,
   handleClick,
   handleDelete,
   type,
@@ -40,6 +40,7 @@ const ModalFooter = ({
   requiredAcLForSave = USER_ACCESS_LEVELS.CONDUCTOR,
   isSaving = false
 }: FooterProps) => {
+  const encodedPropertyPostal = encodeURIComponent(propertyPostal as string);
   return (
     <Modal.Footer className="justify-content-around">
       {type && type === TERRITORY_TYPES.PRIVATE ? (
@@ -52,12 +53,12 @@ const ModalFooter = ({
               Delete Property
             </Button>
           </ComponentAuthorizer>
-          {unitPostal !== "undefined" && (
+          {propertyPostal !== "" && (
             <Button
               variant="secondary"
               onClick={() => {
                 window.open(
-                  `http://maps.google.com.sg/maps?q=${unitPostal}`,
+                  `http://maps.google.com.sg/maps?q=${encodedPropertyPostal}`,
                   "_blank"
                 );
               }}
@@ -394,7 +395,7 @@ const DncDateField = ({ handleDateChange, changeDate }: FormProps) => {
 
 const ModalUnitTitle = ({
   unit,
-  unitPostal,
+  propertyPostal,
   floor,
   postal,
   name,
@@ -408,8 +409,8 @@ const ModalUnitTitle = ({
 
   if (type === TERRITORY_TYPES.PRIVATE) {
     titleString = `${unit}, ${name}`;
-    if (unitPostal !== "") {
-      titleString = `${titleString}, ${unitPostal}`;
+    if (propertyPostal !== "") {
+      titleString = `${titleString}, ${propertyPostal}`;
     }
   }
   return (

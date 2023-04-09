@@ -529,12 +529,14 @@ function Admin({ user }: adminProps) {
       floor: floor,
       floorDisplay: ZeroPad(floor, DEFAULT_FLOOR_PADDING),
       unit: unit,
-      unitPostal:
-        unitDetails?.unitPostal === undefined ? "" : unitDetails?.unitPostal,
-      newUnitPostal:
-        unitDetails?.newUnitPostal === undefined
+      propertyPostal:
+        unitDetails?.propertyPostal === undefined
           ? ""
-          : unitDetails?.newUnitPostal,
+          : unitDetails?.propertyPostal,
+      newPropertyPostal:
+        unitDetails?.newPropertyPostal === undefined
+          ? ""
+          : unitDetails?.newPropertyPostal,
       unitDisplay: ZeroPad(unit, maxUnitNumber),
       type: type,
       note: note,
@@ -579,8 +581,11 @@ function Admin({ user }: adminProps) {
     if (administeringPrivate && details.sequence) {
       updateData.sequence = Number(details.sequence);
     }
-    if (administeringPrivate && details.unitPostal !== details.newUnitPostal) {
-      updateData.x_zip = details.newUnitPostal;
+    if (
+      administeringPrivate &&
+      details.propertyPostal !== details.newPropertyPostal
+    ) {
+      updateData.x_zip = details.newPropertyPostal;
     }
     setIsSaving(true);
     try {
@@ -2810,7 +2815,7 @@ function Admin({ user }: adminProps) {
         <Modal show={isOpen}>
           <ModalUnitTitle
             unit={`${(values as valuesDetails).unitDisplay}`}
-            unitPostal={`${(values as valuesDetails).unitPostal}`}
+            propertyPostal={`${(values as valuesDetails).propertyPostal}`}
             floor={`${(values as valuesDetails).floorDisplay}`}
             postal={(values as valuesDetails).postal}
             type={(values as valuesDetails).territoryType}
@@ -2895,18 +2900,20 @@ function Admin({ user }: adminProps) {
                     />
                     <GenericInputField
                       inputType="string"
-                      label="Unit Postal"
-                      name="newUnitPostal"
-                      placeholder="Optional postal code"
+                      label="Property Postal"
+                      name="newPropertyPostal"
+                      placeholder="Optional postal code for direction to this property"
                       handleChange={onFormChange}
-                      changeValue={`${(values as valuesDetails).newUnitPostal}`}
+                      changeValue={`${
+                        (values as valuesDetails).newPropertyPostal
+                      }`}
                     />
                   </>
                 </ComponentAuthorizer>
               )}
             </Modal.Body>
             <ModalFooter
-              unitPostal={`${(values as valuesDetails).unitPostal}`}
+              propertyPostal={`${(values as valuesDetails).propertyPostal}`}
               handleClick={() => toggleModal(ADMIN_MODAL_TYPES.UNIT)}
               isSaving={isSaving}
               userAccessLevel={userAccessLevel}
