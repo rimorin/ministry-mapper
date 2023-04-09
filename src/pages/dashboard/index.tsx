@@ -3,7 +3,7 @@ import { auth } from "../../firebase";
 import Admin from "./admin";
 import Login from "../login";
 import { Loader } from "../../components/static";
-import { signOut, User } from "firebase/auth";
+import { sendEmailVerification, signOut, User } from "firebase/auth";
 import { useParams } from "react-router-dom";
 import { useRollbar } from "@rollbar/react";
 import { VerificationPage } from "../../components/navigation";
@@ -26,6 +26,13 @@ function Dashboard() {
     );
     return (
       <VerificationPage
+        handleResendMail={() => {
+          sendEmailVerification(loginUser).then(() =>
+            alert(
+              "Resent verification email! Please check your inbox or spam folder."
+            )
+          );
+        }}
         handleClick={() => signOut(auth)}
         name={`${loginUser.displayName}`}
       />
