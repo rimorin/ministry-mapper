@@ -119,12 +119,20 @@ export interface BrandingProps {
 }
 
 export interface FooterProps {
-  handleClick?: (event: React.MouseEvent<HTMLElement>) => void;
   isSaving?: boolean;
+  disableSubmitBtn?: boolean;
   userAccessLevel?: number;
-  handleDelete?: (event: React.MouseEvent<HTMLElement>) => void;
   type?: number;
   requiredAcLForSave?: number;
+  submitLabel?: string;
+  handleClick?: (event: React.MouseEvent<HTMLElement>) => void;
+  handleDelete?: (event: React.MouseEvent<HTMLElement>) => void;
+}
+
+export interface SubmitBtnProps {
+  isSaving: boolean;
+  btnLabel?: string;
+  disabled?: boolean;
 }
 
 export interface InstructionsProps {
@@ -242,4 +250,8 @@ export interface territoryLandedProps {
 export interface SignInDifferentProps {
   name?: string;
   handleClick?: (event: React.MouseEvent<HTMLElement>) => void;
+}
+
+export interface VerificationProps extends SignInDifferentProps {
+  handleResendMail?: (event: React.MouseEvent<HTMLElement>) => void;
 }

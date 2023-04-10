@@ -20,7 +20,8 @@ import {
   AuthorizerProp,
   territoryHeaderProp,
   backToTopProp,
-  SignInDifferentProps
+  SignInDifferentProps,
+  VerificationProps
 } from "../utils/interface";
 import Countdown from "react-countdown";
 import { memo } from "react";
@@ -277,7 +278,11 @@ const UnauthorizedPage = ({ handleClick, name }: SignInDifferentProps) => (
   </Container>
 );
 
-const VerificationPage = ({ handleClick, name }: SignInDifferentProps) => (
+const VerificationPage = ({
+  handleClick,
+  handleResendMail,
+  name
+}: VerificationProps) => (
   <Container className="container-main">
     <Fade appear={true} in={true}>
       <Card className="card-main">
@@ -292,7 +297,17 @@ const VerificationPage = ({ handleClick, name }: SignInDifferentProps) => (
             proceeding 🪪
           </Card.Title>
         </Card.Body>
-        <UseAnotherButton handleClick={handleClick} />
+        <>
+          <span
+            className="resend-text fluid-branding"
+            onClick={handleResendMail}
+          >
+            Didn't receive verification email?
+          </span>
+        </>
+        <>
+          <UseAnotherButton handleClick={handleClick} />
+        </>
       </Card>
     </Fade>
   </Container>
