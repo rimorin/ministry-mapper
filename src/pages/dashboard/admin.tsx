@@ -22,8 +22,7 @@ import {
   useEffect,
   useState,
   useCallback,
-  useMemo,
-  SyntheticEvent
+  useMemo
 } from "react";
 import {
   Accordion,
@@ -142,7 +141,7 @@ function Admin({ user }: adminProps) {
     useState<boolean>(false);
   const [isSettingAssignLink, setIsSettingAssignLink] =
     useState<boolean>(false);
-  const [selectedPostal, setSelectedPostal] = useState<String>();
+  const [selectedPostal, setSelectedPostal] = useState<string>();
   const [isSettingViewLink, setIsSettingViewLink] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isUnauthorised, setIsUnauthorised] = useState<boolean>(false);
@@ -167,18 +166,18 @@ function Admin({ user }: adminProps) {
     useState<boolean>(false);
   const [isChangePassword, setIsChangePassword] = useState<boolean>(false);
   const [isChangePasswordOk, setIsChangePasswordOk] = useState<boolean>(false);
-  const [name, setName] = useState<String>();
-  const [values, setValues] = useState<Object>({});
+  const [name, setName] = useState<string>();
+  const [values, setValues] = useState<object>({});
   const [territories, setTerritories] = useState(
-    new Map<String, territoryDetails>()
+    new Map<string, territoryDetails>()
   );
   const [sortedAddressList, setSortedAddressList] = useState<
     Array<territoryDetails>
   >([]);
-  const [selectedTerritoryCode, setSelectedTerritoryCode] = useState<String>();
-  const [selectedTerritoryName, setSelectedTerritoryName] = useState<String>();
+  const [selectedTerritoryCode, setSelectedTerritoryCode] = useState<string>();
+  const [selectedTerritoryName, setSelectedTerritoryName] = useState<string>();
   const [addressData, setAddressData] = useState(
-    new Map<String, addressDetails>()
+    new Map<string, addressDetails>()
   );
   const [accordingKeys, setAccordionKeys] = useState<Array<string>>([]);
   const [policy, setPolicy] = useState<Policy>();
@@ -195,7 +194,7 @@ function Admin({ user }: adminProps) {
     unsubscribers.forEach((unsubFunction) => {
       unsubFunction();
     });
-    setAddressData(new Map<String, addressDetails>());
+    setAddressData(new Map<string, addressDetails>());
   };
 
   const clearAdminState = () => {
@@ -209,7 +208,7 @@ function Admin({ user }: adminProps) {
     await signOut(auth);
   };
 
-  const processSelectedTerritory = async (selectedTerritoryCode: String) => {
+  const processSelectedTerritory = async (selectedTerritoryCode: string) => {
     const territoryAddsResult = await pollingFunction(() =>
       get(
         query(
@@ -235,7 +234,7 @@ function Admin({ user }: adminProps) {
     // detach unsubscribers listeners first then clear them.
     refreshAddressState();
     unsubscribers = [] as Array<Unsubscribe>;
-    let detailsListing = [] as Array<territoryDetails>;
+    const detailsListing = [] as Array<territoryDetails>;
     territoryAddsResult.forEach((addElement: any) => {
       detailsListing.push({
         code: addElement.val(),
@@ -272,7 +271,7 @@ function Admin({ user }: adminProps) {
             };
             setAddressData(
               (existingAddresses) =>
-                new Map<String, addressDetails>(
+                new Map<string, addressDetails>(
                   existingAddresses.set(postalCode, addressData)
                 )
             );
@@ -282,7 +281,7 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const deleteBlockFloor = async (postalcode: String, floor: String) => {
+  const deleteBlockFloor = async (postalcode: string, floor: string) => {
     try {
       await pollingFunction(() =>
         remove(ref(database, `${postalcode}/units/${floor}`))
@@ -292,7 +291,7 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const getTerritoryAddress = async (territoryCode: String) => {
+  const getTerritoryAddress = async (territoryCode: string) => {
     return await pollingFunction(() =>
       get(
         ref(
@@ -332,8 +331,8 @@ function Admin({ user }: adminProps) {
   };
 
   const deleteTerritoryAddress = async (
-    territoryCode: String,
-    postalCode: String
+    territoryCode: string,
+    postalCode: string
   ) => {
     const addressesSnapshot = await getTerritoryAddress(territoryCode);
     if (addressesSnapshot.exists()) {
@@ -356,8 +355,8 @@ function Admin({ user }: adminProps) {
   };
 
   const deleteBlock = async (
-    postalCode: String,
-    name: String,
+    postalCode: string,
+    name: string,
     showAlert: boolean
   ) => {
     if (!selectedTerritoryCode) return;
@@ -371,7 +370,7 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const addFloorToBlock = async (postalcode: String, lowerFloor = false) => {
+  const addFloorToBlock = async (postalcode: string, lowerFloor = false) => {
     const blockAddresses = addressData.get(postalcode);
     if (!blockAddresses) return;
     const unitUpdates: unitMaps = {};
@@ -425,7 +424,7 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const resetBlock = async (postalcode: String) => {
+  const resetBlock = async (postalcode: string) => {
     const blockAddresses = addressData.get(postalcode);
     if (!blockAddresses) return;
     const unitUpdates: unitMaps = {};
@@ -507,18 +506,18 @@ function Admin({ user }: adminProps) {
 
   const handleClickModal = (
     _: MouseEvent<HTMLElement>,
-    postal: String,
-    floor: String,
-    unit: String,
-    type: String,
-    note: String,
-    status: String,
-    nhcount: String,
-    languages: String,
+    postal: string,
+    floor: string,
+    unit: string,
+    type: string,
+    note: string,
+    status: string,
+    nhcount: string,
+    languages: string,
     dnctime: string | undefined,
     maxUnitNumber: number,
     sequence: string | undefined,
-    name: String,
+    name: string,
     territoryType = TERRITORY_TYPES.PUBLIC
   ) => {
     setValues({
@@ -547,11 +546,11 @@ function Admin({ user }: adminProps) {
     event.preventDefault();
     const details = values as valuesDetails;
     const updateData: {
-      type: String;
-      note: String;
-      status: String;
-      nhcount: String | undefined;
-      languages: String | undefined;
+      type: string;
+      note: string;
+      status: string;
+      nhcount: string | undefined;
+      languages: string | undefined;
       dnctime: number | undefined;
       sequence?: number;
     } = {
@@ -591,8 +590,8 @@ function Admin({ user }: adminProps) {
 
   const setTimedLink = (
     linktype: number,
-    postalcode: String,
-    addressLinkId: String,
+    postalcode: string,
+    addressLinkId: string,
     hours: number
   ) => {
     const link = new LinkSession();
@@ -613,9 +612,9 @@ function Admin({ user }: adminProps) {
 
   const handleClickInstructions = (
     _: MouseEvent<HTMLElement>,
-    postalcode: String,
-    name: String,
-    instructions: String
+    postalcode: string,
+    name: string,
+    instructions: string
   ) => {
     setValues({
       ...values,
@@ -628,9 +627,9 @@ function Admin({ user }: adminProps) {
 
   const handleClickFeedback = (
     _: MouseEvent<HTMLElement>,
-    postalcode: String,
-    name: String,
-    feedback: String
+    postalcode: string,
+    name: string,
+    feedback: string
   ) => {
     setValues({
       ...values,
@@ -641,16 +640,16 @@ function Admin({ user }: adminProps) {
     toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
   };
 
-  const handleClickAddUnit = (postalcode: String, floors: number) => {
+  const handleClickAddUnit = (postalcode: string, floors: number) => {
     setValues({ ...values, postal: postalcode, floors: floors, unit: "" });
     toggleModal(ADMIN_MODAL_TYPES.ADD_UNIT);
   };
 
   const handleClickUpdateUnit = (
-    postalcode: String,
+    postalcode: string,
     unitlength: number,
     unitseq: number | undefined,
-    unit: String,
+    unit: string,
     maxUnitNumber: number,
     territoryType: number
   ) => {
@@ -709,7 +708,7 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const handleClickChangeAddressName = (postalcode: String, name: String) => {
+  const handleClickChangeAddressName = (postalcode: string, name: string) => {
     setValues({ ...values, name: name, postal: postalcode });
     toggleModal(ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME);
   };
@@ -785,7 +784,7 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const handleClickChangePostal = (postalcode: String) => {
+  const handleClickChangePostal = (postalcode: string) => {
     setValues({ ...values, postal: postalcode, newPostal: "" });
     toggleModal(ADMIN_MODAL_TYPES.UPDATE_POSTAL);
   };
@@ -825,14 +824,14 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const refreshCongregationTerritory = async (selectTerritoryCode: String) => {
+  const refreshCongregationTerritory = async (selectTerritoryCode: string) => {
     if (!selectTerritoryCode) return;
     processSelectedTerritory(selectTerritoryCode);
   };
 
   const processPostalUnitNumber = async (
-    postalCode: String,
-    unitNumber: String,
+    postalCode: string,
+    unitNumber: string,
     isDelete = false
   ) => {
     const blockAddresses = addressData.get(`${postalCode}`);
@@ -855,7 +854,7 @@ function Admin({ user }: adminProps) {
     const lastSequenceNo = blockAddresses.floors[0].units.length + 1;
     for (const index in blockAddresses.floors) {
       const floorDetails = blockAddresses.floors[index];
-      floorDetails.units.forEach((_) => {
+      floorDetails.units.forEach(() => {
         unitUpdates[
           `/${postalCode}/units/${floorDetails.floor}/${unitNumber}`
         ] = isDelete
@@ -882,8 +881,8 @@ function Admin({ user }: adminProps) {
   };
 
   const processPostalUnitSequence = async (
-    postalCode: String,
-    unitNumber: String,
+    postalCode: string,
+    unitNumber: string,
     sequence: number | undefined
   ) => {
     const blockAddresses = addressData.get(`${postalCode}`);
@@ -892,7 +891,7 @@ function Admin({ user }: adminProps) {
     const unitUpdates: unitMaps = {};
     for (const index in blockAddresses.floors) {
       const floorDetails = blockAddresses.floors[index];
-      floorDetails.units.forEach((_) => {
+      floorDetails.units.forEach(() => {
         unitUpdates[
           `/${postalCode}/units/${floorDetails.floor}/${unitNumber}/sequence`
         ] = sequence === undefined ? {} : sequence;
@@ -945,7 +944,7 @@ function Admin({ user }: adminProps) {
       return;
     }
     // Add empty details for 0 floor
-    let floorDetails = [{}];
+    const floorDetails = [{}];
     const units = unitSequence?.split(",");
 
     for (let i = 0; i < noOfFloors; i++) {
@@ -1089,8 +1088,8 @@ function Admin({ user }: adminProps) {
 
   const shareTimedLink = async (
     linktype: number,
-    postalcode: String,
-    linkId: String,
+    postalcode: string,
+    linkId: string,
     title: string,
     body: string,
     url: string,
@@ -1126,7 +1125,7 @@ function Admin({ user }: adminProps) {
     if (!data) return;
     document.title = `${data["name"]}`;
     const congregationTerritories = data["territories"];
-    const territoryList = new Map<String, territoryDetails>();
+    const territoryList = new Map<string, territoryDetails>();
     for (const territory in congregationTerritories) {
       const name = congregationTerritories[territory]["name"];
       const addresses = congregationTerritories[territory]["addresses"];
@@ -1154,9 +1153,9 @@ function Admin({ user }: adminProps) {
   does not return a callback after a successful share. */
   const specialShareTimedLink = (
     linktype: number,
-    postalcode: String,
-    name: String,
-    linkId: String,
+    postalcode: string,
+    name: string,
+    linkId: string,
     hours = DEFAULT_SELF_DESTRUCT_HOURS
   ) => {
     if (navigator.share) {
@@ -1223,7 +1222,7 @@ function Admin({ user }: adminProps) {
   };
 
   const handleTerritorySelect = useCallback(
-    (eventKey: string | null, _: SyntheticEvent<unknown, Event>) => {
+    (eventKey: string | null) => {
       processSelectedTerritory(`${eventKey}`);
       toggleTerritoryListing();
     },
@@ -1237,10 +1236,7 @@ function Admin({ user }: adminProps) {
   }, [showTerritoryListing]);
 
   const handleAddressTerritorySelect = useCallback(
-    async (
-      newTerritoryCode: string | null,
-      _: SyntheticEvent<unknown, Event>
-    ) => {
+    async (newTerritoryCode: string | null) => {
       const details = values as valuesDetails;
       const selectedPostalcode = `${details.postal}`;
       await pollingFunction(() =>
@@ -1278,14 +1274,14 @@ function Admin({ user }: adminProps) {
   );
 
   const getTerritoryAddressData = (
-    addresses: Map<String, addressDetails>,
+    addresses: Map<string, addressDetails>,
     policy: Policy
   ) => {
-    let unitLengths = new Map();
-    let completedPercents = new Map();
+    const unitLengths = new Map();
+    const completedPercents = new Map();
     let totalPercent = 0;
 
-    addresses.forEach((address, _) => {
+    addresses.forEach((address) => {
       const postalCode = address.postalcode;
       const maxUnitNumberLength = getMaxUnitLength(address.floors);
       const completedPercent = getCompletedPercent(policy, address.floors);
@@ -1846,7 +1842,7 @@ function Admin({ user }: adminProps) {
                               size="sm"
                               variant="outline-primary"
                               className="m-1"
-                              onClick={(_) => {
+                              onClick={() => {
                                 if (isSpecialDevice) {
                                   specialShareTimedLink(
                                     LINK_TYPES.ASSIGNMENT,
@@ -1930,7 +1926,7 @@ function Admin({ user }: adminProps) {
                           size="sm"
                           variant="outline-primary"
                           className="m-1"
-                          onClick={(e) => {
+                          onClick={() => {
                             window.open(
                               `http://maps.google.com.sg/maps?q=${zipcode}`
                             );
@@ -2758,7 +2754,7 @@ function Admin({ user }: adminProps) {
           <Form onSubmit={handleSubmitClick}>
             <Modal.Body>
               <HHStatusField
-                handleGroupChange={(toggleValue, _) => {
+                handleGroupChange={(toggleValue) => {
                   let dnctime = null;
                   setIsNotHome(false);
                   setIsDnc(false);
@@ -2791,7 +2787,7 @@ function Admin({ user }: adminProps) {
                 <div className="text-center">
                   <HHNotHomeField
                     changeValue={`${(values as valuesDetails).nhcount}`}
-                    handleGroupChange={(toggleValue, _) => {
+                    handleGroupChange={(toggleValue) => {
                       setValues({ ...values, nhcount: toggleValue });
                     }}
                   />

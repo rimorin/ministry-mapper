@@ -32,7 +32,7 @@ const errorHandler = (error: any, rollbar: Rollbar, showAlert = true) => {
   }
 };
 
-const errorMessage = (code: String) => {
+const errorMessage = (code: string) => {
   if (code === "auth/too-many-requests")
     return "Device has been blocked temporarily. Please try again later.";
   if (code === "auth/user-disabled")
@@ -45,9 +45,9 @@ const errorMessage = (code: String) => {
   return "Invalid Credentials";
 };
 
-const ZeroPad = (num: String, places: number) => num.padStart(places, "0");
+const ZeroPad = (num: string, places: number) => num.padStart(places, "0");
 
-const assignmentMessage = (address: String) => {
+const assignmentMessage = (address: string) => {
   const currentDate = new Date();
   const hrs = currentDate.getHours();
 
@@ -72,7 +72,7 @@ const getMaxUnitLength = (floors: floorDetails[]) => {
   return maxUnitNumberLength;
 };
 
-const parseHHLanguages = (languages: String) => {
+const parseHHLanguages = (languages: string) => {
   if (!languages) return [];
   return languages.split(",");
 };
@@ -143,7 +143,7 @@ const checkCongregationExpireHours = async (code: string) => {
   );
 };
 
-const processAddressData = async (postal: String, data: any) => {
+const processAddressData = async (postal: string, data: any) => {
   const dataList = [];
   for (const floor in data) {
     const unitsDetails: unitDetails[] = [];
@@ -174,7 +174,7 @@ const processAddressData = async (postal: String, data: any) => {
   return dataList;
 };
 
-const processLinkCounts = async (postal: String) => {
+const processLinkCounts = async (postal: string) => {
   const postalCode = postal as string;
   // need to add to rules for links: ".indexOn": "postalCode",
   const linksSnapshot = await pollingFunction(() =>
@@ -188,9 +188,9 @@ const processLinkCounts = async (postal: String) => {
     )
   );
   const currentTimestamp = new Date().getTime();
-  var counts = new LinkCounts();
+  const counts = new LinkCounts();
   linksSnapshot.forEach((rec: any) => {
-    var link = rec.val() as LinkSession;
+    const link = rec.val() as LinkSession;
     if (link.tokenEndtime > currentTimestamp) {
       if (link.linkType === LINK_TYPES.ASSIGNMENT) {
         counts.assigneeCount++;
@@ -205,7 +205,7 @@ const processLinkCounts = async (postal: String) => {
 
 const triggerPostalCodeListeners = async (postalcode: string) => {
   const deltaSnapshot = await get(ref(database, `/${postalcode}/delta`));
-  var delta = 0;
+  let delta = 0;
   if (deltaSnapshot.exists()) {
     delta = deltaSnapshot.val() + 1;
   }
@@ -215,11 +215,11 @@ const triggerPostalCodeListeners = async (postalcode: string) => {
 };
 
 const getLanguageDisplayByCode = (code: string): string => {
-  let display: string = "";
+  let display = "";
   if (code !== undefined) {
     const keys = Object.keys(HOUSEHOLD_LANGUAGES);
     keys.every((key) => {
-      let language = Reflect.get(HOUSEHOLD_LANGUAGES, key);
+      const language = Reflect.get(HOUSEHOLD_LANGUAGES, key);
       if (language.CODE.toLowerCase() === code.toLowerCase()) {
         display = language.DISPLAY;
         return false;

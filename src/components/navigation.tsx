@@ -143,7 +143,7 @@ const Legend = memo(({ showLegend, hideFunction }: LegendProps) => {
             </tr>
             <tr>
               <td className="text-center align-middle">✖️</td>
-              <td>Unit doesn't exist for some reason.</td>
+              <td>Unit doesn&#39;t exist for some reason.</td>
             </tr>
             <tr>
               <td className="text-center align-middle">🗒️</td>
@@ -302,7 +302,7 @@ const VerificationPage = ({
             className="resend-text fluid-branding"
             onClick={handleResendMail}
           >
-            Didn't receive verification email?
+            Didn&#39;t receive verification email?
           </span>
         </>
         <>

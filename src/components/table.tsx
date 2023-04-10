@@ -228,7 +228,7 @@ const PublicTerritoryTable = ({
           floors.map((item, index) => (
             <tr key={`row-${index}`}>
               <FloorHeader index={index} floor={item.floor} />
-              {item.units.map((element, _) => (
+              {item.units.map((element) => (
                 <td
                   className={`text-center align-middle inline-cell ${policy?.getUnitColor(
                     element,

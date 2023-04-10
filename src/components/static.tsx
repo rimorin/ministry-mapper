@@ -1,6 +1,13 @@
 import { memo } from "react";
-import { Container, Card, Image, Fade, Spinner } from "react-bootstrap";
-const Welcome = memo(({ name }: { name?: String }) => {
+import {
+  Container,
+  Card,
+  Image,
+  Fade,
+  Spinner,
+  AccordionButton
+} from "react-bootstrap";
+const Welcome = memo(({ name }: { name?: string }) => {
   return (
     <Container className="container-main" style={{ height: "80vh" }}>
       <Card className="card-main" style={{ width: "100%" }}>
@@ -32,7 +39,6 @@ const FrontLogo = memo(() => (
     ></Image>
   </Container>
 ));
-
 const InvalidPage = memo(() => (
   <Container className="container-main">
     <Fade appear={true} in={true}>
