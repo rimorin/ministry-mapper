@@ -5,7 +5,8 @@ import {
   Image,
   Fade,
   Spinner,
-  AccordionButton
+  AccordionButton,
+  AccordionCollapse
 } from "react-bootstrap";
 const Welcome = memo(({ name }: { name?: string }) => {
   return (
