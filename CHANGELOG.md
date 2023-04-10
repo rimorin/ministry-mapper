@@ -1,3 +1,16 @@
+# [1.11.0](https://github.com/rimorin/ministry-mapper/compare/v1.10.0...v1.11.0) (2023-04-10)
+
+
+### Bug Fixes
+
+* admin unit UI modifier for undefined seq ([82c0377](https://github.com/rimorin/ministry-mapper/commit/82c037732da503043525af614aefb04fe4932be3))
+* lock submit button on save ([b7d6966](https://github.com/rimorin/ministry-mapper/commit/b7d6966ca6a85e54f7f71c0e786e586774b1854e))
+
+
+### Features
+
+* implement resend function to resend verification email ([b793d5d](https://github.com/rimorin/ministry-mapper/commit/b793d5d0fa2ce401184edf4959a4c8a965f8ee1a))
+
 # [1.10.0](https://github.com/rimorin/ministry-mapper/compare/v1.9.0...v1.10.0) (2023-04-06)
 
 
