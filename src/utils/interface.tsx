@@ -1,61 +1,61 @@
 import { User } from "firebase/auth";
 
 export interface unitDetails {
-  number: String;
-  note: String;
-  type: String;
-  status: String;
-  nhcount: String;
-  languages: String;
+  number: string;
+  note: string;
+  type: string;
+  status: string;
+  nhcount: string;
+  languages: string;
   dnctime: number;
   sequence?: number;
 }
 
 export interface nothomeProps {
-  nhcount?: String;
-  classProp?: String;
+  nhcount?: string;
+  classProp?: string;
 }
 
 export interface floorDetails {
-  floor: String;
+  floor: string;
   units: Array<unitDetails>;
 }
 
 export interface unitProps {
-  type: String;
-  note?: String;
-  status: String;
-  nhcount?: String;
-  languages?: String;
+  type: string;
+  note?: string;
+  status: string;
+  nhcount?: string;
+  languages?: string;
   trackRace?: boolean;
   trackLanguages?: boolean;
 }
 
 export interface valuesDetails {
-  floor: String;
-  floorDisplay?: String;
-  unit: String;
-  unitDisplay?: String;
-  type: String;
-  note: String;
-  languages?: String;
-  postal?: String;
-  feedback: String;
-  status: String;
-  link?: String;
-  nhcount?: String;
-  name?: String;
-  units?: String;
+  floor: string;
+  floorDisplay?: string;
+  unit: string;
+  unitDisplay?: string;
+  type: string;
+  note: string;
+  languages?: string;
+  postal?: string;
+  feedback: string;
+  status: string;
+  link?: string;
+  nhcount?: string;
+  name?: string;
+  units?: string;
   floors?: number;
-  newPostal?: String;
-  code?: String;
+  newPostal?: string;
+  code?: string;
   dnctime?: number;
   sequence: string;
   unitlength?: number;
   territoryType?: number;
   password?: string;
   cpassword?: string;
-  instructions?: String;
+  instructions?: string;
 }
 
 export interface adminProps {
@@ -63,21 +63,22 @@ export interface adminProps {
 }
 
 export interface territoryDetails {
-  code: String;
-  name: String;
+  code: string;
+  name: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   addresses: any;
 }
 
 export interface addressDetails {
   assigneeCount: number;
   personalCount: number;
-  x_zip: String;
-  name: String;
-  postalcode: String;
+  x_zip: string;
+  name: string;
+  postalcode: string;
   floors: Array<floorDetails>;
-  feedback: String;
+  feedback: string;
   type: number;
-  instructions: String;
+  instructions: string;
 }
 
 export interface FormProps {
@@ -86,7 +87,7 @@ export interface FormProps {
     value: string,
     event: React.ChangeEvent<HTMLElement>
   ) => void;
-  handleChangeValues?: (values: any[]) => void;
+  handleChangeValues?: (values: string[]) => void;
   handleDateChange?: (date: Date) => void;
   changeDate?: number;
   changeValue?: string;
@@ -107,15 +108,15 @@ export interface FloorProps {
 }
 
 export interface TitleProps {
-  floor: String;
-  unit: String;
-  postal?: String;
+  floor: string;
+  unit: string;
+  postal?: string;
   type?: number;
-  name: String;
+  name: string;
 }
 
 export interface BrandingProps {
-  naming: String;
+  naming: string;
 }
 
 export interface FooterProps {
@@ -136,20 +137,20 @@ export interface SubmitBtnProps {
 }
 
 export interface InstructionsProps {
-  instructions: String;
+  instructions: string;
   userAcl?: number;
   handleSave: (event: React.MouseEvent<HTMLElement>) => void;
 }
 
 export interface LegendProps {
   showLegend: boolean;
-  hideFunction?: any;
+  hideFunction?: () => void;
 }
 
 export interface TerritoryListingProps {
   showListing: boolean;
-  hideFunction: any;
-  selectedTerritory?: String;
+  hideFunction: () => void;
+  selectedTerritory?: string;
   handleSelect?: (
     eventKey: string | null,
     e: React.SyntheticEvent<unknown>
@@ -159,16 +160,16 @@ export interface TerritoryListingProps {
 }
 
 export interface LoginProps {
-  loginType: String;
+  loginType: string;
 }
 
 export interface unitMaps {
-  [key: string]: Object;
+  [key: string]: object | number | string;
 }
 
 export interface RouteDetails {
-  postalCode: String;
-  name: String;
+  postalCode: string;
+  name: string;
 }
 
 export interface Policy {
@@ -195,7 +196,7 @@ export interface ExpiryButtonProp {
 }
 
 export interface floorHeaderProp {
-  floor: String;
+  floor: string;
   index: number;
 }
 
@@ -205,7 +206,7 @@ export interface tableHeaderProp {
 }
 
 export interface territoryHeaderProp {
-  name: String | undefined;
+  name: string | undefined;
 }
 
 export interface backToTopProp {
