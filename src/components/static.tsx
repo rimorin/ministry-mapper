@@ -1,13 +1,5 @@
 import { memo } from "react";
-import {
-  Container,
-  Card,
-  Image,
-  Fade,
-  Spinner,
-  AccordionButton,
-  AccordionCollapse
-} from "react-bootstrap";
+import { Container, Card, Image, Fade, Spinner } from "react-bootstrap";
 const Welcome = memo(({ name }: { name?: string }) => {
   return (
     <Container className="container-main" style={{ height: "80vh" }}>

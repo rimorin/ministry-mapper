@@ -10,7 +10,8 @@ import {
   get,
   query,
   orderByValue,
-  off
+  off,
+  DataSnapshot
 } from "firebase/database";
 import "../../css/admin.css";
 import { signOut, updatePassword, User } from "firebase/auth";
@@ -75,7 +76,7 @@ import getUA from "ua-parser-js";
 import { AdminTable } from "../../components/table";
 import PasswordChecklist from "react-password-checklist";
 import {
-  pollingFunction,
+  pollingVoidFunction,
   processAddressData,
   processLinkCounts,
   errorHandler,
@@ -93,7 +94,8 @@ import {
   checkCongregationExpireHours,
   processPropertyNumber,
   isValidPostal,
-  SetPollerInterval
+  SetPollerInterval,
+  pollingQueryFunction
 } from "../../utils/helpers";
 import {
   EnvironmentIndicator,
@@ -209,7 +211,7 @@ function Admin({ user }: adminProps) {
   };
 
   const processSelectedTerritory = async (selectedTerritoryCode: string) => {
-    const territoryAddsResult = await pollingFunction(() =>
+    const territoryAddsResult = await pollingQueryFunction(() =>
       get(
         query(
           ref(
@@ -221,7 +223,7 @@ function Admin({ user }: adminProps) {
       )
     );
 
-    const territoryNameResult = await pollingFunction(() =>
+    const territoryNameResult = await pollingQueryFunction(() =>
       get(
         child(
           ref(database),
@@ -235,7 +237,7 @@ function Admin({ user }: adminProps) {
     refreshAddressState();
     unsubscribers = [] as Array<Unsubscribe>;
     const detailsListing = [] as Array<territoryDetails>;
-    territoryAddsResult.forEach((addElement: any) => {
+    territoryAddsResult.forEach((addElement: DataSnapshot) => {
       detailsListing.push({
         code: addElement.val(),
         name: "",
@@ -283,7 +285,7 @@ function Admin({ user }: adminProps) {
 
   const deleteBlockFloor = async (postalcode: string, floor: string) => {
     try {
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         remove(ref(database, `${postalcode}/units/${floor}`))
       );
     } catch (error) {
@@ -292,7 +294,7 @@ function Admin({ user }: adminProps) {
   };
 
   const getTerritoryAddress = async (territoryCode: string) => {
-    return await pollingFunction(() =>
+    return await pollingQueryFunction(() =>
       get(
         ref(
           database,
@@ -312,10 +314,12 @@ function Admin({ user }: adminProps) {
         const addressData = addressesSnapshot.val();
         for (const addkey in addressData) {
           const postalcode = addressData[addkey];
-          await pollingFunction(() => remove(ref(database, `${postalcode}`)));
+          await pollingVoidFunction(() =>
+            remove(ref(database, `${postalcode}`))
+          );
         }
       }
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         remove(
           ref(
             database,
@@ -340,7 +344,7 @@ function Admin({ user }: adminProps) {
       for (const addkey in addressData) {
         const currentPostalcode = addressData[addkey];
         if (currentPostalcode === postalCode) {
-          await pollingFunction(() =>
+          await pollingVoidFunction(() =>
             remove(
               ref(
                 database,
@@ -399,7 +403,7 @@ function Admin({ user }: adminProps) {
       };
     });
     try {
-      await pollingFunction(() => update(ref(database), unitUpdates));
+      await pollingVoidFunction(() => update(ref(database), unitUpdates));
     } catch (error) {
       errorHandler(error, rollbar);
     }
@@ -445,13 +449,13 @@ function Admin({ user }: adminProps) {
       });
     }
     try {
-      await pollingFunction(() => update(ref(database), unitUpdates));
+      await pollingVoidFunction(() => update(ref(database), unitUpdates));
     } catch (error) {
       errorHandler(error, rollbar);
     }
   };
 
-  const onLanguageChange = (languages: any[]) => {
+  const onLanguageChange = (languages: string[]) => {
     setValues({ ...values, languages: processHHLanguages(languages) });
   };
 
@@ -571,7 +575,7 @@ function Admin({ user }: adminProps) {
     }
     setIsSaving(true);
     try {
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         update(
           ref(
             database,
@@ -604,7 +608,7 @@ function Admin({ user }: adminProps) {
     }
     link.homeLanguage = currentPolicy.getHomeLanguage();
     link.maxTries = currentPolicy.getMaxTries();
-    return pollingFunction(async () => {
+    return pollingVoidFunction(async () => {
       await set(ref(database, `links/${addressLinkId}`), link);
       await triggerPostalCodeListeners(link.postalCode);
     });
@@ -670,7 +674,7 @@ function Admin({ user }: adminProps) {
     const details = values as valuesDetails;
     setIsSaving(true);
     try {
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         set(ref(database, `/${details.postal}/feedback`), details.feedback)
       );
       if (details.feedback)
@@ -690,7 +694,7 @@ function Admin({ user }: adminProps) {
     const details = values as valuesDetails;
     setIsSaving(true);
     try {
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         set(
           ref(database, `/${details.postal}/instructions`),
           details.instructions
@@ -719,7 +723,7 @@ function Admin({ user }: adminProps) {
     const territoryName = details.name;
     setIsSaving(true);
     try {
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         set(
           ref(
             database,
@@ -742,7 +746,7 @@ function Admin({ user }: adminProps) {
     const details = values as valuesDetails;
     setIsSaving(true);
     try {
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         set(ref(database, `/${details.postal}/name`), details.name)
       );
       toggleModal(ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME);
@@ -773,8 +777,8 @@ function Admin({ user }: adminProps) {
         `congregations/${code}/territories/${selectedTerritoryCode}`
       );
       const oldTerritoryData = await get(oldCodeRef);
-      await pollingFunction(() => set(newCodeRef, oldTerritoryData.val()));
-      await pollingFunction(() => remove(oldCodeRef));
+      await pollingVoidFunction(() => set(newCodeRef, oldTerritoryData.val()));
+      await pollingVoidFunction(() => remove(oldCodeRef));
       toggleModal(ADMIN_MODAL_TYPES.UPDATE_TERRITORY_CODE);
       processSelectedTerritory(newTerritoryCode);
     } catch (error) {
@@ -803,8 +807,8 @@ function Admin({ user }: adminProps) {
         return;
       }
       const oldPostalData = await get(ref(database, oldPostalCode));
-      await pollingFunction(() => set(newPostalRef, oldPostalData.val()));
-      await pollingFunction(() =>
+      await pollingVoidFunction(() => set(newPostalRef, oldPostalData.val()));
+      await pollingVoidFunction(() =>
         set(
           push(
             ref(
@@ -815,7 +819,7 @@ function Admin({ user }: adminProps) {
           newPostalCode
         )
       );
-      await pollingFunction(() => deleteBlock(oldPostalCode, "", false));
+      await pollingVoidFunction(() => deleteBlock(oldPostalCode, "", false));
       await toggleModal(ADMIN_MODAL_TYPES.UPDATE_POSTAL);
     } catch (error) {
       errorHandler(error, rollbar);
@@ -872,7 +876,7 @@ function Admin({ user }: adminProps) {
     }
     setIsSaving(true);
     try {
-      await pollingFunction(() => update(ref(database), unitUpdates));
+      await pollingVoidFunction(() => update(ref(database), unitUpdates));
     } catch (error) {
       errorHandler(error, rollbar);
     } finally {
@@ -899,7 +903,7 @@ function Admin({ user }: adminProps) {
     }
     setIsSaving(true);
     try {
-      await pollingFunction(() => update(ref(database), unitUpdates));
+      await pollingVoidFunction(() => update(ref(database), unitUpdates));
     } catch (error) {
       errorHandler(error, rollbar);
     } finally {
@@ -948,7 +952,7 @@ function Admin({ user }: adminProps) {
     const units = unitSequence?.split(",");
 
     for (let i = 0; i < noOfFloors; i++) {
-      const floorMap = {} as any;
+      const floorMap = {} as unitMaps;
       units?.forEach((unitNo, index) => {
         const processedUnitNumber = processPropertyNumber(unitNo, addressType);
         floorMap[processedUnitNumber] = {
@@ -971,7 +975,7 @@ function Admin({ user }: adminProps) {
         alert(`Postal address, ${newPostalCode} already exist.`);
         return;
       }
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         set(
           push(
             ref(
@@ -982,7 +986,7 @@ function Admin({ user }: adminProps) {
           newPostalCode
         )
       );
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         set(addressReference, {
           name: newPostalName,
           feedback: "",
@@ -1019,14 +1023,14 @@ function Admin({ user }: adminProps) {
         ref(database),
         `congregations/${code}/territories/${newTerritoryCode}`
       );
-      const existingTerritory = await pollingFunction(() =>
+      const existingTerritory = await pollingQueryFunction(() =>
         get(territoryCodeReference)
       );
       if (existingTerritory.exists()) {
         alert(`Territory code, ${newTerritoryCode} already exist.`);
         return;
       }
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         set(territoryCodeReference, {
           name: newTerritoryName
         })
@@ -1047,7 +1051,7 @@ function Admin({ user }: adminProps) {
     setIsSaving(true);
     try {
       const linkId = link.substring(link.lastIndexOf("/") + 1);
-      await pollingFunction(() => remove(ref(database, `links/${linkId}`)));
+      await pollingVoidFunction(() => remove(ref(database, `links/${linkId}`)));
       rollbar.info(`Publisher slip has been revoked! Link: ${link}`);
       alert(`Revoked territory link token, ${linkId}.`);
     } catch (error) {
@@ -1121,7 +1125,9 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const processCongregationTerritories = (data: any) => {
+  const processCongregationTerritories = (snapshot: DataSnapshot) => {
+    if (!snapshot) return;
+    const data = snapshot.val();
     if (!data) return;
     document.title = `${data["name"]}`;
     const congregationTerritories = data["territories"];
@@ -1239,7 +1245,7 @@ function Admin({ user }: adminProps) {
     async (newTerritoryCode: string | null) => {
       const details = values as valuesDetails;
       const selectedPostalcode = `${details.postal}`;
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         set(
           push(
             ref(
@@ -1348,7 +1354,7 @@ function Admin({ user }: adminProps) {
         clearInterval(pollerId);
         setIsLoading(false);
         if (snapshot.exists()) {
-          processCongregationTerritories(snapshot.val());
+          processCongregationTerritories(snapshot);
         }
       },
       (reason) => {
@@ -1900,7 +1906,9 @@ function Admin({ user }: adminProps) {
                                     addressLinkId,
                                     defaultExpiryHours
                                   );
-                                  territoryWindow!.location.href = `${domain}/${currentPostalcode}/${code}/${addressLinkId}`;
+                                  if (territoryWindow) {
+                                    territoryWindow.location.href = `${domain}/${currentPostalcode}/${code}/${addressLinkId}`;
+                                  }
                                 } catch (error) {
                                   errorHandler(error, rollbar);
                                 } finally {

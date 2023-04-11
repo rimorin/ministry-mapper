@@ -34,7 +34,6 @@ import { RacePolicy, LanguagePolicy } from "../../utils/policies";
 import { useRollbar } from "@rollbar/react";
 import {
   ZeroPad,
-  pollingFunction,
   errorHandler,
   processHHLanguages,
   processAddressData,
@@ -43,7 +42,8 @@ import {
   getMaxUnitLength,
   getCompletedPercent,
   parseHHLanguages,
-  SetPollerInterval
+  SetPollerInterval,
+  pollingVoidFunction
 } from "../../utils/helpers";
 import {
   Legend,
@@ -84,7 +84,7 @@ const Slip = ({
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
   const [postalName, setPostalName] = useState<string>();
   const [postalZip, setPostalZip] = useState<string>();
-  const [values, setValues] = useState<Object>({});
+  const [values, setValues] = useState<object>({});
   const [policy, setPolicy] = useState<Policy>();
   const [territoryType, setTerritoryType] = useState<number>(
     TERRITORY_TYPES.PUBLIC
@@ -138,7 +138,7 @@ const Slip = ({
     const details = values as valuesDetails;
     setIsSaving(true);
     try {
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         update(
           ref(
             database,
@@ -171,7 +171,7 @@ const Slip = ({
     const details = values as valuesDetails;
     setIsSaving(true);
     try {
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         set(ref(database, `/${postalcode}/feedback`), details.feedback)
       );
       if (details.feedback)
@@ -191,7 +191,7 @@ const Slip = ({
     setValues({ ...values, [name]: value });
   };
 
-  const onLanguageChange = (languages: any[]) => {
+  const onLanguageChange = (languages: string[]) => {
     setValues({ ...values, languages: processHHLanguages(languages) });
   };
 
@@ -216,6 +216,7 @@ const Slip = ({
       }
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const processData = async (data: any) => {
       setFloors(await processAddressData(postalcode, data.units));
     };

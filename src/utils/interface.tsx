@@ -65,6 +65,7 @@ export interface adminProps {
 export interface territoryDetails {
   code: string;
   name: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   addresses: any;
 }
 
@@ -86,7 +87,7 @@ export interface FormProps {
     value: string,
     event: React.ChangeEvent<HTMLElement>
   ) => void;
-  handleChangeValues?: (values: any[]) => void;
+  handleChangeValues?: (values: string[]) => void;
   handleDateChange?: (date: Date) => void;
   changeDate?: number;
   changeValue?: string;
@@ -143,12 +144,12 @@ export interface InstructionsProps {
 
 export interface LegendProps {
   showLegend: boolean;
-  hideFunction?: any;
+  hideFunction?: () => void;
 }
 
 export interface TerritoryListingProps {
   showListing: boolean;
-  hideFunction: any;
+  hideFunction: () => void;
   selectedTerritory?: string;
   handleSelect?: (
     eventKey: string | null,
@@ -163,7 +164,7 @@ export interface LoginProps {
 }
 
 export interface unitMaps {
-  [key: string]: Object;
+  [key: string]: object | number | string;
 }
 
 export interface RouteDetails {

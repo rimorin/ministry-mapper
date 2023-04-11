@@ -8,7 +8,8 @@ import {
   startAt,
   endAt,
   update,
-  ref
+  ref,
+  DataSnapshot
 } from "firebase/database";
 import Rollbar from "rollbar";
 import { database } from "../firebase";
@@ -25,6 +26,7 @@ import {
   MINIMUM_POSTAL_LENGTH
 } from "../utils/constants";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const errorHandler = (error: any, rollbar: Rollbar, showAlert = true) => {
   rollbar.error(error);
   if (showAlert) {
@@ -106,13 +108,25 @@ const addHours = (numOfHours: number, date = new Date()) => {
   return date.getTime();
 };
 
-const pollingFunction = async (
-  callback: () => any,
+const pollingQueryFunction = async (
+  callback: () => Promise<DataSnapshot>,
   intervalMs = FIREBASE_FUNCTION_TIMEOUT
 ) => {
   const reconnectRtdbInterval = SetPollerInterval(intervalMs);
   try {
     return await callback();
+  } finally {
+    clearInterval(reconnectRtdbInterval);
+  }
+};
+
+const pollingVoidFunction = async (
+  callback: () => Promise<void>,
+  intervalMs = FIREBASE_FUNCTION_TIMEOUT
+) => {
+  const reconnectRtdbInterval = SetPollerInterval(intervalMs);
+  try {
+    await callback();
   } finally {
     clearInterval(reconnectRtdbInterval);
   }
@@ -126,28 +140,29 @@ const SetPollerInterval = (intervalMs = FIREBASE_FUNCTION_TIMEOUT) => {
 };
 
 const checkTraceRaceStatus = async (code: string) => {
-  return await pollingFunction(() =>
+  return await pollingQueryFunction(() =>
     get(child(ref(database), `congregations/${code}/trackRace`))
   );
 };
 
 const checkTraceLangStatus = async (code: string) => {
-  return await pollingFunction(() =>
+  return await pollingQueryFunction(() =>
     get(child(ref(database), `congregations/${code}/trackLanguages`))
   );
 };
 
 const checkCongregationExpireHours = async (code: string) => {
-  return await pollingFunction(() =>
+  return await pollingQueryFunction(() =>
     get(child(ref(database), `congregations/${code}/expiryHours`))
   );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const processAddressData = async (postal: string, data: any) => {
   const dataList = [];
   for (const floor in data) {
     const unitsDetails: unitDetails[] = [];
-    const addressSnapshot = await pollingFunction(() =>
+    const addressSnapshot = await pollingQueryFunction(() =>
       get(
         query(
           ref(database, `/${postal}/units/${floor}`),
@@ -155,9 +170,9 @@ const processAddressData = async (postal: string, data: any) => {
         )
       )
     );
-    addressSnapshot.forEach((element: any) => {
+    addressSnapshot.forEach((element: DataSnapshot) => {
       const unitValues = element.val();
-      const unitNumber = element.key;
+      const unitNumber = element.key || "";
       unitsDetails.push({
         number: unitNumber,
         note: unitValues.note,
@@ -177,7 +192,7 @@ const processAddressData = async (postal: string, data: any) => {
 const processLinkCounts = async (postal: string) => {
   const postalCode = postal as string;
   // need to add to rules for links: ".indexOn": "postalCode",
-  const linksSnapshot = await pollingFunction(() =>
+  const linksSnapshot = await pollingQueryFunction(() =>
     get(
       query(
         child(ref(database), "links"),
@@ -189,7 +204,7 @@ const processLinkCounts = async (postal: string) => {
   );
   const currentTimestamp = new Date().getTime();
   const counts = new LinkCounts();
-  linksSnapshot.forEach((rec: any) => {
+  linksSnapshot.forEach((rec: DataSnapshot) => {
     const link = rec.val() as LinkSession;
     if (link.tokenEndtime > currentTimestamp) {
       if (link.linkType === LINK_TYPES.ASSIGNMENT) {
@@ -263,7 +278,8 @@ export {
   errorHandler,
   parseHHLanguages,
   processHHLanguages,
-  pollingFunction,
+  pollingQueryFunction,
+  pollingVoidFunction,
   checkTraceLangStatus,
   checkTraceRaceStatus,
   checkCongregationExpireHours,

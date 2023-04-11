@@ -1,3 +1,5 @@
+import { IdTokenResult } from "firebase/auth";
+import { DataSnapshot } from "firebase/database";
 import {
   NOT_HOME_STATUS_CODES,
   COUNTABLE_HOUSEHOLD_STATUS,
@@ -25,7 +27,7 @@ const processAvailableColour = (
 export class RacePolicy implements Policy {
   maxTries: number;
   constructor(
-    userData?: any,
+    userData?: IdTokenResult,
     maxtries = parseInt(NOT_HOME_STATUS_CODES.SECOND_TRY)
   ) {
     this.maxTries = maxtries;
@@ -33,7 +35,7 @@ export class RacePolicy implements Policy {
     const userClaims = userData.claims;
     if (!userClaims) return;
     if (userClaims.maxTries !== undefined) {
-      this.maxTries = userData.maxTries;
+      this.maxTries = userClaims.maxTries;
     }
   }
   isCountable(unit: unitDetails): boolean {
@@ -68,7 +70,7 @@ export class LanguagePolicy implements Policy {
   maxTries: number;
   homeLanguage: string;
   constructor(
-    userData?: any,
+    userData?: IdTokenResult,
     maxtries = parseInt(NOT_HOME_STATUS_CODES.SECOND_TRY),
     homelanguage = HOUSEHOLD_LANGUAGES.ENGLISH.CODE
   ) {
@@ -130,12 +132,14 @@ export class LinkSession {
   homeLanguage: string;
   maxTries: number;
   linkType: number;
-  constructor(linkData?: any) {
+  constructor(snapshot?: DataSnapshot) {
     this.tokenEndtime = 0;
     this.postalCode = "";
     this.homeLanguage = HOUSEHOLD_LANGUAGES.ENGLISH.CODE;
     this.maxTries = DEFAULT_CONGREGATION_MAX_TRIES;
     this.linkType = LINK_TYPES.VIEW;
+    if (!snapshot) return;
+    const linkData = snapshot.val();
     if (!linkData) return;
     if (linkData.tokenEndtime === undefined) {
       this.tokenEndtime = linkData;
