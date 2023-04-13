@@ -122,8 +122,6 @@ import {
   RELOAD_INACTIVITY_DURATION,
   RELOAD_CHECK_INTERVAL_MS,
   USER_ACCESS_LEVELS,
-  ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS,
-  FOUR_WKS_PERSONAL_SLIP_DESTRUCT_HOURS,
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   MIN_START_FLOOR,
   PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY,
@@ -131,6 +129,7 @@ import {
   MINIMUM_PASSWORD_LENGTH,
   PASSWORD_POLICY
 } from "../../utils/constants";
+import Calendar from "react-calendar";
 function Admin({ user }: adminProps) {
   const { code } = useParams();
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -188,6 +187,7 @@ function Admin({ user }: adminProps) {
     DEFAULT_SELF_DESTRUCT_HOURS
   );
   const [isInstructions, setIsInstructions] = useState<boolean>(false);
+  const [isPersonalSlip, setIsPersonalSlip] = useState<boolean>(false);
   const domain = process.env.PUBLIC_URL;
   const rollbar = useRollbar();
   let unsubscribers = new Array<Unsubscribe>();
@@ -503,6 +503,9 @@ function Admin({ user }: adminProps) {
       case ADMIN_MODAL_TYPES.INSTRUCTIONS:
         setIsInstructions(!isInstructions);
         break;
+      case ADMIN_MODAL_TYPES.PERSONAL_SLIP:
+        setIsPersonalSlip(!isPersonalSlip);
+        break;
       default:
         setIsOpen(!isOpen);
     }
@@ -705,6 +708,60 @@ function Admin({ user }: adminProps) {
           `Admin instructions on postalcode ${details.postal} of the ${code} congregation: ${details.instructions}`
         );
       toggleModal(ADMIN_MODAL_TYPES.INSTRUCTIONS);
+    } catch (error) {
+      errorHandler(error, rollbar);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleClickPersonalSlip = (
+    postalcode: string,
+    name: string,
+    linkid: string
+  ) => {
+    setValues({
+      ...values,
+      linkid: linkid,
+      postal: postalcode,
+      name: name
+    });
+    toggleModal(ADMIN_MODAL_TYPES.PERSONAL_SLIP);
+  };
+
+  const handleSubmitPersonalSlip = async (event: FormEvent<HTMLElement>) => {
+    event.preventDefault();
+    const details = values as valuesDetails;
+    if (
+      !details.postal ||
+      !details.name ||
+      !details.linkid ||
+      !details.linkExpiryHrs
+    )
+      return;
+    setIsSaving(true);
+    try {
+      if (isSpecialDevice) {
+        specialShareTimedLink(
+          LINK_TYPES.PERSONAL,
+          details.postal,
+          details.name,
+          details.linkid,
+          details.linkExpiryHrs
+        );
+        toggleModal(ADMIN_MODAL_TYPES.PERSONAL_SLIP);
+        return;
+      }
+      shareTimedLink(
+        LINK_TYPES.PERSONAL,
+        details.postal,
+        details.linkid,
+        `Units for ${details.name}`,
+        assignmentMessage(details.name),
+        `${domain}/${details.postal}/${code}/${details.linkid}`,
+        details.linkExpiryHrs
+      );
+      toggleModal(ADMIN_MODAL_TYPES.PERSONAL_SLIP);
     } catch (error) {
       errorHandler(error, rollbar);
     } finally {
@@ -1157,7 +1214,7 @@ function Admin({ user }: adminProps) {
 
   /* Special logic to handle cases where device navigator.share 
   does not return a callback after a successful share. */
-  const specialShareTimedLink = (
+  const specialShareTimedLink = async (
     linktype: number,
     postalcode: string,
     name: string,
@@ -1165,15 +1222,32 @@ function Admin({ user }: adminProps) {
     hours = DEFAULT_SELF_DESTRUCT_HOURS
   ) => {
     if (navigator.share) {
+      if (linktype === LINK_TYPES.PERSONAL) {
+        setIsSettingPersonalLink(true);
+        try {
+          await setTimedLink(linktype, postalcode, linkId, hours);
+          await navigator.share({
+            title: `Units for ${name}`,
+            text: assignmentMessage(name),
+            url: `${domain}/${postalcode}/${code}/${linkId}`
+          });
+        } finally {
+          setIsSettingAssignLink(false);
+          setIsSettingPersonalLink(false);
+          setSelectedPostal("");
+          setAccordionKeys((existingKeys) =>
+            existingKeys.filter((key) => key !== postalcode)
+          );
+        }
+        return;
+      }
       confirmAlert({
         customUI: ({ onClose }) => {
           return (
             <Container>
               <Card bg="Light" className="text-center">
                 <Card.Header>
-                  Confirmation on{" "}
-                  {linktype === LINK_TYPES.PERSONAL ? "personal " : " "}
-                  assignment for {name} ✅
+                  Confirmation on assignment for {name} ✅
                 </Card.Header>
                 <Card.Body>
                   <Card.Title>Do you want to proceed ?</Card.Title>
@@ -1183,10 +1257,7 @@ function Admin({ user }: adminProps) {
                     onClick={async () => {
                       onClose();
                       setSelectedPostal(postalcode);
-                      if (linktype === LINK_TYPES.ASSIGNMENT)
-                        setIsSettingAssignLink(true);
-                      if (linktype === LINK_TYPES.PERSONAL)
-                        setIsSettingPersonalLink(true);
+                      setIsSettingAssignLink(true);
                       await setTimedLink(linktype, postalcode, linkId, hours);
 
                       try {
@@ -1758,86 +1829,38 @@ function Admin({ user }: adminProps) {
                           }
                           userPermission={userAccessLevel}
                         >
-                          <DropdownButton
+                          <Button
                             key={`assigndrop-${currentPostalcode}`}
-                            className="dropdown-btn"
                             size="sm"
                             variant="outline-primary"
-                            title={
-                              <>
-                                {isSettingPersonalLink &&
-                                  selectedPostal === currentPostalcode && (
-                                    <>
-                                      <Spinner
-                                        as="span"
-                                        animation="border"
-                                        size="sm"
-                                        aria-hidden="true"
-                                      />{" "}
-                                    </>
-                                  )}
-                                {addressElement.personalCount > 0 && (
-                                  <>
-                                    <Badge bg="danger">
-                                      {`${addressElement.personalCount}`}
-                                    </Badge>{" "}
-                                  </>
-                                )}
-                                Personal
-                              </>
+                            onClick={() =>
+                              handleClickPersonalSlip(
+                                currentPostalcode,
+                                currentPostalname,
+                                addressLinkId
+                              )
                             }
                           >
-                            <Dropdown.Item
-                              onClick={() => {
-                                if (isSpecialDevice) {
-                                  specialShareTimedLink(
-                                    LINK_TYPES.PERSONAL,
-                                    currentPostalcode,
-                                    currentPostalname,
-                                    addressLinkId,
-                                    ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS
-                                  );
-                                  return;
-                                }
-                                shareTimedLink(
-                                  LINK_TYPES.PERSONAL,
-                                  currentPostalcode,
-                                  addressLinkId,
-                                  `Units for ${currentPostalname}`,
-                                  assignmentMessage(currentPostalname),
-                                  `${domain}/${currentPostalcode}/${code}/${addressLinkId}`,
-                                  ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS
-                                );
-                              }}
-                            >
-                              One-week
-                            </Dropdown.Item>
-                            <Dropdown.Item
-                              onClick={() => {
-                                if (isSpecialDevice) {
-                                  specialShareTimedLink(
-                                    LINK_TYPES.PERSONAL,
-                                    currentPostalcode,
-                                    currentPostalname,
-                                    addressLinkId,
-                                    FOUR_WKS_PERSONAL_SLIP_DESTRUCT_HOURS
-                                  );
-                                  return;
-                                }
-                                shareTimedLink(
-                                  LINK_TYPES.PERSONAL,
-                                  currentPostalcode,
-                                  addressLinkId,
-                                  `Units for ${currentPostalname}`,
-                                  assignmentMessage(currentPostalname),
-                                  `${domain}/${currentPostalcode}/${code}/${addressLinkId}`,
-                                  FOUR_WKS_PERSONAL_SLIP_DESTRUCT_HOURS
-                                );
-                              }}
-                            >
-                              One-month
-                            </Dropdown.Item>
-                          </DropdownButton>
+                            {isSettingPersonalLink &&
+                              selectedPostal === currentPostalcode && (
+                                <>
+                                  <Spinner
+                                    as="span"
+                                    animation="border"
+                                    size="sm"
+                                    aria-hidden="true"
+                                  />{" "}
+                                </>
+                              )}
+                            {addressElement.personalCount > 0 && (
+                              <>
+                                <Badge bg="danger">
+                                  {`${addressElement.personalCount}`}
+                                </Badge>{" "}
+                              </>
+                            )}
+                            Personal
+                          </Button>
                         </ComponentAuthorizer>
                         <ComponentAuthorizer
                           requiredPermission={USER_ACCESS_LEVELS.CONDUCTOR}
@@ -3035,6 +3058,36 @@ function Admin({ user }: adminProps) {
               userAccessLevel={userAccessLevel}
               requiredAcLForSave={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
               isSaving={isSaving}
+            />
+          </Form>
+        </Modal>
+        <Modal show={isPersonalSlip}>
+          <Modal.Header>
+            <Modal.Title>{`Select personal slip expiry date for ${
+              (values as valuesDetails).name
+            }`}</Modal.Title>
+          </Modal.Header>
+          <Form onSubmit={handleSubmitPersonalSlip}>
+            <Modal.Body>
+              <Calendar
+                //Block selection for current day and days before.
+                minDate={new Date(Date.now() + 3600 * 1000 * 24)}
+                onChange={(selectedDate: Date) => {
+                  const expiryInHours = Math.floor(
+                    (selectedDate.getTime() - new Date().getTime()) /
+                      (1000 * 60 * 60)
+                  );
+                  setValues({ ...values, linkExpiryHrs: expiryInHours });
+                }}
+                className="w-100 mb-1"
+              />
+            </Modal.Body>
+            <ModalFooter
+              handleClick={() => toggleModal(ADMIN_MODAL_TYPES.PERSONAL_SLIP)}
+              userAccessLevel={userAccessLevel}
+              requiredAcLForSave={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
+              isSaving={isSaving}
+              submitLabel="Assign"
             />
           </Form>
         </Modal>

@@ -56,6 +56,8 @@ export interface valuesDetails {
   password?: string;
   cpassword?: string;
   instructions?: string;
+  linkid?: string;
+  linkExpiryHrs?: number;
 }
 
 export interface adminProps {
