@@ -949,7 +949,7 @@ function Admin({ user }: adminProps) {
     }
     // Add empty details for 0 floor
     const floorDetails = [{}];
-    const units = unitSequence?.split(",");
+    const units = unitSequence?.split(",").filter((unitNo) => unitNo !== "");
 
     for (let i = 0; i < noOfFloors; i++) {
       const floorMap = {} as unitMaps;
