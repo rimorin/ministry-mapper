@@ -1,3 +1,39 @@
+# [1.12.0](https://github.com/rimorin/ministry-mapper/compare/v1.11.0...v1.12.0) (2023-04-14)
+
+
+### Bug Fixes
+
+* eslinter run ([5aece8b](https://github.com/rimorin/ministry-mapper/commit/5aece8b857f65f1d20b592c05ca72db7515726e3))
+* eslinter run 2 ([39e9d0d](https://github.com/rimorin/ministry-mapper/commit/39e9d0d19a1616d0bbb8bcf1acd9f4548db53d0c))
+* handle empty delimiter unit value ([a868611](https://github.com/rimorin/ministry-mapper/commit/a8686112082cf1f00c7bf084482a248aaa11c8bd))
+* handle invalid sequence input ([7106d90](https://github.com/rimorin/ministry-mapper/commit/7106d907c5e38823e129424c29b967b0b98e130e))
+* implement husky lint staged ([955feaa](https://github.com/rimorin/ministry-mapper/commit/955feaa68f1aad55a6ce7473a0027ff02a8207f9))
+
+
+### Features
+
+* implement custom expiry date for personal slips ([52592bb](https://github.com/rimorin/ministry-mapper/commit/52592bb94b4406f36ccf2a1dc5b3a420cdab0810))
+
+# [1.11.0](https://github.com/rimorin/ministry-mapper/compare/v1.10.0...v1.11.0) (2023-04-10)
+
+
+### Bug Fixes
+
+* admin unit UI modifier for undefined seq ([82c0377](https://github.com/rimorin/ministry-mapper/commit/82c037732da503043525af614aefb04fe4932be3))
+* lock submit button on save ([b7d6966](https://github.com/rimorin/ministry-mapper/commit/b7d6966ca6a85e54f7f71c0e786e586774b1854e))
+
+
+### Features
+
+* implement resend function to resend verification email ([b793d5d](https://github.com/rimorin/ministry-mapper/commit/b793d5d0fa2ce401184edf4959a4c8a965f8ee1a))
+
+# [1.10.0](https://github.com/rimorin/ministry-mapper/compare/v1.9.0...v1.10.0) (2023-04-06)
+
+
+### Features
+
+* implement address additional instructions ([6bbfa5e](https://github.com/rimorin/ministry-mapper/commit/6bbfa5e48eef539a3da8ae3ffa473f6b4bfeed22))
+
 # [1.9.0](https://github.com/rimorin/ministry-mapper/compare/v1.8.0...v1.9.0) (2023-04-01)
 
 
