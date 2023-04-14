@@ -8,7 +8,8 @@ import {
   startAt,
   endAt,
   update,
-  ref
+  ref,
+  DataSnapshot
 } from "firebase/database";
 import Rollbar from "rollbar";
 import { database } from "../firebase";
@@ -22,9 +23,11 @@ import {
   NOT_HOME_STATUS_CODES,
   TERRITORY_TYPES,
   SPECIAL_CHARACTERS,
-  MINIMUM_POSTAL_LENGTH
+  MINIMUM_POSTAL_LENGTH,
+  NUMERIC_CHARACTERS
 } from "../utils/constants";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const errorHandler = (error: any, rollbar: Rollbar, showAlert = true) => {
   rollbar.error(error);
   if (showAlert) {
@@ -32,7 +35,7 @@ const errorHandler = (error: any, rollbar: Rollbar, showAlert = true) => {
   }
 };
 
-const errorMessage = (code: String) => {
+const errorMessage = (code: string) => {
   if (code === "auth/too-many-requests")
     return "Device has been blocked temporarily. Please try again later.";
   if (code === "auth/user-disabled")
@@ -45,9 +48,9 @@ const errorMessage = (code: String) => {
   return "Invalid Credentials";
 };
 
-const ZeroPad = (num: String, places: number) => num.padStart(places, "0");
+const ZeroPad = (num: string, places: number) => num.padStart(places, "0");
 
-const assignmentMessage = (address: String) => {
+const assignmentMessage = (address: string) => {
   const currentDate = new Date();
   const hrs = currentDate.getHours();
 
@@ -72,7 +75,7 @@ const getMaxUnitLength = (floors: floorDetails[]) => {
   return maxUnitNumberLength;
 };
 
-const parseHHLanguages = (languages: String) => {
+const parseHHLanguages = (languages: string) => {
   if (!languages) return [];
   return languages.split(",");
 };
@@ -106,13 +109,25 @@ const addHours = (numOfHours: number, date = new Date()) => {
   return date.getTime();
 };
 
-const pollingFunction = async (
-  callback: () => any,
+const pollingQueryFunction = async (
+  callback: () => Promise<DataSnapshot>,
   intervalMs = FIREBASE_FUNCTION_TIMEOUT
 ) => {
   const reconnectRtdbInterval = SetPollerInterval(intervalMs);
   try {
     return await callback();
+  } finally {
+    clearInterval(reconnectRtdbInterval);
+  }
+};
+
+const pollingVoidFunction = async (
+  callback: () => Promise<void>,
+  intervalMs = FIREBASE_FUNCTION_TIMEOUT
+) => {
+  const reconnectRtdbInterval = SetPollerInterval(intervalMs);
+  try {
+    await callback();
   } finally {
     clearInterval(reconnectRtdbInterval);
   }
@@ -126,28 +141,29 @@ const SetPollerInterval = (intervalMs = FIREBASE_FUNCTION_TIMEOUT) => {
 };
 
 const checkTraceRaceStatus = async (code: string) => {
-  return await pollingFunction(() =>
+  return await pollingQueryFunction(() =>
     get(child(ref(database), `congregations/${code}/trackRace`))
   );
 };
 
 const checkTraceLangStatus = async (code: string) => {
-  return await pollingFunction(() =>
+  return await pollingQueryFunction(() =>
     get(child(ref(database), `congregations/${code}/trackLanguages`))
   );
 };
 
 const checkCongregationExpireHours = async (code: string) => {
-  return await pollingFunction(() =>
+  return await pollingQueryFunction(() =>
     get(child(ref(database), `congregations/${code}/expiryHours`))
   );
 };
 
-const processAddressData = async (postal: String, data: any) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const processAddressData = async (postal: string, data: any) => {
   const dataList = [];
   for (const floor in data) {
     const unitsDetails: unitDetails[] = [];
-    const addressSnapshot = await pollingFunction(() =>
+    const addressSnapshot = await pollingQueryFunction(() =>
       get(
         query(
           ref(database, `/${postal}/units/${floor}`),
@@ -155,9 +171,9 @@ const processAddressData = async (postal: String, data: any) => {
         )
       )
     );
-    addressSnapshot.forEach((element: any) => {
+    addressSnapshot.forEach((element: DataSnapshot) => {
       const unitValues = element.val();
-      const unitNumber = element.key;
+      const unitNumber = element.key || "";
       unitsDetails.push({
         number: unitNumber,
         note: unitValues.note,
@@ -174,10 +190,10 @@ const processAddressData = async (postal: String, data: any) => {
   return dataList;
 };
 
-const processLinkCounts = async (postal: String) => {
+const processLinkCounts = async (postal: string) => {
   const postalCode = postal as string;
   // need to add to rules for links: ".indexOn": "postalCode",
-  const linksSnapshot = await pollingFunction(() =>
+  const linksSnapshot = await pollingQueryFunction(() =>
     get(
       query(
         child(ref(database), "links"),
@@ -188,9 +204,9 @@ const processLinkCounts = async (postal: String) => {
     )
   );
   const currentTimestamp = new Date().getTime();
-  var counts = new LinkCounts();
-  linksSnapshot.forEach((rec: any) => {
-    var link = rec.val() as LinkSession;
+  const counts = new LinkCounts();
+  linksSnapshot.forEach((rec: DataSnapshot) => {
+    const link = rec.val() as LinkSession;
     if (link.tokenEndtime > currentTimestamp) {
       if (link.linkType === LINK_TYPES.ASSIGNMENT) {
         counts.assigneeCount++;
@@ -205,7 +221,7 @@ const processLinkCounts = async (postal: String) => {
 
 const triggerPostalCodeListeners = async (postalcode: string) => {
   const deltaSnapshot = await get(ref(database, `/${postalcode}/delta`));
-  var delta = 0;
+  let delta = 0;
   if (deltaSnapshot.exists()) {
     delta = deltaSnapshot.val() + 1;
   }
@@ -215,11 +231,11 @@ const triggerPostalCodeListeners = async (postalcode: string) => {
 };
 
 const getLanguageDisplayByCode = (code: string): string => {
-  let display: string = "";
+  let display = "";
   if (code !== undefined) {
     const keys = Object.keys(HOUSEHOLD_LANGUAGES);
     keys.every((key) => {
-      let language = Reflect.get(HOUSEHOLD_LANGUAGES, key);
+      const language = Reflect.get(HOUSEHOLD_LANGUAGES, key);
       if (language.CODE.toLowerCase() === code.toLowerCase()) {
         display = language.DISPLAY;
         return false;
@@ -232,7 +248,6 @@ const getLanguageDisplayByCode = (code: string): string => {
 
 const processPropertyNumber = (unitNo: string, propertyType: number) => {
   if (!unitNo) return "";
-
   unitNo = unitNo.trim();
   if (propertyType === TERRITORY_TYPES.PRIVATE) {
     return unitNo.toUpperCase();
@@ -252,6 +267,27 @@ const isValidPostal = (postalCode: string) => {
   return true;
 };
 
+const isValidPostalSequence = (
+  sequence: string,
+  postalType = TERRITORY_TYPES.PRIVATE
+) => {
+  if (!sequence) return false;
+  const units = sequence.split(",");
+  if (units.length === 0) return false;
+  for (let index = 0; index < units.length; index++) {
+    const unitValue = units[index].trim();
+    // check if unit is blank after trimming
+    if (!unitValue) return false;
+    // check if there are special chars
+    if (SPECIAL_CHARACTERS.test(unitValue)) return false;
+    if (postalType === TERRITORY_TYPES.PUBLIC) {
+      // if public, check if unit is numeric only
+      if (!NUMERIC_CHARACTERS.test(unitValue)) return false;
+    }
+  }
+  return true;
+};
+
 export {
   getLanguageDisplayByCode,
   ZeroPad,
@@ -263,7 +299,8 @@ export {
   errorHandler,
   parseHHLanguages,
   processHHLanguages,
-  pollingFunction,
+  pollingQueryFunction,
+  pollingVoidFunction,
   checkTraceLangStatus,
   checkTraceRaceStatus,
   checkCongregationExpireHours,
@@ -272,5 +309,6 @@ export {
   processAddressData,
   processPropertyNumber,
   isValidPostal,
-  SetPollerInterval
+  SetPollerInterval,
+  isValidPostalSequence
 };

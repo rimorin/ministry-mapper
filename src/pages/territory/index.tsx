@@ -24,7 +24,7 @@ function Territory() {
       clearInterval(pollerId);
       setIsTokenLoading(false);
       if (snapshot.exists()) {
-        const linkrec = new LinkSession(snapshot.val());
+        const linkrec = new LinkSession(snapshot);
         setLinkSession(linkrec);
         const tokenEndtime = linkrec.tokenEndtime;
         const currentTimestamp = new Date().getTime();

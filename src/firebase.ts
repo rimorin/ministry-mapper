@@ -5,6 +5,7 @@ import { initializeAuth, browserLocalPersistence } from "firebase/auth";
 import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 
 declare global {
+  // eslint-disable-next-line no-var
   var FIREBASE_APPCHECK_DEBUG_TOKEN: boolean | string | undefined;
 }
 const {
