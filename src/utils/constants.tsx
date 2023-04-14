@@ -121,6 +121,7 @@ const TERRITORY_TYPES = {
 
 //eslint-disable-next-line
 const SPECIAL_CHARACTERS = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
+const NUMERIC_CHARACTERS = /^-?\d+$/;
 // Hardcode for local SG postal standards
 const MINIMUM_POSTAL_LENGTH = 6;
 
@@ -166,5 +167,6 @@ export {
   MINIMUM_PASSWORD_LENGTH,
   PASSWORD_POLICY,
   DEFAULT_CONGREGATION_MAX_TRIES,
-  MINISTRY_MAPPER_INFORMATION_PAGE
+  MINISTRY_MAPPER_INFORMATION_PAGE,
+  NUMERIC_CHARACTERS
 };

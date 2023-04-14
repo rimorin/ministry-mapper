@@ -23,7 +23,8 @@ import {
   NOT_HOME_STATUS_CODES,
   TERRITORY_TYPES,
   SPECIAL_CHARACTERS,
-  MINIMUM_POSTAL_LENGTH
+  MINIMUM_POSTAL_LENGTH,
+  NUMERIC_CHARACTERS
 } from "../utils/constants";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -247,7 +248,6 @@ const getLanguageDisplayByCode = (code: string): string => {
 
 const processPropertyNumber = (unitNo: string, propertyType: number) => {
   if (!unitNo) return "";
-
   unitNo = unitNo.trim();
   if (propertyType === TERRITORY_TYPES.PRIVATE) {
     return unitNo.toUpperCase();
@@ -264,6 +264,27 @@ const isValidPostal = (postalCode: string) => {
 
   if (SPECIAL_CHARACTERS.test(postalCode)) return false;
 
+  return true;
+};
+
+const isValidPostalSequence = (
+  sequence: string,
+  postalType = TERRITORY_TYPES.PRIVATE
+) => {
+  if (!sequence) return false;
+  const units = sequence.split(",");
+  if (units.length === 0) return false;
+  for (let index = 0; index < units.length; index++) {
+    const unitValue = units[index].trim();
+    // check if unit is blank after trimming
+    if (!unitValue) return false;
+    // check if there are special chars
+    if (SPECIAL_CHARACTERS.test(unitValue)) return false;
+    if (postalType === TERRITORY_TYPES.PUBLIC) {
+      // if public, check if unit is numeric only
+      if (!NUMERIC_CHARACTERS.test(unitValue)) return false;
+    }
+  }
   return true;
 };
 
@@ -288,5 +309,6 @@ export {
   processAddressData,
   processPropertyNumber,
   isValidPostal,
-  SetPollerInterval
+  SetPollerInterval,
+  isValidPostalSequence
 };

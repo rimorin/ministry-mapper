@@ -95,7 +95,8 @@ import {
   processPropertyNumber,
   isValidPostal,
   SetPollerInterval,
-  pollingQueryFunction
+  pollingQueryFunction,
+  isValidPostalSequence
 } from "../../utils/helpers";
 import {
   EnvironmentIndicator,
@@ -996,7 +997,7 @@ function Admin({ user }: adminProps) {
     const details = values as valuesDetails;
     const newPostalCode = details.newPostal || "";
     const noOfFloors = details.floors || 1;
-    const unitSequence = details.units;
+    const unitSequence = details.units || "";
     const newPostalName = details.name;
     const addressType = Number(details.type);
 
@@ -1004,14 +1005,20 @@ function Admin({ user }: adminProps) {
       alert("Invalid postal code");
       return;
     }
+
+    if (!isValidPostalSequence(unitSequence, addressType)) {
+      alert("Invalid sequence");
+      return;
+    }
+
     // Add empty details for 0 floor
     const floorDetails = [{}];
-    const units = unitSequence?.split(",");
-
+    const units = unitSequence.split(",");
     for (let i = 0; i < noOfFloors; i++) {
       const floorMap = {} as unitMaps;
-      units?.forEach((unitNo, index) => {
+      units.forEach((unitNo, index) => {
         const processedUnitNumber = processPropertyNumber(unitNo, addressType);
+        if (!processedUnitNumber) return;
         floorMap[processedUnitNumber] = {
           status: STATUS_CODES.DEFAULT,
           type: HOUSEHOLD_TYPES.CHINESE,
