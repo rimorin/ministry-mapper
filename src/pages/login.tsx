@@ -8,6 +8,7 @@ import { auth } from "../firebase";
 import { FirebaseError } from "firebase/app";
 import { useRollbar } from "@rollbar/react";
 import { errorHandler, errorMessage } from "../utils/helpers";
+import { EnvironmentIndicator } from "../components/navigation";
 
 const Login = () => {
   const [loginEmail, setLoginEmail] = useState("");
@@ -67,6 +68,7 @@ const Login = () => {
 
   return (
     <>
+      <EnvironmentIndicator />
       <Container
         fluid
         className="d-flex align-items-center justify-content-center vh-100"
