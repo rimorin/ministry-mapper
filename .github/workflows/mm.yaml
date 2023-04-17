@@ -240,7 +240,7 @@ jobs:
         with:
           url: ${{ secrets.PRODUCTION_DEPLOY_HOOK }}
           method: "POST"
-      - name: Failed prod deployment notification
+      - name: Failed deployment notification
         if: failure()
         uses: slackapi/slack-github-action@v1.23.0
         with:
@@ -259,7 +259,7 @@ jobs:
                 }
               ]
             }
-      - name: Success prod deployment notification
+      - name: Success deployment notification
         if: success()
         uses: slackapi/slack-github-action@v1.23.0
         with:
@@ -272,49 +272,6 @@ jobs:
                   "fields": [
                     {
                       "title": "*Triggered production cloudflare deployment job*"
-                    }
-                  ]
-                }
-              ]
-            }
-      - name: Deploy on production backup
-        id: vercelRequest
-        uses: fjogeleit/http-request-action@v1
-        with:
-          url: ${{ secrets.VERCEL_MASTER_HOOK }}
-          method: "POST"
-      - name: Failed prod backup deployment notification
-        if: failure()
-        uses: slackapi/slack-github-action@v1.23.0
-        with:
-          channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
-          payload: |
-            {
-              "attachments": [
-                {
-                  "color": "danger",
-                  "fields": [
-                    {
-                      "title": "*Failed to trigger production vercel deployment job*",
-                      "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                    }
-                  ]
-                }
-              ]
-            }
-      - name: Success prod backup deployment notification
-        if: success()
-        uses: slackapi/slack-github-action@v1.23.0
-        with:
-          channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
-          payload: |
-            {
-              "attachments": [
-                {
-                  "color": "good",
-                  "fields": [
-                    {
-                      "title": "*Triggered production vercel deployment job*"
                     }
                   ]
                 }

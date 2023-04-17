@@ -34,7 +34,6 @@ import { RacePolicy, LanguagePolicy } from "../../utils/policies";
 import { useRollbar } from "@rollbar/react";
 import {
   ZeroPad,
-  pollingFunction,
   errorHandler,
   processHHLanguages,
   processAddressData,
@@ -43,7 +42,8 @@ import {
   getMaxUnitLength,
   getCompletedPercent,
   parseHHLanguages,
-  SetPollerInterval
+  SetPollerInterval,
+  pollingVoidFunction
 } from "../../utils/helpers";
 import {
   Legend,
@@ -82,9 +82,9 @@ const Slip = ({
   const [trackRace, setTrackRace] = useState<boolean>(true);
   const [trackLanguages, setTrackLanguages] = useState<boolean>(true);
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
-  const [postalName, setPostalName] = useState<String>();
-  const [postalZip, setPostalZip] = useState<String>();
-  const [values, setValues] = useState<Object>({});
+  const [postalName, setPostalName] = useState<string>();
+  const [postalZip, setPostalZip] = useState<string>();
+  const [values, setValues] = useState<object>({});
   const [policy, setPolicy] = useState<Policy>();
   const [territoryType, setTerritoryType] = useState<number>(
     TERRITORY_TYPES.PUBLIC
@@ -108,8 +108,8 @@ const Slip = ({
 
   const handleClickModal = (
     _: MouseEvent<HTMLElement>,
-    floor: String,
-    unit: String,
+    floor: string,
+    unit: string,
     maxUnitNumber: number
   ) => {
     const floorUnits = floors.find((e) => e.floor === floor);
@@ -142,7 +142,7 @@ const Slip = ({
     const details = values as valuesDetails;
     setIsSaving(true);
     try {
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         update(
           ref(
             database,
@@ -175,7 +175,7 @@ const Slip = ({
     const details = values as valuesDetails;
     setIsSaving(true);
     try {
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         set(ref(database, `/${postalcode}/feedback`), details.feedback)
       );
       if (details.feedback)
@@ -195,7 +195,7 @@ const Slip = ({
     setValues({ ...values, [name]: value });
   };
 
-  const onLanguageChange = (languages: any[]) => {
+  const onLanguageChange = (languages: string[]) => {
     setValues({ ...values, languages: processHHLanguages(languages) });
   };
 
@@ -220,6 +220,7 @@ const Slip = ({
       }
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const processData = async (data: any) => {
       setFloors(await processAddressData(postalcode, data.units));
     };
@@ -386,7 +387,7 @@ const Slip = ({
           <Form onSubmit={handleSubmitClick}>
             <Modal.Body>
               <HHStatusField
-                handleGroupChange={(toggleValue, _) => {
+                handleGroupChange={(toggleValue) => {
                   let dnctime = null;
                   setIsNotHome(false);
                   setIsDnc(false);
@@ -419,7 +420,7 @@ const Slip = ({
                 <div className="text-center">
                   <HHNotHomeField
                     changeValue={`${(values as valuesDetails).nhcount}`}
-                    handleGroupChange={(toggleValue, _) => {
+                    handleGroupChange={(toggleValue) => {
                       setValues({ ...values, nhcount: toggleValue });
                     }}
                   />

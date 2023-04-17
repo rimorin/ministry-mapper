@@ -41,7 +41,7 @@ const mockRollbarConfig = {
 };
 
 // Mock provider for components that requires rollbar hooks
-const rollbarRender = (ui: any) => {
+const rollbarRender = (ui: JSX.Element) => {
   return render(<Provider config={mockRollbarConfig}>{ui}</Provider>);
 };
 

@@ -6,7 +6,6 @@ import {
   HOUSEHOLD_TYPES,
   USER_ACCESS_LEVELS,
   DEFAULT_UNIT_DNC_MS_TIME,
-  DEFAULT_UNIT_SEQUENCE_NO,
   TERRITORY_TYPES
 } from "../utils/constants";
 import { ZeroPad } from "../utils/helpers";
@@ -229,7 +228,7 @@ const PublicTerritoryTable = ({
           floors.map((item, index) => (
             <tr key={`row-${index}`}>
               <FloorHeader index={index} floor={item.floor} />
-              {item.units.map((element, _) => (
+              {item.units.map((element) => (
                 <td
                   className={`text-center align-middle inline-cell ${policy?.getUnitColor(
                     element,
@@ -310,7 +309,7 @@ const AdminTable = ({
                   className={`${adminUnitHeaderStyle}text-center align-middle`}
                   onClick={handleUnitNoUpdate}
                   data-length={floors[0].units.length}
-                  data-sequence={item.sequence || DEFAULT_UNIT_SEQUENCE_NO}
+                  data-sequence={item.sequence}
                   data-unitno={item.number}
                 >
                   {ZeroPad(item.number, maxUnitNumberLength)}

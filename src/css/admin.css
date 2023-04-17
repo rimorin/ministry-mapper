@@ -21,3 +21,13 @@
   display: inline-block;
   margin: 0.25rem;
 }
+
+.resend-text {
+  cursor: pointer;
+  margin-bottom: 1.25rem;
+  color: #0d6efd;
+}
+
+.resend-text:hover {
+  text-decoration: underline;
+}

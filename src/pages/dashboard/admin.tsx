@@ -10,7 +10,8 @@ import {
   get,
   query,
   orderByValue,
-  off
+  off,
+  DataSnapshot
 } from "firebase/database";
 import "../../css/admin.css";
 import { signOut, updatePassword, User } from "firebase/auth";
@@ -22,8 +23,7 @@ import {
   useEffect,
   useState,
   useCallback,
-  useMemo,
-  SyntheticEvent
+  useMemo
 } from "react";
 import {
   Accordion,
@@ -66,7 +66,8 @@ import {
   HHTypeField,
   ModalFooter,
   ModalUnitTitle,
-  InstructionsButton
+  InstructionsButton,
+  ModalSubmitButton
 } from "../../components/form";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
@@ -76,7 +77,7 @@ import getUA from "ua-parser-js";
 import { AdminTable } from "../../components/table";
 import PasswordChecklist from "react-password-checklist";
 import {
-  pollingFunction,
+  pollingVoidFunction,
   processAddressData,
   processLinkCounts,
   errorHandler,
@@ -94,7 +95,9 @@ import {
   checkCongregationExpireHours,
   processPropertyNumber,
   isValidPostal,
-  SetPollerInterval
+  SetPollerInterval,
+  pollingQueryFunction,
+  isValidPostalSequence
 } from "../../utils/helpers";
 import {
   EnvironmentIndicator,
@@ -121,8 +124,6 @@ import {
   RELOAD_INACTIVITY_DURATION,
   RELOAD_CHECK_INTERVAL_MS,
   USER_ACCESS_LEVELS,
-  ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS,
-  FOUR_WKS_PERSONAL_SLIP_DESTRUCT_HOURS,
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   MIN_START_FLOOR,
   PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY,
@@ -130,6 +131,7 @@ import {
   MINIMUM_PASSWORD_LENGTH,
   PASSWORD_POLICY
 } from "../../utils/constants";
+import Calendar from "react-calendar";
 function Admin({ user }: adminProps) {
   const { code } = useParams();
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -142,7 +144,7 @@ function Admin({ user }: adminProps) {
     useState<boolean>(false);
   const [isSettingAssignLink, setIsSettingAssignLink] =
     useState<boolean>(false);
-  const [selectedPostal, setSelectedPostal] = useState<String>();
+  const [selectedPostal, setSelectedPostal] = useState<string>();
   const [isSettingViewLink, setIsSettingViewLink] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isUnauthorised, setIsUnauthorised] = useState<boolean>(false);
@@ -167,18 +169,18 @@ function Admin({ user }: adminProps) {
     useState<boolean>(false);
   const [isChangePassword, setIsChangePassword] = useState<boolean>(false);
   const [isChangePasswordOk, setIsChangePasswordOk] = useState<boolean>(false);
-  const [name, setName] = useState<String>();
-  const [values, setValues] = useState<Object>({});
+  const [name, setName] = useState<string>();
+  const [values, setValues] = useState<object>({});
   const [territories, setTerritories] = useState(
-    new Map<String, territoryDetails>()
+    new Map<string, territoryDetails>()
   );
   const [sortedAddressList, setSortedAddressList] = useState<
     Array<territoryDetails>
   >([]);
-  const [selectedTerritoryCode, setSelectedTerritoryCode] = useState<String>();
-  const [selectedTerritoryName, setSelectedTerritoryName] = useState<String>();
+  const [selectedTerritoryCode, setSelectedTerritoryCode] = useState<string>();
+  const [selectedTerritoryName, setSelectedTerritoryName] = useState<string>();
   const [addressData, setAddressData] = useState(
-    new Map<String, addressDetails>()
+    new Map<string, addressDetails>()
   );
   const [accordingKeys, setAccordionKeys] = useState<Array<string>>([]);
   const [policy, setPolicy] = useState<Policy>();
@@ -187,6 +189,7 @@ function Admin({ user }: adminProps) {
     DEFAULT_SELF_DESTRUCT_HOURS
   );
   const [isInstructions, setIsInstructions] = useState<boolean>(false);
+  const [isPersonalSlip, setIsPersonalSlip] = useState<boolean>(false);
   const domain = process.env.PUBLIC_URL;
   const rollbar = useRollbar();
   let unsubscribers = new Array<Unsubscribe>();
@@ -195,7 +198,7 @@ function Admin({ user }: adminProps) {
     unsubscribers.forEach((unsubFunction) => {
       unsubFunction();
     });
-    setAddressData(new Map<String, addressDetails>());
+    setAddressData(new Map<string, addressDetails>());
   };
 
   const clearAdminState = () => {
@@ -209,8 +212,8 @@ function Admin({ user }: adminProps) {
     await signOut(auth);
   };
 
-  const processSelectedTerritory = async (selectedTerritoryCode: String) => {
-    const territoryAddsResult = await pollingFunction(() =>
+  const processSelectedTerritory = async (selectedTerritoryCode: string) => {
+    const territoryAddsResult = await pollingQueryFunction(() =>
       get(
         query(
           ref(
@@ -222,7 +225,7 @@ function Admin({ user }: adminProps) {
       )
     );
 
-    const territoryNameResult = await pollingFunction(() =>
+    const territoryNameResult = await pollingQueryFunction(() =>
       get(
         child(
           ref(database),
@@ -235,8 +238,8 @@ function Admin({ user }: adminProps) {
     // detach unsubscribers listeners first then clear them.
     refreshAddressState();
     unsubscribers = [] as Array<Unsubscribe>;
-    let detailsListing = [] as Array<territoryDetails>;
-    territoryAddsResult.forEach((addElement: any) => {
+    const detailsListing = [] as Array<territoryDetails>;
+    territoryAddsResult.forEach((addElement: DataSnapshot) => {
       detailsListing.push({
         code: addElement.val(),
         name: "",
@@ -272,7 +275,7 @@ function Admin({ user }: adminProps) {
             };
             setAddressData(
               (existingAddresses) =>
-                new Map<String, addressDetails>(
+                new Map<string, addressDetails>(
                   existingAddresses.set(postalCode, addressData)
                 )
             );
@@ -282,9 +285,9 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const deleteBlockFloor = async (postalcode: String, floor: String) => {
+  const deleteBlockFloor = async (postalcode: string, floor: string) => {
     try {
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         remove(ref(database, `${postalcode}/units/${floor}`))
       );
     } catch (error) {
@@ -292,8 +295,8 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const getTerritoryAddress = async (territoryCode: String) => {
-    return await pollingFunction(() =>
+  const getTerritoryAddress = async (territoryCode: string) => {
+    return await pollingQueryFunction(() =>
       get(
         ref(
           database,
@@ -313,10 +316,12 @@ function Admin({ user }: adminProps) {
         const addressData = addressesSnapshot.val();
         for (const addkey in addressData) {
           const postalcode = addressData[addkey];
-          await pollingFunction(() => remove(ref(database, `${postalcode}`)));
+          await pollingVoidFunction(() =>
+            remove(ref(database, `${postalcode}`))
+          );
         }
       }
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         remove(
           ref(
             database,
@@ -332,8 +337,8 @@ function Admin({ user }: adminProps) {
   };
 
   const deleteTerritoryAddress = async (
-    territoryCode: String,
-    postalCode: String
+    territoryCode: string,
+    postalCode: string
   ) => {
     const addressesSnapshot = await getTerritoryAddress(territoryCode);
     if (addressesSnapshot.exists()) {
@@ -341,7 +346,7 @@ function Admin({ user }: adminProps) {
       for (const addkey in addressData) {
         const currentPostalcode = addressData[addkey];
         if (currentPostalcode === postalCode) {
-          await pollingFunction(() =>
+          await pollingVoidFunction(() =>
             remove(
               ref(
                 database,
@@ -356,8 +361,8 @@ function Admin({ user }: adminProps) {
   };
 
   const deleteBlock = async (
-    postalCode: String,
-    name: String,
+    postalCode: string,
+    name: string,
     showAlert: boolean
   ) => {
     if (!selectedTerritoryCode) return;
@@ -371,7 +376,7 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const addFloorToBlock = async (postalcode: String, lowerFloor = false) => {
+  const addFloorToBlock = async (postalcode: string, lowerFloor = false) => {
     const blockAddresses = addressData.get(postalcode);
     if (!blockAddresses) return;
     const unitUpdates: unitMaps = {};
@@ -400,7 +405,7 @@ function Admin({ user }: adminProps) {
       };
     });
     try {
-      await pollingFunction(() => update(ref(database), unitUpdates));
+      await pollingVoidFunction(() => update(ref(database), unitUpdates));
     } catch (error) {
       errorHandler(error, rollbar);
     }
@@ -425,7 +430,7 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const resetBlock = async (postalcode: String) => {
+  const resetBlock = async (postalcode: string) => {
     const blockAddresses = addressData.get(postalcode);
     if (!blockAddresses) return;
     const unitUpdates: unitMaps = {};
@@ -446,13 +451,13 @@ function Admin({ user }: adminProps) {
       });
     }
     try {
-      await pollingFunction(() => update(ref(database), unitUpdates));
+      await pollingVoidFunction(() => update(ref(database), unitUpdates));
     } catch (error) {
       errorHandler(error, rollbar);
     }
   };
 
-  const onLanguageChange = (languages: any[]) => {
+  const onLanguageChange = (languages: string[]) => {
     setValues({ ...values, languages: processHHLanguages(languages) });
   };
 
@@ -500,6 +505,9 @@ function Admin({ user }: adminProps) {
       case ADMIN_MODAL_TYPES.INSTRUCTIONS:
         setIsInstructions(!isInstructions);
         break;
+      case ADMIN_MODAL_TYPES.PERSONAL_SLIP:
+        setIsPersonalSlip(!isPersonalSlip);
+        break;
       default:
         setIsOpen(!isOpen);
     }
@@ -507,19 +515,19 @@ function Admin({ user }: adminProps) {
 
   const handleClickModal = (
     _: MouseEvent<HTMLElement>,
-    postal: String,
-    floor: String,
+    postal: string,
+    floor: string,
     floors: Array<floorDetails>,
-    unit: String,
-    type: String,
-    note: String,
-    status: String,
-    nhcount: String,
-    languages: String,
+    unit: string,
+    type: string,
+    note: string,
+    status: string,
+    nhcount: string,
+    languages: string,
     dnctime: string | undefined,
     maxUnitNumber: number,
     sequence: string | undefined,
-    name: String,
+    name: string,
     territoryType = TERRITORY_TYPES.PUBLIC
   ) => {
     const floorUnits = floors.find((e) => e.floor === floor);
@@ -558,11 +566,11 @@ function Admin({ user }: adminProps) {
     event.preventDefault();
     const details = values as valuesDetails;
     const updateData: {
-      type: String;
-      note: String;
-      status: String;
-      nhcount: String | undefined;
-      languages: String | undefined;
+      type: string;
+      note: string;
+      status: string;
+      nhcount: string | undefined;
+      languages: string | undefined;
       dnctime: number | undefined;
       sequence?: number;
       x_zip?: string;
@@ -589,7 +597,7 @@ function Admin({ user }: adminProps) {
     }
     setIsSaving(true);
     try {
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         update(
           ref(
             database,
@@ -608,8 +616,8 @@ function Admin({ user }: adminProps) {
 
   const setTimedLink = (
     linktype: number,
-    postalcode: String,
-    addressLinkId: String,
+    postalcode: string,
+    addressLinkId: string,
     hours: number
   ) => {
     const link = new LinkSession();
@@ -622,7 +630,7 @@ function Admin({ user }: adminProps) {
     }
     link.homeLanguage = currentPolicy.getHomeLanguage();
     link.maxTries = currentPolicy.getMaxTries();
-    return pollingFunction(async () => {
+    return pollingVoidFunction(async () => {
       await set(ref(database, `links/${addressLinkId}`), link);
       await triggerPostalCodeListeners(link.postalCode);
     });
@@ -630,9 +638,9 @@ function Admin({ user }: adminProps) {
 
   const handleClickInstructions = (
     _: MouseEvent<HTMLElement>,
-    postalcode: String,
-    name: String,
-    instructions: String
+    postalcode: string,
+    name: string,
+    instructions: string
   ) => {
     setValues({
       ...values,
@@ -645,9 +653,9 @@ function Admin({ user }: adminProps) {
 
   const handleClickFeedback = (
     _: MouseEvent<HTMLElement>,
-    postalcode: String,
-    name: String,
-    feedback: String
+    postalcode: string,
+    name: string,
+    feedback: string
   ) => {
     setValues({
       ...values,
@@ -658,16 +666,16 @@ function Admin({ user }: adminProps) {
     toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
   };
 
-  const handleClickAddUnit = (postalcode: String, floors: number) => {
+  const handleClickAddUnit = (postalcode: string, floors: number) => {
     setValues({ ...values, postal: postalcode, floors: floors, unit: "" });
     toggleModal(ADMIN_MODAL_TYPES.ADD_UNIT);
   };
 
   const handleClickUpdateUnit = (
-    postalcode: String,
+    postalcode: string,
     unitlength: number,
     unitseq: number | undefined,
-    unit: String,
+    unit: string,
     maxUnitNumber: number,
     territoryType: number
   ) => {
@@ -688,7 +696,7 @@ function Admin({ user }: adminProps) {
     const details = values as valuesDetails;
     setIsSaving(true);
     try {
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         set(ref(database, `/${details.postal}/feedback`), details.feedback)
       );
       if (details.feedback)
@@ -708,7 +716,7 @@ function Admin({ user }: adminProps) {
     const details = values as valuesDetails;
     setIsSaving(true);
     try {
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         set(
           ref(database, `/${details.postal}/instructions`),
           details.instructions
@@ -726,7 +734,61 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const handleClickChangeAddressName = (postalcode: String, name: String) => {
+  const handleClickPersonalSlip = (
+    postalcode: string,
+    name: string,
+    linkid: string
+  ) => {
+    setValues({
+      ...values,
+      linkid: linkid,
+      postal: postalcode,
+      name: name
+    });
+    toggleModal(ADMIN_MODAL_TYPES.PERSONAL_SLIP);
+  };
+
+  const handleSubmitPersonalSlip = async (event: FormEvent<HTMLElement>) => {
+    event.preventDefault();
+    const details = values as valuesDetails;
+    if (
+      !details.postal ||
+      !details.name ||
+      !details.linkid ||
+      !details.linkExpiryHrs
+    )
+      return;
+    setIsSaving(true);
+    try {
+      if (isSpecialDevice) {
+        specialShareTimedLink(
+          LINK_TYPES.PERSONAL,
+          details.postal,
+          details.name,
+          details.linkid,
+          details.linkExpiryHrs
+        );
+        toggleModal(ADMIN_MODAL_TYPES.PERSONAL_SLIP);
+        return;
+      }
+      shareTimedLink(
+        LINK_TYPES.PERSONAL,
+        details.postal,
+        details.linkid,
+        `Units for ${details.name}`,
+        assignmentMessage(details.name),
+        `${domain}/${details.postal}/${code}/${details.linkid}`,
+        details.linkExpiryHrs
+      );
+      toggleModal(ADMIN_MODAL_TYPES.PERSONAL_SLIP);
+    } catch (error) {
+      errorHandler(error, rollbar);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleClickChangeAddressName = (postalcode: string, name: string) => {
     setValues({ ...values, name: name, postal: postalcode });
     toggleModal(ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME);
   };
@@ -737,7 +799,7 @@ function Admin({ user }: adminProps) {
     const territoryName = details.name;
     setIsSaving(true);
     try {
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         set(
           ref(
             database,
@@ -760,7 +822,7 @@ function Admin({ user }: adminProps) {
     const details = values as valuesDetails;
     setIsSaving(true);
     try {
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         set(ref(database, `/${details.postal}/name`), details.name)
       );
       toggleModal(ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME);
@@ -791,8 +853,8 @@ function Admin({ user }: adminProps) {
         `congregations/${code}/territories/${selectedTerritoryCode}`
       );
       const oldTerritoryData = await get(oldCodeRef);
-      await pollingFunction(() => set(newCodeRef, oldTerritoryData.val()));
-      await pollingFunction(() => remove(oldCodeRef));
+      await pollingVoidFunction(() => set(newCodeRef, oldTerritoryData.val()));
+      await pollingVoidFunction(() => remove(oldCodeRef));
       toggleModal(ADMIN_MODAL_TYPES.UPDATE_TERRITORY_CODE);
       processSelectedTerritory(newTerritoryCode);
     } catch (error) {
@@ -802,7 +864,7 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const handleClickChangePostal = (postalcode: String) => {
+  const handleClickChangePostal = (postalcode: string) => {
     setValues({ ...values, postal: postalcode, newPostal: "" });
     toggleModal(ADMIN_MODAL_TYPES.UPDATE_POSTAL);
   };
@@ -821,8 +883,8 @@ function Admin({ user }: adminProps) {
         return;
       }
       const oldPostalData = await get(ref(database, oldPostalCode));
-      await pollingFunction(() => set(newPostalRef, oldPostalData.val()));
-      await pollingFunction(() =>
+      await pollingVoidFunction(() => set(newPostalRef, oldPostalData.val()));
+      await pollingVoidFunction(() =>
         set(
           push(
             ref(
@@ -833,7 +895,7 @@ function Admin({ user }: adminProps) {
           newPostalCode
         )
       );
-      await pollingFunction(() => deleteBlock(oldPostalCode, "", false));
+      await pollingVoidFunction(() => deleteBlock(oldPostalCode, "", false));
       await toggleModal(ADMIN_MODAL_TYPES.UPDATE_POSTAL);
     } catch (error) {
       errorHandler(error, rollbar);
@@ -842,14 +904,14 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const refreshCongregationTerritory = async (selectTerritoryCode: String) => {
+  const refreshCongregationTerritory = async (selectTerritoryCode: string) => {
     if (!selectTerritoryCode) return;
     processSelectedTerritory(selectTerritoryCode);
   };
 
   const processPostalUnitNumber = async (
-    postalCode: String,
-    unitNumber: String,
+    postalCode: string,
+    unitNumber: string,
     isDelete = false
   ) => {
     const blockAddresses = addressData.get(`${postalCode}`);
@@ -872,7 +934,7 @@ function Admin({ user }: adminProps) {
     const lastSequenceNo = blockAddresses.floors[0].units.length + 1;
     for (const index in blockAddresses.floors) {
       const floorDetails = blockAddresses.floors[index];
-      floorDetails.units.forEach((_) => {
+      floorDetails.units.forEach(() => {
         unitUpdates[
           `/${postalCode}/units/${floorDetails.floor}/${unitNumber}`
         ] = isDelete
@@ -890,7 +952,7 @@ function Admin({ user }: adminProps) {
     }
     setIsSaving(true);
     try {
-      await pollingFunction(() => update(ref(database), unitUpdates));
+      await pollingVoidFunction(() => update(ref(database), unitUpdates));
     } catch (error) {
       errorHandler(error, rollbar);
     } finally {
@@ -899,8 +961,8 @@ function Admin({ user }: adminProps) {
   };
 
   const processPostalUnitSequence = async (
-    postalCode: String,
-    unitNumber: String,
+    postalCode: string,
+    unitNumber: string,
     sequence: number | undefined
   ) => {
     const blockAddresses = addressData.get(`${postalCode}`);
@@ -909,7 +971,7 @@ function Admin({ user }: adminProps) {
     const unitUpdates: unitMaps = {};
     for (const index in blockAddresses.floors) {
       const floorDetails = blockAddresses.floors[index];
-      floorDetails.units.forEach((_) => {
+      floorDetails.units.forEach(() => {
         unitUpdates[
           `/${postalCode}/units/${floorDetails.floor}/${unitNumber}/sequence`
         ] = sequence === undefined ? {} : sequence;
@@ -917,7 +979,7 @@ function Admin({ user }: adminProps) {
     }
     setIsSaving(true);
     try {
-      await pollingFunction(() => update(ref(database), unitUpdates));
+      await pollingVoidFunction(() => update(ref(database), unitUpdates));
     } catch (error) {
       errorHandler(error, rollbar);
     } finally {
@@ -953,7 +1015,7 @@ function Admin({ user }: adminProps) {
     const details = values as valuesDetails;
     const newPostalCode = details.newPostal || "";
     const noOfFloors = details.floors || 1;
-    const unitSequence = details.units;
+    const unitSequence = details.units || "";
     const newPostalName = details.name;
     const addressType = Number(details.type);
 
@@ -961,14 +1023,20 @@ function Admin({ user }: adminProps) {
       alert("Invalid postal code");
       return;
     }
-    // Add empty details for 0 floor
-    let floorDetails = [{}];
-    const units = unitSequence?.split(",");
 
+    if (!isValidPostalSequence(unitSequence, addressType)) {
+      alert("Invalid sequence");
+      return;
+    }
+
+    // Add empty details for 0 floor
+    const floorDetails = [{}];
+    const units = unitSequence.split(",");
     for (let i = 0; i < noOfFloors; i++) {
-      const floorMap = {} as any;
-      units?.forEach((unitNo, index) => {
+      const floorMap = {} as unitMaps;
+      units.forEach((unitNo, index) => {
         const processedUnitNumber = processPropertyNumber(unitNo, addressType);
+        if (!processedUnitNumber) return;
         floorMap[processedUnitNumber] = {
           status: STATUS_CODES.DEFAULT,
           type: HOUSEHOLD_TYPES.CHINESE,
@@ -989,7 +1057,7 @@ function Admin({ user }: adminProps) {
         alert(`Postal address, ${newPostalCode} already exist.`);
         return;
       }
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         set(
           push(
             ref(
@@ -1000,7 +1068,7 @@ function Admin({ user }: adminProps) {
           newPostalCode
         )
       );
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         set(addressReference, {
           name: newPostalName,
           feedback: "",
@@ -1037,14 +1105,14 @@ function Admin({ user }: adminProps) {
         ref(database),
         `congregations/${code}/territories/${newTerritoryCode}`
       );
-      const existingTerritory = await pollingFunction(() =>
+      const existingTerritory = await pollingQueryFunction(() =>
         get(territoryCodeReference)
       );
       if (existingTerritory.exists()) {
         alert(`Territory code, ${newTerritoryCode} already exist.`);
         return;
       }
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         set(territoryCodeReference, {
           name: newTerritoryName
         })
@@ -1062,14 +1130,17 @@ function Admin({ user }: adminProps) {
     event.preventDefault();
     const details = values as valuesDetails;
     const link = details.link || "";
+    setIsSaving(true);
     try {
       const linkId = link.substring(link.lastIndexOf("/") + 1);
-      await pollingFunction(() => remove(ref(database, `links/${linkId}`)));
+      await pollingVoidFunction(() => remove(ref(database, `links/${linkId}`)));
       rollbar.info(`Publisher slip has been revoked! Link: ${link}`);
       alert(`Revoked territory link token, ${linkId}.`);
     } catch (error) {
       errorHandler(error, rollbar);
       return;
+    } finally {
+      setIsSaving(false);
     }
     toggleModal(ADMIN_MODAL_TYPES.LINK);
   };
@@ -1103,8 +1174,8 @@ function Admin({ user }: adminProps) {
 
   const shareTimedLink = async (
     linktype: number,
-    postalcode: String,
-    linkId: String,
+    postalcode: string,
+    linkId: string,
     title: string,
     body: string,
     url: string,
@@ -1136,11 +1207,13 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const processCongregationTerritories = (data: any) => {
+  const processCongregationTerritories = (snapshot: DataSnapshot) => {
+    if (!snapshot) return;
+    const data = snapshot.val();
     if (!data) return;
     document.title = `${data["name"]}`;
     const congregationTerritories = data["territories"];
-    const territoryList = new Map<String, territoryDetails>();
+    const territoryList = new Map<string, territoryDetails>();
     for (const territory in congregationTerritories) {
       const name = congregationTerritories[territory]["name"];
       const addresses = congregationTerritories[territory]["addresses"];
@@ -1166,23 +1239,40 @@ function Admin({ user }: adminProps) {
 
   /* Special logic to handle cases where device navigator.share 
   does not return a callback after a successful share. */
-  const specialShareTimedLink = (
+  const specialShareTimedLink = async (
     linktype: number,
-    postalcode: String,
-    name: String,
-    linkId: String,
+    postalcode: string,
+    name: string,
+    linkId: string,
     hours = DEFAULT_SELF_DESTRUCT_HOURS
   ) => {
     if (navigator.share) {
+      if (linktype === LINK_TYPES.PERSONAL) {
+        setIsSettingPersonalLink(true);
+        try {
+          await setTimedLink(linktype, postalcode, linkId, hours);
+          await navigator.share({
+            title: `Units for ${name}`,
+            text: assignmentMessage(name),
+            url: `${domain}/${postalcode}/${code}/${linkId}`
+          });
+        } finally {
+          setIsSettingAssignLink(false);
+          setIsSettingPersonalLink(false);
+          setSelectedPostal("");
+          setAccordionKeys((existingKeys) =>
+            existingKeys.filter((key) => key !== postalcode)
+          );
+        }
+        return;
+      }
       confirmAlert({
         customUI: ({ onClose }) => {
           return (
             <Container>
               <Card bg="Light" className="text-center">
                 <Card.Header>
-                  Confirmation on{" "}
-                  {linktype === LINK_TYPES.PERSONAL ? "personal " : " "}
-                  assignment for {name} ✅
+                  Confirmation on assignment for {name} ✅
                 </Card.Header>
                 <Card.Body>
                   <Card.Title>Do you want to proceed ?</Card.Title>
@@ -1192,10 +1282,7 @@ function Admin({ user }: adminProps) {
                     onClick={async () => {
                       onClose();
                       setSelectedPostal(postalcode);
-                      if (linktype === LINK_TYPES.ASSIGNMENT)
-                        setIsSettingAssignLink(true);
-                      if (linktype === LINK_TYPES.PERSONAL)
-                        setIsSettingPersonalLink(true);
+                      setIsSettingAssignLink(true);
                       await setTimedLink(linktype, postalcode, linkId, hours);
 
                       try {
@@ -1237,7 +1324,7 @@ function Admin({ user }: adminProps) {
   };
 
   const handleTerritorySelect = useCallback(
-    (eventKey: string | null, _: SyntheticEvent<unknown, Event>) => {
+    (eventKey: string | null) => {
       processSelectedTerritory(`${eventKey}`);
       toggleTerritoryListing();
     },
@@ -1251,13 +1338,10 @@ function Admin({ user }: adminProps) {
   }, [showTerritoryListing]);
 
   const handleAddressTerritorySelect = useCallback(
-    async (
-      newTerritoryCode: string | null,
-      _: SyntheticEvent<unknown, Event>
-    ) => {
+    async (newTerritoryCode: string | null) => {
       const details = values as valuesDetails;
       const selectedPostalcode = `${details.postal}`;
-      await pollingFunction(() =>
+      await pollingVoidFunction(() =>
         set(
           push(
             ref(
@@ -1292,14 +1376,14 @@ function Admin({ user }: adminProps) {
   );
 
   const getTerritoryAddressData = (
-    addresses: Map<String, addressDetails>,
+    addresses: Map<string, addressDetails>,
     policy: Policy
   ) => {
-    let unitLengths = new Map();
-    let completedPercents = new Map();
+    const unitLengths = new Map();
+    const completedPercents = new Map();
     let totalPercent = 0;
 
-    addresses.forEach((address, _) => {
+    addresses.forEach((address) => {
       const postalCode = address.postalcode;
       const maxUnitNumberLength = getMaxUnitLength(address.floors);
       const completedPercent = getCompletedPercent(policy, address.floors);
@@ -1366,7 +1450,7 @@ function Admin({ user }: adminProps) {
         clearInterval(pollerId);
         setIsLoading(false);
         if (snapshot.exists()) {
-          processCongregationTerritories(snapshot.val());
+          processCongregationTerritories(snapshot);
         }
       },
       (reason) => {
@@ -1770,86 +1854,38 @@ function Admin({ user }: adminProps) {
                           }
                           userPermission={userAccessLevel}
                         >
-                          <DropdownButton
+                          <Button
                             key={`assigndrop-${currentPostalcode}`}
-                            className="dropdown-btn"
                             size="sm"
                             variant="outline-primary"
-                            title={
-                              <>
-                                {isSettingPersonalLink &&
-                                  selectedPostal === currentPostalcode && (
-                                    <>
-                                      <Spinner
-                                        as="span"
-                                        animation="border"
-                                        size="sm"
-                                        aria-hidden="true"
-                                      />{" "}
-                                    </>
-                                  )}
-                                {addressElement.personalCount > 0 && (
-                                  <>
-                                    <Badge bg="danger">
-                                      {`${addressElement.personalCount}`}
-                                    </Badge>{" "}
-                                  </>
-                                )}
-                                Personal
-                              </>
+                            onClick={() =>
+                              handleClickPersonalSlip(
+                                currentPostalcode,
+                                currentPostalname,
+                                addressLinkId
+                              )
                             }
                           >
-                            <Dropdown.Item
-                              onClick={() => {
-                                if (isSpecialDevice) {
-                                  specialShareTimedLink(
-                                    LINK_TYPES.PERSONAL,
-                                    currentPostalcode,
-                                    currentPostalname,
-                                    addressLinkId,
-                                    ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS
-                                  );
-                                  return;
-                                }
-                                shareTimedLink(
-                                  LINK_TYPES.PERSONAL,
-                                  currentPostalcode,
-                                  addressLinkId,
-                                  `Units for ${currentPostalname}`,
-                                  assignmentMessage(currentPostalname),
-                                  `${domain}/${currentPostalcode}/${code}/${addressLinkId}`,
-                                  ONE_WK_PERSONAL_SLIP_DESTRUCT_HOURS
-                                );
-                              }}
-                            >
-                              One-week
-                            </Dropdown.Item>
-                            <Dropdown.Item
-                              onClick={() => {
-                                if (isSpecialDevice) {
-                                  specialShareTimedLink(
-                                    LINK_TYPES.PERSONAL,
-                                    currentPostalcode,
-                                    currentPostalname,
-                                    addressLinkId,
-                                    FOUR_WKS_PERSONAL_SLIP_DESTRUCT_HOURS
-                                  );
-                                  return;
-                                }
-                                shareTimedLink(
-                                  LINK_TYPES.PERSONAL,
-                                  currentPostalcode,
-                                  addressLinkId,
-                                  `Units for ${currentPostalname}`,
-                                  assignmentMessage(currentPostalname),
-                                  `${domain}/${currentPostalcode}/${code}/${addressLinkId}`,
-                                  FOUR_WKS_PERSONAL_SLIP_DESTRUCT_HOURS
-                                );
-                              }}
-                            >
-                              One-month
-                            </Dropdown.Item>
-                          </DropdownButton>
+                            {isSettingPersonalLink &&
+                              selectedPostal === currentPostalcode && (
+                                <>
+                                  <Spinner
+                                    as="span"
+                                    animation="border"
+                                    size="sm"
+                                    aria-hidden="true"
+                                  />{" "}
+                                </>
+                              )}
+                            {addressElement.personalCount > 0 && (
+                              <>
+                                <Badge bg="danger">
+                                  {`${addressElement.personalCount}`}
+                                </Badge>{" "}
+                              </>
+                            )}
+                            Personal
+                          </Button>
                         </ComponentAuthorizer>
                         <ComponentAuthorizer
                           requiredPermission={USER_ACCESS_LEVELS.CONDUCTOR}
@@ -1860,7 +1896,7 @@ function Admin({ user }: adminProps) {
                               size="sm"
                               variant="outline-primary"
                               className="m-1"
-                              onClick={(_) => {
+                              onClick={() => {
                                 if (isSpecialDevice) {
                                   specialShareTimedLink(
                                     LINK_TYPES.ASSIGNMENT,
@@ -1918,7 +1954,9 @@ function Admin({ user }: adminProps) {
                                     addressLinkId,
                                     defaultExpiryHours
                                   );
-                                  territoryWindow!.location.href = `${domain}/${currentPostalcode}/${code}/${addressLinkId}`;
+                                  if (territoryWindow) {
+                                    territoryWindow.location.href = `${domain}/${currentPostalcode}/${code}/${addressLinkId}`;
+                                  }
                                 } catch (error) {
                                   errorHandler(error, rollbar);
                                 } finally {
@@ -1944,7 +1982,7 @@ function Admin({ user }: adminProps) {
                           size="sm"
                           variant="outline-primary"
                           className="m-1"
-                          onClick={(e) => {
+                          onClick={() => {
                             window.open(
                               `http://maps.google.com.sg/maps?q=${zipcode}`
                             );
@@ -2223,7 +2261,7 @@ function Admin({ user }: adminProps) {
                         handleClickUpdateUnit(
                           currentPostalcode,
                           Number(length),
-                          Number(sequence),
+                          sequence === undefined ? undefined : Number(sequence),
                           unitno || "",
                           maxUnitNumberLength,
                           addressElement.type
@@ -2301,19 +2339,13 @@ function Admin({ user }: adminProps) {
                   required={true}
                 />
               </Modal.Body>
-              <Modal.Footer className="justify-content-around">
-                <Button
-                  variant="secondary"
-                  onClick={() =>
-                    toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY)
-                  }
-                >
-                  Close
-                </Button>
-                <Button type="submit" variant="primary">
-                  Save
-                </Button>
-              </Modal.Footer>
+              <ModalFooter
+                handleClick={() =>
+                  toggleModal(ADMIN_MODAL_TYPES.RENAME_TERRITORY)
+                }
+                userAccessLevel={userAccessLevel}
+                isSaving={isSaving}
+              />
             </Form>
           </Modal>
         )}
@@ -2351,9 +2383,7 @@ function Admin({ user }: adminProps) {
                 >
                   Paste Link
                 </Button>
-                <Button type="submit" variant="primary">
-                  Revoke
-                </Button>
+                <ModalSubmitButton isSaving={isSaving} btnLabel="Revoke" />
               </Modal.Footer>
             </Form>
           </Modal>
@@ -2387,19 +2417,14 @@ function Admin({ user }: adminProps) {
                   placeholder={"Territory code. For eg, M01, W12, etc."}
                 />
               </Modal.Body>
-              <Modal.Footer className="justify-content-around">
-                <Button
-                  variant="secondary"
-                  onClick={() =>
-                    toggleModal(ADMIN_MODAL_TYPES.UPDATE_TERRITORY_CODE)
-                  }
-                >
-                  Close
-                </Button>
-                <Button type="submit" variant="primary">
-                  Change
-                </Button>
-              </Modal.Footer>
+              <ModalFooter
+                handleClick={() =>
+                  toggleModal(ADMIN_MODAL_TYPES.UPDATE_TERRITORY_CODE)
+                }
+                userAccessLevel={userAccessLevel}
+                isSaving={isSaving}
+                submitLabel="Change"
+              />
             </Form>
           </Modal>
         )}
@@ -2433,17 +2458,12 @@ function Admin({ user }: adminProps) {
                   }
                 />
               </Modal.Body>
-              <Modal.Footer className="justify-content-around">
-                <Button
-                  variant="secondary"
-                  onClick={() => toggleModal(ADMIN_MODAL_TYPES.UPDATE_POSTAL)}
-                >
-                  Close
-                </Button>
-                <Button type="submit" variant="primary">
-                  Change
-                </Button>
-              </Modal.Footer>
+              <ModalFooter
+                handleClick={() => toggleModal(ADMIN_MODAL_TYPES.UPDATE_POSTAL)}
+                userAccessLevel={userAccessLevel}
+                isSaving={isSaving}
+                submitLabel="Change"
+              />
             </Form>
           </Modal>
         )}
@@ -2462,19 +2482,13 @@ function Admin({ user }: adminProps) {
                   required={true}
                 />
               </Modal.Body>
-              <Modal.Footer className="justify-content-around">
-                <Button
-                  variant="secondary"
-                  onClick={() =>
-                    toggleModal(ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME)
-                  }
-                >
-                  Close
-                </Button>
-                <Button type="submit" variant="primary">
-                  Save
-                </Button>
-              </Modal.Footer>
+              <ModalFooter
+                handleClick={() =>
+                  toggleModal(ADMIN_MODAL_TYPES.RENAME_ADDRESS_NAME)
+                }
+                userAccessLevel={userAccessLevel}
+                isSaving={isSaving}
+              />
             </Form>
           </Modal>
         )}
@@ -2507,19 +2521,13 @@ function Admin({ user }: adminProps) {
                   }
                 />
               </Modal.Body>
-              <Modal.Footer className="justify-content-around">
-                <Button
-                  variant="secondary"
-                  onClick={() =>
-                    toggleModal(ADMIN_MODAL_TYPES.CREATE_TERRITORY)
-                  }
-                >
-                  Close
-                </Button>
-                <Button type="submit" variant="primary">
-                  Save
-                </Button>
-              </Modal.Footer>
+              <ModalFooter
+                handleClick={() =>
+                  toggleModal(ADMIN_MODAL_TYPES.CREATE_TERRITORY)
+                }
+                userAccessLevel={userAccessLevel}
+                isSaving={isSaving}
+              />
             </Form>
           </Modal>
         )}
@@ -2576,19 +2584,13 @@ function Admin({ user }: adminProps) {
                   required={true}
                 />
               </Modal.Body>
-              <Modal.Footer className="justify-content-around">
-                <Button
-                  variant="secondary"
-                  onClick={() =>
-                    toggleModal(ADMIN_MODAL_TYPES.CREATE_PUBLIC_ADDRESS)
-                  }
-                >
-                  Close
-                </Button>
-                <Button type="submit" variant="primary">
-                  Save
-                </Button>
-              </Modal.Footer>
+              <ModalFooter
+                handleClick={() =>
+                  toggleModal(ADMIN_MODAL_TYPES.CREATE_PUBLIC_ADDRESS)
+                }
+                userAccessLevel={userAccessLevel}
+                isSaving={isSaving}
+              />
             </Form>
           </Modal>
         )}
@@ -2634,19 +2636,13 @@ function Admin({ user }: adminProps) {
                   required={true}
                 />
               </Modal.Body>
-              <Modal.Footer className="justify-content-around">
-                <Button
-                  variant="secondary"
-                  onClick={() =>
-                    toggleModal(ADMIN_MODAL_TYPES.CREATE_PRIVATE_ADDRESS)
-                  }
-                >
-                  Close
-                </Button>
-                <Button type="submit" variant="primary">
-                  Save
-                </Button>
-              </Modal.Footer>
+              <ModalFooter
+                handleClick={() =>
+                  toggleModal(ADMIN_MODAL_TYPES.CREATE_PRIVATE_ADDRESS)
+                }
+                userAccessLevel={userAccessLevel}
+                isSaving={isSaving}
+              />
             </Form>
           </Modal>
         )}
@@ -2685,17 +2681,11 @@ function Admin({ user }: adminProps) {
                   required={true}
                 />
               </Modal.Body>
-              <Modal.Footer className="justify-content-around">
-                <Button
-                  variant="secondary"
-                  onClick={() => toggleModal(ADMIN_MODAL_TYPES.ADD_UNIT)}
-                >
-                  Close
-                </Button>
-                <Button type="submit" variant="primary">
-                  Save
-                </Button>
-              </Modal.Footer>
+              <ModalFooter
+                handleClick={() => toggleModal(ADMIN_MODAL_TYPES.ADD_UNIT)}
+                userAccessLevel={userAccessLevel}
+                isSaving={isSaving}
+              />
             </Form>
           </Modal>
         )}
@@ -2783,9 +2773,7 @@ function Admin({ user }: adminProps) {
                 >
                   Delete Unit
                 </Button>
-                <Button type="submit" variant="primary">
-                  Save
-                </Button>
+                <ModalSubmitButton isSaving={isSaving} />
               </Modal.Footer>
             </Form>
           </Modal>
@@ -2824,7 +2812,7 @@ function Admin({ user }: adminProps) {
           <Form onSubmit={handleSubmitClick}>
             <Modal.Body>
               <HHStatusField
-                handleGroupChange={(toggleValue, _) => {
+                handleGroupChange={(toggleValue) => {
                   let dnctime = null;
                   setIsNotHome(false);
                   setIsDnc(false);
@@ -2857,7 +2845,7 @@ function Admin({ user }: adminProps) {
                 <div className="text-center">
                   <HHNotHomeField
                     changeValue={`${(values as valuesDetails).nhcount}`}
-                    handleGroupChange={(toggleValue, _) => {
+                    handleGroupChange={(toggleValue) => {
                       setValues({ ...values, nhcount: toggleValue });
                     }}
                   />
@@ -3079,29 +3067,12 @@ function Admin({ user }: adminProps) {
                 onChange={(isValid) => setIsChangePasswordOk(isValid)}
               />
             </Modal.Body>
-            <Modal.Footer className="justify-content-around">
-              <Button
-                variant="secondary"
-                onClick={() => toggleModal(ADMIN_MODAL_TYPES.CHANGE_PASSWORD)}
-              >
-                Close
-              </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={!isChangePasswordOk}
-              >
-                {isSaving && (
-                  <Spinner
-                    as="span"
-                    animation="border"
-                    size="sm"
-                    aria-hidden="true"
-                  />
-                )}{" "}
-                Save
-              </Button>
-            </Modal.Footer>
+            <ModalFooter
+              handleClick={() => toggleModal(ADMIN_MODAL_TYPES.CHANGE_PASSWORD)}
+              userAccessLevel={userAccessLevel}
+              isSaving={isSaving}
+              disableSubmitBtn={!isChangePasswordOk}
+            />
           </Form>
         </Modal>
         <Modal show={isInstructions}>
@@ -3127,6 +3098,36 @@ function Admin({ user }: adminProps) {
               userAccessLevel={userAccessLevel}
               requiredAcLForSave={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
               isSaving={isSaving}
+            />
+          </Form>
+        </Modal>
+        <Modal show={isPersonalSlip}>
+          <Modal.Header>
+            <Modal.Title>{`Select personal slip expiry date for ${
+              (values as valuesDetails).name
+            }`}</Modal.Title>
+          </Modal.Header>
+          <Form onSubmit={handleSubmitPersonalSlip}>
+            <Modal.Body>
+              <Calendar
+                //Block selection for current day and days before.
+                minDate={new Date(Date.now() + 3600 * 1000 * 24)}
+                onChange={(selectedDate: Date) => {
+                  const expiryInHours = Math.floor(
+                    (selectedDate.getTime() - new Date().getTime()) /
+                      (1000 * 60 * 60)
+                  );
+                  setValues({ ...values, linkExpiryHrs: expiryInHours });
+                }}
+                className="w-100 mb-1"
+              />
+            </Modal.Body>
+            <ModalFooter
+              handleClick={() => toggleModal(ADMIN_MODAL_TYPES.PERSONAL_SLIP)}
+              userAccessLevel={userAccessLevel}
+              requiredAcLForSave={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
+              isSaving={isSaving}
+              submitLabel="Assign"
             />
           </Form>
         </Modal>

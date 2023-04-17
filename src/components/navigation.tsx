@@ -20,7 +20,8 @@ import {
   AuthorizerProp,
   territoryHeaderProp,
   backToTopProp,
-  SignInDifferentProps
+  SignInDifferentProps,
+  VerificationProps
 } from "../utils/interface";
 import Countdown from "react-countdown";
 import { memo } from "react";
@@ -143,7 +144,7 @@ const Legend = memo(({ showLegend, hideFunction }: LegendProps) => {
             </tr>
             <tr>
               <td className="text-center align-middle">✖️</td>
-              <td>Unit doesn't exist for some reason.</td>
+              <td>Unit doesn&#39;t exist for some reason.</td>
             </tr>
             <tr>
               <td className="text-center align-middle">🗒️</td>
@@ -278,7 +279,11 @@ const UnauthorizedPage = ({ handleClick, name }: SignInDifferentProps) => (
   </Container>
 );
 
-const VerificationPage = ({ handleClick, name }: SignInDifferentProps) => (
+const VerificationPage = ({
+  handleClick,
+  handleResendMail,
+  name
+}: VerificationProps) => (
   <Container className="container-main">
     <Fade appear={true} in={true}>
       <Card className="card-main">
@@ -293,7 +298,17 @@ const VerificationPage = ({ handleClick, name }: SignInDifferentProps) => (
             proceeding 🪪
           </Card.Title>
         </Card.Body>
-        <UseAnotherButton handleClick={handleClick} />
+        <>
+          <span
+            className="resend-text fluid-branding"
+            onClick={handleResendMail}
+          >
+            Didn&#39;t receive verification email?
+          </span>
+        </>
+        <>
+          <UseAnotherButton handleClick={handleClick} />
+        </>
       </Card>
     </Fade>
   </Container>

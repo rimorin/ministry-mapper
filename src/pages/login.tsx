@@ -130,7 +130,7 @@ const Login = () => {
                   className="mx-2"
                   variant="outline-primary"
                   type="reset"
-                  onClick={(e) => {
+                  onClick={() => {
                     setLoginPassword("");
                     setLoginEmail("");
                     setValidated(false);
