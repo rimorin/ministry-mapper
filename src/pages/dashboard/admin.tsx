@@ -45,6 +45,7 @@ import { database, auth } from "../../firebase";
 import {
   Policy,
   valuesDetails,
+  floorDetails,
   territoryDetails,
   addressDetails,
   adminProps,
@@ -516,6 +517,7 @@ function Admin({ user }: adminProps) {
     _: MouseEvent<HTMLElement>,
     postal: string,
     floor: string,
+    floors: Array<floorDetails>,
     unit: string,
     type: string,
     note: string,
@@ -528,11 +530,21 @@ function Admin({ user }: adminProps) {
     name: string,
     territoryType = TERRITORY_TYPES.PUBLIC
   ) => {
+    const floorUnits = floors.find((e) => e.floor === floor);
+    const unitDetails = floorUnits?.units.find((e) => e.number === unit);
     setValues({
       ...values,
       floor: floor,
       floorDisplay: ZeroPad(floor, DEFAULT_FLOOR_PADDING),
       unit: unit,
+      propertyPostal:
+        unitDetails?.propertyPostal === undefined
+          ? ""
+          : unitDetails?.propertyPostal,
+      newPropertyPostal:
+        unitDetails?.newPropertyPostal === undefined
+          ? ""
+          : unitDetails?.newPropertyPostal,
       unitDisplay: ZeroPad(unit, maxUnitNumber),
       type: type,
       note: note,
@@ -561,6 +573,7 @@ function Admin({ user }: adminProps) {
       languages: string | undefined;
       dnctime: number | undefined;
       sequence?: number;
+      x_zip?: string;
     } = {
       type: details.type,
       note: details.note,
@@ -570,12 +583,17 @@ function Admin({ user }: adminProps) {
       dnctime: details.dnctime
     };
     // Include sequence update value only when administering private territories
-    if (
+    const administeringPrivate =
       details.territoryType === TERRITORY_TYPES.PRIVATE &&
-      userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT &&
-      details.sequence
-    ) {
+      userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT;
+    if (administeringPrivate && details.sequence) {
       updateData.sequence = Number(details.sequence);
+    }
+    if (
+      administeringPrivate &&
+      details.propertyPostal !== details.newPropertyPostal
+    ) {
+      updateData.x_zip = details.newPropertyPostal;
     }
     setIsSaving(true);
     try {
@@ -2219,6 +2237,7 @@ function Admin({ user }: adminProps) {
                           event,
                           currentPostalcode,
                           floor || "",
+                          addressElement.floors,
                           unitno || "",
                           hhtype || "",
                           hhnote || "",
@@ -2784,6 +2803,7 @@ function Admin({ user }: adminProps) {
         <Modal show={isOpen}>
           <ModalUnitTitle
             unit={`${(values as valuesDetails).unitDisplay}`}
+            propertyPostal={`${(values as valuesDetails).propertyPostal}`}
             floor={`${(values as valuesDetails).floorDisplay}`}
             postal={(values as valuesDetails).postal}
             type={(values as valuesDetails).territoryType}
@@ -2858,17 +2878,30 @@ function Admin({ user }: adminProps) {
                   requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
                   userPermission={userAccessLevel}
                 >
-                  <GenericInputField
-                    inputType="number"
-                    label="Territory Sequence"
-                    name="sequence"
-                    handleChange={onFormChange}
-                    changeValue={`${(values as valuesDetails).sequence}`}
-                  />
+                  <>
+                    <GenericInputField
+                      inputType="number"
+                      label="Territory Sequence"
+                      name="sequence"
+                      handleChange={onFormChange}
+                      changeValue={`${(values as valuesDetails).sequence}`}
+                    />
+                    <GenericInputField
+                      inputType="string"
+                      label="Property Postal"
+                      name="newPropertyPostal"
+                      placeholder="Optional postal code for direction to this property"
+                      handleChange={onFormChange}
+                      changeValue={`${
+                        (values as valuesDetails).newPropertyPostal
+                      }`}
+                    />
+                  </>
                 </ComponentAuthorizer>
               )}
             </Modal.Body>
             <ModalFooter
+              propertyPostal={`${(values as valuesDetails).propertyPostal}`}
               handleClick={() => toggleModal(ADMIN_MODAL_TYPES.UNIT)}
               isSaving={isSaving}
               userAccessLevel={userAccessLevel}

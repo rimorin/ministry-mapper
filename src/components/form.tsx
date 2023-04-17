@@ -32,6 +32,7 @@ import {
 import { ComponentAuthorizer } from "./navigation";
 
 const ModalFooter = ({
+  propertyPostal,
   handleClick,
   handleDelete,
   type,
@@ -42,17 +43,33 @@ const ModalFooter = ({
   submitLabel = "Save",
   disableSubmitBtn = false
 }: FooterProps) => {
+  const encodedPropertyPostal = encodeURIComponent(propertyPostal as string);
   return (
     <Modal.Footer className="justify-content-around">
       {type && type === TERRITORY_TYPES.PRIVATE ? (
-        <ComponentAuthorizer
-          requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
-          userPermission={userAccessLevel}
-        >
-          <Button variant="secondary" onClick={handleDelete}>
-            Delete Property
-          </Button>
-        </ComponentAuthorizer>
+        <>
+          <ComponentAuthorizer
+            requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
+            userPermission={userAccessLevel}
+          >
+            <Button variant="secondary" onClick={handleDelete}>
+              Delete Property
+            </Button>
+          </ComponentAuthorizer>
+          {propertyPostal !== "" && (
+            <Button
+              variant="secondary"
+              onClick={() => {
+                window.open(
+                  `http://maps.google.com.sg/maps?q=${encodedPropertyPostal}`,
+                  "_blank"
+                );
+              }}
+            >
+              Direction
+            </Button>
+          )}
+        </>
       ) : (
         <></>
       )}
@@ -388,7 +405,14 @@ const DncDateField = ({ handleDateChange, changeDate }: FormProps) => {
   );
 };
 
-const ModalUnitTitle = ({ unit, floor, postal, name, type }: TitleProps) => {
+const ModalUnitTitle = ({
+  unit,
+  propertyPostal,
+  floor,
+  postal,
+  name,
+  type
+}: TitleProps) => {
   let titleString = `# ${floor} - ${unit}`;
 
   if (postal) {
@@ -397,6 +421,9 @@ const ModalUnitTitle = ({ unit, floor, postal, name, type }: TitleProps) => {
 
   if (type === TERRITORY_TYPES.PRIVATE) {
     titleString = `${unit}, ${name}`;
+    if (propertyPostal !== "") {
+      titleString = `${titleString}, ${propertyPostal}`;
+    }
   }
   return (
     <Modal.Header>

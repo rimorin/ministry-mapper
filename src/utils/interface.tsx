@@ -9,6 +9,8 @@ export interface unitDetails {
   languages: string;
   dnctime: number;
   sequence?: number;
+  propertyPostal?: string;
+  newPropertyPostal?: string;
 }
 
 export interface nothomeProps {
@@ -55,6 +57,8 @@ export interface valuesDetails {
   territoryType?: number;
   password?: string;
   cpassword?: string;
+  propertyPostal?: string;
+  newPropertyPostal?: string;
   instructions?: string;
   linkid?: string;
   linkExpiryHrs?: number;
@@ -115,6 +119,7 @@ export interface TitleProps {
   postal?: string;
   type?: number;
   name: string;
+  propertyPostal?: string;
 }
 
 export interface BrandingProps {
@@ -126,6 +131,7 @@ export interface FooterProps {
   disableSubmitBtn?: boolean;
   userAccessLevel?: number;
   type?: number;
+  propertyPostal?: string;
   requiredAcLForSave?: number;
   submitLabel?: string;
   handleClick?: (event: React.MouseEvent<HTMLElement>) => void;

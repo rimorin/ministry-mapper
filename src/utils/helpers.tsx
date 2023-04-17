@@ -175,6 +175,8 @@ const processAddressData = async (postal: string, data: any) => {
       const unitValues = element.val();
       const unitNumber = element.key || "";
       unitsDetails.push({
+        propertyPostal: unitValues.x_zip,
+        newPropertyPostal: unitValues.x_zip,
         number: unitNumber,
         note: unitValues.note,
         type: unitValues.type || "",
