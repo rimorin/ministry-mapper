@@ -1,3 +1,19 @@
+# [1.13.0](https://github.com/rimorin/ministry-mapper/compare/v1.12.0...v1.13.0) (2023-04-17)
+
+
+### Bug Fixes
+
+* add merged file interface.tsx ([1ef1b3b](https://github.com/rimorin/ministry-mapper/commit/1ef1b3b0e5c782139a6650cfba8d939b79a3b6f0))
+* **admin/user:** change directions from hyperlink to button ([47f5391](https://github.com/rimorin/ministry-mapper/commit/47f5391520527d96d1140af13decda542351f0b7))
+* **admin:** add placeholder optional for unitPostal ([dbb42a4](https://github.com/rimorin/ministry-mapper/commit/dbb42a440d5c6bc79a40a744b1cca878eb6e6d43))
+* unit postal is now property postal ([e43c5b0](https://github.com/rimorin/ministry-mapper/commit/e43c5b015c1edfaff3abede768f4ece7dfe3019f))
+
+
+### Features
+
+* display environment when environment name does not begin with production ([5f3adb2](https://github.com/rimorin/ministry-mapper/commit/5f3adb2797448e203e4bfd8a72b81433a77293b7))
+* individual postal code for houses ([82e367d](https://github.com/rimorin/ministry-mapper/commit/82e367da9c920d243bce172bfef43992c783eb8f))
+
 # [1.12.0](https://github.com/rimorin/ministry-mapper/compare/v1.11.0...v1.12.0) (2023-04-14)
 
 ### Bug Fixes
