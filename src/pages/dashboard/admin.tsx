@@ -759,7 +759,8 @@ function Admin({ user }: adminProps) {
       ...values,
       linkid: linkid,
       postal: postalcode,
-      name: name
+      name: name,
+      linkExpiryHrs: undefined
     });
     toggleModal(ADMIN_MODAL_TYPES.PERSONAL_SLIP);
   };
