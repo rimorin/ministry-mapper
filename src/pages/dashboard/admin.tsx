@@ -1149,6 +1149,14 @@ function Admin({ user }: adminProps) {
     const link = details.link || "";
     setIsSaving(true);
     try {
+      new URL(link);
+    } catch (err) {
+      alert(`Invalid territory slip link.`);
+      return;
+    } finally {
+      setIsSaving(false);
+    }
+    try {
       const linkId = link.substring(link.lastIndexOf("/") + 1);
       await pollingVoidFunction(() => remove(ref(database, `links/${linkId}`)));
       rollbar.info(`Publisher slip has been revoked! Link: ${link}`);
