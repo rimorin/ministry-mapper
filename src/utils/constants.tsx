@@ -57,7 +57,8 @@ const ADMIN_MODAL_TYPES = {
   CREATE_PRIVATE_ADDRESS: 12,
   CHANGE_PASSWORD: 13,
   INSTRUCTIONS: 14,
-  PERSONAL_SLIP: 15
+  PERSONAL_SLIP: 15,
+  ASSIGNMENTS: 16
 };
 
 const LINK_TYPES = {
@@ -91,6 +92,7 @@ const MIN_START_FLOOR = 1;
 const MAX_TOP_FLOOR = 40;
 
 const TERRITORY_SELECTOR_VIEWPORT_HEIGHT = "75vh";
+const LINK_SELECTOR_VIEWPORT_HEIGHT = "40vh";
 
 const TERRITORY_VIEW_WINDOW_WELCOME_TEXT =
   "<!DOCTYPE html><html><head><title>Loading Territory...</title></<head><body><style> body {display: flex; justify-content: center;align-items: center;}</style><h1>Loading Territory...</h1></body></html>";
@@ -168,5 +170,6 @@ export {
   PASSWORD_POLICY,
   DEFAULT_CONGREGATION_MAX_TRIES,
   MINISTRY_MAPPER_INFORMATION_PAGE,
-  NUMERIC_CHARACTERS
+  NUMERIC_CHARACTERS,
+  LINK_SELECTOR_VIEWPORT_HEIGHT
 };

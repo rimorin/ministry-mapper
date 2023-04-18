@@ -290,6 +290,26 @@ const isValidPostalSequence = (
   return true;
 };
 
+const LinkTypeDescription = (linkType: number) => {
+  let linkDescription = "";
+  switch (linkType) {
+    case LINK_TYPES.PERSONAL:
+      linkDescription = "Personal";
+      break;
+    case LINK_TYPES.ASSIGNMENT:
+      linkDescription = "Assign";
+      break;
+    default:
+      linkDescription = "View";
+  }
+  return linkDescription;
+};
+
+const LinkDateFormatter = Intl.DateTimeFormat("en", {
+  timeStyle: "short",
+  dateStyle: "medium"
+});
+
 export {
   getLanguageDisplayByCode,
   ZeroPad,
@@ -312,5 +332,7 @@ export {
   processPropertyNumber,
   isValidPostal,
   SetPollerInterval,
-  isValidPostalSequence
+  isValidPostalSequence,
+  LinkTypeDescription,
+  LinkDateFormatter
 };

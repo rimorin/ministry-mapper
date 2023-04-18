@@ -62,9 +62,14 @@
 }
 
 @media screen and (max-width: 450px) {
-  .fluid-branding {
-    font-size: clamp(0.5rem, 3.2vw, 2rem);
+  .fluid-bolding {
     font-weight: bolder;
+  }
+}
+
+@media screen and (max-width: 450px) {
+  .fluid-text {
+    font-size: clamp(0.5rem, 3.2vw, 2rem);
   }
 }
 

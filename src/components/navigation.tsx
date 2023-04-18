@@ -86,7 +86,7 @@ const NavBarBranding = memo(({ naming }: BrandingProps) => {
         height="32"
         className="d-inline-block align-top"
       />{" "}
-      <Navbar.Text className="fluid-branding">{naming}</Navbar.Text>
+      <Navbar.Text className="fluid-bolding fluid-text">{naming}</Navbar.Text>
     </Navbar.Brand>
   );
 });
@@ -300,7 +300,7 @@ const VerificationPage = ({
         </Card.Body>
         <>
           <span
-            className="resend-text fluid-branding"
+            className="resend-text fluid-bolding fluid-text"
             onClick={handleResendMail}
           >
             Didn&#39;t receive verification email?

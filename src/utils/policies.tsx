@@ -1,5 +1,4 @@
 import { IdTokenResult } from "firebase/auth";
-import { DataSnapshot } from "firebase/database";
 import {
   NOT_HOME_STATUS_CODES,
   COUNTABLE_HOUSEHOLD_STATUS,
@@ -132,15 +131,29 @@ export class LinkSession {
   homeLanguage: string;
   maxTries: number;
   linkType: number;
-  constructor(snapshot?: DataSnapshot) {
+  userId: string;
+  congregation: string | undefined;
+  tokenCreatetime: number;
+  key: string;
+  name: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  constructor(linkData?: any, key?: string) {
     this.tokenEndtime = 0;
     this.postalCode = "";
     this.homeLanguage = HOUSEHOLD_LANGUAGES.ENGLISH.CODE;
     this.maxTries = DEFAULT_CONGREGATION_MAX_TRIES;
     this.linkType = LINK_TYPES.VIEW;
-    if (!snapshot) return;
-    const linkData = snapshot.val();
+    this.tokenCreatetime = new Date().getTime();
+    this.userId = "";
+    this.congregation = "";
+    this.key = "";
+    this.name = "";
     if (!linkData) return;
+    this.key = key || "";
+    this.userId = linkData.userId;
+    this.tokenCreatetime = linkData.tokenCreatetime;
+    this.congregation = linkData.congregation;
+    this.name = linkData.name;
     if (linkData.tokenEndtime === undefined) {
       this.tokenEndtime = linkData;
     } else {

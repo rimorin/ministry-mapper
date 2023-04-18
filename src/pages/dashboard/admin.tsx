@@ -11,7 +11,9 @@ import {
   query,
   orderByValue,
   off,
-  DataSnapshot
+  DataSnapshot,
+  orderByChild,
+  equalTo
 } from "firebase/database";
 import "../../css/admin.css";
 import { signOut, updatePassword, User } from "firebase/auth";
@@ -36,6 +38,7 @@ import {
   DropdownButton,
   Fade,
   Form,
+  ListGroup,
   Modal,
   Navbar,
   ProgressBar,
@@ -97,7 +100,9 @@ import {
   isValidPostal,
   SetPollerInterval,
   pollingQueryFunction,
-  isValidPostalSequence
+  isValidPostalSequence,
+  LinkTypeDescription,
+  LinkDateFormatter
 } from "../../utils/helpers";
 import {
   EnvironmentIndicator,
@@ -129,7 +134,8 @@ import {
   PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY,
   TERRITORY_TYPES,
   MINIMUM_PASSWORD_LENGTH,
-  PASSWORD_POLICY
+  PASSWORD_POLICY,
+  LINK_SELECTOR_VIEWPORT_HEIGHT
 } from "../../utils/constants";
 import Calendar from "react-calendar";
 function Admin({ user }: adminProps) {
@@ -190,6 +196,8 @@ function Admin({ user }: adminProps) {
   );
   const [isInstructions, setIsInstructions] = useState<boolean>(false);
   const [isPersonalSlip, setIsPersonalSlip] = useState<boolean>(false);
+  const [isAssignments, setIsAssignments] = useState<boolean>(false);
+  const [assignments, setAssignments] = useState<Array<LinkSession>>([]);
   const domain = process.env.PUBLIC_URL;
   const rollbar = useRollbar();
   let unsubscribers = new Array<Unsubscribe>();
@@ -508,6 +516,9 @@ function Admin({ user }: adminProps) {
       case ADMIN_MODAL_TYPES.PERSONAL_SLIP:
         setIsPersonalSlip(!isPersonalSlip);
         break;
+      case ADMIN_MODAL_TYPES.ASSIGNMENTS:
+        setIsAssignments(!isAssignments);
+        break;
       default:
         setIsOpen(!isOpen);
     }
@@ -616,13 +627,14 @@ function Admin({ user }: adminProps) {
 
   const setTimedLink = (
     linktype: number,
-    postalcode: string,
+    postalCode: string,
+    postalName: string,
     addressLinkId: string,
     hours: number
   ) => {
     const link = new LinkSession();
     link.tokenEndtime = addHours(hours);
-    link.postalCode = postalcode as string;
+    link.postalCode = postalCode;
     link.linkType = linktype;
     let currentPolicy = policy;
     if (currentPolicy === undefined) {
@@ -630,6 +642,10 @@ function Admin({ user }: adminProps) {
     }
     link.homeLanguage = currentPolicy.getHomeLanguage();
     link.maxTries = currentPolicy.getMaxTries();
+    // dont set user if its view type link. This will prevent this kind of links from appearing in assignments
+    if (linktype != LINK_TYPES.VIEW) link.userId = user.uid;
+    link.congregation = code;
+    link.name = postalName;
     return pollingVoidFunction(async () => {
       await set(ref(database, `links/${addressLinkId}`), link);
       await triggerPostalCodeListeners(link.postalCode);
@@ -774,6 +790,7 @@ function Admin({ user }: adminProps) {
       shareTimedLink(
         LINK_TYPES.PERSONAL,
         details.postal,
+        details.name,
         details.linkid,
         `Units for ${details.name}`,
         assignmentMessage(details.name),
@@ -1175,6 +1192,7 @@ function Admin({ user }: adminProps) {
   const shareTimedLink = async (
     linktype: number,
     postalcode: string,
+    postalname: string,
     linkId: string,
     title: string,
     body: string,
@@ -1191,7 +1209,7 @@ function Admin({ user }: adminProps) {
         setSelectedPostal(postalcode);
         if (linktype === LINK_TYPES.ASSIGNMENT) setIsSettingAssignLink(true);
         if (linktype === LINK_TYPES.PERSONAL) setIsSettingPersonalLink(true);
-        await setTimedLink(linktype, postalcode, linkId, hours);
+        await setTimedLink(linktype, postalcode, postalname, linkId, hours);
         setAccordionKeys((existingKeys) =>
           existingKeys.filter((key) => key !== postalcode)
         );
@@ -1250,7 +1268,7 @@ function Admin({ user }: adminProps) {
       if (linktype === LINK_TYPES.PERSONAL) {
         setIsSettingPersonalLink(true);
         try {
-          await setTimedLink(linktype, postalcode, linkId, hours);
+          await setTimedLink(linktype, postalcode, name, linkId, hours);
           await navigator.share({
             title: `Units for ${name}`,
             text: assignmentMessage(name),
@@ -1283,7 +1301,13 @@ function Admin({ user }: adminProps) {
                       onClose();
                       setSelectedPostal(postalcode);
                       setIsSettingAssignLink(true);
-                      await setTimedLink(linktype, postalcode, linkId, hours);
+                      await setTimedLink(
+                        linktype,
+                        postalcode,
+                        name,
+                        linkId,
+                        hours
+                      );
 
                       try {
                         navigator.share({
@@ -1456,6 +1480,32 @@ function Admin({ user }: adminProps) {
       (reason) => {
         clearInterval(pollerId);
         setIsLoading(false);
+        errorHandler(reason, rollbar, false);
+      }
+    );
+
+    const linksReference = query(
+      ref(database, "links"),
+      orderByChild("userId"),
+      equalTo(user.uid)
+    );
+
+    const linkPollerId = SetPollerInterval();
+    onValue(
+      linksReference,
+      (snapshot) => {
+        clearInterval(linkPollerId);
+        const linkListing = new Array<LinkSession>();
+        if (snapshot.exists()) {
+          const linkData = snapshot.val();
+          for (const linkId in linkData) {
+            linkListing.push(new LinkSession(linkData[linkId], linkId));
+          }
+        }
+        setAssignments(linkListing);
+      },
+      (reason) => {
+        clearInterval(linkPollerId);
         errorHandler(reason, rollbar, false);
       }
     );
@@ -1778,6 +1828,13 @@ function Admin({ user }: adminProps) {
                 >
                   Profile
                 </Dropdown.Item>
+                {assignments && assignments.length > 0 && (
+                  <Dropdown.Item
+                    onClick={() => toggleModal(ADMIN_MODAL_TYPES.ASSIGNMENTS)}
+                  >
+                    Assignments
+                  </Dropdown.Item>
+                )}
                 <Dropdown.Item
                   onClick={() => {
                     setIsChangePasswordOk(false);
@@ -1833,7 +1890,9 @@ function Admin({ user }: adminProps) {
                 eventKey={`${currentPostalcode}`}
               >
                 <Accordion.Header>
-                  <span className="fluid-branding">{currentPostalname}</span>
+                  <span className="fluid-bolding fluid-text">
+                    {currentPostalname}
+                  </span>
                 </Accordion.Header>
                 <Accordion.Body className="p-0">
                   <ProgressBar
@@ -1910,6 +1969,7 @@ function Admin({ user }: adminProps) {
                                 shareTimedLink(
                                   LINK_TYPES.ASSIGNMENT,
                                   currentPostalcode,
+                                  currentPostalname,
                                   addressLinkId,
                                   `Units for ${currentPostalname}`,
                                   assignmentMessage(currentPostalname),
@@ -1951,6 +2011,7 @@ function Admin({ user }: adminProps) {
                                   await setTimedLink(
                                     LINK_TYPES.VIEW,
                                     currentPostalcode,
+                                    currentPostalname,
                                     addressLinkId,
                                     defaultExpiryHours
                                   );
@@ -3130,6 +3191,72 @@ function Admin({ user }: adminProps) {
               submitLabel="Assign"
             />
           </Form>
+        </Modal>
+        <Modal show={isAssignments && assignments.length > 0}>
+          <Modal.Header>
+            <Modal.Title>Assignments</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <ListGroup
+              style={{
+                height: LINK_SELECTOR_VIEWPORT_HEIGHT,
+                overflow: "auto"
+              }}
+            >
+              {assignments.map((assignment) => {
+                return (
+                  <ListGroup.Item
+                    key={`assignment-${assignment.key}`}
+                    className="d-flex justify-content-between align-items-center"
+                  >
+                    <div className="ms-2 me-auto">
+                      <div className="fluid-text fw-bold">
+                        {assignment.name}
+                      </div>
+                      <div className="fluid-text">
+                        {LinkTypeDescription(assignment.linkType)}
+                      </div>
+                      <div className="fluid-text">
+                        Created Dt:{" "}
+                        {LinkDateFormatter.format(
+                          new Date(assignment.tokenCreatetime)
+                        )}
+                      </div>
+                      <div className="fluid-text">
+                        Expiry Dt:{" "}
+                        {LinkDateFormatter.format(
+                          new Date(assignment.tokenEndtime)
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline-warning"
+                      className="me-1"
+                      onClick={async (event) => {
+                        const { linkid, postal } = event.currentTarget.dataset;
+                        await pollingVoidFunction(() =>
+                          remove(ref(database, `links/${linkid}`))
+                        );
+                        await triggerPostalCodeListeners(`${postal}`);
+                      }}
+                      data-linkid={assignment.key}
+                      data-postal={assignment.postalCode}
+                    >
+                      🗑️
+                    </Button>
+                  </ListGroup.Item>
+                );
+              })}
+            </ListGroup>
+          </Modal.Body>
+          <Modal.Footer className="justify-content-around">
+            <Button
+              variant="secondary"
+              onClick={() => toggleModal(ADMIN_MODAL_TYPES.ASSIGNMENTS)}
+            >
+              Close
+            </Button>
+          </Modal.Footer>
         </Modal>
       </>
     </Fade>

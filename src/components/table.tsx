@@ -175,12 +175,12 @@ const PrivateTerritoryTable = ({
               >
                 <Card.Header
                   style={{ padding: "0.10rem" }}
-                  className="fluid-branding"
+                  className="fluid-bolding fluid-text"
                 >
                   {element.number}
                 </Card.Header>
                 <div
-                  className={`landed-unit fluid-branding ${policy?.getUnitColor(
+                  className={`landed-unit fluid-bolding fluid-text ${policy?.getUnitColor(
                     element,
                     completedPercent.completedValue
                   )}`}
