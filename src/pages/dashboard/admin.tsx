@@ -767,13 +767,12 @@ function Admin({ user }: adminProps) {
   const handleSubmitPersonalSlip = async (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const details = values as valuesDetails;
-    if (
-      !details.postal ||
-      !details.name ||
-      !details.linkid ||
-      !details.linkExpiryHrs
-    )
+    if (!details.postal || !details.name || !details.linkid) return;
+    if (!details.linkExpiryHrs) {
+      alert("Please select an expiry date.");
       return;
+    }
+
     setIsSaving(true);
     try {
       if (isSpecialDevice) {
