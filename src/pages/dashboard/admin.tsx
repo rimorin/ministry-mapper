@@ -3219,7 +3219,12 @@ function Admin({ user }: adminProps) {
                   >
                     <div className="ms-2 me-auto">
                       <div className="fluid-text fw-bold">
-                        {assignment.name}
+                        <a
+                          href={`${assignment.postalCode}/${assignment.congregation}/${assignment.key}`}
+                          target="blank"
+                        >
+                          {assignment.name}
+                        </a>
                       </div>
                       <div className="fluid-text">
                         {LinkTypeDescription(assignment.linkType)}
