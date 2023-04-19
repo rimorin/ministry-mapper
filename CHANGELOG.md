@@ -1,3 +1,10 @@
+## [1.14.1](https://github.com/rimorin/ministry-mapper/compare/v1.14.0...v1.14.1) (2023-04-19)
+
+
+### Bug Fixes
+
+* syntax for hyperlink target ([73492fe](https://github.com/rimorin/ministry-mapper/commit/73492fef75b1f05c21a7fa036e14a232eda1c3f6))
+
 # [1.14.0](https://github.com/rimorin/ministry-mapper/compare/v1.13.0...v1.14.0) (2023-04-19)
 
 
