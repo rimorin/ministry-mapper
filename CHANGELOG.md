@@ -1,3 +1,10 @@
+## [1.14.2](https://github.com/rimorin/ministry-mapper/compare/v1.14.1...v1.14.2) (2023-04-19)
+
+
+### Bug Fixes
+
+* set assignment flag to false when there is no assignments ([cb80ff5](https://github.com/rimorin/ministry-mapper/commit/cb80ff5ac3a5b621ec74b30e50acebb66268a268))
+
 ## [1.14.1](https://github.com/rimorin/ministry-mapper/compare/v1.14.0...v1.14.1) (2023-04-19)
 
 
