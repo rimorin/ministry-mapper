@@ -309,7 +309,7 @@ const Slip = ({
                 Feedback
               </NavDropdown.Item>
               <NavDropdown.Divider />
-              <NavDropdown.Item className="fluid-branding" disabled>
+              <NavDropdown.Item className="fluid-bolding fluid-text" disabled>
                 <Countdown
                   className="m-1"
                   date={tokenEndtime}
