@@ -1,3 +1,16 @@
+# [1.14.0](https://github.com/rimorin/ministry-mapper/compare/v1.13.0...v1.14.0) (2023-04-19)
+
+
+### Bug Fixes
+
+* implement check for empty personal slip expiry date ([b269bd8](https://github.com/rimorin/ministry-mapper/commit/b269bd812c787ea95696e9e6d6adea9293f6ff8c))
+* implement revoke link checker ([1ccef34](https://github.com/rimorin/ministry-mapper/commit/1ccef34af56697b7334e9333e38273b3537cd6e9))
+
+
+### Features
+
+* implement user assignments module ([ec21385](https://github.com/rimorin/ministry-mapper/commit/ec213859f89d29b2877cb6c2f5df8c5a11c40b2d))
+
 # [1.13.0](https://github.com/rimorin/ministry-mapper/compare/v1.12.0...v1.13.0) (2023-04-17)
 
 
