@@ -1510,6 +1510,7 @@ function Admin({ user }: adminProps) {
             linkListing.push(new LinkSession(linkData[linkId], linkId));
           }
         }
+        if (linkListing.length === 0) setIsAssignments(false);
         setAssignments(linkListing);
       },
       (reason) => {
