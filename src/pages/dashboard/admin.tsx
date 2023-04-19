@@ -3221,7 +3221,8 @@ function Admin({ user }: adminProps) {
                       <div className="fluid-text fw-bold">
                         <a
                           href={`${assignment.postalCode}/${assignment.congregation}/${assignment.key}`}
-                          target="blank"
+                          target="_blank"
+                          rel="noreferrer"
                         >
                           {assignment.name}
                         </a>
