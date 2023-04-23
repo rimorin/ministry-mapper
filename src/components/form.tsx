@@ -56,7 +56,7 @@ const ModalFooter = ({
               Delete Property
             </Button>
           </ComponentAuthorizer>
-          {propertyPostal !== "" && (
+          {propertyPostal && (
             <Button
               variant="secondary"
               onClick={() => {
@@ -421,7 +421,7 @@ const ModalUnitTitle = ({
 
   if (type === TERRITORY_TYPES.PRIVATE) {
     titleString = `${unit}, ${name}`;
-    if (propertyPostal !== "") {
+    if (propertyPostal) {
       titleString = `${titleString}, ${propertyPostal}`;
     }
   }
