@@ -637,7 +637,7 @@ const NewPublicAddress = NiceModal.create(
         );
         await pollingVoidFunction(() =>
           set(addressReference, {
-            name: postalCode,
+            name: name,
             feedback: "",
             units: floorDetails,
             type: TERRITORY_TYPES.PUBLIC
@@ -794,10 +794,10 @@ const NewPrivateAddress = NiceModal.create(
         );
         await pollingVoidFunction(() =>
           set(addressReference, {
-            name: postalCode,
+            name: name,
             feedback: "",
             units: floorDetails,
-            type: TERRITORY_TYPES.PUBLIC
+            type: TERRITORY_TYPES.PRIVATE
           })
         );
         alert(`Created private address, ${postalCode}.`);
@@ -930,6 +930,7 @@ const NewUnit = NiceModal.create(
       setIsSaving(true);
       try {
         processPostalUnitNumber(postalCode, unit, addressData);
+        modal.hide();
       } catch (error) {
         errorHandler(error, rollbar);
       } finally {
@@ -1045,7 +1046,7 @@ const UpdateUnit = NiceModal.create(
                 const parsedValue = parseInt(value);
                 setUnitSeq(isNaN(parsedValue) ? undefined : parsedValue);
               }}
-              changeValue={unitSeq ? `${unitSeq}` : undefined}
+              changeValue={unitSeq === undefined ? undefined : `${unitSeq}`}
             />
           </Modal.Body>
           <Modal.Footer className="justify-content-around">
@@ -1193,7 +1194,7 @@ const UpdateUnitStatus = NiceModal.create(
       if (administeringPrivate && unitSequence) {
         updateData.sequence = Number(unitSequence);
       }
-      if (administeringPrivate) {
+      if (administeringPrivate && hhPropertyPostal) {
         updateData.x_zip = hhPropertyPostal;
       }
       setIsSaving(true);
@@ -1304,7 +1305,9 @@ const UpdateUnitStatus = NiceModal.create(
                         isNaN(parsedValue) ? undefined : parsedValue
                       );
                     }}
-                    changeValue={unitSequence ? `${unitSequence}` : undefined}
+                    changeValue={
+                      unitSequence === undefined ? undefined : `${unitSequence}`
+                    }
                   />
                   <GenericInputField
                     inputType="string"
