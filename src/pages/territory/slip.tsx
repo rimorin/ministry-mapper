@@ -1,49 +1,18 @@
-import {
-  MouseEvent,
-  ChangeEvent,
-  FormEvent,
-  useEffect,
-  useState,
-  useMemo,
-  useCallback
-} from "react";
-import { ref, child, onValue, set, update } from "firebase/database";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { ref, child, onValue } from "firebase/database";
 import { database } from "../../firebase";
-import {
-  Collapse,
-  Container,
-  Fade,
-  Form,
-  Modal,
-  Navbar,
-  NavDropdown
-} from "react-bootstrap";
+import { Container, Fade, Navbar, NavDropdown } from "react-bootstrap";
 import { floorDetails, valuesDetails, Policy } from "../../utils/interface";
 import { PublisherTerritoryTable } from "../../components/table";
-import {
-  DncDateField,
-  GenericTextAreaField,
-  HHLangField,
-  HHNotHomeField,
-  HHStatusField,
-  HHTypeField,
-  ModalFooter,
-  ModalUnitTitle
-} from "../../components/form";
 import { RacePolicy, LanguagePolicy } from "../../utils/policies";
-import { useRollbar } from "@rollbar/react";
 import {
   ZeroPad,
-  errorHandler,
-  processHHLanguages,
   processAddressData,
   checkTraceLangStatus,
   checkTraceRaceStatus,
   getMaxUnitLength,
   getCompletedPercent,
-  parseHHLanguages,
-  SetPollerInterval,
-  pollingVoidFunction
+  SetPollerInterval
 } from "../../utils/helpers";
 import {
   Legend,
@@ -53,18 +22,20 @@ import {
 import { Loader } from "../../components/static";
 import {
   DEFAULT_FLOOR_PADDING,
-  NOT_HOME_STATUS_CODES,
-  STATUS_CODES,
   RELOAD_INACTIVITY_DURATION,
   RELOAD_CHECK_INTERVAL_MS,
   TERRITORY_TYPES,
-  USER_ACCESS_LEVELS,
-  ADMIN_MODAL_TYPES
+  USER_ACCESS_LEVELS
 } from "../../utils/constants";
 import "../../css/slip.css";
 import Countdown from "react-countdown";
 import { ReactComponent as InfoImg } from "../../assets/information.svg";
-
+import ModalManager from "@ebay/nice-modal-react";
+import {
+  UpdateAddressFeedback,
+  UpdateAddressInstructions,
+  UpdateUnitStatus
+} from "../../components/modals";
 const Slip = ({
   tokenEndtime = 0,
   postalcode = "",
@@ -72,13 +43,8 @@ const Slip = ({
   maxTries = 0,
   homeLanguage = ""
 }) => {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [isFeedback, setIsFeedback] = useState<boolean>(false);
   const [showLegend, setShowLegend] = useState<boolean>(false);
   const [isPostalLoading, setIsPostalLoading] = useState<boolean>(true);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
-  const [isNotHome, setIsNotHome] = useState<boolean>(false);
-  const [isDnc, setIsDnc] = useState<boolean>(false);
   const [trackRace, setTrackRace] = useState<boolean>(true);
   const [trackLanguages, setTrackLanguages] = useState<boolean>(true);
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
@@ -89,115 +55,36 @@ const Slip = ({
   const [territoryType, setTerritoryType] = useState<number>(
     TERRITORY_TYPES.PUBLIC
   );
-  const [isInstructions, setIsInstructions] = useState<boolean>(false);
 
-  const rollbar = useRollbar();
-
-  const toggleModal = (modalType: number) => {
-    switch (modalType) {
-      case ADMIN_MODAL_TYPES.FEEDBACK:
-        setIsFeedback(!isFeedback);
-        break;
-      case ADMIN_MODAL_TYPES.INSTRUCTIONS:
-        setIsInstructions(!isInstructions);
-        break;
-      default:
-        setIsOpen(!isOpen);
-    }
-  };
-
-  const handleClickModal = (
-    _: MouseEvent<HTMLElement>,
+  const handleUnitUpdate = (
     floor: string,
     unit: string,
     maxUnitNumber: number
   ) => {
     const floorUnits = floors.find((e) => e.floor === floor);
     const unitDetails = floorUnits?.units.find((e) => e.number === unit);
-    const unitStatus = unitDetails?.status;
-    setValues({
-      ...values,
+
+    ModalManager.show(UpdateUnitStatus, {
+      addressName: postalName,
+      // CONDUCTOR ACL because publishers should be able to update status
+      userAccessLevel: USER_ACCESS_LEVELS.CONDUCTOR,
+      territoryType: territoryType,
+      congregation: congregationcode,
+      postalCode: postalcode,
+      unitNo: unit,
+      unitNoDisplay: ZeroPad(unit, maxUnitNumber),
       floor: floor,
       floorDisplay: ZeroPad(floor, DEFAULT_FLOOR_PADDING),
-      unit: unit,
-      unitDisplay: ZeroPad(unit, maxUnitNumber),
-      propertyPostal:
-        unitDetails?.propertyPostal === undefined
-          ? ""
-          : unitDetails?.propertyPostal,
-      type: unitDetails?.type,
-      note: unitDetails?.note,
-      status: unitDetails?.status,
-      nhcount: unitDetails?.nhcount || NOT_HOME_STATUS_CODES.DEFAULT,
-      languages: unitDetails?.languages,
-      dnctime: unitDetails?.dnctime
+      trackRace: trackRace,
+      trackLanguages: trackLanguages,
+      unitDetails: unitDetails,
+      addressData: undefined
     });
-    setIsNotHome(unitStatus === STATUS_CODES.NOT_HOME);
-    setIsDnc(unitStatus === STATUS_CODES.DO_NOT_CALL);
-    toggleModal(ADMIN_MODAL_TYPES.UNIT);
-  };
-
-  const handleSubmitClick = async (event: FormEvent<HTMLElement>) => {
-    event.preventDefault();
-    const details = values as valuesDetails;
-    setIsSaving(true);
-    try {
-      await pollingVoidFunction(() =>
-        update(
-          ref(
-            database,
-            `/${postalcode}/units/${details.floor}/${details.unit}`
-          ),
-          {
-            type: details.type,
-            note: details.note,
-            status: details.status,
-            nhcount: details.nhcount,
-            languages: details.languages,
-            dnctime: details.dnctime
-          }
-        )
-      );
-      toggleModal(ADMIN_MODAL_TYPES.UNIT);
-    } catch (error) {
-      errorHandler(error, rollbar);
-    } finally {
-      setIsSaving(false);
-    }
   };
 
   const toggleLegend = useCallback(() => {
     setShowLegend(!showLegend);
   }, [showLegend]);
-
-  const handleSubmitFeedback = async (event: FormEvent<HTMLElement>) => {
-    event.preventDefault();
-    const details = values as valuesDetails;
-    setIsSaving(true);
-    try {
-      await pollingVoidFunction(() =>
-        set(ref(database, `/${postalcode}/feedback`), details.feedback)
-      );
-      if (details.feedback)
-        rollbar.info(
-          `Publisher feedback on postalcode ${postalcode} of the ${congregationcode} congregation: ${details.feedback}`
-        );
-      toggleModal(ADMIN_MODAL_TYPES.FEEDBACK);
-    } catch (error) {
-      errorHandler(error, rollbar);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const onFormChange = (e: ChangeEvent<HTMLElement>) => {
-    const { name, value } = e.target as HTMLInputElement;
-    setValues({ ...values, [name]: value });
-  };
-
-  const onLanguageChange = (languages: string[]) => {
-    setValues({ ...values, languages: processHHLanguages(languages) });
-  };
 
   useEffect(() => {
     checkTraceLangStatus(congregationcode).then((snapshot) => {
@@ -290,7 +177,15 @@ const Slip = ({
             >
               {instructions && (
                 <NavDropdown.Item
-                  onClick={() => toggleModal(ADMIN_MODAL_TYPES.INSTRUCTIONS)}
+                  onClick={() =>
+                    ModalManager.show(UpdateAddressInstructions, {
+                      congregation: congregationcode,
+                      postalCode: postalcode,
+                      userAccessLevel: USER_ACCESS_LEVELS.READ_ONLY,
+                      addressName: `${postalName}`,
+                      instructions: instructions
+                    })
+                  }
                 >
                   <span className="text-highlight">Instructions</span>
                 </NavDropdown.Item>
@@ -304,7 +199,15 @@ const Slip = ({
                 Direction
               </NavDropdown.Item>
               <NavDropdown.Item
-                onClick={() => toggleModal(ADMIN_MODAL_TYPES.FEEDBACK)}
+                onClick={() =>
+                  ModalManager.show(UpdateAddressFeedback, {
+                    footerSaveAcl: USER_ACCESS_LEVELS.CONDUCTOR,
+                    name: postalcode,
+                    congregation: congregationcode,
+                    postalCode: postalcode,
+                    currentFeedback: (values as valuesDetails).feedback
+                  })
+                }
               >
                 Feedback
               </NavDropdown.Item>
@@ -349,133 +252,9 @@ const Slip = ({
           territoryType={territoryType}
           handleUnitStatusUpdate={(event) => {
             const { floor, unitno } = event.currentTarget.dataset;
-            handleClickModal(
-              event,
-              floor || "",
-              unitno || "",
-              maxUnitNumberLength
-            );
+            handleUnitUpdate(floor || "", unitno || "", maxUnitNumberLength);
           }}
         />
-        <Modal show={isFeedback}>
-          <Modal.Header>
-            <Modal.Title>{`Feedback on ${postalName}`}</Modal.Title>
-          </Modal.Header>
-          <Form onSubmit={handleSubmitFeedback}>
-            <Modal.Body>
-              <GenericTextAreaField
-                name="feedback"
-                rows={5}
-                handleChange={onFormChange}
-                changeValue={`${(values as valuesDetails).feedback}`}
-              />
-            </Modal.Body>
-            <ModalFooter
-              handleClick={() => toggleModal(ADMIN_MODAL_TYPES.FEEDBACK)}
-              isSaving={isSaving}
-            />
-          </Form>
-        </Modal>
-        <Modal show={isOpen}>
-          <ModalUnitTitle
-            unit={`${(values as valuesDetails).unitDisplay}`}
-            propertyPostal={`${(values as valuesDetails).propertyPostal}`}
-            floor={`${(values as valuesDetails).floorDisplay}`}
-            name={`${postalName}`}
-            type={territoryType}
-          />
-          <Form onSubmit={handleSubmitClick}>
-            <Modal.Body>
-              <HHStatusField
-                handleGroupChange={(toggleValue) => {
-                  let dnctime = null;
-                  setIsNotHome(false);
-                  setIsDnc(false);
-                  if (toggleValue === STATUS_CODES.NOT_HOME) {
-                    setIsNotHome(true);
-                  } else if (toggleValue === STATUS_CODES.DO_NOT_CALL) {
-                    setIsDnc(true);
-                    dnctime = new Date().getTime();
-                  }
-                  setValues({
-                    ...values,
-                    nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
-                    dnctime: dnctime,
-                    status: toggleValue
-                  });
-                }}
-                changeValue={`${(values as valuesDetails).status}`}
-              />
-              <Collapse in={isDnc}>
-                <div className="text-center">
-                  <DncDateField
-                    changeDate={(values as valuesDetails).dnctime}
-                    handleDateChange={(date) => {
-                      setValues({ ...values, dnctime: date.getTime() });
-                    }}
-                  />
-                </div>
-              </Collapse>
-              <Collapse in={isNotHome}>
-                <div className="text-center">
-                  <HHNotHomeField
-                    changeValue={`${(values as valuesDetails).nhcount}`}
-                    handleGroupChange={(toggleValue) => {
-                      setValues({ ...values, nhcount: toggleValue });
-                    }}
-                  />
-                </div>
-              </Collapse>
-              {trackRace && (
-                <HHTypeField
-                  handleChange={onFormChange}
-                  changeValue={`${(values as valuesDetails).type}`}
-                />
-              )}
-              {trackLanguages && (
-                <HHLangField
-                  handleChangeValues={onLanguageChange}
-                  changeValues={parseHHLanguages(
-                    `${(values as valuesDetails).languages}`
-                  )}
-                />
-              )}
-              <GenericTextAreaField
-                label="Notes"
-                name="note"
-                placeholder="Optional non-personal information. Eg, Renovation, Foreclosed, Friends, etc."
-                handleChange={onFormChange}
-                changeValue={`${(values as valuesDetails).note}`}
-              />
-            </Modal.Body>
-            <ModalFooter
-              handleClick={() => toggleModal(ADMIN_MODAL_TYPES.UNIT)}
-              isSaving={isSaving}
-              propertyPostal={`${(values as valuesDetails).propertyPostal}`}
-              type={territoryType}
-            />
-          </Form>
-        </Modal>
-        <Modal show={isInstructions}>
-          <Modal.Header>
-            <Modal.Title>{`Instructions on ${postalName}`}</Modal.Title>
-          </Modal.Header>
-          <Form>
-            <Modal.Body>
-              <GenericTextAreaField
-                name="instructions"
-                rows={5}
-                changeValue={`${(values as valuesDetails).instructions}`}
-                readOnly
-              />
-            </Modal.Body>
-            <ModalFooter
-              handleClick={() => toggleModal(ADMIN_MODAL_TYPES.INSTRUCTIONS)}
-              userAccessLevel={USER_ACCESS_LEVELS.READ_ONLY}
-              requiredAcLForSave={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
-            />
-          </Form>
-        </Modal>
       </>
     </Fade>
   );

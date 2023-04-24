@@ -10,7 +10,6 @@ export interface unitDetails {
   dnctime: number;
   sequence?: number;
   propertyPostal?: string;
-  newPropertyPostal?: string;
 }
 
 export interface nothomeProps {
@@ -58,7 +57,6 @@ export interface valuesDetails {
   password?: string;
   cpassword?: string;
   propertyPostal?: string;
-  newPropertyPostal?: string;
   instructions?: string;
   linkid?: string;
   linkExpiryHrs?: number;

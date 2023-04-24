@@ -45,6 +45,8 @@ const errorMessage = (code: string) => {
   if (code === "auth/network-request-failed")
     return "Network error. Please either try again with a stable internet connection or contact support";
   if (code === "auth/user-not-found") return "Invalid user.";
+  if (code === "auth/requires-recent-login")
+    return "This security sensitive operation requires re-authentication. Please re-login and try again.";
   return "Invalid Credentials";
 };
 
@@ -75,7 +77,7 @@ const getMaxUnitLength = (floors: floorDetails[]) => {
   return maxUnitNumberLength;
 };
 
-const parseHHLanguages = (languages: string) => {
+const parseHHLanguages = (languages: string | undefined) => {
   if (!languages) return [];
   return languages.split(",");
 };
@@ -176,7 +178,6 @@ const processAddressData = async (postal: string, data: any) => {
       const unitNumber = element.key || "";
       unitsDetails.push({
         propertyPostal: unitValues.x_zip,
-        newPropertyPostal: unitValues.x_zip,
         number: unitNumber,
         note: unitValues.note,
         type: unitValues.type || "",
