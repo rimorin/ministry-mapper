@@ -4,6 +4,7 @@ import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter } from "react-router-dom";
 import { StrictMode } from "react";
 import { Provider } from "@rollbar/react";
+import NiceModal from "@ebay/nice-modal-react";
 const {
   REACT_APP_ROLLBAR_ACCESS_TOKEN,
   REACT_APP_ROLLBAR_ENVIRONMENT,
@@ -29,9 +30,11 @@ const root = createRoot(document.getElementById("root") as HTMLElement);
 root.render(
   <StrictMode>
     <Provider config={rollbarConfig}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <NiceModal.Provider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </NiceModal.Provider>
     </Provider>
   </StrictMode>
 );
