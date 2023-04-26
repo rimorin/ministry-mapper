@@ -1,3 +1,10 @@
+## [1.14.3](https://github.com/rimorin/ministry-mapper/compare/v1.14.2...v1.14.3) (2023-04-26)
+
+
+### Bug Fixes
+
+* handle undefined device vendor ([e784309](https://github.com/rimorin/ministry-mapper/commit/e78430915a5acf5c5062497db8fa9a096c321069))
+
 ## [1.14.2](https://github.com/rimorin/ministry-mapper/compare/v1.14.1...v1.14.2) (2023-04-19)
 
 
