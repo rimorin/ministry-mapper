@@ -792,7 +792,12 @@ function Admin({ user }: adminProps) {
       setDefaultExpiryHours(snapshot.val());
     });
     // Huawei is considered special due to its unusual behaviour in their OS native share functionality.
-    setIsSpecialDevice(getUA().device.vendor === UA_DEVICE_MAKES.HUAWEI);
+    // Device is also special if there is an undefined vendor.
+    const currentDeviceMake = getUA().device.vendor;
+    setIsSpecialDevice(
+      currentDeviceMake === undefined ||
+        currentDeviceMake === UA_DEVICE_MAKES.HUAWEI
+    );
 
     const congregationReference = child(ref(database), `congregations/${code}`);
     const pollerId = SetPollerInterval();
