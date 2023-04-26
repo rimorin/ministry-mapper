@@ -50,7 +50,6 @@ import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
 import { RacePolicy, LanguagePolicy, LinkSession } from "../../utils/policies";
 import getUA from "ua-parser-js";
-import getResult from "ua-parser-js";
 import { AdminTable } from "../../components/table";
 import {
   pollingVoidFunction,
