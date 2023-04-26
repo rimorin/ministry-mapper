@@ -795,7 +795,6 @@ function Admin({ user }: adminProps) {
     // Huawei is considered special due to its unusual behaviour in their OS native share functionality.
     // Device is also special if there is an undefined vendor.
     const currentDeviceMake = getUA().device.vendor;
-    rollbar.info(JSON.stringify(getResult()));
     setIsSpecialDevice(
       currentDeviceMake === undefined ||
         currentDeviceMake === UA_DEVICE_MAKES.HUAWEI
