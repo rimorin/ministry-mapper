@@ -795,7 +795,8 @@ function Admin({ user }: adminProps) {
     // Device is also special if there is an undefined vendor.
     const currentDeviceMake = getUA().device.vendor;
     setIsSpecialDevice(
-      !currentDeviceMake || currentDeviceMake === UA_DEVICE_MAKES.HUAWEI
+      currentDeviceMake === undefined ||
+        currentDeviceMake === UA_DEVICE_MAKES.HUAWEI
     );
 
     const congregationReference = child(ref(database), `congregations/${code}`);
