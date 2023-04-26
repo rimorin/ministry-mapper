@@ -50,6 +50,7 @@ import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
 import { RacePolicy, LanguagePolicy, LinkSession } from "../../utils/policies";
 import getUA from "ua-parser-js";
+import getResult from "ua-parser-js";
 import { AdminTable } from "../../components/table";
 import {
   pollingVoidFunction,
@@ -794,6 +795,7 @@ function Admin({ user }: adminProps) {
     // Huawei is considered special due to its unusual behaviour in their OS native share functionality.
     // Device is also special if there is an undefined vendor.
     const currentDeviceMake = getUA().device.vendor;
+    rollbar.info(JSON.stringify(getResult()));
     setIsSpecialDevice(
       currentDeviceMake === undefined ||
         currentDeviceMake === UA_DEVICE_MAKES.HUAWEI
