@@ -1171,7 +1171,7 @@ function Admin({ user }: adminProps) {
                 size="sm"
                 variant="outline-primary"
                 title="Account"
-                align="end"
+                align={{ lg: "end", md: "end", sm: "start" }}
               >
                 <Dropdown.Item
                   onClick={() => {
