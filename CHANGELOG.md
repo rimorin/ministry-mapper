@@ -1,3 +1,10 @@
+# [1.15.0](https://github.com/rimorin/ministry-mapper/compare/v1.14.3...v1.15.0) (2023-05-04)
+
+
+### Features
+
+* optional publisher name entry for personal slips ([0f31755](https://github.com/rimorin/ministry-mapper/commit/0f31755baccc242c18a7f10b522fe91f084adca4))
+
 ## [1.14.3](https://github.com/rimorin/ministry-mapper/compare/v1.14.2...v1.14.3) (2023-04-26)
 
 
