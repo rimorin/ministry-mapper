@@ -457,7 +457,8 @@ function Admin({ user }: adminProps) {
     postalCode: string,
     postalName: string,
     addressLinkId: string,
-    hours: number
+    hours: number,
+    publisherName = ""
   ) => {
     const link = new LinkSession();
     link.tokenEndtime = addHours(hours);
@@ -473,6 +474,7 @@ function Admin({ user }: adminProps) {
     if (linktype != LINK_TYPES.VIEW) link.userId = user.uid;
     link.congregation = code;
     link.name = postalName;
+    link.publisherName = publisherName;
     return pollingVoidFunction(async () => {
       await set(ref(database, `links/${addressLinkId}`), link);
       await triggerPostalCodeListeners(link.postalCode);
@@ -483,7 +485,8 @@ function Admin({ user }: adminProps) {
     postalCode: string,
     name: string,
     linkid: string,
-    linkExpiryHrs: number
+    linkExpiryHrs: number,
+    publisherName: string
   ) => {
     if (!postalCode || !name || !linkid) return;
     try {
@@ -493,7 +496,8 @@ function Admin({ user }: adminProps) {
           postalCode,
           name,
           linkid,
-          linkExpiryHrs
+          linkExpiryHrs,
+          publisherName
         );
         return;
       }
@@ -505,7 +509,8 @@ function Admin({ user }: adminProps) {
         `Units for ${name}`,
         assignmentMessage(name),
         `${domain}/${postalCode}/${code}/${linkid}`,
-        linkExpiryHrs
+        linkExpiryHrs,
+        publisherName
       );
     } catch (error) {
       errorHandler(error, rollbar);
@@ -525,7 +530,8 @@ function Admin({ user }: adminProps) {
     title: string,
     body: string,
     url: string,
-    hours: number
+    hours: number,
+    publisherName = ""
   ) => {
     if (navigator.share) {
       try {
@@ -537,7 +543,14 @@ function Admin({ user }: adminProps) {
         setSelectedPostal(postalcode);
         if (linktype === LINK_TYPES.ASSIGNMENT) setIsSettingAssignLink(true);
         if (linktype === LINK_TYPES.PERSONAL) setIsSettingPersonalLink(true);
-        await setTimedLink(linktype, postalcode, postalname, linkId, hours);
+        await setTimedLink(
+          linktype,
+          postalcode,
+          postalname,
+          linkId,
+          hours,
+          publisherName
+        );
         setAccordionKeys((existingKeys) =>
           existingKeys.filter((key) => key !== postalcode)
         );
@@ -590,13 +603,21 @@ function Admin({ user }: adminProps) {
     postalcode: string,
     name: string,
     linkId: string,
-    hours = DEFAULT_SELF_DESTRUCT_HOURS
+    hours = DEFAULT_SELF_DESTRUCT_HOURS,
+    publisherName = ""
   ) => {
     if (navigator.share) {
       if (linktype === LINK_TYPES.PERSONAL) {
         setIsSettingPersonalLink(true);
         try {
-          await setTimedLink(linktype, postalcode, name, linkId, hours);
+          await setTimedLink(
+            linktype,
+            postalcode,
+            name,
+            linkId,
+            hours,
+            publisherName
+          );
           await navigator.share({
             title: `Units for ${name}`,
             text: assignmentMessage(name),
@@ -1150,7 +1171,7 @@ function Admin({ user }: adminProps) {
                 size="sm"
                 variant="outline-primary"
                 title="Account"
-                align="end"
+                align={{ lg: "end", md: "end", sm: "start" }}
               >
                 <Dropdown.Item
                   onClick={() => {
@@ -1262,14 +1283,19 @@ function Admin({ user }: adminProps) {
                               ModalManager.show(UpdatePersonalSlipExpiry, {
                                 addressName: currentPostalname,
                                 userAccessLevel: userAccessLevel
-                              }).then((linkExpiryHrs) =>
+                              }).then((linkReturn) => {
+                                const linkObject = linkReturn as Record<
+                                  string,
+                                  unknown
+                                >;
                                 handleSubmitPersonalSlip(
                                   currentPostalcode,
                                   currentPostalname,
                                   addressLinkId,
-                                  linkExpiryHrs as number
-                                )
-                              )
+                                  linkObject.linkExpiryHrs as number,
+                                  linkObject.publisherName as string
+                                );
+                              })
                             }
                           >
                             {isSettingPersonalLink &&

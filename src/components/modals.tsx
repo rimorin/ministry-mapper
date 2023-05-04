@@ -1625,6 +1625,7 @@ const UpdatePersonalSlipExpiry = NiceModal.create(
   }) => {
     const modal = useModal();
     const [linkExpiryHrs, setLinkExpiryHrs] = useState<number | undefined>();
+    const [name, setName] = useState<string>();
 
     const handleSubmitPersonalSlip = async (event: FormEvent<HTMLElement>) => {
       event.preventDefault();
@@ -1632,7 +1633,7 @@ const UpdatePersonalSlipExpiry = NiceModal.create(
         alert("Please select an expiry date.");
         return;
       }
-      modal.resolve(linkExpiryHrs);
+      modal.resolve({ linkExpiryHrs: linkExpiryHrs, publisherName: name });
       modal.hide();
     };
 
@@ -1654,6 +1655,16 @@ const UpdatePersonalSlipExpiry = NiceModal.create(
                 setLinkExpiryHrs(expiryInHours);
               }}
               className="w-100 mb-1"
+            />
+            <GenericInputField
+              label="Publisher Name"
+              name="name"
+              handleChange={(event) => {
+                const { value } = event.target as HTMLInputElement;
+                setName(value);
+              }}
+              placeholder="Optional name of the assigned publisher"
+              changeValue={name}
             />
           </Modal.Body>
           <ModalFooter
@@ -1704,14 +1715,19 @@ const GetAssignments = NiceModal.create(
                     <div className="fluid-text">
                       {LinkTypeDescription(assignment.linkType)}
                     </div>
+                    {assignment.publisherName && (
+                      <div className="fluid-text">
+                        Publisher : {assignment.publisherName}
+                      </div>
+                    )}
                     <div className="fluid-text">
-                      Created Dt:{" "}
+                      Created Dt :{" "}
                       {LinkDateFormatter.format(
                         new Date(assignment.tokenCreatetime)
                       )}
                     </div>
                     <div className="fluid-text">
-                      Expiry Dt:{" "}
+                      Expiry Dt :{" "}
                       {LinkDateFormatter.format(
                         new Date(assignment.tokenEndtime)
                       )}

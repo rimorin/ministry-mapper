@@ -136,6 +136,7 @@ export class LinkSession {
   tokenCreatetime: number;
   key: string;
   name: string;
+  publisherName: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(linkData?: any, key?: string) {
     this.tokenEndtime = 0;
@@ -148,12 +149,14 @@ export class LinkSession {
     this.congregation = "";
     this.key = "";
     this.name = "";
+    this.publisherName = "";
     if (!linkData) return;
     this.key = key || "";
     this.userId = linkData.userId;
     this.tokenCreatetime = linkData.tokenCreatetime;
     this.congregation = linkData.congregation;
     this.name = linkData.name;
+    this.publisherName = linkData.publisherName;
     if (linkData.tokenEndtime === undefined) {
       this.tokenEndtime = linkData;
     } else {
