@@ -2,7 +2,10 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 import { initializeAuth, browserLocalPersistence } from "firebase/auth";
-import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
+import {
+  initializeAppCheck,
+  ReCaptchaEnterpriseProvider
+} from "firebase/app-check";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -16,8 +19,8 @@ const {
   REACT_APP_FIREBASE_BUCKET,
   REACT_APP_FIREBASE_SENDER_ID,
   REACT_APP_FIREBASE_APP_ID,
-  REACT_APP_FIREBASE_RECAPTCHA_PUBLIC_KEY,
-  REACT_APP_FIREBASE_APPCHECK_DEBUG_TOKEN
+  REACT_APP_FIREBASE_APPCHECK_DEBUG_TOKEN,
+  REACT_APP_FIREBASE_RECAPTCHA_ENTERPRISE_SITE_KEY
 } = process.env;
 global.FIREBASE_APPCHECK_DEBUG_TOKEN =
   REACT_APP_FIREBASE_APPCHECK_DEBUG_TOKEN || false;
@@ -44,10 +47,10 @@ const auth = initializeAuth(app, {
   // No popupRedirectResolver defined
 });
 
-if (REACT_APP_FIREBASE_RECAPTCHA_PUBLIC_KEY !== undefined) {
+if (REACT_APP_FIREBASE_RECAPTCHA_ENTERPRISE_SITE_KEY !== undefined) {
   initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider(
-      REACT_APP_FIREBASE_RECAPTCHA_PUBLIC_KEY || ""
+    provider: new ReCaptchaEnterpriseProvider(
+      REACT_APP_FIREBASE_RECAPTCHA_ENTERPRISE_SITE_KEY
     ),
     isTokenAutoRefreshEnabled: true
   });
