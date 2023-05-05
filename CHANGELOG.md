@@ -1,3 +1,10 @@
+# [1.16.0](https://github.com/rimorin/ministry-mapper/compare/v1.15.0...v1.16.0) (2023-05-05)
+
+
+### Features
+
+* google recaptcha upgrade to enterprise version ([00077ab](https://github.com/rimorin/ministry-mapper/commit/00077aba422fbd869e50bfe5b25bc3a37bdb7107))
+
 # [1.15.0](https://github.com/rimorin/ministry-mapper/compare/v1.14.3...v1.15.0) (2023-05-04)
 
 
