@@ -47,11 +47,12 @@ import {
   PASSWORD_POLICY,
   STATUS_CODES,
   TERRITORY_TYPES,
-  USER_ACCESS_LEVELS
+  USER_ACCESS_LEVELS,
+  WIKI_CATEGORIES
 } from "../utils/constants";
 import { addressDetails, unitDetails, unitMaps } from "../utils/interface";
 import { confirmAlert } from "react-confirm-alert";
-import { ComponentAuthorizer } from "./navigation";
+import { ComponentAuthorizer, HelpButton } from "./navigation";
 import PasswordChecklist from "react-password-checklist";
 import { User, updatePassword } from "firebase/auth";
 import { FirebaseError } from "firebase/app";
@@ -122,12 +123,14 @@ const UpdateAddressFeedback = NiceModal.create(
     footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY,
     postalCode,
     congregation,
+    helpLink,
     currentFeedback = ""
   }: {
     name: string;
     footerSaveAcl: number | undefined;
     postalCode: string;
     congregation: string | undefined;
+    helpLink: string;
     currentFeedback: string;
   }) => {
     const [feedback, setFeedback] = useState(currentFeedback);
@@ -157,6 +160,7 @@ const UpdateAddressFeedback = NiceModal.create(
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
           <Modal.Title>{`Feedback on ${name}`}</Modal.Title>
+          <HelpButton link={helpLink} />
         </Modal.Header>
         <Form onSubmit={handleSubmitFeedback}>
           <Modal.Body>
@@ -223,6 +227,7 @@ const ChangeTerritoryName = NiceModal.create(
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
           <Modal.Title>Change Territory Name</Modal.Title>
+          <HelpButton link={WIKI_CATEGORIES.CHANGE_TERRITORY_NAME} />
         </Modal.Header>
         <Form onSubmit={handleUpdateTerritoryName}>
           <Modal.Body>
@@ -297,6 +302,7 @@ const ChangeTerritoryCode = NiceModal.create(
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
           <Modal.Title>Change Territory Code</Modal.Title>
+          <HelpButton link={WIKI_CATEGORIES.CHANGE_TERRITORY_CODE} />
         </Modal.Header>
         <Form onSubmit={handleUpdateTerritoryCode}>
           <Modal.Body>
@@ -435,6 +441,7 @@ const ChangeAddressPostalCode = NiceModal.create(
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
           <Modal.Title>Change Address Postal Code</Modal.Title>
+          <HelpButton link={WIKI_CATEGORIES.CHANGE_TERRITORY_CODE} />
         </Modal.Header>
         <Form onSubmit={handleUpdatePostalcode}>
           <Modal.Body>
@@ -520,6 +527,7 @@ const NewTerritoryCode = NiceModal.create(
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
           <Modal.Title>Create New Territory</Modal.Title>
+          <HelpButton link={WIKI_CATEGORIES.CREATE_TERRITORIES} />
         </Modal.Header>
         <Form onSubmit={handleCreateTerritory}>
           <Modal.Body>
@@ -656,6 +664,7 @@ const NewPublicAddress = NiceModal.create(
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
           <Modal.Title>Create Public Address</Modal.Title>
+          <HelpButton link={WIKI_CATEGORIES.CREATE_PUBLIC_ADDRESS} />
         </Modal.Header>
         <Form onSubmit={handleCreateTerritoryAddress}>
           <Modal.Body>
@@ -813,6 +822,7 @@ const NewPrivateAddress = NiceModal.create(
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
           <Modal.Title>Create Private Address</Modal.Title>
+          <HelpButton link={WIKI_CATEGORIES.CREATE_PRIVATE_ADDRESS} />
         </Modal.Header>
         <Form onSubmit={handleCreateTerritoryAddress}>
           <Modal.Body>
@@ -946,6 +956,11 @@ const NewUnit = NiceModal.create(
             } to ${
               addressData.type === TERRITORY_TYPES.PRIVATE ? name : postalCode
             }`}
+            {addressData.type === TERRITORY_TYPES.PRIVATE ? (
+              <HelpButton link={WIKI_CATEGORIES.ADD_DELETE_PRIVATE_PROPERTY} />
+            ) : (
+              <HelpButton link={WIKI_CATEGORIES.ADD_PUBLIC_UNIT} />
+            )}
           </Modal.Title>
         </Modal.Header>
         <Form onSubmit={handleCreateNewUnit}>
@@ -1033,6 +1048,7 @@ const UpdateUnit = NiceModal.create(
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
           <Modal.Title>Unit {unitDisplay}</Modal.Title>
+          <HelpButton link={WIKI_CATEGORIES.UPDATE_UNIT_NUMBER} />
         </Modal.Header>
         <Form onSubmit={handleUpdateUnit}>
           <Modal.Body>
@@ -1067,7 +1083,13 @@ const UpdateUnit = NiceModal.create(
                     return (
                       <Container>
                         <Card bg="warning" className="text-center">
-                          <Card.Header>Warning ⚠️</Card.Header>
+                          <Card.Header>
+                            Warning ⚠️
+                            <HelpButton
+                              link={WIKI_CATEGORIES.ADD_DELETE_PRIVATE_PROPERTY}
+                              isWarningButton={true}
+                            />
+                          </Card.Header>
                           <Card.Body>
                             <Card.Title>Are You Very Sure ?</Card.Title>
                             <Card.Text>
@@ -1336,7 +1358,13 @@ const UpdateUnitStatus = NiceModal.create(
                   return (
                     <Container>
                       <Card bg="warning" className="text-center">
-                        <Card.Header>Warning ⚠️</Card.Header>
+                        <Card.Header>
+                          Warning ⚠️
+                          <HelpButton
+                            link={WIKI_CATEGORIES.ADD_DELETE_PRIVATE_PROPERTY}
+                            isWarningButton={true}
+                          />
+                        </Card.Header>
                         <Card.Body>
                           <Card.Title>Are You Very Sure ?</Card.Title>
                           <Card.Text>
@@ -1587,6 +1615,7 @@ const UpdateAddressInstructions = NiceModal.create(
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
           <Modal.Title>{`Instructions on ${addressName}`}</Modal.Title>
+          <HelpButton link={WIKI_CATEGORIES.UPDATE_INSTRUCTIONS} />
         </Modal.Header>
         <Form onSubmit={handleSubmitInstructions}>
           <Modal.Body>
@@ -1641,6 +1670,7 @@ const UpdatePersonalSlipExpiry = NiceModal.create(
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
           <Modal.Title>{`Select personal slip expiry date for ${addressName}`}</Modal.Title>
+          <HelpButton link={WIKI_CATEGORIES.CREATE_PERSONAL_SLIPS} />
         </Modal.Header>
         <Form onSubmit={handleSubmitPersonalSlip}>
           <Modal.Body>
@@ -1688,6 +1718,7 @@ const GetAssignments = NiceModal.create(
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
           <Modal.Title>Assignments</Modal.Title>
+          <HelpButton link={WIKI_CATEGORIES.GET_ASSIGNMENTS} />
         </Modal.Header>
         <Modal.Body>
           <ListGroup

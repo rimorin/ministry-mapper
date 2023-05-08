@@ -27,9 +27,10 @@ import {
   HOUSEHOLD_LANGUAGES,
   STATUS_CODES,
   NOT_HOME_STATUS_CODES,
-  TERRITORY_TYPES
+  TERRITORY_TYPES,
+  WIKI_CATEGORIES
 } from "../utils/constants";
-import { ComponentAuthorizer } from "./navigation";
+import { ComponentAuthorizer, HelpButton } from "./navigation";
 
 const ModalFooter = ({
   propertyPostal,
@@ -428,6 +429,7 @@ const ModalUnitTitle = ({
   return (
     <Modal.Header>
       <Modal.Title>{titleString}</Modal.Title>
+      <HelpButton link={WIKI_CATEGORIES.UPDATE_UNIT_STATUS} />
     </Modal.Header>
   );
 };
