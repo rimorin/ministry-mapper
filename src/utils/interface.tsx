@@ -262,3 +262,8 @@ export interface SignInDifferentProps {
 export interface VerificationProps extends SignInDifferentProps {
   handleResendMail?: (event: React.MouseEvent<HTMLElement>) => void;
 }
+
+export interface HelpButtonProps {
+  link: string;
+  isWarningButton?: boolean;
+}

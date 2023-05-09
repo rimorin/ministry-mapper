@@ -21,7 +21,8 @@ import {
   territoryHeaderProp,
   backToTopProp,
   SignInDifferentProps,
-  VerificationProps
+  VerificationProps,
+  HelpButtonProps
 } from "../utils/interface";
 import Countdown from "react-countdown";
 import { memo } from "react";
@@ -316,13 +317,7 @@ const VerificationPage = ({
 );
 
 const HelpButton = memo(
-  ({
-    link,
-    isWarningButton = false
-  }: {
-    link: string;
-    isWarningButton?: boolean;
-  }) => (
+  ({ link, isWarningButton = false }: HelpButtonProps) => (
     <QuestionImage
       className={`help-button ${isWarningButton ? "warning-help-button" : ""}`}
       onClick={() => window.open(link)}
