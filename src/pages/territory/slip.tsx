@@ -25,7 +25,8 @@ import {
   RELOAD_INACTIVITY_DURATION,
   RELOAD_CHECK_INTERVAL_MS,
   TERRITORY_TYPES,
-  USER_ACCESS_LEVELS
+  USER_ACCESS_LEVELS,
+  WIKI_CATEGORIES
 } from "../../utils/constants";
 import "../../css/slip.css";
 import Countdown from "react-countdown";
@@ -205,7 +206,8 @@ const Slip = ({
                     name: postalcode,
                     congregation: congregationcode,
                     postalCode: postalcode,
-                    currentFeedback: (values as valuesDetails).feedback
+                    currentFeedback: (values as valuesDetails).feedback,
+                    helpLink: WIKI_CATEGORIES.PUBLISHER_ADDRESS_FEEDBACK
                   })
                 }
               >

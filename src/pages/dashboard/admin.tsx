@@ -77,7 +77,8 @@ import {
   ComponentAuthorizer,
   TerritoryHeader,
   BackToTopButton,
-  UnauthorizedPage
+  UnauthorizedPage,
+  HelpButton
 } from "../../components/navigation";
 import { Loader, Welcome } from "../../components/static";
 import {
@@ -96,7 +97,8 @@ import {
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY,
   TERRITORY_TYPES,
-  ASSIGNMENT_MODAL_ID
+  ASSIGNMENT_MODAL_ID,
+  WIKI_CATEGORIES
 } from "../../utils/constants";
 import ModalManager from "@ebay/nice-modal-react";
 import {
@@ -1013,7 +1015,13 @@ function Admin({ user }: adminProps) {
                             return (
                               <Container>
                                 <Card bg="warning" className="text-center">
-                                  <Card.Header>Warning ⚠️</Card.Header>
+                                  <Card.Header>
+                                    Warning ⚠️
+                                    <HelpButton
+                                      link={WIKI_CATEGORIES.DELETE_TERRITORIES}
+                                      isWarningButton={true}
+                                    />
+                                  </Card.Header>
                                   <Card.Body>
                                     <Card.Title>Are You Very Sure ?</Card.Title>
                                     <Card.Text>
@@ -1072,7 +1080,13 @@ function Admin({ user }: adminProps) {
                             return (
                               <Container>
                                 <Card bg="warning" className="text-center">
-                                  <Card.Header>Warning ⚠️</Card.Header>
+                                  <Card.Header>
+                                    Warning ⚠️
+                                    <HelpButton
+                                      link={WIKI_CATEGORIES.RESET_TERRITORIES}
+                                      isWarningButton={true}
+                                    />
+                                  </Card.Header>
                                   <Card.Body>
                                     <Card.Title>Are You Very Sure ?</Card.Title>
                                     <Card.Text>
@@ -1434,7 +1448,9 @@ function Admin({ user }: adminProps) {
                               name: currentPostalname,
                               congregation: code,
                               postalCode: currentPostalcode,
-                              currentFeedback: addressElement.feedback
+                              currentFeedback: addressElement.feedback,
+                              helpLink:
+                                WIKI_CATEGORIES.CONDUCTOR_ADDRESS_FEEDBACK
                             })
                           }
                         >
@@ -1558,7 +1574,15 @@ function Admin({ user }: adminProps) {
                                           bg="warning"
                                           className="text-center"
                                         >
-                                          <Card.Header>Warning ⚠️</Card.Header>
+                                          <Card.Header>
+                                            Warning ⚠️
+                                            <HelpButton
+                                              link={
+                                                WIKI_CATEGORIES.RESET_ADDRESS
+                                              }
+                                              isWarningButton={true}
+                                            />
+                                          </Card.Header>
                                           <Card.Body>
                                             <Card.Title>
                                               Are You Very Sure ?
@@ -1613,7 +1637,15 @@ function Admin({ user }: adminProps) {
                                           bg="warning"
                                           className="text-center"
                                         >
-                                          <Card.Header>Warning ⚠️</Card.Header>
+                                          <Card.Header>
+                                            Warning ⚠️
+                                            <HelpButton
+                                              link={
+                                                WIKI_CATEGORIES.DELETE_ADDRESS
+                                              }
+                                              isWarningButton={true}
+                                            />
+                                          </Card.Header>
                                           <Card.Body>
                                             <Card.Title>
                                               Are You Very Sure ?
@@ -1716,7 +1748,15 @@ function Admin({ user }: adminProps) {
                             return (
                               <Container>
                                 <Card bg="warning" className="text-center">
-                                  <Card.Header>Warning ⚠️</Card.Header>
+                                  <Card.Header>
+                                    Warning ⚠️
+                                    <HelpButton
+                                      link={
+                                        WIKI_CATEGORIES.DELETE_ADDRESS_FLOOR
+                                      }
+                                      isWarningButton={true}
+                                    />
+                                  </Card.Header>
                                   <Card.Body>
                                     <Card.Title>Are You Very Sure ?</Card.Title>
                                     <Card.Text>

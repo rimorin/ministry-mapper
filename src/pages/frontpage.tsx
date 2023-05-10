@@ -20,10 +20,11 @@ import { errorHandler, errorMessage } from "../utils/helpers";
 import PasswordChecklist from "react-password-checklist";
 import {
   MINIMUM_PASSWORD_LENGTH,
-  MINISTRY_MAPPER_INFORMATION_PAGE,
-  PASSWORD_POLICY
+  MINISTRY_MAPPER_WIKI_PAGE,
+  PASSWORD_POLICY,
+  WIKI_CATEGORIES
 } from "../utils/constants";
-import { NavBarBranding } from "../components/navigation";
+import { HelpButton, NavBarBranding } from "../components/navigation";
 import { FrontLogo } from "../components/static";
 
 const FrontPage = () => {
@@ -94,7 +95,7 @@ const FrontPage = () => {
                 className="m-1"
                 size="sm"
                 variant="outline-primary"
-                onClick={() => window.open(MINISTRY_MAPPER_INFORMATION_PAGE)}
+                onClick={() => window.open(MINISTRY_MAPPER_WIKI_PAGE)}
               >
                 About
               </Button>
@@ -116,6 +117,7 @@ const FrontPage = () => {
         <Modal show={isCreate}>
           <Modal.Header>
             <Modal.Title>Create Account</Modal.Title>
+            <HelpButton link={WIKI_CATEGORIES.CREATE_ACCOUNT} />
           </Modal.Header>
           <Form noValidate validated={validated} onSubmit={handleCreateSubmit}>
             <Modal.Body>

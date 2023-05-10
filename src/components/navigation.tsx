@@ -21,13 +21,15 @@ import {
   territoryHeaderProp,
   backToTopProp,
   SignInDifferentProps,
-  VerificationProps
+  VerificationProps,
+  HelpButtonProps
 } from "../utils/interface";
 import Countdown from "react-countdown";
 import { memo } from "react";
 import { NotHomeIcon } from "./table";
 import { TERRITORY_SELECTOR_VIEWPORT_HEIGHT } from "../utils/constants";
 import { ReactComponent as TopArrowImage } from "../assets/top-arrow.svg";
+import { ReactComponent as QuestionImage } from "../assets/question.svg";
 
 const ComponentAuthorizer = ({
   requiredPermission,
@@ -314,6 +316,15 @@ const VerificationPage = ({
   </Container>
 );
 
+const HelpButton = memo(
+  ({ link, isWarningButton = false }: HelpButtonProps) => (
+    <QuestionImage
+      className={`help-button ${isWarningButton ? "warning-help-button" : ""}`}
+      onClick={() => window.open(link)}
+    />
+  )
+);
+
 export {
   NavBarBranding,
   Legend,
@@ -325,5 +336,6 @@ export {
   TerritoryHeader,
   BackToTopButton,
   UnauthorizedPage,
-  VerificationPage
+  VerificationPage,
+  HelpButton
 };
