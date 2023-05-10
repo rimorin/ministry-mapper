@@ -31,3 +31,9 @@
 .resend-text:hover {
   text-decoration: underline;
 }
+
+.warning-help-button {
+  position: absolute;
+  right: 0.25rem;
+  top: 0.55rem;
+}
