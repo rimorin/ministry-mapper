@@ -1,3 +1,10 @@
+# [1.17.0](https://github.com/rimorin/ministry-mapper/compare/v1.16.0...v1.17.0) (2023-05-10)
+
+
+### Features
+
+* wiki help button on every components ([793ba0f](https://github.com/rimorin/ministry-mapper/commit/793ba0f575df42724c5371b34a33c08777ee0b0f))
+
 # [1.16.0](https://github.com/rimorin/ministry-mapper/compare/v1.15.0...v1.16.0) (2023-05-05)
 
 
