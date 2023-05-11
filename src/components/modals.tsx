@@ -92,6 +92,7 @@ const ChangeAddressName = NiceModal.create(
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
           <Modal.Title>Change Address Name</Modal.Title>
+          <HelpButton link={WIKI_CATEGORIES.CHANGE_ADDRESS_NAME} />
         </Modal.Header>
         <Form onSubmit={handleUpdateBlockName}>
           <Modal.Body>
