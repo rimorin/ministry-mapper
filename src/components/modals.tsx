@@ -957,12 +957,12 @@ const NewUnit = NiceModal.create(
             } to ${
               addressData.type === TERRITORY_TYPES.PRIVATE ? name : postalCode
             }`}
-            {addressData.type === TERRITORY_TYPES.PRIVATE ? (
-              <HelpButton link={WIKI_CATEGORIES.ADD_DELETE_PRIVATE_PROPERTY} />
-            ) : (
-              <HelpButton link={WIKI_CATEGORIES.ADD_PUBLIC_UNIT} />
-            )}
           </Modal.Title>
+          {addressData.type === TERRITORY_TYPES.PRIVATE ? (
+            <HelpButton link={WIKI_CATEGORIES.ADD_DELETE_PRIVATE_PROPERTY} />
+          ) : (
+            <HelpButton link={WIKI_CATEGORIES.ADD_PUBLIC_UNIT} />
+          )}
         </Modal.Header>
         <Form onSubmit={handleCreateNewUnit}>
           <Modal.Body>
