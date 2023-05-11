@@ -1,3 +1,11 @@
+## [1.17.1](https://github.com/rimorin/ministry-mapper/compare/v1.17.0...v1.17.1) (2023-05-11)
+
+
+### Bug Fixes
+
+* add missing wiki btn for address rename ([51548d9](https://github.com/rimorin/ministry-mapper/commit/51548d96bdd5b4b3e8d7e56c498d84a89107220c))
+* fixed alignment for add unit/property wiki btn ([d3c3a97](https://github.com/rimorin/ministry-mapper/commit/d3c3a973695e02d657ace3e3610421e2d638d7fe))
+
 # [1.17.0](https://github.com/rimorin/ministry-mapper/compare/v1.16.0...v1.17.0) (2023-05-10)
 
 
