@@ -295,3 +295,12 @@ export interface UserRoleProps {
   role?: number;
   isUpdate?: boolean;
 }
+
+export interface UserModalProps {
+  email?: string | null;
+  uid?: string;
+  congregation: string | undefined;
+  name?: string;
+  role?: number | undefined;
+  footerSaveAcl: number | undefined;
+}

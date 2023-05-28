@@ -51,7 +51,12 @@ import {
   USER_ACCESS_LEVELS,
   WIKI_CATEGORIES
 } from "../utils/constants";
-import { addressDetails, unitDetails, unitMaps } from "../utils/interface";
+import {
+  UserModalProps,
+  addressDetails,
+  unitDetails,
+  unitMaps
+} from "../utils/interface";
 import { confirmAlert } from "react-confirm-alert";
 import { ComponentAuthorizer, HelpButton } from "./navigation";
 import PasswordChecklist from "react-password-checklist";
@@ -68,13 +73,7 @@ const UpdateUser = NiceModal.create(
     name,
     role = USER_ACCESS_LEVELS.NO_ACCESS.CODE,
     footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE
-  }: {
-    uid: string;
-    congregation: string | undefined;
-    name: string;
-    role: number | undefined;
-    footerSaveAcl: number | undefined;
-  }) => {
+  }: UserModalProps) => {
     const [userRole, setUserRole] = useState(role);
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();
@@ -133,11 +132,7 @@ const InviteUser = NiceModal.create(
     email,
     congregation = "",
     footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE
-  }: {
-    email: string | null;
-    congregation: string | undefined;
-    footerSaveAcl: number | undefined;
-  }) => {
+  }: UserModalProps) => {
     const [userRole, setUserRole] = useState(USER_ACCESS_LEVELS.READ_ONLY.CODE);
     const [userEmail, setUserEmail] = useState("");
     const [isSaving, setIsSaving] = useState(false);
