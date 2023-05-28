@@ -68,7 +68,7 @@ const Slip = ({
     ModalManager.show(UpdateUnitStatus, {
       addressName: postalName,
       // CONDUCTOR ACL because publishers should be able to update status
-      userAccessLevel: USER_ACCESS_LEVELS.CONDUCTOR,
+      userAccessLevel: USER_ACCESS_LEVELS.CONDUCTOR.CODE,
       territoryType: territoryType,
       congregation: congregationcode,
       postalCode: postalcode,
@@ -182,7 +182,7 @@ const Slip = ({
                     ModalManager.show(UpdateAddressInstructions, {
                       congregation: congregationcode,
                       postalCode: postalcode,
-                      userAccessLevel: USER_ACCESS_LEVELS.READ_ONLY,
+                      userAccessLevel: USER_ACCESS_LEVELS.READ_ONLY.CODE,
                       addressName: `${postalName}`,
                       instructions: instructions
                     })
@@ -202,7 +202,7 @@ const Slip = ({
               <NavDropdown.Item
                 onClick={() =>
                   ModalManager.show(UpdateAddressFeedback, {
-                    footerSaveAcl: USER_ACCESS_LEVELS.CONDUCTOR,
+                    footerSaveAcl: USER_ACCESS_LEVELS.CONDUCTOR.CODE,
                     name: postalcode,
                     congregation: congregationcode,
                     postalCode: postalcode,

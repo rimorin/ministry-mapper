@@ -18,9 +18,14 @@ const NOT_HOME_STATUS_CODES = {
 };
 
 const USER_ACCESS_LEVELS = {
-  READ_ONLY: 1,
-  CONDUCTOR: 2,
-  TERRITORY_SERVANT: 3
+  NO_ACCESS: { CODE: -1, DISPLAY: "Delete Access", SHORT_DISPLAY: "D" },
+  READ_ONLY: { CODE: 1, DISPLAY: "Read-only", SHORT_DISPLAY: "R" },
+  CONDUCTOR: { CODE: 2, DISPLAY: "Conductor", SHORT_DISPLAY: "C" },
+  TERRITORY_SERVANT: {
+    CODE: 3,
+    DISPLAY: "Administrator",
+    SHORT_DISPLAY: "A"
+  }
 };
 
 const HOUSEHOLD_TYPES = {

@@ -19,7 +19,8 @@ import {
   HHTypeField,
   ModalFooter,
   ModalSubmitButton,
-  ModalUnitTitle
+  ModalUnitTitle,
+  UserRoleField
 } from "./form";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { useRollbar } from "@rollbar/react";
@@ -58,11 +59,180 @@ import { User, updatePassword } from "firebase/auth";
 import { FirebaseError } from "firebase/app";
 import Calendar from "react-calendar";
 import { LinkSession } from "../utils/policies";
+import { getFunctions, httpsCallable } from "firebase/functions";
+
+const UpdateUser = NiceModal.create(
+  ({
+    uid,
+    congregation,
+    name,
+    role = USER_ACCESS_LEVELS.NO_ACCESS.CODE,
+    footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE
+  }: {
+    uid: string;
+    congregation: string | undefined;
+    name: string;
+    role: number | undefined;
+    footerSaveAcl: number | undefined;
+  }) => {
+    const [userRole, setUserRole] = useState(role);
+    const [isSaving, setIsSaving] = useState(false);
+    const modal = useModal();
+    const rollbar = useRollbar();
+
+    const handleUserDetails = async (event: FormEvent<HTMLElement>) => {
+      event.preventDefault();
+      setIsSaving(true);
+      try {
+        const functions = getFunctions();
+        const updateUserAccess = httpsCallable(functions, "updateUserAccess");
+        await updateUserAccess({
+          uid: uid,
+          congregation: congregation,
+          role: userRole
+        });
+        modal.resolve(userRole);
+        modal.hide();
+      } catch (error) {
+        errorHandler(error, rollbar);
+      } finally {
+        setIsSaving(false);
+      }
+    };
+    return (
+      <Modal {...bootstrapDialog(modal)}>
+        <Modal.Header>
+          <Modal.Title>Update {name} Role</Modal.Title>
+          <HelpButton link={WIKI_CATEGORIES.CHANGE_ADDRESS_NAME} />
+        </Modal.Header>
+        <Form onSubmit={handleUserDetails}>
+          <Modal.Body>
+            <Form.Group
+              className="mb-1 text-center"
+              controlId="formBasicUsrRolebtnCheckbox"
+            >
+              <UserRoleField
+                role={userRole}
+                handleRoleChange={(value) => setUserRole(value)}
+              />
+            </Form.Group>
+          </Modal.Body>
+          <ModalFooter
+            handleClick={modal.hide}
+            userAccessLevel={footerSaveAcl}
+            isSaving={isSaving}
+          />
+        </Form>
+      </Modal>
+    );
+  }
+);
+
+const InviteUser = NiceModal.create(
+  ({
+    email,
+    congregation = "",
+    footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE
+  }: {
+    email: string | null;
+    congregation: string | undefined;
+    footerSaveAcl: number | undefined;
+  }) => {
+    const [userRole, setUserRole] = useState(USER_ACCESS_LEVELS.READ_ONLY.CODE);
+    const [userEmail, setUserEmail] = useState("");
+    const [isSaving, setIsSaving] = useState(false);
+    const modal = useModal();
+    const rollbar = useRollbar();
+
+    const handleUserDetails = async (event: FormEvent<HTMLElement>) => {
+      event.preventDefault();
+      setIsSaving(true);
+      try {
+        if (userEmail.toLowerCase() === email?.toLowerCase()) {
+          alert("Please do not invite yourself.");
+          return;
+        }
+        const functions = getFunctions();
+        const getUserByEmail = httpsCallable(functions, "getUserByEmail");
+        const user = await getUserByEmail({ email: userEmail });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const userData = user.data as any;
+        const userId = userData.uid;
+        if (!userData.emailVerified) {
+          alert(
+            `This account is unverified. Please get the user to verify the account before proceeding.`
+          );
+          return;
+        }
+        const userRoles = userData.customClaims;
+        if (userRoles[congregation]) {
+          alert("This user is already part of the congregation.");
+          return;
+        }
+        const updateUserAccess = httpsCallable(functions, "updateUserAccess");
+        await updateUserAccess({
+          uid: userId,
+          congregation: congregation,
+          role: userRole
+        });
+        let roleDisplay = USER_ACCESS_LEVELS.READ_ONLY.DISPLAY;
+        if (userRole === USER_ACCESS_LEVELS.CONDUCTOR.CODE)
+          roleDisplay = USER_ACCESS_LEVELS.CONDUCTOR.DISPLAY;
+        if (userRole === USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE)
+          roleDisplay = USER_ACCESS_LEVELS.TERRITORY_SERVANT.DISPLAY;
+        alert(`Granted ${roleDisplay} access to ${userEmail}.`);
+        modal.hide();
+      } catch (error) {
+        errorHandler(errorMessage((error as FirebaseError).code), rollbar);
+      } finally {
+        setIsSaving(false);
+      }
+    };
+    return (
+      <Modal {...bootstrapDialog(modal)}>
+        <Modal.Header>
+          <Modal.Title>Invite User</Modal.Title>
+          <HelpButton link={WIKI_CATEGORIES.CHANGE_ADDRESS_NAME} />
+        </Modal.Header>
+        <Form onSubmit={handleUserDetails}>
+          <Modal.Body>
+            <GenericInputField
+              label="User email"
+              name="email"
+              handleChange={(event) => {
+                const { value } = event.target as HTMLInputElement;
+                setUserEmail(value);
+              }}
+              changeValue={userEmail}
+              inputType="email"
+            />
+            <Form.Group
+              className="mb-1 text-center"
+              controlId="formBasicUsrRolebtnCheckbox"
+            >
+              <UserRoleField
+                role={userRole}
+                handleRoleChange={(value) => setUserRole(value)}
+                isUpdate={false}
+              />
+            </Form.Group>
+          </Modal.Body>
+          <ModalFooter
+            handleClick={modal.hide}
+            userAccessLevel={footerSaveAcl}
+            isSaving={isSaving}
+            submitLabel="Invite"
+          />
+        </Form>
+      </Modal>
+    );
+  }
+);
 
 const ChangeAddressName = NiceModal.create(
   ({
     name,
-    footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY,
+    footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     postal
   }: {
     name: string;
@@ -121,7 +291,7 @@ const ChangeAddressName = NiceModal.create(
 const UpdateAddressFeedback = NiceModal.create(
   ({
     name,
-    footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY,
+    footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     postalCode,
     congregation,
     helpLink,
@@ -189,7 +359,7 @@ const UpdateAddressFeedback = NiceModal.create(
 const ChangeTerritoryName = NiceModal.create(
   ({
     name,
-    footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY,
+    footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     congregation,
     territoryCode
   }: {
@@ -256,7 +426,7 @@ const ChangeTerritoryName = NiceModal.create(
 
 const ChangeTerritoryCode = NiceModal.create(
   ({
-    footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY,
+    footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     congregation,
     territoryCode
   }: {
@@ -340,7 +510,7 @@ const ChangeTerritoryCode = NiceModal.create(
 
 const ChangeAddressPostalCode = NiceModal.create(
   ({
-    footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY,
+    footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     congregation,
     territoryCode,
     postalCode
@@ -483,7 +653,7 @@ const ChangeAddressPostalCode = NiceModal.create(
 
 const NewTerritoryCode = NiceModal.create(
   ({
-    footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY,
+    footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     congregation
   }: {
     footerSaveAcl: number | undefined;
@@ -570,7 +740,7 @@ const NewTerritoryCode = NiceModal.create(
 
 const NewPublicAddress = NiceModal.create(
   ({
-    footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY,
+    footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     congregation,
     territoryCode
   }: {
@@ -732,7 +902,7 @@ const NewPublicAddress = NiceModal.create(
 
 const NewPrivateAddress = NiceModal.create(
   ({
-    footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY,
+    footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     congregation,
     territoryCode
   }: {
@@ -923,7 +1093,7 @@ const processPostalUnitNumber = async (
 
 const NewUnit = NiceModal.create(
   ({
-    footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY,
+    footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     postalCode,
     addressData
   }: {
@@ -1142,7 +1312,7 @@ const UpdateUnit = NiceModal.create(
 const UpdateUnitStatus = NiceModal.create(
   ({
     addressName,
-    userAccessLevel = USER_ACCESS_LEVELS.READ_ONLY,
+    userAccessLevel = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     territoryType,
     postalCode,
     unitNo,
@@ -1213,7 +1383,7 @@ const UpdateUnitStatus = NiceModal.create(
       // Include sequence update value only when administering private territories
       const administeringPrivate =
         territoryType === TERRITORY_TYPES.PRIVATE &&
-        userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT;
+        userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE;
       if (administeringPrivate && unitSequence) {
         updateData.sequence = Number(unitSequence);
       }
@@ -1313,7 +1483,7 @@ const UpdateUnitStatus = NiceModal.create(
             />
             {territoryType === TERRITORY_TYPES.PRIVATE && (
               <ComponentAuthorizer
-                requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
+                requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
                 userPermission={userAccessLevel}
               >
                 <>
@@ -1477,7 +1647,7 @@ const GetProfile = NiceModal.create(
           </Modal.Body>
           <ModalFooter
             handleClick={modal.hide}
-            userAccessLevel={USER_ACCESS_LEVELS.READ_ONLY}
+            userAccessLevel={USER_ACCESS_LEVELS.READ_ONLY.CODE}
           />
         </Form>
       </Modal>
@@ -1629,14 +1799,14 @@ const UpdateAddressInstructions = NiceModal.create(
               }}
               changeValue={addressInstructions}
               readOnly={
-                userAccessLevel !== USER_ACCESS_LEVELS.TERRITORY_SERVANT
+                userAccessLevel !== USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE
               }
             />
           </Modal.Body>
           <ModalFooter
             handleClick={() => modal.hide()}
             userAccessLevel={userAccessLevel}
-            requiredAcLForSave={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
+            requiredAcLForSave={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
             isSaving={isSaving}
           />
         </Form>
@@ -1701,7 +1871,7 @@ const UpdatePersonalSlipExpiry = NiceModal.create(
           <ModalFooter
             handleClick={() => modal.hide()}
             userAccessLevel={userAccessLevel}
-            requiredAcLForSave={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
+            requiredAcLForSave={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
             isSaving={false}
             submitLabel="Assign"
           />
@@ -1787,7 +1957,7 @@ const GetAssignments = NiceModal.create(
         </Modal.Body>
         <ModalFooter
           handleClick={() => modal.hide()}
-          userAccessLevel={USER_ACCESS_LEVELS.READ_ONLY}
+          userAccessLevel={USER_ACCESS_LEVELS.READ_ONLY.CODE}
         />
       </Modal>
     );
@@ -1809,5 +1979,7 @@ export {
   ChangePassword,
   UpdateAddressInstructions,
   UpdatePersonalSlipExpiry,
-  GetAssignments
+  GetAssignments,
+  UpdateUser,
+  InviteUser
 };
