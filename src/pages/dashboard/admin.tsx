@@ -184,21 +184,34 @@ function Admin({ user }: adminProps) {
       functions,
       "getCongregationUsers"
     );
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = (await getCongregationUsers({ congregation: code })) as any;
-    if (result.data.length === 0) return;
-    const userListing = new Map<string, userDetails>();
-    for (const key in result.data) {
-      const data = result.data[key];
-      userListing.set(key, {
-        uid: key,
-        name: data.name,
-        verified: data.verified,
-        email: data.email,
-        role: data.role
-      });
+    try {
+      setIsShowingUserListing(true);
+      const result = (await getCongregationUsers({
+        congregation: code
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      })) as any;
+      if (Object.keys(result.data).length === 0) {
+        alert("There are no users to manage.");
+        return;
+      }
+      const userListing = new Map<string, userDetails>();
+      for (const key in result.data) {
+        const data = result.data[key];
+        userListing.set(key, {
+          uid: key,
+          name: data.name,
+          verified: data.verified,
+          email: data.email,
+          role: data.role
+        });
+      }
+      setCongUsers(userListing);
+      toggleUserListing();
+    } catch (error) {
+      errorHandler(error, rollbar);
+    } finally {
+      setIsShowingUserListing(false);
     }
-    setCongUsers(userListing);
   };
 
   const clearAdminState = () => {
@@ -1066,14 +1079,7 @@ function Admin({ user }: adminProps) {
                   }
                   align="end"
                 >
-                  <Dropdown.Item
-                    onClick={async () => {
-                      setIsShowingUserListing(true);
-                      await getUsers();
-                      setIsShowingUserListing(false);
-                      toggleUserListing();
-                    }}
-                  >
+                  <Dropdown.Item onClick={async () => await getUsers()}>
                     {isShowingUserListing && (
                       <>
                         <Spinner
