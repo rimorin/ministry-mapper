@@ -160,7 +160,7 @@ const InviteUser = NiceModal.create(
           return;
         }
         const userRoles = userData.customClaims;
-        if (userRoles[congregation]) {
+        if (userRoles && userRoles[congregation]) {
           alert("This user is already part of the congregation.");
           return;
         }

@@ -1077,7 +1077,6 @@ function Admin({ user }: adminProps) {
                       Users
                     </>
                   }
-                  align="end"
                 >
                   <Dropdown.Item onClick={async () => await getUsers()}>
                     {isShowingUserListing && (
