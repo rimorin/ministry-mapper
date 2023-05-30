@@ -19,6 +19,25 @@
 
 # [1.15.0](https://github.com/rimorin/ministry-mapper/compare/v1.14.3...v1.15.0) (2023-05-04)
 
+### Bug Fixes
+
+- add missing wiki btn for address rename ([51548d9](https://github.com/rimorin/ministry-mapper/commit/51548d96bdd5b4b3e8d7e56c498d84a89107220c))
+- fixed alignment for add unit/property wiki btn ([d3c3a97](https://github.com/rimorin/ministry-mapper/commit/d3c3a973695e02d657ace3e3610421e2d638d7fe))
+
+# [1.17.0](https://github.com/rimorin/ministry-mapper/compare/v1.16.0...v1.17.0) (2023-05-10)
+
+### Features
+
+- wiki help button on every components ([793ba0f](https://github.com/rimorin/ministry-mapper/commit/793ba0f575df42724c5371b34a33c08777ee0b0f))
+
+# [1.16.0](https://github.com/rimorin/ministry-mapper/compare/v1.15.0...v1.16.0) (2023-05-05)
+
+### Features
+
+- google recaptcha upgrade to enterprise version ([00077ab](https://github.com/rimorin/ministry-mapper/commit/00077aba422fbd869e50bfe5b25bc3a37bdb7107))
+
+# [1.15.0](https://github.com/rimorin/ministry-mapper/compare/v1.14.3...v1.15.0) (2023-05-04)
+
 ### Features
 
 - optional publisher name entry for personal slips ([0f31755](https://github.com/rimorin/ministry-mapper/commit/0f31755baccc242c18a7f10b522fe91f084adca4))
