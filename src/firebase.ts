@@ -6,6 +6,8 @@ import {
   initializeAppCheck,
   ReCaptchaEnterpriseProvider
 } from "firebase/app-check";
+import { getFunctions } from "firebase/functions";
+import { DEFAULT_FB_CLOUD_FUNCTIONS_REGION } from "./utils/constants";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -20,7 +22,8 @@ const {
   REACT_APP_FIREBASE_SENDER_ID,
   REACT_APP_FIREBASE_APP_ID,
   REACT_APP_FIREBASE_APPCHECK_DEBUG_TOKEN,
-  REACT_APP_FIREBASE_RECAPTCHA_ENTERPRISE_SITE_KEY
+  REACT_APP_FIREBASE_RECAPTCHA_ENTERPRISE_SITE_KEY,
+  REACT_APP_FIREBASE_FUNCTIONS_REGION
 } = process.env;
 global.FIREBASE_APPCHECK_DEBUG_TOKEN =
   REACT_APP_FIREBASE_APPCHECK_DEBUG_TOKEN || false;
@@ -46,6 +49,10 @@ const auth = initializeAuth(app, {
   persistence: browserLocalPersistence
   // No popupRedirectResolver defined
 });
+const functions = getFunctions(
+  app,
+  REACT_APP_FIREBASE_FUNCTIONS_REGION || DEFAULT_FB_CLOUD_FUNCTIONS_REGION
+);
 
 if (REACT_APP_FIREBASE_RECAPTCHA_ENTERPRISE_SITE_KEY !== undefined) {
   initializeAppCheck(app, {
@@ -56,4 +63,4 @@ if (REACT_APP_FIREBASE_RECAPTCHA_ENTERPRISE_SITE_KEY !== undefined) {
   });
 }
 
-export { database, auth };
+export { database, auth, functions };
