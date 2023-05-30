@@ -102,7 +102,7 @@ const UpdateUser = NiceModal.create(
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
           <Modal.Title>Update {name} Role</Modal.Title>
-          <HelpButton link={WIKI_CATEGORIES.CHANGE_ADDRESS_NAME} />
+          <HelpButton link={WIKI_CATEGORIES.MANAGE_USERS} />
         </Modal.Header>
         <Form onSubmit={handleUserDetails}>
           <Modal.Body>
@@ -187,7 +187,7 @@ const InviteUser = NiceModal.create(
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
           <Modal.Title>Invite User</Modal.Title>
-          <HelpButton link={WIKI_CATEGORIES.CHANGE_ADDRESS_NAME} />
+          <HelpButton link={WIKI_CATEGORIES.INVITE_USER} />
         </Modal.Header>
         <Form onSubmit={handleUserDetails}>
           <Modal.Body>
