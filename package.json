@@ -68,8 +68,13 @@
     "@commitlint/config-conventional": "^17.6.3",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
+<<<<<<< HEAD
     "@typescript-eslint/eslint-plugin": "^5.59.7",
     "@typescript-eslint/parser": "^5.59.7",
+=======
+    "@typescript-eslint/eslint-plugin": "^5.59.6",
+    "@typescript-eslint/parser": "^5.59.6",
+>>>>>>> 993f91c (build: update packages)
     "eslint": "^8.41.0",
     "eslint-plugin-react": "^7.32.2",
     "husky": "^8.0.3",
