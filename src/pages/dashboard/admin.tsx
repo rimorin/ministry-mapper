@@ -32,8 +32,8 @@ import {
   ProgressBar,
   Spinner
 } from "react-bootstrap";
-import { database, auth } from "../../firebase";
-import { getFunctions, httpsCallable } from "firebase/functions";
+import { database, auth, functions } from "../../firebase";
+import { httpsCallable } from "firebase/functions";
 import {
   Policy,
   valuesDetails,
@@ -179,7 +179,6 @@ function Admin({ user }: adminProps) {
   };
 
   const getUsers = async () => {
-    const functions = getFunctions();
     const getCongregationUsers = httpsCallable(
       functions,
       "getCongregationUsers"

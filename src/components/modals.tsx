@@ -25,7 +25,7 @@ import {
 import { ChangeEvent, FormEvent, useState } from "react";
 import { useRollbar } from "@rollbar/react";
 import { set, ref, get, remove, push, child, update } from "firebase/database";
-import { database } from "../firebase";
+import { database, functions } from "../firebase";
 import {
   pollingVoidFunction,
   errorHandler,
@@ -64,7 +64,7 @@ import { User, updatePassword } from "firebase/auth";
 import { FirebaseError } from "firebase/app";
 import Calendar from "react-calendar";
 import { LinkSession } from "../utils/policies";
-import { getFunctions, httpsCallable } from "firebase/functions";
+import { httpsCallable } from "firebase/functions";
 
 const UpdateUser = NiceModal.create(
   ({
@@ -83,7 +83,6 @@ const UpdateUser = NiceModal.create(
       event.preventDefault();
       setIsSaving(true);
       try {
-        const functions = getFunctions();
         const updateUserAccess = httpsCallable(functions, "updateUserAccess");
         await updateUserAccess({
           uid: uid,
@@ -147,7 +146,6 @@ const InviteUser = NiceModal.create(
           alert("Please do not invite yourself.");
           return;
         }
-        const functions = getFunctions();
         const getUserByEmail = httpsCallable(functions, "getUserByEmail");
         const user = await getUserByEmail({ email: userEmail });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
