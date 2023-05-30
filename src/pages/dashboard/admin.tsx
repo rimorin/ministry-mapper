@@ -33,6 +33,7 @@ import {
   Spinner
 } from "react-bootstrap";
 import { database, auth } from "../../firebase";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import {
   Policy,
   valuesDetails,
@@ -40,7 +41,8 @@ import {
   territoryDetails,
   addressDetails,
   adminProps,
-  unitMaps
+  unitMaps,
+  userDetails
 } from "../../utils/interface";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
@@ -72,6 +74,7 @@ import {
 import {
   EnvironmentIndicator,
   TerritoryListing,
+  UserListing,
   NavBarBranding,
   AggregationBadge,
   ComponentAuthorizer,
@@ -109,6 +112,7 @@ import {
   ChangeTerritoryName,
   GetAssignments,
   GetProfile,
+  InviteUser,
   NewPrivateAddress,
   NewPublicAddress,
   NewTerritoryCode,
@@ -117,7 +121,8 @@ import {
   UpdateAddressInstructions,
   UpdatePersonalSlipExpiry,
   UpdateUnit,
-  UpdateUnitStatus
+  UpdateUnitStatus,
+  UpdateUser
 } from "../../components/modals";
 function Admin({ user }: adminProps) {
   const { code } = useParams();
@@ -134,6 +139,10 @@ function Admin({ user }: adminProps) {
   const [showBkTopButton, setShowBkTopButton] = useState(false);
   const [showTerritoryListing, setShowTerritoryListing] =
     useState<boolean>(false);
+  const [showUserListing, setShowUserListing] = useState<boolean>(false);
+  const [isShowingUserListing, setIsShowingUserListing] =
+    useState<boolean>(false);
+  const [congUsers, setCongUsers] = useState(new Map<string, userDetails>());
   const [trackRace, setTrackRace] = useState<boolean>(true);
   const [trackLanguages, setTrackLanguages] = useState<boolean>(true);
   const [showChangeAddressTerritory, setShowChangeAddressTerritory] =
@@ -167,6 +176,42 @@ function Admin({ user }: adminProps) {
       unsubFunction();
     });
     setAddressData(new Map<string, addressDetails>());
+  };
+
+  const getUsers = async () => {
+    const functions = getFunctions();
+    const getCongregationUsers = httpsCallable(
+      functions,
+      "getCongregationUsers"
+    );
+    try {
+      setIsShowingUserListing(true);
+      const result = (await getCongregationUsers({
+        congregation: code
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      })) as any;
+      if (Object.keys(result.data).length === 0) {
+        alert("There are no users to manage.");
+        return;
+      }
+      const userListing = new Map<string, userDetails>();
+      for (const key in result.data) {
+        const data = result.data[key];
+        userListing.set(key, {
+          uid: key,
+          name: data.name,
+          verified: data.verified,
+          email: data.email,
+          role: data.role
+        });
+      }
+      setCongUsers(userListing);
+      toggleUserListing();
+    } catch (error) {
+      errorHandler(error, rollbar);
+    } finally {
+      setIsShowingUserListing(false);
+    }
   };
 
   const clearAdminState = () => {
@@ -712,6 +757,34 @@ function Admin({ user }: adminProps) {
     setShowTerritoryListing(!showTerritoryListing);
   }, [showTerritoryListing]);
 
+  const handleUserSelect = (userKey: string | null) => {
+    if (!userKey) return;
+    const details = congUsers.get(userKey);
+    if (!details) return;
+    ModalManager.show(UpdateUser, {
+      uid: userKey,
+      congregation: code,
+      footerSaveAcl: userAccessLevel,
+      name: details.name,
+      role: details.role
+    }).then((updatedRole) => {
+      setCongUsers((existingUsers) => {
+        if (updatedRole === USER_ACCESS_LEVELS.NO_ACCESS.CODE) {
+          existingUsers.delete(userKey);
+          return new Map<string, userDetails>(existingUsers);
+        }
+        details.role = updatedRole as number;
+        return new Map<string, userDetails>(
+          existingUsers.set(userKey, details)
+        );
+      });
+    });
+  };
+
+  const toggleUserListing = useCallback(() => {
+    setShowUserListing(!showUserListing);
+  }, [showUserListing]);
+
   const handleAddressTerritorySelect = useCallback(
     async (newTerritoryCode: string | null) => {
       const details = values as valuesDetails;
@@ -903,8 +976,8 @@ function Admin({ user }: adminProps) {
       <UnauthorizedPage handleClick={logoutUser} name={`${user.displayName}`} />
     );
   const isDataCompletelyFetched = addressData.size === sortedAddressList.length;
-  const isAdmin = userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT;
-  const isReadonly = userAccessLevel === USER_ACCESS_LEVELS.READ_ONLY;
+  const isAdmin = userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE;
+  const isReadonly = userAccessLevel === USER_ACCESS_LEVELS.READ_ONLY.CODE;
 
   return (
     <Fade appear={true} in={true}>
@@ -924,6 +997,13 @@ function Admin({ user }: adminProps) {
           hideFunction={toggleAddressTerritoryListing}
           handleSelect={handleAddressTerritorySelect}
           hideSelectedTerritory={true}
+        />
+        <UserListing
+          showListing={showUserListing}
+          users={Array.from(congUsers.values())}
+          currentUid={user.uid}
+          hideFunction={toggleUserListing}
+          handleSelect={handleUserSelect}
         />
         <Navbar bg="light" variant="light" expand="lg">
           <Container fluid>
@@ -956,7 +1036,7 @@ function Admin({ user }: adminProps) {
                 )}
               {!selectedTerritoryCode && (
                 <ComponentAuthorizer
-                  requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
+                  requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
                   userPermission={userAccessLevel}
                 >
                   <Button
@@ -974,9 +1054,59 @@ function Admin({ user }: adminProps) {
                   </Button>
                 </ComponentAuthorizer>
               )}
+              <ComponentAuthorizer
+                requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
+                userPermission={userAccessLevel}
+              >
+                <DropdownButton
+                  className="dropdown-btn"
+                  variant="outline-primary"
+                  size="sm"
+                  title={
+                    <>
+                      {isShowingUserListing && (
+                        <>
+                          <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            aria-hidden="true"
+                          />{" "}
+                        </>
+                      )}{" "}
+                      Users
+                    </>
+                  }
+                >
+                  <Dropdown.Item onClick={async () => await getUsers()}>
+                    {isShowingUserListing && (
+                      <>
+                        <Spinner
+                          as="span"
+                          animation="border"
+                          size="sm"
+                          aria-hidden="true"
+                        />{" "}
+                      </>
+                    )}
+                    Manage
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() => {
+                      ModalManager.show(InviteUser, {
+                        email: user.email,
+                        congregation: code,
+                        footerSaveAcl: userAccessLevel
+                      });
+                    }}
+                  >
+                    Invite
+                  </Dropdown.Item>
+                </DropdownButton>
+              </ComponentAuthorizer>
               {selectedTerritoryCode && (
                 <ComponentAuthorizer
-                  requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
+                  requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
                   userPermission={userAccessLevel}
                 >
                   <DropdownButton
@@ -1135,7 +1265,7 @@ function Admin({ user }: adminProps) {
               )}
               {selectedTerritoryCode && (
                 <ComponentAuthorizer
-                  requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
+                  requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
                   userPermission={userAccessLevel}
                 >
                   <DropdownButton
@@ -1185,7 +1315,7 @@ function Admin({ user }: adminProps) {
                 size="sm"
                 variant="outline-primary"
                 title="Account"
-                align={{ lg: "end", md: "end", sm: "start" }}
+                align={{ lg: "end" }}
               >
                 <Dropdown.Item
                   onClick={() => {
@@ -1285,7 +1415,7 @@ function Admin({ user }: adminProps) {
                       <Container fluid className="justify-content-end">
                         <ComponentAuthorizer
                           requiredPermission={
-                            USER_ACCESS_LEVELS.TERRITORY_SERVANT
+                            USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE
                           }
                           userPermission={userAccessLevel}
                         >
@@ -1334,7 +1464,7 @@ function Admin({ user }: adminProps) {
                           </Button>
                         </ComponentAuthorizer>
                         <ComponentAuthorizer
-                          requiredPermission={USER_ACCESS_LEVELS.CONDUCTOR}
+                          requiredPermission={USER_ACCESS_LEVELS.CONDUCTOR.CODE}
                           userPermission={userAccessLevel}
                         >
                           <>
@@ -1477,7 +1607,7 @@ function Admin({ user }: adminProps) {
                         />
                         <ComponentAuthorizer
                           requiredPermission={
-                            USER_ACCESS_LEVELS.TERRITORY_SERVANT
+                            USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE
                           }
                           userPermission={userAccessLevel}
                         >

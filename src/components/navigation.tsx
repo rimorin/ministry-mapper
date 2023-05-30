@@ -22,12 +22,16 @@ import {
   backToTopProp,
   SignInDifferentProps,
   VerificationProps,
-  HelpButtonProps
+  HelpButtonProps,
+  UserListingProps
 } from "../utils/interface";
 import Countdown from "react-countdown";
 import { memo } from "react";
 import { NotHomeIcon } from "./table";
-import { TERRITORY_SELECTOR_VIEWPORT_HEIGHT } from "../utils/constants";
+import {
+  TERRITORY_SELECTOR_VIEWPORT_HEIGHT,
+  USER_ACCESS_LEVELS
+} from "../utils/constants";
 import { ReactComponent as TopArrowImage } from "../assets/top-arrow.svg";
 import { ReactComponent as QuestionImage } from "../assets/question.svg";
 
@@ -203,6 +207,79 @@ const TerritoryListing = memo(
   }
 );
 
+const UserListing = memo(
+  ({
+    showListing,
+    hideFunction,
+    currentUid,
+    handleSelect,
+    users
+  }: UserListingProps) => {
+    const currentCongUsers = users
+      ? users.filter((element) => element.uid !== currentUid)
+      : undefined;
+    return (
+      <Offcanvas
+        placement={"bottom"}
+        show={showListing}
+        onHide={hideFunction}
+        style={{ height: TERRITORY_SELECTOR_VIEWPORT_HEIGHT }}
+      >
+        <Offcanvas.Header closeButton>
+          <Offcanvas.Title>Select Users</Offcanvas.Title>
+        </Offcanvas.Header>
+        <Offcanvas.Body>
+          <ListGroup onSelect={handleSelect}>
+            {currentCongUsers &&
+              currentCongUsers.map((element) => (
+                <ListGroup.Item
+                  action
+                  key={`list-group-item-${element.uid}`}
+                  eventKey={`${element.uid}`}
+                >
+                  <div
+                    style={{ justifyContent: "space-between", display: "flex" }}
+                  >
+                    <span className="fw-bold">{element.name}</span>
+                    <span>
+                      <UserRoleBadge role={element.role} />
+                    </span>
+                  </div>
+                  <div className="me-auto">{element.email}</div>
+                </ListGroup.Item>
+              ))}
+          </ListGroup>
+        </Offcanvas.Body>
+      </Offcanvas>
+    );
+  }
+);
+
+const UserRoleBadge = memo(({ role }: { role: number | undefined }) => {
+  if (!role) return <></>;
+
+  switch (role) {
+    case USER_ACCESS_LEVELS.READ_ONLY.CODE:
+      return (
+        <Badge bg="secondary">
+          {USER_ACCESS_LEVELS.READ_ONLY.SHORT_DISPLAY}
+        </Badge>
+      );
+    case USER_ACCESS_LEVELS.CONDUCTOR.CODE:
+      return (
+        <Badge bg="success">{USER_ACCESS_LEVELS.CONDUCTOR.SHORT_DISPLAY}</Badge>
+      );
+    case USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE:
+      return (
+        <Badge bg="primary">
+          {USER_ACCESS_LEVELS.TERRITORY_SERVANT.SHORT_DISPLAY}
+        </Badge>
+      );
+    default:
+      return <></>;
+  }
+});
+
 const AggregationBadge = memo(
   ({ aggregate = 0, isDataFetched }: aggregateProp) => {
     let badgeStyle = "";
@@ -337,5 +414,6 @@ export {
   BackToTopButton,
   UnauthorizedPage,
   VerificationPage,
-  HelpButton
+  HelpButton,
+  UserListing
 };
