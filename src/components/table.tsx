@@ -328,7 +328,7 @@ const AdminTable = ({
                 scope="row"
               >
                 <ComponentAuthorizer
-                  requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
+                  requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
                   userPermission={userAccessLevel}
                 >
                   <Button

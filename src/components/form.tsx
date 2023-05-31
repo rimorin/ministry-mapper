@@ -15,7 +15,8 @@ import {
   FormProps,
   InstructionsProps,
   SubmitBtnProps,
-  TitleProps
+  TitleProps,
+  UserRoleProps
 } from "../utils/interface";
 
 import Calendar from "react-calendar";
@@ -38,8 +39,8 @@ const ModalFooter = ({
   handleDelete,
   type,
   //Default to conductor access lvl so that individual slips can be writable.
-  userAccessLevel = USER_ACCESS_LEVELS.CONDUCTOR,
-  requiredAcLForSave = USER_ACCESS_LEVELS.CONDUCTOR,
+  userAccessLevel = USER_ACCESS_LEVELS.CONDUCTOR.CODE,
+  requiredAcLForSave = USER_ACCESS_LEVELS.CONDUCTOR.CODE,
   isSaving = false,
   submitLabel = "Save",
   disableSubmitBtn = false
@@ -50,7 +51,7 @@ const ModalFooter = ({
       {type && type === TERRITORY_TYPES.PRIVATE ? (
         <>
           <ComponentAuthorizer
-            requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT}
+            requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
             userPermission={userAccessLevel}
           >
             <Button variant="secondary" onClick={handleDelete}>
@@ -79,7 +80,9 @@ const ModalFooter = ({
       </Button>
       <ComponentAuthorizer
         requiredPermission={
-          requiredAcLForSave ? requiredAcLForSave : USER_ACCESS_LEVELS.CONDUCTOR
+          requiredAcLForSave
+            ? requiredAcLForSave
+            : USER_ACCESS_LEVELS.CONDUCTOR.CODE
         }
         userPermission={userAccessLevel}
       >
@@ -130,7 +133,8 @@ const GenericInputField = ({
   required = false,
   placeholder = "",
   information = "",
-  inputType = "string"
+  inputType = "string",
+  readOnly = false
 }: FormProps) => {
   return (
     <Form.Group className="mb-3" controlId={`basicForm${name}Text`}>
@@ -142,6 +146,7 @@ const GenericInputField = ({
         value={changeValue}
         required={required}
         placeholder={placeholder}
+        readOnly={readOnly}
       />
       {information && <Form.Text muted>{information}</Form.Text>}
     </Form.Group>
@@ -439,7 +444,7 @@ const InstructionsButton = ({
   userAcl,
   handleSave
 }: InstructionsProps) => {
-  if (userAcl !== USER_ACCESS_LEVELS.TERRITORY_SERVANT && !instructions)
+  if (userAcl !== USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE && !instructions)
     return <></>;
   return (
     <Button
@@ -450,7 +455,7 @@ const InstructionsButton = ({
     >
       <span
         className={
-          instructions && userAcl !== USER_ACCESS_LEVELS.TERRITORY_SERVANT
+          instructions && userAcl !== USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE
             ? "blinking"
             : ""
         }
@@ -458,6 +463,62 @@ const InstructionsButton = ({
         Instructions
       </span>
     </Button>
+  );
+};
+
+const UserRoleField = ({
+  handleRoleChange,
+  role,
+  isUpdate = true
+}: UserRoleProps) => {
+  return (
+    <Form.Group
+      className="mb-1 text-center"
+      controlId="formBasicRolebtnCheckbox"
+    >
+      <ToggleButtonGroup
+        name="status"
+        type="radio"
+        value={role}
+        className="mb-3"
+        onChange={handleRoleChange}
+      >
+        {isUpdate && (
+          <ToggleButton
+            id="status-tb-0"
+            variant="outline-danger"
+            value={USER_ACCESS_LEVELS.NO_ACCESS.CODE}
+            className="fluid-button"
+          >
+            {USER_ACCESS_LEVELS.NO_ACCESS.DISPLAY}
+          </ToggleButton>
+        )}
+        <ToggleButton
+          id="status-tb-1"
+          variant="outline-secondary"
+          value={USER_ACCESS_LEVELS.READ_ONLY.CODE}
+          className="fluid-button"
+        >
+          {USER_ACCESS_LEVELS.READ_ONLY.DISPLAY}
+        </ToggleButton>
+        <ToggleButton
+          id="status-tb-2"
+          variant="outline-success"
+          value={USER_ACCESS_LEVELS.CONDUCTOR.CODE}
+          className="fluid-button"
+        >
+          {USER_ACCESS_LEVELS.CONDUCTOR.DISPLAY}
+        </ToggleButton>
+        <ToggleButton
+          id="status-tb-4"
+          variant="outline-primary"
+          value={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
+          className="fluid-button"
+        >
+          {USER_ACCESS_LEVELS.TERRITORY_SERVANT.DISPLAY}
+        </ToggleButton>
+      </ToggleButtonGroup>
+    </Form.Group>
   );
 };
 
@@ -475,5 +536,6 @@ export {
   ModalFooter,
   ModalUnitTitle,
   InstructionsButton,
-  ModalSubmitButton
+  ModalSubmitButton,
+  UserRoleField
 };

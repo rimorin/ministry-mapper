@@ -267,3 +267,40 @@ export interface HelpButtonProps {
   link: string;
   isWarningButton?: boolean;
 }
+
+export interface userDetails {
+  uid: string;
+  name: string;
+  email: string;
+  verified: boolean;
+  role: number;
+}
+
+export interface UserListingProps {
+  showListing: boolean;
+  hideFunction: () => void;
+  currentUid?: string;
+  handleSelect?: (
+    eventKey: string | null,
+    e: React.SyntheticEvent<unknown>
+  ) => void;
+  users?: userDetails[];
+}
+
+export interface UserRoleProps {
+  handleRoleChange?: (
+    value: number,
+    event: React.ChangeEvent<HTMLElement>
+  ) => void;
+  role?: number;
+  isUpdate?: boolean;
+}
+
+export interface UserModalProps {
+  email?: string | null;
+  uid?: string;
+  congregation: string | undefined;
+  name?: string;
+  role?: number | undefined;
+  footerSaveAcl: number | undefined;
+}

@@ -1,81 +1,89 @@
 ## [1.17.1](https://github.com/rimorin/ministry-mapper/compare/v1.17.0...v1.17.1) (2023-05-11)
 
-
 ### Bug Fixes
 
-* add missing wiki btn for address rename ([51548d9](https://github.com/rimorin/ministry-mapper/commit/51548d96bdd5b4b3e8d7e56c498d84a89107220c))
-* fixed alignment for add unit/property wiki btn ([d3c3a97](https://github.com/rimorin/ministry-mapper/commit/d3c3a973695e02d657ace3e3610421e2d638d7fe))
+- add missing wiki btn for address rename ([51548d9](https://github.com/rimorin/ministry-mapper/commit/51548d96bdd5b4b3e8d7e56c498d84a89107220c))
+- fixed alignment for add unit/property wiki btn ([d3c3a97](https://github.com/rimorin/ministry-mapper/commit/d3c3a973695e02d657ace3e3610421e2d638d7fe))
 
 # [1.17.0](https://github.com/rimorin/ministry-mapper/compare/v1.16.0...v1.17.0) (2023-05-10)
 
-
 ### Features
 
-* wiki help button on every components ([793ba0f](https://github.com/rimorin/ministry-mapper/commit/793ba0f575df42724c5371b34a33c08777ee0b0f))
+- wiki help button on every components ([793ba0f](https://github.com/rimorin/ministry-mapper/commit/793ba0f575df42724c5371b34a33c08777ee0b0f))
 
 # [1.16.0](https://github.com/rimorin/ministry-mapper/compare/v1.15.0...v1.16.0) (2023-05-05)
 
-
 ### Features
 
-* google recaptcha upgrade to enterprise version ([00077ab](https://github.com/rimorin/ministry-mapper/commit/00077aba422fbd869e50bfe5b25bc3a37bdb7107))
+- google recaptcha upgrade to enterprise version ([00077ab](https://github.com/rimorin/ministry-mapper/commit/00077aba422fbd869e50bfe5b25bc3a37bdb7107))
 
 # [1.15.0](https://github.com/rimorin/ministry-mapper/compare/v1.14.3...v1.15.0) (2023-05-04)
 
+### Bug Fixes
+
+- add missing wiki btn for address rename ([51548d9](https://github.com/rimorin/ministry-mapper/commit/51548d96bdd5b4b3e8d7e56c498d84a89107220c))
+- fixed alignment for add unit/property wiki btn ([d3c3a97](https://github.com/rimorin/ministry-mapper/commit/d3c3a973695e02d657ace3e3610421e2d638d7fe))
+
+# [1.17.0](https://github.com/rimorin/ministry-mapper/compare/v1.16.0...v1.17.0) (2023-05-10)
 
 ### Features
 
-* optional publisher name entry for personal slips ([0f31755](https://github.com/rimorin/ministry-mapper/commit/0f31755baccc242c18a7f10b522fe91f084adca4))
+- wiki help button on every components ([793ba0f](https://github.com/rimorin/ministry-mapper/commit/793ba0f575df42724c5371b34a33c08777ee0b0f))
+
+# [1.16.0](https://github.com/rimorin/ministry-mapper/compare/v1.15.0...v1.16.0) (2023-05-05)
+
+### Features
+
+- google recaptcha upgrade to enterprise version ([00077ab](https://github.com/rimorin/ministry-mapper/commit/00077aba422fbd869e50bfe5b25bc3a37bdb7107))
+
+# [1.15.0](https://github.com/rimorin/ministry-mapper/compare/v1.14.3...v1.15.0) (2023-05-04)
+
+### Features
+
+- optional publisher name entry for personal slips ([0f31755](https://github.com/rimorin/ministry-mapper/commit/0f31755baccc242c18a7f10b522fe91f084adca4))
 
 ## [1.14.3](https://github.com/rimorin/ministry-mapper/compare/v1.14.2...v1.14.3) (2023-04-26)
 
-
 ### Bug Fixes
 
-* handle undefined device vendor ([e784309](https://github.com/rimorin/ministry-mapper/commit/e78430915a5acf5c5062497db8fa9a096c321069))
+- handle undefined device vendor ([e784309](https://github.com/rimorin/ministry-mapper/commit/e78430915a5acf5c5062497db8fa9a096c321069))
 
 ## [1.14.2](https://github.com/rimorin/ministry-mapper/compare/v1.14.1...v1.14.2) (2023-04-19)
 
-
 ### Bug Fixes
 
-* set assignment flag to false when there is no assignments ([cb80ff5](https://github.com/rimorin/ministry-mapper/commit/cb80ff5ac3a5b621ec74b30e50acebb66268a268))
+- set assignment flag to false when there is no assignments ([cb80ff5](https://github.com/rimorin/ministry-mapper/commit/cb80ff5ac3a5b621ec74b30e50acebb66268a268))
 
 ## [1.14.1](https://github.com/rimorin/ministry-mapper/compare/v1.14.0...v1.14.1) (2023-04-19)
 
-
 ### Bug Fixes
 
-* syntax for hyperlink target ([73492fe](https://github.com/rimorin/ministry-mapper/commit/73492fef75b1f05c21a7fa036e14a232eda1c3f6))
+- syntax for hyperlink target ([73492fe](https://github.com/rimorin/ministry-mapper/commit/73492fef75b1f05c21a7fa036e14a232eda1c3f6))
 
 # [1.14.0](https://github.com/rimorin/ministry-mapper/compare/v1.13.0...v1.14.0) (2023-04-19)
 
-
 ### Bug Fixes
 
-* implement check for empty personal slip expiry date ([b269bd8](https://github.com/rimorin/ministry-mapper/commit/b269bd812c787ea95696e9e6d6adea9293f6ff8c))
-* implement revoke link checker ([1ccef34](https://github.com/rimorin/ministry-mapper/commit/1ccef34af56697b7334e9333e38273b3537cd6e9))
-
+- implement check for empty personal slip expiry date ([b269bd8](https://github.com/rimorin/ministry-mapper/commit/b269bd812c787ea95696e9e6d6adea9293f6ff8c))
+- implement revoke link checker ([1ccef34](https://github.com/rimorin/ministry-mapper/commit/1ccef34af56697b7334e9333e38273b3537cd6e9))
 
 ### Features
 
-* implement user assignments module ([ec21385](https://github.com/rimorin/ministry-mapper/commit/ec213859f89d29b2877cb6c2f5df8c5a11c40b2d))
+- implement user assignments module ([ec21385](https://github.com/rimorin/ministry-mapper/commit/ec213859f89d29b2877cb6c2f5df8c5a11c40b2d))
 
 # [1.13.0](https://github.com/rimorin/ministry-mapper/compare/v1.12.0...v1.13.0) (2023-04-17)
 
-
 ### Bug Fixes
 
-* add merged file interface.tsx ([1ef1b3b](https://github.com/rimorin/ministry-mapper/commit/1ef1b3b0e5c782139a6650cfba8d939b79a3b6f0))
-* **admin/user:** change directions from hyperlink to button ([47f5391](https://github.com/rimorin/ministry-mapper/commit/47f5391520527d96d1140af13decda542351f0b7))
-* **admin:** add placeholder optional for unitPostal ([dbb42a4](https://github.com/rimorin/ministry-mapper/commit/dbb42a440d5c6bc79a40a744b1cca878eb6e6d43))
-* unit postal is now property postal ([e43c5b0](https://github.com/rimorin/ministry-mapper/commit/e43c5b015c1edfaff3abede768f4ece7dfe3019f))
-
+- add merged file interface.tsx ([1ef1b3b](https://github.com/rimorin/ministry-mapper/commit/1ef1b3b0e5c782139a6650cfba8d939b79a3b6f0))
+- **admin/user:** change directions from hyperlink to button ([47f5391](https://github.com/rimorin/ministry-mapper/commit/47f5391520527d96d1140af13decda542351f0b7))
+- **admin:** add placeholder optional for unitPostal ([dbb42a4](https://github.com/rimorin/ministry-mapper/commit/dbb42a440d5c6bc79a40a744b1cca878eb6e6d43))
+- unit postal is now property postal ([e43c5b0](https://github.com/rimorin/ministry-mapper/commit/e43c5b015c1edfaff3abede768f4ece7dfe3019f))
 
 ### Features
 
-* display environment when environment name does not begin with production ([5f3adb2](https://github.com/rimorin/ministry-mapper/commit/5f3adb2797448e203e4bfd8a72b81433a77293b7))
-* individual postal code for houses ([82e367d](https://github.com/rimorin/ministry-mapper/commit/82e367da9c920d243bce172bfef43992c783eb8f))
+- display environment when environment name does not begin with production ([5f3adb2](https://github.com/rimorin/ministry-mapper/commit/5f3adb2797448e203e4bfd8a72b81433a77293b7))
+- individual postal code for houses ([82e367d](https://github.com/rimorin/ministry-mapper/commit/82e367da9c920d243bce172bfef43992c783eb8f))
 
 # [1.12.0](https://github.com/rimorin/ministry-mapper/compare/v1.11.0...v1.12.0) (2023-04-14)
 

@@ -18,9 +18,14 @@ const NOT_HOME_STATUS_CODES = {
 };
 
 const USER_ACCESS_LEVELS = {
-  READ_ONLY: 1,
-  CONDUCTOR: 2,
-  TERRITORY_SERVANT: 3
+  NO_ACCESS: { CODE: -1, DISPLAY: "Delete Access", SHORT_DISPLAY: "D" },
+  READ_ONLY: { CODE: 1, DISPLAY: "Read-only", SHORT_DISPLAY: "R" },
+  CONDUCTOR: { CODE: 2, DISPLAY: "Conductor", SHORT_DISPLAY: "C" },
+  TERRITORY_SERVANT: {
+    CODE: 3,
+    DISPLAY: "Administrator",
+    SHORT_DISPLAY: "A"
+  }
 };
 
 const HOUSEHOLD_TYPES = {
@@ -141,13 +146,17 @@ const WIKI_CATEGORIES = {
   UPDATE_UNIT_NUMBER: `${MINISTRY_MAPPER_WIKI_PAGE}/${ADMIN_WIKI}#change-unit-sequence-for-public-addresses-only`,
   UPDATE_INSTRUCTIONS: `${MINISTRY_MAPPER_WIKI_PAGE}/${ADMIN_WIKI}#11-giving-instructions-to-publishers`,
   CREATE_PERSONAL_SLIPS: `${MINISTRY_MAPPER_WIKI_PAGE}/${ADMIN_WIKI}#10-assigning-slips-for-personal-territory`,
-  GET_ASSIGNMENTS: `${MINISTRY_MAPPER_WIKI_PAGE}/${ADMIN_WIKI}#10-assigning-slips-for-personal-territory`,
+  INVITE_USER: `${MINISTRY_MAPPER_WIKI_PAGE}/${ADMIN_WIKI}#inviting-users`,
+  MANAGE_USERS: `${MINISTRY_MAPPER_WIKI_PAGE}/${ADMIN_WIKI}#managing-users`,
+  GET_ASSIGNMENTS: `${MINISTRY_MAPPER_WIKI_PAGE}/${CONDUCTOR_WIKI}#list-of-assignments`,
   UPDATE_UNIT_STATUS: `${MINISTRY_MAPPER_WIKI_PAGE}/${PUBLISHER_WIKI}#4-marking-slips`,
   CONDUCTOR_ADDRESS_FEEDBACK: `${MINISTRY_MAPPER_WIKI_PAGE}/${CONDUCTOR_WIKI}#4-receiving-feedback-from-publishers`,
   PUBLISHER_ADDRESS_FEEDBACK: `${MINISTRY_MAPPER_WIKI_PAGE}/${PUBLISHER_WIKI}#6-giving-feedback-to-administrators-and-conductors`
 };
 
 const ASSIGNMENT_MODAL_ID = "mm-user-assignments";
+
+const DEFAULT_FB_CLOUD_FUNCTIONS_REGION = "asia-southeast1";
 
 export {
   UA_DEVICE_MAKES,
@@ -183,5 +192,6 @@ export {
   NUMERIC_CHARACTERS,
   LINK_SELECTOR_VIEWPORT_HEIGHT,
   ASSIGNMENT_MODAL_ID,
-  WIKI_CATEGORIES
+  WIKI_CATEGORIES,
+  DEFAULT_FB_CLOUD_FUNCTIONS_REGION
 };
