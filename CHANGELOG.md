@@ -1,3 +1,16 @@
+# [1.18.0](https://github.com/rimorin/ministry-mapper/compare/v1.17.1...v1.18.0) (2023-05-31)
+
+
+### Bug Fixes
+
+* handle new users who has no roles ([3835026](https://github.com/rimorin/ministry-mapper/commit/38350260208fc6885f565c413a2d4a67cde57217))
+* user management logic for empty listing ([c44746c](https://github.com/rimorin/ministry-mapper/commit/c44746ce034365472c26b21e74f7dcf38b80d09b))
+
+
+### Features
+
+* implement user management module ([6f7810e](https://github.com/rimorin/ministry-mapper/commit/6f7810e28eef382b20f856a0ca320b3d2c762180))
+
 ## [1.17.1](https://github.com/rimorin/ministry-mapper/compare/v1.17.0...v1.17.1) (2023-05-11)
 
 ### Bug Fixes
