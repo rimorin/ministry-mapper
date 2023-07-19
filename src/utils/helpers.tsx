@@ -88,6 +88,16 @@ const processHHLanguages = (languages: string[]) => {
   return languages.join();
 };
 
+const processCompletedPercentage = (
+  completedUnits: number,
+  totalUnits: number
+) => {
+  const completedValue = Math.round((completedUnits / totalUnits) * 100);
+  const completedDisplay =
+    completedValue > MIN_PERCENTAGE_DISPLAY ? `${completedValue}%` : "";
+  return { completedValue, completedDisplay };
+};
+
 const getCompletedPercent = (policy: Policy, floors: floorDetails[]) => {
   let totalUnits = 0;
   let completedUnits = 0;
@@ -100,10 +110,7 @@ const getCompletedPercent = (policy: Policy, floors: floorDetails[]) => {
       if (policy.isCompleted(uElement)) completedUnits++;
     });
   });
-  const completedValue = Math.round((completedUnits / totalUnits) * 100);
-  const completedDisplay =
-    completedValue > MIN_PERCENTAGE_DISPLAY ? `${completedValue}%` : "";
-  return { completedValue, completedDisplay };
+  return processCompletedPercentage(completedUnits, totalUnits);
 };
 
 const addHours = (numOfHours: number, date = new Date()) => {
@@ -335,5 +342,6 @@ export {
   SetPollerInterval,
   isValidPostalSequence,
   LinkTypeDescription,
-  LinkDateFormatter
+  LinkDateFormatter,
+  processCompletedPercentage
 };

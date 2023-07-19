@@ -69,7 +69,8 @@ import {
   getLanguageDisplayByCode,
   checkCongregationExpireHours,
   SetPollerInterval,
-  pollingQueryFunction
+  pollingQueryFunction,
+  processCompletedPercentage
 } from "../../utils/helpers";
 import {
   EnvironmentIndicator,
@@ -839,16 +840,13 @@ function Admin({ user }: adminProps) {
       totalPercent += completedPercent.completedValue;
     });
 
-    let territoryCoverageAggr = Math.floor(
-      (totalPercent / (100 * addresses.size)) * 100
+    const { completedValue } = processCompletedPercentage(
+      totalPercent,
+      100 * addresses.size
     );
 
-    if (isNaN(territoryCoverageAggr)) {
-      territoryCoverageAggr = 0;
-    }
-
     return {
-      aggregate: territoryCoverageAggr,
+      aggregate: completedValue,
       lengths: unitLengths,
       percents: completedPercents,
       data: addresses
