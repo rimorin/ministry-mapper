@@ -1,3 +1,10 @@
+## [1.18.1](https://github.com/rimorin/ministry-mapper/compare/v1.18.0...v1.18.1) (2023-07-19)
+
+
+### Performance Improvements
+
+* optimised percentage calculator function ([d51a054](https://github.com/rimorin/ministry-mapper/commit/d51a05468fe43832574a24b64bebb70aa10afa1f))
+
 # [1.18.0](https://github.com/rimorin/ministry-mapper/compare/v1.17.1...v1.18.0) (2023-05-31)
 
 
