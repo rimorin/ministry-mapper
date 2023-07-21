@@ -167,6 +167,12 @@ const checkCongregationExpireHours = async (code: string) => {
   );
 };
 
+const checkCongregationMaxTries = async (code: string) => {
+  return await pollingQueryFunction(() =>
+    get(child(ref(database), `congregations/${code}/maxTries`))
+  );
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const processAddressData = async (postal: string, data: any) => {
   const dataList = [];
@@ -343,5 +349,6 @@ export {
   isValidPostalSequence,
   LinkTypeDescription,
   LinkDateFormatter,
-  processCompletedPercentage
+  processCompletedPercentage,
+  checkCongregationMaxTries
 };

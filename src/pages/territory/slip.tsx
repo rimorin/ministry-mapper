@@ -92,19 +92,14 @@ const Slip = ({
       const isTrackLanguages = snapshot.val();
       setTrackLanguages(isTrackLanguages);
       if (isTrackLanguages) {
-        const languagePolicy = new LanguagePolicy();
-        languagePolicy.maxTries = maxTries;
-        languagePolicy.homeLanguage = homeLanguage;
-        setPolicy(languagePolicy);
+        setPolicy(new LanguagePolicy(undefined, maxTries, homeLanguage));
       }
     });
     checkTraceRaceStatus(congregationcode).then((snapshot) => {
       const isTrackRace = snapshot.val();
       setTrackRace(isTrackRace);
       if (isTrackRace) {
-        const racePolicy = new RacePolicy();
-        racePolicy.maxTries = maxTries;
-        setPolicy(racePolicy);
+        setPolicy(new RacePolicy(undefined, maxTries));
       }
     });
 
