@@ -873,7 +873,6 @@ function Admin({ user }: adminProps) {
       setDefaultExpiryHours(snapshot.val());
     });
     checkCongregationMaxTries(`${code}`).then((snapshot) => {
-      if (!snapshot.exists()) return;
       const maxTries = snapshot.exists()
         ? snapshot.val()
         : DEFAULT_CONGREGATION_MAX_TRIES;
