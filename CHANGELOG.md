@@ -1,3 +1,15 @@
+# [1.19.0](https://github.com/rimorin/ministry-mapper/compare/v1.18.1...v1.19.0) (2023-07-31)
+
+
+### Bug Fixes
+
+* incorrect condition check for maxTries ([3ae78c2](https://github.com/rimorin/ministry-mapper/commit/3ae78c242eb47d9dc09ce2fb6523c5c52673e76b))
+
+
+### Features
+
+* implement congregation settings screen ([34518b2](https://github.com/rimorin/ministry-mapper/commit/34518b26a63df3a3afd5986d36196e8ad47afeb5))
+
 ## [1.18.1](https://github.com/rimorin/ministry-mapper/compare/v1.18.0...v1.18.1) (2023-07-19)
 
 
