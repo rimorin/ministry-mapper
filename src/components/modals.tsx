@@ -2,10 +2,12 @@ import NiceModal, { useModal, bootstrapDialog } from "@ebay/nice-modal-react";
 import {
   Button,
   Card,
+  Col,
   Collapse,
   Container,
   Form,
-  ListGroup
+  ListGroup,
+  Row
 } from "react-bootstrap";
 import Modal from "react-bootstrap/Modal";
 import {
@@ -41,6 +43,8 @@ import {
   LinkTypeDescription
 } from "../utils/helpers";
 import {
+  DEFAULT_CONGREGATION_MAX_TRIES,
+  DEFAULT_SELF_DESTRUCT_HOURS,
   HOUSEHOLD_TYPES,
   LINK_SELECTOR_VIEWPORT_HEIGHT,
   MINIMUM_PASSWORD_LENGTH,
@@ -65,6 +69,7 @@ import { FirebaseError } from "firebase/app";
 import Calendar from "react-calendar";
 import { LinkSession } from "../utils/policies";
 import { httpsCallable } from "firebase/functions";
+import RangeSlider from "react-bootstrap-range-slider";
 
 const UpdateUser = NiceModal.create(
   ({
@@ -1578,12 +1583,10 @@ const GetProfile = NiceModal.create(
   ({
     email,
     name,
-    maxTries,
     homeLanguage
   }: {
     email: string | null;
     name: string | null;
-    maxTries: number | undefined;
     homeLanguage: string | undefined;
   }) => {
     const modal = useModal();
@@ -1610,14 +1613,6 @@ const GetProfile = NiceModal.create(
                 id="userid"
                 defaultValue={name || undefined}
               />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label htmlFor="txtMaxTries">Max Tries</Form.Label>
-              <Form.Control readOnly id="txtMaxTries" defaultValue={maxTries} />
-              <Form.Text muted>
-                The number of times to try not at homes before considering it
-                done
-              </Form.Text>
             </Form.Group>
             {homeLanguage && (
               <Form.Group className="mb-3">
@@ -1956,6 +1951,120 @@ const GetAssignments = NiceModal.create(
     );
   }
 );
+
+const UpdateCongregationSettings = NiceModal.create(
+  ({
+    currentCongregation,
+    currentMaxTries = DEFAULT_CONGREGATION_MAX_TRIES,
+    currentDefaultExpiryHrs = DEFAULT_SELF_DESTRUCT_HOURS
+  }: {
+    currentCongregation: string;
+    currentMaxTries: number;
+    currentDefaultExpiryHrs: number;
+  }) => {
+    const modal = useModal();
+    const rollbar = useRollbar();
+    const [maxTries, setMaxTries] = useState(currentMaxTries);
+    const [defaultExpiryHrs, setDefaultExpiryHrs] = useState(
+      currentDefaultExpiryHrs
+    );
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSubmitCongSettings = async (event: FormEvent<HTMLElement>) => {
+      event.preventDefault();
+      try {
+        setIsSaving(true);
+        await pollingVoidFunction(() =>
+          set(
+            ref(database, `congregations/${currentCongregation}/expiryHours`),
+            defaultExpiryHrs
+          )
+        );
+        await pollingVoidFunction(() =>
+          set(
+            ref(database, `congregations/${currentCongregation}/maxTries`),
+            maxTries
+          )
+        );
+        alert("Congregation settings updated.");
+        window.location.reload();
+      } catch (error) {
+        errorHandler(error, rollbar);
+      } finally {
+        setIsSaving(false);
+      }
+    };
+
+    return (
+      <Modal {...bootstrapDialog(modal)}>
+        <Form onSubmit={handleSubmitCongSettings}>
+          <Modal.Header>
+            <Modal.Title>Congregation Settings</Modal.Title>
+            <HelpButton link={WIKI_CATEGORIES.MANAGE_CONG_SETTINGS} />
+          </Modal.Header>
+          <Modal.Body>
+            <Form.Group
+              className="mb-3"
+              controlId="formBasicTriesRange"
+              as={Row}
+            >
+              <Form.Label>No. of Tries</Form.Label>
+              <Col xs="9">
+                <RangeSlider
+                  tooltip="off"
+                  min={2}
+                  max={4}
+                  value={maxTries}
+                  onChange={(event) => {
+                    const { value } = event.target as HTMLInputElement;
+                    setMaxTries(parseInt(value));
+                  }}
+                />
+              </Col>
+              <Col xs="3">
+                <Form.Control value={maxTries} disabled />
+              </Col>
+              <Form.Text muted>
+                The number of times to try not at homes before considering it
+                done
+              </Form.Text>
+            </Form.Group>
+            <Form.Group
+              className="mb-3"
+              controlId="formBasicExpiryHoursRange"
+              as={Row}
+            >
+              <Form.Label>Default Slip Expiry Hours</Form.Label>
+              <Col xs="9">
+                <RangeSlider
+                  tooltip="off"
+                  min={1}
+                  max={24}
+                  value={defaultExpiryHrs}
+                  onChange={(event) => {
+                    const { value } = event.target as HTMLInputElement;
+                    setDefaultExpiryHrs(parseInt(value));
+                  }}
+                />
+              </Col>
+              <Col xs="3">
+                <Form.Control value={defaultExpiryHrs} disabled />
+              </Col>
+              <Form.Text muted>
+                The duration of the territory slip link before it expires
+              </Form.Text>
+            </Form.Group>
+          </Modal.Body>
+          <ModalFooter
+            handleClick={modal.hide}
+            isSaving={isSaving}
+            userAccessLevel={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
+          />
+        </Form>
+      </Modal>
+    );
+  }
+);
 export {
   ChangeAddressName,
   UpdateAddressFeedback,
@@ -1974,5 +2083,6 @@ export {
   UpdatePersonalSlipExpiry,
   GetAssignments,
   UpdateUser,
-  InviteUser
+  InviteUser,
+  UpdateCongregationSettings
 };

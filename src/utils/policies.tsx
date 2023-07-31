@@ -65,14 +65,14 @@ export class RacePolicy implements Policy {
   }
 }
 
-export class LanguagePolicy implements Policy {
-  maxTries: number;
+export class LanguagePolicy extends RacePolicy implements Policy {
   homeLanguage: string;
   constructor(
     userData?: IdTokenResult,
     maxtries = parseInt(NOT_HOME_STATUS_CODES.SECOND_TRY),
     homelanguage = HOUSEHOLD_LANGUAGES.ENGLISH.CODE
   ) {
+    super();
     this.maxTries = maxtries;
     this.homeLanguage = homelanguage;
     if (!userData) return;
@@ -110,18 +110,8 @@ export class LanguagePolicy implements Policy {
       this.isHomeLanguage(unit)
     );
   }
-  getUnitColor(unit: unitDetails, progress: number): string {
-    return processAvailableColour(
-      this.isCompleted(unit),
-      this.isCountable(unit),
-      progress
-    );
-  }
   getHomeLanguage(): string {
     return this.homeLanguage;
-  }
-  getMaxTries(): number {
-    return this.maxTries;
   }
 }
 
