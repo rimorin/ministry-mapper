@@ -70,7 +70,8 @@ import {
   checkCongregationExpireHours,
   SetPollerInterval,
   pollingQueryFunction,
-  processCompletedPercentage
+  processCompletedPercentage,
+  checkCongregationMaxTries
 } from "../../utils/helpers";
 import {
   EnvironmentIndicator,
@@ -102,7 +103,8 @@ import {
   PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY,
   TERRITORY_TYPES,
   ASSIGNMENT_MODAL_ID,
-  WIKI_CATEGORIES
+  WIKI_CATEGORIES,
+  DEFAULT_CONGREGATION_MAX_TRIES
 } from "../../utils/constants";
 import ModalManager from "@ebay/nice-modal-react";
 import {
@@ -120,6 +122,7 @@ import {
   NewUnit,
   UpdateAddressFeedback,
   UpdateAddressInstructions,
+  UpdateCongregationSettings,
   UpdatePersonalSlipExpiry,
   UpdateUnit,
   UpdateUnitStatus,
@@ -865,24 +868,32 @@ function Admin({ user }: adminProps) {
       }
       setUserAccessLevel(Number(userAccessLevel));
     });
-
-    checkTraceLangStatus(`${code}`).then(async (snapshot) => {
-      const isTrackLanguages = snapshot.val();
-      setTrackLanguages(isTrackLanguages);
-      if (isTrackLanguages) {
-        setPolicy(new LanguagePolicy(await user.getIdTokenResult(true)));
-      }
-    });
-    checkTraceRaceStatus(`${code}`).then(async (snapshot) => {
-      const isTrackRace = snapshot.val();
-      setTrackRace(isTrackRace);
-      if (isTrackRace) {
-        setPolicy(new RacePolicy(await user.getIdTokenResult(true)));
-      }
-    });
     checkCongregationExpireHours(`${code}`).then((snapshot) => {
       if (!snapshot.exists()) return;
       setDefaultExpiryHours(snapshot.val());
+    });
+    checkCongregationMaxTries(`${code}`).then((snapshot) => {
+      const maxTries = snapshot.exists()
+        ? snapshot.val()
+        : DEFAULT_CONGREGATION_MAX_TRIES;
+      checkTraceLangStatus(`${code}`).then(async (snapshot) => {
+        const isTrackLanguages = snapshot.val();
+        setTrackLanguages(isTrackLanguages);
+        if (isTrackLanguages) {
+          setPolicy(
+            new LanguagePolicy(await user.getIdTokenResult(true), maxTries)
+          );
+        }
+      });
+      checkTraceRaceStatus(`${code}`).then(async (snapshot) => {
+        const isTrackRace = snapshot.val();
+        setTrackRace(isTrackRace);
+        if (isTrackRace) {
+          setPolicy(
+            new RacePolicy(await user.getIdTokenResult(true), maxTries)
+          );
+        }
+      });
     });
     // Huawei is considered special due to its unusual behaviour in their OS native share functionality.
     // Device is also special if there is an undefined vendor.
@@ -1319,7 +1330,6 @@ function Admin({ user }: adminProps) {
                     ModalManager.show(GetProfile, {
                       email: user.email,
                       name: user.displayName,
-                      maxTries: policy?.getMaxTries(),
                       homeLanguage: trackLanguages
                         ? getLanguageDisplayByCode(
                             policy?.getHomeLanguage() as string
@@ -1329,6 +1339,18 @@ function Admin({ user }: adminProps) {
                   }}
                 >
                   Profile
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() =>
+                    ModalManager.show(UpdateCongregationSettings, {
+                      currentCongregation: `${code}`,
+                      currentMaxTries:
+                        policy?.getMaxTries() || DEFAULT_CONGREGATION_MAX_TRIES,
+                      currentDefaultExpiryHrs: defaultExpiryHours
+                    })
+                  }
+                >
+                  Congregation
                 </Dropdown.Item>
                 {assignments && assignments.length > 0 && (
                   <Dropdown.Item
