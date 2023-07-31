@@ -9,7 +9,8 @@ import {
   endAt,
   update,
   ref,
-  DataSnapshot
+  DataSnapshot,
+  set
 } from "firebase/database";
 import Rollbar from "rollbar";
 import { database } from "../firebase";
@@ -324,6 +325,20 @@ const LinkDateFormatter = Intl.DateTimeFormat("en", {
   dateStyle: "medium"
 });
 
+const setNotification = async (
+  type: number,
+  congregation: string,
+  postal: string
+) => {
+  await pollingVoidFunction(() =>
+    set(ref(database, `notifications/${postal}-${type}`), {
+      congregation: congregation,
+      type: type,
+      postalCode: postal
+    })
+  );
+};
+
 export {
   getLanguageDisplayByCode,
   ZeroPad,
@@ -350,5 +365,6 @@ export {
   LinkTypeDescription,
   LinkDateFormatter,
   processCompletedPercentage,
-  checkCongregationMaxTries
+  checkCongregationMaxTries,
+  setNotification
 };

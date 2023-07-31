@@ -1595,7 +1595,7 @@ function Admin({ user }: adminProps) {
                             ModalManager.show(UpdateAddressFeedback, {
                               footerSaveAcl: userAccessLevel,
                               name: currentPostalname,
-                              congregation: code,
+                              congregation: code || "",
                               postalCode: currentPostalcode,
                               currentFeedback: addressElement.feedback,
                               helpLink:
@@ -1615,7 +1615,7 @@ function Admin({ user }: adminProps) {
                           instructions={addressElement.instructions}
                           handleSave={() =>
                             ModalManager.show(UpdateAddressInstructions, {
-                              congregation: code,
+                              congregation: code || "",
                               postalCode: currentPostalcode,
                               userAccessLevel: userAccessLevel,
                               addressName: currentPostalname,

@@ -40,7 +40,8 @@ import {
   errorMessage,
   triggerPostalCodeListeners,
   LinkDateFormatter,
-  LinkTypeDescription
+  LinkTypeDescription,
+  setNotification
 } from "../utils/helpers";
 import {
   DEFAULT_CONGREGATION_MAX_TRIES,
@@ -48,6 +49,7 @@ import {
   HOUSEHOLD_TYPES,
   LINK_SELECTOR_VIEWPORT_HEIGHT,
   MINIMUM_PASSWORD_LENGTH,
+  NOTIFICATION_TYPES,
   NOT_HOME_STATUS_CODES,
   PASSWORD_POLICY,
   STATUS_CODES,
@@ -298,7 +300,7 @@ const UpdateAddressFeedback = NiceModal.create(
     name: string;
     footerSaveAcl: number | undefined;
     postalCode: string;
-    congregation: string | undefined;
+    congregation: string;
     helpLink: string;
     currentFeedback: string;
   }) => {
@@ -314,10 +316,11 @@ const UpdateAddressFeedback = NiceModal.create(
         await pollingVoidFunction(() =>
           set(ref(database, `/${postalCode}/feedback`), feedback)
         );
-        if (feedback)
-          rollbar.info(
-            `Conductor feedback on postalcode ${postalCode} of the ${congregation} congregation: ${feedback}`
-          );
+        await setNotification(
+          NOTIFICATION_TYPES.FEEDBACK,
+          congregation,
+          postalCode
+        );
         modal.hide();
       } catch (error) {
         errorHandler(error, rollbar);
@@ -1741,8 +1744,8 @@ const UpdateAddressInstructions = NiceModal.create(
     instructions
   }: {
     addressName: string;
-    congregation: string | undefined;
-    postalCode: string | undefined;
+    congregation: string;
+    postalCode: string;
     userAccessLevel: number | undefined;
     instructions: string | undefined;
   }) => {
@@ -1758,10 +1761,11 @@ const UpdateAddressInstructions = NiceModal.create(
         await pollingVoidFunction(() =>
           set(ref(database, `/${postalCode}/instructions`), addressInstructions)
         );
-        if (addressInstructions)
-          rollbar.info(
-            `Admin instructions on postalcode ${postalCode} of the ${congregation} congregation: ${addressInstructions}`
-          );
+        await setNotification(
+          NOTIFICATION_TYPES.INSTRUCTIONS,
+          congregation,
+          postalCode
+        );
         modal.hide();
       } catch (error) {
         errorHandler(error, rollbar);
