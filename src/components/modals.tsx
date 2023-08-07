@@ -1840,7 +1840,9 @@ const ConfirmSlipDetails = NiceModal.create(
     return (
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
-          <Modal.Title>{`Confirm slip details for ${addressName}`}</Modal.Title>
+          <Modal.Title>{`Confirm ${
+            isPersonalSlip ? "personal" : ""
+          } slip details for ${addressName}`}</Modal.Title>
           <HelpButton link={WIKI_CATEGORIES.CREATE_PERSONAL_SLIPS} />
         </Modal.Header>
         <Form onSubmit={handleSubmitPersonalSlip}>
