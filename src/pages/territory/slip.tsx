@@ -42,7 +42,8 @@ const Slip = ({
   postalcode = "",
   congregationcode = "",
   maxTries = 0,
-  homeLanguage = ""
+  homeLanguage = "",
+  pubName = ""
 }) => {
   const [showLegend, setShowLegend] = useState<boolean>(false);
   const [isPostalLoading, setIsPostalLoading] = useState<boolean>(true);
@@ -179,7 +180,8 @@ const Slip = ({
                       postalCode: postalcode,
                       userAccessLevel: USER_ACCESS_LEVELS.READ_ONLY.CODE,
                       addressName: `${postalName}`,
-                      instructions: instructions
+                      instructions: instructions,
+                      userName: ""
                     })
                   }
                 >
@@ -202,6 +204,7 @@ const Slip = ({
                     congregation: congregationcode,
                     postalCode: postalcode,
                     currentFeedback: (values as valuesDetails).feedback,
+                    currentName: pubName,
                     helpLink: WIKI_CATEGORIES.PUBLISHER_ADDRESS_FEEDBACK
                   })
                 }

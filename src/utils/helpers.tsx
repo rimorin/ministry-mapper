@@ -328,13 +328,15 @@ const LinkDateFormatter = Intl.DateTimeFormat("en", {
 const setNotification = async (
   type: number,
   congregation: string,
-  postal: string
+  postal: string,
+  fromUser: string
 ) => {
   await pollingVoidFunction(() =>
     set(ref(database, `notifications/${postal}-${type}`), {
       congregation: congregation,
       type: type,
-      postalCode: postal
+      postalCode: postal,
+      fromUser: fromUser
     })
   );
 };

@@ -15,6 +15,7 @@ function Territory() {
   const [isValidPostalcode, setIsValidPostalcode] = useState<boolean>(true);
   const [tokenEndTime, setTokenEndTime] = useState<number>(0);
   const [linkSession, setLinkSession] = useState<LinkSession>();
+  const [publisherName, setPublisherName] = useState<string>("");
 
   useEffect(() => {
     const linkReference = child(ref(database), `/links/${id}`);
@@ -30,6 +31,7 @@ function Territory() {
         const currentTimestamp = new Date().getTime();
         setTokenEndTime(tokenEndtime);
         setIsLinkExpired(currentTimestamp > tokenEndtime);
+        setPublisherName(linkrec.publisherName);
       } else {
         setIsLinkExpired(true);
       }
@@ -59,6 +61,7 @@ function Territory() {
       congregationcode={congregationcode}
       maxTries={linkSession?.maxTries}
       homeLanguage={linkSession?.homeLanguage}
+      pubName={publisherName}
     ></Slip>
   );
 }

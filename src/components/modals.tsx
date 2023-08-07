@@ -295,7 +295,8 @@ const UpdateAddressFeedback = NiceModal.create(
     postalCode,
     congregation,
     helpLink,
-    currentFeedback = ""
+    currentFeedback = "",
+    currentName = ""
   }: {
     name: string;
     footerSaveAcl: number | undefined;
@@ -303,6 +304,7 @@ const UpdateAddressFeedback = NiceModal.create(
     congregation: string;
     helpLink: string;
     currentFeedback: string;
+    currentName: string;
   }) => {
     const [feedback, setFeedback] = useState(currentFeedback);
     const [isSaving, setIsSaving] = useState(false);
@@ -319,7 +321,8 @@ const UpdateAddressFeedback = NiceModal.create(
         await setNotification(
           NOTIFICATION_TYPES.FEEDBACK,
           congregation,
-          postalCode
+          postalCode,
+          currentName
         );
         modal.hide();
       } catch (error) {
@@ -1741,13 +1744,15 @@ const UpdateAddressInstructions = NiceModal.create(
     postalCode,
     addressName,
     userAccessLevel,
-    instructions
+    instructions,
+    userName
   }: {
     addressName: string;
     congregation: string;
     postalCode: string;
     userAccessLevel: number | undefined;
     instructions: string | undefined;
+    userName: string;
   }) => {
     const modal = useModal();
     const rollbar = useRollbar();
@@ -1764,7 +1769,8 @@ const UpdateAddressInstructions = NiceModal.create(
         await setNotification(
           NOTIFICATION_TYPES.INSTRUCTIONS,
           congregation,
-          postalCode
+          postalCode,
+          userName
         );
         modal.hide();
       } catch (error) {
@@ -1807,13 +1813,15 @@ const UpdateAddressInstructions = NiceModal.create(
   }
 );
 
-const UpdatePersonalSlipExpiry = NiceModal.create(
+const ConfirmSlipDetails = NiceModal.create(
   ({
     addressName,
-    userAccessLevel
+    userAccessLevel,
+    isPersonalSlip = true
   }: {
     addressName: string;
     userAccessLevel: number | undefined;
+    isPersonalSlip: boolean;
   }) => {
     const modal = useModal();
     const [linkExpiryHrs, setLinkExpiryHrs] = useState<number | undefined>();
@@ -1821,7 +1829,7 @@ const UpdatePersonalSlipExpiry = NiceModal.create(
 
     const handleSubmitPersonalSlip = async (event: FormEvent<HTMLElement>) => {
       event.preventDefault();
-      if (!linkExpiryHrs) {
+      if (!linkExpiryHrs && isPersonalSlip) {
         alert("Please select an expiry date.");
         return;
       }
@@ -1832,40 +1840,42 @@ const UpdatePersonalSlipExpiry = NiceModal.create(
     return (
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
-          <Modal.Title>{`Select personal slip expiry date for ${addressName}`}</Modal.Title>
+          <Modal.Title>{`Confirm slip details for ${addressName}`}</Modal.Title>
           <HelpButton link={WIKI_CATEGORIES.CREATE_PERSONAL_SLIPS} />
         </Modal.Header>
         <Form onSubmit={handleSubmitPersonalSlip}>
           <Modal.Body>
-            <Calendar
-              //Block selection for current day and days before.
-              minDate={new Date(Date.now() + 3600 * 1000 * 24)}
-              onChange={(selectedDate: Date) => {
-                const expiryInHours = Math.floor(
-                  (selectedDate.getTime() - new Date().getTime()) /
-                    (1000 * 60 * 60)
-                );
-                setLinkExpiryHrs(expiryInHours);
-              }}
-              className="w-100 mb-1"
-            />
+            {isPersonalSlip && (
+              <Calendar
+                //Block selection for current day and days before.
+                minDate={new Date(Date.now() + 3600 * 1000 * 24)}
+                onChange={(selectedDate: Date) => {
+                  const expiryInHours = Math.floor(
+                    (selectedDate.getTime() - new Date().getTime()) /
+                      (1000 * 60 * 60)
+                  );
+                  setLinkExpiryHrs(expiryInHours);
+                }}
+                className="w-100 mb-1"
+              />
+            )}
             <GenericInputField
-              label="Publisher Name"
+              label="Publishers Name"
               name="name"
               handleChange={(event) => {
                 const { value } = event.target as HTMLInputElement;
                 setName(value);
               }}
-              placeholder="Optional name of the assigned publisher"
+              placeholder="Names of the assigned publishers"
               changeValue={name}
             />
           </Modal.Body>
           <ModalFooter
             handleClick={() => modal.hide()}
             userAccessLevel={userAccessLevel}
-            requiredAcLForSave={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
+            requiredAcLForSave={USER_ACCESS_LEVELS.CONDUCTOR.CODE}
             isSaving={false}
-            submitLabel="Assign"
+            submitLabel="Confirm"
           />
         </Form>
       </Modal>
@@ -2084,7 +2094,7 @@ export {
   GetProfile,
   ChangePassword,
   UpdateAddressInstructions,
-  UpdatePersonalSlipExpiry,
+  ConfirmSlipDetails,
   GetAssignments,
   UpdateUser,
   InviteUser,

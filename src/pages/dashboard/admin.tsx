@@ -51,7 +51,6 @@ import { InstructionsButton } from "../../components/form";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
 import { RacePolicy, LanguagePolicy, LinkSession } from "../../utils/policies";
-import getUA from "ua-parser-js";
 import { AdminTable } from "../../components/table";
 import {
   pollingVoidFunction,
@@ -95,7 +94,6 @@ import {
   DEFAULT_SELF_DESTRUCT_HOURS,
   LINK_TYPES,
   UNSUPPORTED_BROWSER_MSG,
-  UA_DEVICE_MAKES,
   RELOAD_INACTIVITY_DURATION,
   RELOAD_CHECK_INTERVAL_MS,
   USER_ACCESS_LEVELS,
@@ -123,7 +121,7 @@ import {
   UpdateAddressFeedback,
   UpdateAddressInstructions,
   UpdateCongregationSettings,
-  UpdatePersonalSlipExpiry,
+  ConfirmSlipDetails,
   UpdateUnit,
   UpdateUnitStatus,
   UpdateUser
@@ -540,17 +538,6 @@ function Admin({ user }: adminProps) {
   ) => {
     if (!postalCode || !name || !linkid) return;
     try {
-      if (isSpecialDevice) {
-        specialShareTimedLink(
-          LINK_TYPES.PERSONAL,
-          postalCode,
-          name,
-          linkid,
-          linkExpiryHrs,
-          publisherName
-        );
-        return;
-      }
       shareTimedLink(
         LINK_TYPES.PERSONAL,
         postalCode,
@@ -583,36 +570,36 @@ function Admin({ user }: adminProps) {
     hours: number,
     publisherName = ""
   ) => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: title,
-          text: body,
-          url: url
-        });
-        setSelectedPostal(postalcode);
-        if (linktype === LINK_TYPES.ASSIGNMENT) setIsSettingAssignLink(true);
-        if (linktype === LINK_TYPES.PERSONAL) setIsSettingPersonalLink(true);
-        await setTimedLink(
-          linktype,
-          postalcode,
-          postalname,
-          linkId,
-          hours,
-          publisherName
-        );
-        setAccordionKeys((existingKeys) =>
-          existingKeys.filter((key) => key !== postalcode)
-        );
-      } catch (error) {
-        errorHandler(error, rollbar, false);
-      } finally {
-        setIsSettingAssignLink(false);
-        setIsSettingPersonalLink(false);
-        setSelectedPostal("");
-      }
-    } else {
+    if (!navigator.share) {
       alert(UNSUPPORTED_BROWSER_MSG);
+      return;
+    }
+    try {
+      setSelectedPostal(postalcode);
+      if (linktype === LINK_TYPES.ASSIGNMENT) setIsSettingAssignLink(true);
+      if (linktype === LINK_TYPES.PERSONAL) setIsSettingPersonalLink(true);
+      await setTimedLink(
+        linktype,
+        postalcode,
+        postalname,
+        linkId,
+        hours,
+        publisherName
+      );
+      await navigator.share({
+        title: title,
+        text: body,
+        url: url
+      });
+      setAccordionKeys((existingKeys) =>
+        existingKeys.filter((key) => key !== postalcode)
+      );
+    } catch (error) {
+      errorHandler(error, rollbar, false);
+    } finally {
+      setIsSettingAssignLink(false);
+      setIsSettingPersonalLink(false);
+      setSelectedPostal("");
     }
   };
 
@@ -644,106 +631,6 @@ function Admin({ user }: adminProps) {
     if (!congregationCode) return;
     const tokenData = await user.getIdTokenResult(true);
     return tokenData.claims[congregationCode];
-  };
-
-  /* Special logic to handle cases where device navigator.share 
-  does not return a callback after a successful share. */
-  const specialShareTimedLink = async (
-    linktype: number,
-    postalcode: string,
-    name: string,
-    linkId: string,
-    hours = DEFAULT_SELF_DESTRUCT_HOURS,
-    publisherName = ""
-  ) => {
-    if (navigator.share) {
-      if (linktype === LINK_TYPES.PERSONAL) {
-        setIsSettingPersonalLink(true);
-        try {
-          await setTimedLink(
-            linktype,
-            postalcode,
-            name,
-            linkId,
-            hours,
-            publisherName
-          );
-          await navigator.share({
-            title: `Units for ${name}`,
-            text: assignmentMessage(name),
-            url: `${domain}/${postalcode}/${code}/${linkId}`
-          });
-        } finally {
-          setIsSettingAssignLink(false);
-          setIsSettingPersonalLink(false);
-          setSelectedPostal("");
-          setAccordionKeys((existingKeys) =>
-            existingKeys.filter((key) => key !== postalcode)
-          );
-        }
-        return;
-      }
-      confirmAlert({
-        customUI: ({ onClose }) => {
-          return (
-            <Container>
-              <Card bg="Light" className="text-center">
-                <Card.Header>
-                  Confirmation on assignment for {name} ✅
-                </Card.Header>
-                <Card.Body>
-                  <Card.Title>Do you want to proceed ?</Card.Title>
-                  <Button
-                    className="m-1"
-                    variant="primary"
-                    onClick={async () => {
-                      onClose();
-                      setSelectedPostal(postalcode);
-                      setIsSettingAssignLink(true);
-                      await setTimedLink(
-                        linktype,
-                        postalcode,
-                        name,
-                        linkId,
-                        hours
-                      );
-
-                      try {
-                        navigator.share({
-                          title: `Units for ${name}`,
-                          text: assignmentMessage(name),
-                          url: `${domain}/${postalcode}/${code}/${linkId}`
-                        });
-                      } finally {
-                        setIsSettingAssignLink(false);
-                        setIsSettingPersonalLink(false);
-                        setSelectedPostal("");
-                        setAccordionKeys((existingKeys) =>
-                          existingKeys.filter((key) => key !== postalcode)
-                        );
-                      }
-                    }}
-                  >
-                    Yes
-                  </Button>
-                  <Button
-                    className="ms-2"
-                    variant="primary"
-                    onClick={() => {
-                      onClose();
-                    }}
-                  >
-                    No
-                  </Button>
-                </Card.Body>
-              </Card>
-            </Container>
-          );
-        }
-      });
-    } else {
-      alert(UNSUPPORTED_BROWSER_MSG);
-    }
   };
 
   const handleTerritorySelect = useCallback(
@@ -895,13 +782,6 @@ function Admin({ user }: adminProps) {
         }
       });
     });
-    // Huawei is considered special due to its unusual behaviour in their OS native share functionality.
-    // Device is also special if there is an undefined vendor.
-    const currentDeviceMake = getUA().device.vendor;
-    setIsSpecialDevice(
-      currentDeviceMake === undefined ||
-        currentDeviceMake === UA_DEVICE_MAKES.HUAWEI
-    );
 
     const congregationReference = child(ref(database), `congregations/${code}`);
     const pollerId = SetPollerInterval();
@@ -1442,10 +1322,15 @@ function Admin({ user }: adminProps) {
                             key={`assigndrop-${currentPostalcode}`}
                             size="sm"
                             variant="outline-primary"
-                            onClick={() =>
-                              ModalManager.show(UpdatePersonalSlipExpiry, {
+                            onClick={() => {
+                              if (!navigator.share) {
+                                alert(UNSUPPORTED_BROWSER_MSG);
+                                return;
+                              }
+                              ModalManager.show(ConfirmSlipDetails, {
                                 addressName: currentPostalname,
-                                userAccessLevel: userAccessLevel
+                                userAccessLevel: userAccessLevel,
+                                isPersonalSlip: true
                               }).then((linkReturn) => {
                                 const linkObject = linkReturn as Record<
                                   string,
@@ -1458,8 +1343,8 @@ function Admin({ user }: adminProps) {
                                   linkObject.linkExpiryHrs as number,
                                   linkObject.publisherName as string
                                 );
-                              })
-                            }
+                              });
+                            }}
                           >
                             {isSettingPersonalLink &&
                               selectedPostal === currentPostalcode && (
@@ -1492,26 +1377,31 @@ function Admin({ user }: adminProps) {
                               variant="outline-primary"
                               className="m-1"
                               onClick={() => {
-                                if (isSpecialDevice) {
-                                  specialShareTimedLink(
+                                if (!navigator.share) {
+                                  alert(UNSUPPORTED_BROWSER_MSG);
+                                  return;
+                                }
+                                ModalManager.show(ConfirmSlipDetails, {
+                                  addressName: currentPostalname,
+                                  userAccessLevel: userAccessLevel,
+                                  isPersonalSlip: false
+                                }).then((linkReturn) => {
+                                  const linkObject = linkReturn as Record<
+                                    string,
+                                    unknown
+                                  >;
+                                  shareTimedLink(
                                     LINK_TYPES.ASSIGNMENT,
                                     currentPostalcode,
                                     currentPostalname,
                                     addressLinkId,
-                                    defaultExpiryHours
+                                    `Units for ${currentPostalname}`,
+                                    assignmentMessage(currentPostalname),
+                                    `${domain}/${currentPostalcode}/${code}/${addressLinkId}`,
+                                    defaultExpiryHours,
+                                    linkObject.publisherName as string
                                   );
-                                  return;
-                                }
-                                shareTimedLink(
-                                  LINK_TYPES.ASSIGNMENT,
-                                  currentPostalcode,
-                                  currentPostalname,
-                                  addressLinkId,
-                                  `Units for ${currentPostalname}`,
-                                  assignmentMessage(currentPostalname),
-                                  `${domain}/${currentPostalcode}/${code}/${addressLinkId}`,
-                                  defaultExpiryHours
-                                );
+                                });
                               }}
                             >
                               {isSettingAssignLink &&
@@ -1549,7 +1439,8 @@ function Admin({ user }: adminProps) {
                                     currentPostalcode,
                                     currentPostalname,
                                     addressLinkId,
-                                    defaultExpiryHours
+                                    defaultExpiryHours,
+                                    user.displayName || ""
                                   );
                                   if (territoryWindow) {
                                     territoryWindow.location.href = `${domain}/${currentPostalcode}/${code}/${addressLinkId}`;
@@ -1598,6 +1489,7 @@ function Admin({ user }: adminProps) {
                               congregation: code || "",
                               postalCode: currentPostalcode,
                               currentFeedback: addressElement.feedback,
+                              currentName: user.displayName || "",
                               helpLink:
                                 WIKI_CATEGORIES.CONDUCTOR_ADDRESS_FEEDBACK
                             })
@@ -1619,7 +1511,8 @@ function Admin({ user }: adminProps) {
                               postalCode: currentPostalcode,
                               userAccessLevel: userAccessLevel,
                               addressName: currentPostalname,
-                              instructions: addressElement.instructions
+                              instructions: addressElement.instructions,
+                              userName: user.displayName || ""
                             })
                           }
                           userAcl={userAccessLevel}
