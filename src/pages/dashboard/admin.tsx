@@ -136,8 +136,6 @@ function Admin({ user }: adminProps) {
   const [isSettingViewLink, setIsSettingViewLink] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isUnauthorised, setIsUnauthorised] = useState<boolean>(false);
-  const [isSpecialDevice, setIsSpecialDevice] = useState<boolean>(false);
-  useState<boolean>(false);
   const [showBkTopButton, setShowBkTopButton] = useState(false);
   const [showTerritoryListing, setShowTerritoryListing] =
     useState<boolean>(false);
