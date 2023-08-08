@@ -70,7 +70,8 @@ import {
   User,
   reauthenticateWithCredential,
   updatePassword,
-  EmailAuthProvider
+  EmailAuthProvider,
+  updateProfile
 } from "firebase/auth";
 import { FirebaseError } from "firebase/app";
 import Calendar from "react-calendar";
@@ -1592,37 +1593,58 @@ const UpdateUnitStatus = NiceModal.create(
 
 const GetProfile = NiceModal.create(
   ({
-    email,
-    name,
+    user,
     homeLanguage
   }: {
-    email: string | null;
-    name: string | null;
+    user: User;
     homeLanguage: string | undefined;
   }) => {
     const modal = useModal();
+    const rollbar = useRollbar();
+    const [isSaving, setIsSaving] = useState(false);
+    const [username, setUsername] = useState(user.displayName || "");
+
+    const UpdateProfile = async (event: FormEvent<HTMLElement>) => {
+      event.preventDefault();
+      setIsSaving(true);
+      try {
+        await updateProfile(user, {
+          displayName: username
+        });
+        alert("Profile updated.");
+        modal.hide();
+      } catch (error) {
+        errorHandler(errorMessage((error as FirebaseError).code), rollbar);
+      } finally {
+        setIsSaving(false);
+      }
+    };
 
     return (
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
           <Modal.Title>My Profile</Modal.Title>
         </Modal.Header>
-        <Form>
+        <Form onSubmit={UpdateProfile}>
           <Modal.Body>
             <Form.Group className="mb-3">
               <Form.Label htmlFor="userid">Email</Form.Label>
               <Form.Control
                 readOnly
+                disabled
                 id="userid"
-                defaultValue={email || undefined}
+                defaultValue={user.email || undefined}
               />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label htmlFor="userid">Name</Form.Label>
               <Form.Control
-                readOnly
                 id="userid"
-                defaultValue={name || undefined}
+                defaultValue={username}
+                onChange={(e: ChangeEvent<HTMLElement>) => {
+                  const { value } = e.target as HTMLInputElement;
+                  setUsername(value);
+                }}
               />
             </Form.Group>
             {homeLanguage && (
@@ -1635,18 +1657,12 @@ const GetProfile = NiceModal.create(
                 />
               </Form.Group>
             )}
-            <Form.Group className="mb-3">
-              <Form.Label htmlFor="userid">Application Version</Form.Label>
-              <Form.Control
-                readOnly
-                id="appversionno"
-                defaultValue={process.env.REACT_APP_VERSION}
-              />
-            </Form.Group>
           </Modal.Body>
           <ModalFooter
             handleClick={modal.hide}
-            userAccessLevel={USER_ACCESS_LEVELS.READ_ONLY.CODE}
+            userAccessLevel={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
+            isSaving={isSaving}
+            submitLabel="Update"
           />
         </Form>
       </Modal>

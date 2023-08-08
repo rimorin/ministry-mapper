@@ -1206,8 +1206,7 @@ function Admin({ user }: adminProps) {
                 <Dropdown.Item
                   onClick={() => {
                     ModalManager.show(GetProfile, {
-                      email: user.email,
-                      name: user.displayName,
+                      user: user,
                       homeLanguage: trackLanguages
                         ? getLanguageDisplayByCode(
                             policy?.getHomeLanguage() as string
