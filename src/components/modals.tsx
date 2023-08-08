@@ -66,7 +66,12 @@ import {
 import { confirmAlert } from "react-confirm-alert";
 import { ComponentAuthorizer, HelpButton } from "./navigation";
 import PasswordChecklist from "react-password-checklist";
-import { User, updatePassword } from "firebase/auth";
+import {
+  User,
+  reauthenticateWithCredential,
+  updatePassword,
+  EmailAuthProvider
+} from "firebase/auth";
 import { FirebaseError } from "firebase/app";
 import Calendar from "react-calendar";
 import { LinkSession } from "../utils/policies";
@@ -1659,6 +1664,7 @@ const ChangePassword = NiceModal.create(
   }) => {
     const modal = useModal();
     const rollbar = useRollbar();
+    const [existingPassword, setExistingPassword] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [isChangePasswordOk, setIsChangePasswordOk] = useState(false);
@@ -1671,6 +1677,10 @@ const ChangePassword = NiceModal.create(
       event.stopPropagation();
       try {
         setIsSaving(true);
+        await reauthenticateWithCredential(
+          user,
+          EmailAuthProvider.credential(user.email || "", existingPassword)
+        );
         await updatePassword(user, password);
         rollbar.info(
           `User updated password! Email: ${user.email}, Name: ${user.displayName}`
@@ -1679,7 +1689,6 @@ const ChangePassword = NiceModal.create(
         modal.hide();
       } catch (error) {
         errorHandler(errorMessage((error as FirebaseError).code), rollbar);
-        return;
       } finally {
         setIsSaving(false);
       }
@@ -1692,6 +1701,18 @@ const ChangePassword = NiceModal.create(
         </Modal.Header>
         <Form onSubmit={handleChangePassword}>
           <Modal.Body>
+            <Form.Group className="mb-3" controlId="formBasicExistingPassword">
+              <Form.Label>Existing Password</Form.Label>
+              <Form.Control
+                type="password"
+                name="existingPassword"
+                onChange={(event) => {
+                  const { value } = event.target as HTMLInputElement;
+                  setExistingPassword(value);
+                }}
+                required
+              />
+            </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicNewPassword">
               <Form.Label>New Password</Form.Label>
               <Form.Control
