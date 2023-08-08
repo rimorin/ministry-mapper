@@ -2007,10 +2007,12 @@ const GetAssignments = NiceModal.create(
 
 const UpdateCongregationSettings = NiceModal.create(
   ({
+    currentName,
     currentCongregation,
     currentMaxTries = DEFAULT_CONGREGATION_MAX_TRIES,
     currentDefaultExpiryHrs = DEFAULT_SELF_DESTRUCT_HOURS
   }: {
+    currentName: string;
     currentCongregation: string;
     currentMaxTries: number;
     currentDefaultExpiryHrs: number;
@@ -2021,6 +2023,7 @@ const UpdateCongregationSettings = NiceModal.create(
     const [defaultExpiryHrs, setDefaultExpiryHrs] = useState(
       currentDefaultExpiryHrs
     );
+    const [name, setName] = useState(currentName);
     const [isSaving, setIsSaving] = useState(false);
 
     const handleSubmitCongSettings = async (event: FormEvent<HTMLElement>) => {
@@ -2028,16 +2031,11 @@ const UpdateCongregationSettings = NiceModal.create(
       try {
         setIsSaving(true);
         await pollingVoidFunction(() =>
-          set(
-            ref(database, `congregations/${currentCongregation}/expiryHours`),
-            defaultExpiryHrs
-          )
-        );
-        await pollingVoidFunction(() =>
-          set(
-            ref(database, `congregations/${currentCongregation}/maxTries`),
-            maxTries
-          )
+          update(ref(database, `congregations/${currentCongregation}`), {
+            name: name,
+            expiryHours: defaultExpiryHrs,
+            maxTries: maxTries
+          })
         );
         alert("Congregation settings updated.");
         window.location.reload();
@@ -2056,6 +2054,18 @@ const UpdateCongregationSettings = NiceModal.create(
             <HelpButton link={WIKI_CATEGORIES.MANAGE_CONG_SETTINGS} />
           </Modal.Header>
           <Modal.Body>
+            <Form.Group className="mb-3" controlId="formBasicCongName">
+              <Form.Label>Name</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter congregation name"
+                onChange={(event) => {
+                  const { value } = event.target as HTMLInputElement;
+                  setName(value);
+                }}
+                value={name}
+              />
+            </Form.Group>
             <Form.Group
               className="mb-3"
               controlId="formBasicTriesRange"

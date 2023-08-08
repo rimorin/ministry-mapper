@@ -1220,6 +1220,7 @@ function Admin({ user }: adminProps) {
                 <Dropdown.Item
                   onClick={() =>
                     ModalManager.show(UpdateCongregationSettings, {
+                      currentName: `${name}`,
                       currentCongregation: `${code}`,
                       currentMaxTries:
                         policy?.getMaxTries() || DEFAULT_CONGREGATION_MAX_TRIES,
