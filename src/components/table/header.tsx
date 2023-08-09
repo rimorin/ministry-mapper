@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { ZeroPad } from "../../utils/helpers";
+import ZeroPad from "../../utils/helpers/zeropad";
 import { tableHeaderProp } from "../../utils/interface";
 
 const TableHeader = memo(({ floors, maxUnitNumber = 2 }: tableHeaderProp) => {

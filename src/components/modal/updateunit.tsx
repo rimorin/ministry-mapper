@@ -6,11 +6,9 @@ import { Modal, Form, Button, Container, Card } from "react-bootstrap";
 import { confirmAlert } from "react-confirm-alert";
 import { database } from "../../firebase";
 import { WIKI_CATEGORIES } from "../../utils/constants";
-import {
-  pollingVoidFunction,
-  errorHandler,
-  processPostalUnitNumber
-} from "../../utils/helpers";
+import pollingVoidFunction from "../../utils/helpers/pollingvoid";
+import errorHandler from "../../utils/helpers/errorhandler";
+import processPostalUnitNumber from "../../utils/helpers/processpostalno";
 import { addressDetails, unitMaps } from "../../utils/interface";
 import GenericInputField from "../form/input";
 import ModalSubmitButton from "../form/submit";

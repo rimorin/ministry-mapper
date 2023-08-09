@@ -4,11 +4,9 @@ import { get, ref, remove, set, push } from "firebase/database";
 import { useState, FormEvent, ChangeEvent } from "react";
 import { Modal, Form } from "react-bootstrap";
 import { USER_ACCESS_LEVELS, WIKI_CATEGORIES } from "../../utils/constants";
-import {
-  pollingQueryFunction,
-  pollingVoidFunction,
-  errorHandler
-} from "../../utils/helpers";
+import pollingQueryFunction from "../../utils/helpers/pollingquery";
+import pollingVoidFunction from "../../utils/helpers/pollingvoid";
+import errorHandler from "../../utils/helpers/errorhandler";
 import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";
 import HelpButton from "../navigation/help";

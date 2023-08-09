@@ -5,7 +5,8 @@ import { User, updateProfile } from "firebase/auth";
 import { useState, FormEvent, ChangeEvent } from "react";
 import { Modal, Form } from "react-bootstrap";
 import { USER_ACCESS_LEVELS } from "../../utils/constants";
-import { errorHandler, errorMessage } from "../../utils/helpers";
+import errorHandler from "../../utils/helpers/errorhandler";
+import errorMessage from "../../utils/helpers/errormsg";
 import ModalFooter from "../form/footer";
 
 const GetProfile = NiceModal.create(

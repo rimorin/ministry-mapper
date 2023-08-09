@@ -6,12 +6,10 @@ import {
   LINK_SELECTOR_VIEWPORT_HEIGHT,
   USER_ACCESS_LEVELS
 } from "../../utils/constants";
-import {
-  LinkTypeDescription,
-  LinkDateFormatter,
-  pollingVoidFunction,
-  triggerPostalCodeListeners
-} from "../../utils/helpers";
+import LinkTypeDescription from "../../utils/helpers/linkdesc";
+import LinkDateFormatter from "../../utils/helpers/linkdateformatter";
+import pollingVoidFunction from "../../utils/helpers/pollingvoid";
+import triggerPostalCodeListeners from "../../utils/helpers/postalcodelistener";
 import { LinkSession } from "../../utils/policies";
 import ModalFooter from "../form/footer";
 import HelpButton from "../navigation/help";

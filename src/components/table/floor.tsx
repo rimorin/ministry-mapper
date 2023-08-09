@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { DEFAULT_FLOOR_PADDING } from "../../utils/constants";
-import { ZeroPad } from "../../utils/helpers";
+import ZeroPad from "../../utils/helpers/zeropad";
 import { floorHeaderProp } from "../../utils/interface";
 
 const FloorHeader = memo(({ index, floor }: floorHeaderProp) => (

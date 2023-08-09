@@ -5,11 +5,9 @@ import {
   DEFAULT_FLOOR_PADDING,
   DEFAULT_UNIT_DNC_MS_TIME
 } from "../../utils/constants";
-import { ZeroPad } from "../../utils/helpers";
+import ZeroPad from "../../utils/helpers/zeropad";
 import { territoryTableProps } from "../../utils/interface";
-// import { ComponentAuthorizer } from "../navigation";
 import ComponentAuthorizer from "../navigation/authorizer";
-// import { UnitStatus } from "../table";
 import UnitStatus from "./unit";
 import PrivateTerritoryTable from "./private";
 

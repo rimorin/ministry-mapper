@@ -5,11 +5,9 @@ import { useState, FormEvent } from "react";
 import { Modal, Form } from "react-bootstrap";
 import { database } from "../../firebase";
 import { USER_ACCESS_LEVELS, NOTIFICATION_TYPES } from "../../utils/constants";
-import {
-  pollingVoidFunction,
-  setNotification,
-  errorHandler
-} from "../../utils/helpers";
+import pollingVoidFunction from "../../utils/helpers/pollingvoid";
+import setNotification from "../../utils/helpers/setnotification";
+import errorHandler from "../../utils/helpers/errorhandler";
 import ModalFooter from "../form/footer";
 import GenericTextAreaField from "../form/textarea";
 import HelpButton from "../navigation/help";

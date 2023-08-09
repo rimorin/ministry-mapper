@@ -5,7 +5,7 @@ import { useState, FormEvent } from "react";
 import { Modal, Form } from "react-bootstrap";
 import { functions } from "../../firebase";
 import { USER_ACCESS_LEVELS, WIKI_CATEGORIES } from "../../utils/constants";
-import { errorHandler } from "../../utils/helpers";
+import errorHandler from "../../utils/helpers/errorhandler";
 import { UserModalProps } from "../../utils/interface";
 import ModalFooter from "../form/footer";
 import UserRoleField from "../form/role";

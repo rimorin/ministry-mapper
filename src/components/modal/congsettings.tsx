@@ -10,7 +10,8 @@ import {
   WIKI_CATEGORIES,
   USER_ACCESS_LEVELS
 } from "../../utils/constants";
-import { pollingVoidFunction, errorHandler } from "../../utils/helpers";
+import errorHandler from "../../utils/helpers/errorhandler";
+import pollingVoidFunction from "../../utils/helpers/pollingvoid";
 import HelpButton from "../navigation/help";
 import { database } from "../../firebase";
 import ModalFooter from "../form/footer";

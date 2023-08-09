@@ -11,13 +11,11 @@ import {
   NOT_HOME_STATUS_CODES,
   WIKI_CATEGORIES
 } from "../../utils/constants";
-import {
-  isValidPostal,
-  isValidPostalSequence,
-  processPropertyNumber,
-  pollingVoidFunction,
-  errorHandler
-} from "../../utils/helpers";
+import isValidPostal from "../../utils/helpers/checkvalidpostal";
+import isValidPostalSequence from "../../utils/helpers/checkvalidseq";
+import processPropertyNumber from "../../utils/helpers/processpropertyno";
+import pollingVoidFunction from "../../utils/helpers/pollingvoid";
+import errorHandler from "../../utils/helpers/errorhandler";
 import { unitMaps } from "../../utils/interface";
 import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";

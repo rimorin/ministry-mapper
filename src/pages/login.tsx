@@ -7,7 +7,8 @@ import { Card, Form, Button, Container, Spinner, Modal } from "react-bootstrap";
 import { auth } from "../firebase";
 import { FirebaseError } from "firebase/app";
 import { useRollbar } from "@rollbar/react";
-import { errorHandler, errorMessage } from "../utils/helpers";
+import errorHandler from "../utils/helpers/errorhandler";
+import errorMessage from "../utils/helpers/errormsg";
 import SuspenseComponent from "../components/utils/suspense";
 
 // //lazy load EnvironmentIndicato

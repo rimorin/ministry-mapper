@@ -13,7 +13,8 @@ import {
   PASSWORD_POLICY,
   MINIMUM_PASSWORD_LENGTH
 } from "../../utils/constants";
-import { errorHandler, errorMessage } from "../../utils/helpers";
+import errorHandler from "../../utils/helpers/errorhandler";
+import errorMessage from "../../utils/helpers/errormsg";
 import ModalFooter from "../form/footer";
 import PasswordChecklist from "react-password-checklist";
 

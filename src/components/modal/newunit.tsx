@@ -7,7 +7,8 @@ import {
   TERRITORY_TYPES,
   WIKI_CATEGORIES
 } from "../../utils/constants";
-import { processPostalUnitNumber, errorHandler } from "../../utils/helpers";
+import processPostalUnitNumber from "../../utils/helpers/processpostalno";
+import errorHandler from "../../utils/helpers/errorhandler";
 import { addressDetails } from "../../utils/interface";
 import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";

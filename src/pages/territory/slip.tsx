@@ -5,15 +5,13 @@ import { Container, Fade, Navbar, NavDropdown } from "react-bootstrap";
 import { floorDetails, valuesDetails, Policy } from "../../utils/interface";
 import PublisherTerritoryTable from "../../components/table/publisher";
 import { RacePolicy, LanguagePolicy } from "../../utils/policies";
-import {
-  ZeroPad,
-  processAddressData,
-  checkTraceLangStatus,
-  checkTraceRaceStatus,
-  getMaxUnitLength,
-  getCompletedPercent,
-  SetPollerInterval
-} from "../../utils/helpers";
+import ZeroPad from "../../utils/helpers/zeropad";
+import processAddressData from "../../utils/helpers/processadddata";
+import checkTraceLangStatus from "../../utils/helpers/checklangstatus";
+import checkTraceRaceStatus from "../../utils/helpers/checkracestatus";
+import getMaxUnitLength from "../../utils/helpers/maxunitlength";
+import getCompletedPercent from "../../utils/helpers/getcompletedpercent";
+import SetPollerInterval from "../../utils/helpers/pollinginterval";
 import Legend from "../../components/navigation/legend";
 import EnvironmentIndicator from "../../components/navigation/environment";
 import NavBarBranding from "../../components/navigation/branding";

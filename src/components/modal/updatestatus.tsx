@@ -19,13 +19,11 @@ import {
   NOT_HOME_STATUS_CODES,
   WIKI_CATEGORIES
 } from "../../utils/constants";
-import {
-  pollingVoidFunction,
-  errorHandler,
-  processHHLanguages,
-  parseHHLanguages,
-  processPostalUnitNumber
-} from "../../utils/helpers";
+import pollingVoidFunction from "../../utils/helpers/pollingvoid";
+import errorHandler from "../../utils/helpers/errorhandler";
+import processHHLanguages from "../../utils/helpers/processhhlang";
+import parseHHLanguages from "../../utils/helpers/parsehhlang";
+import processPostalUnitNumber from "../../utils/helpers/processpostalno";
 import { addressDetails, unitDetails } from "../../utils/interface";
 import DncDateField from "../form/dncdate";
 import ModalFooter from "../form/footer";
