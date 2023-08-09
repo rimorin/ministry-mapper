@@ -10,7 +10,8 @@ const GenericInputField = ({
   placeholder = "",
   information = "",
   inputType = "string",
-  readOnly = false
+  readOnly = false,
+  focus = false
 }: FormProps) => {
   return (
     <Form.Group className="mb-3" controlId={`basicForm${name}Text`}>
@@ -23,6 +24,7 @@ const GenericInputField = ({
         required={required}
         placeholder={placeholder}
         readOnly={readOnly}
+        autoFocus={focus}
       />
       {information && <Form.Text muted>{information}</Form.Text>}
     </Form.Group>

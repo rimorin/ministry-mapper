@@ -64,6 +64,7 @@ const ConfirmSlipDetails = NiceModal.create(
               }}
               placeholder="Names of the assigned publishers"
               changeValue={name}
+              focus={true}
             />
           </Modal.Body>
           <ModalFooter
