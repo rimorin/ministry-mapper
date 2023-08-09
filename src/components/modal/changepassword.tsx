@@ -1,6 +1,6 @@
 import NiceModal, { useModal, bootstrapDialog } from "@ebay/nice-modal-react";
 import { useRollbar } from "@rollbar/react";
-import { FirebaseError } from "firebase-admin";
+import { FirebaseError } from "firebase/app";
 import {
   User,
   reauthenticateWithCredential,
