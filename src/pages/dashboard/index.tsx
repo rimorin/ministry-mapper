@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { auth } from "../../firebase";
-import Admin from "./admin";
-import Login from "../login";
 import { Loader } from "../../components/static";
 import { sendEmailVerification, signOut, User } from "firebase/auth";
 import { useParams } from "react-router-dom";
 import { useRollbar } from "@rollbar/react";
 import { VerificationPage } from "../../components/navigation";
+const Login = lazy(() => import("../login"));
+const Admin = lazy(() => import("./admin"));
 
 function Dashboard() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -38,7 +38,11 @@ function Dashboard() {
       />
     );
   }
-  return loginUser ? <Admin user={loginUser} /> : <Login />;
+  return (
+    <Suspense fallback={<Loader />}>
+      {loginUser ? <Admin user={loginUser} /> : <Login />}
+    </Suspense>
+  );
 }
 
 export default Dashboard;
