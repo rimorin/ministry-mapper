@@ -1,12 +1,14 @@
 import { useState, useEffect, lazy, Suspense } from "react";
 import { auth } from "../../firebase";
-import { Loader } from "../../components/static";
+import Loader from "../../components/statics/loader";
 import { sendEmailVerification, signOut, User } from "firebase/auth";
 import { useParams } from "react-router-dom";
 import { useRollbar } from "@rollbar/react";
-import { VerificationPage } from "../../components/navigation";
 const Login = lazy(() => import("../login"));
 const Admin = lazy(() => import("./admin"));
+const VerificationPage = lazy(
+  () => import("../../components/navigation/verification")
+);
 
 function Dashboard() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -25,17 +27,19 @@ function Dashboard() {
       `Unverified user attempting to access ${code}! Email: ${loginUser.email}, Name: ${loginUser.displayName}`
     );
     return (
-      <VerificationPage
-        handleResendMail={() => {
-          sendEmailVerification(loginUser).then(() =>
-            alert(
-              "Resent verification email! Please check your inbox or spam folder."
-            )
-          );
-        }}
-        handleClick={() => signOut(auth)}
-        name={`${loginUser.displayName}`}
-      />
+      <Suspense fallback={<Loader />}>
+        <VerificationPage
+          handleResendMail={() => {
+            sendEmailVerification(loginUser).then(() =>
+              alert(
+                "Resent verification email! Please check your inbox or spam folder."
+              )
+            );
+          }}
+          handleClick={() => signOut(auth)}
+          name={`${loginUser.displayName}`}
+        />
+      </Suspense>
     );
   }
   return (

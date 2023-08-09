@@ -8,8 +8,10 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "react-calendar/dist/Calendar.css";
 import "../css/main.css";
 import "../css/common.css";
-import { MaintenanceMode, NotFoundPage, Loader } from "../components/static";
+import Loader from "../components/statics/loader";
 
+const MaintenanceMode = lazy(() => import("../components/statics/maintenance"));
+const NotFoundPage = lazy(() => import("../components/statics/notfound"));
 const FrontPage = lazy(() => import("./frontpage"));
 const Territory = lazy(() => import("./territory/index"));
 const Dashboard = lazy(() => import("./dashboard/index"));
@@ -25,7 +27,12 @@ function Main() {
       }
     });
   }, []);
-  if (isMaintenance) return <MaintenanceMode />;
+  if (isMaintenance)
+    return (
+      <Suspense fallback={<Loader />}>
+        <MaintenanceMode />
+      </Suspense>
+    );
   return (
     <Container className="pt-2" fluid>
       <Suspense fallback={<Loader />}>

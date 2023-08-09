@@ -1,11 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { database } from "../../firebase";
 import { useParams } from "react-router-dom";
 import { child, onValue, ref } from "firebase/database";
 import Slip from "./slip";
 import { LinkSession } from "../../utils/policies";
-import { Loader, NotFoundPage, InvalidPage } from "../../components/static";
+import Loader from "../../components/statics/loader";
 import { SetPollerInterval } from "../../utils/helpers";
+
+//lazy load notfoundpage and invalidpage
+const NotFoundPage = lazy(() => import("../../components/statics/notfound"));
+const InvalidPage = lazy(() => import("../../components/statics/invalidpage"));
 
 function Territory() {
   const { id, postalcode, congregationcode } = useParams();
@@ -49,10 +53,19 @@ function Territory() {
     );
   }, [id, postalcode]);
   if (isLoading || isTokenLoading) return <Loader />;
-  if (!isValidPostalcode) return <NotFoundPage />;
+  if (!isValidPostalcode)
+    return (
+      <Suspense fallback={<Loader />}>
+        <NotFoundPage />
+      </Suspense>
+    );
   if (isLinkExpired) {
     document.title = "Ministry Mapper";
-    return <InvalidPage />;
+    return (
+      <Suspense fallback={<Loader />}>
+        <InvalidPage />
+      </Suspense>
+    );
   }
   return (
     <Slip

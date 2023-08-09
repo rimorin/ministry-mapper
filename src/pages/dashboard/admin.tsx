@@ -18,7 +18,7 @@ import {
 import "../../css/admin.css";
 import { signOut, User } from "firebase/auth";
 import { nanoid } from "nanoid";
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, lazy } from "react";
 import {
   Accordion,
   Badge,
@@ -47,11 +47,11 @@ import {
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import { useParams } from "react-router-dom";
-import { InstructionsButton } from "../../components/form";
+import InstructionsButton from "../../components/form/instructions";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
 import { RacePolicy, LanguagePolicy, LinkSession } from "../../utils/policies";
-import { AdminTable } from "../../components/table";
+import AdminTable from "../../components/table/admin";
 import {
   pollingVoidFunction,
   processAddressData,
@@ -72,19 +72,18 @@ import {
   processCompletedPercentage,
   checkCongregationMaxTries
 } from "../../utils/helpers";
-import {
-  EnvironmentIndicator,
-  TerritoryListing,
-  UserListing,
-  NavBarBranding,
-  AggregationBadge,
-  ComponentAuthorizer,
-  TerritoryHeader,
-  BackToTopButton,
-  UnauthorizedPage,
-  HelpButton
-} from "../../components/navigation";
-import { Loader, Welcome } from "../../components/static";
+import EnvironmentIndicator from "../../components/navigation/environment";
+import TerritoryListing from "../../components/navigation/territorylist";
+import UserListing from "../../components/navigation/userlist";
+import NavBarBranding from "../../components/navigation/branding";
+import AggregationBadge from "../../components/navigation/aggrbadge";
+import ComponentAuthorizer from "../../components/navigation/authorizer";
+import TerritoryHeader from "../../components/navigation/territoryheader";
+import BackToTopButton from "../../components/navigation/backtotop";
+import UnauthorizedPage from "../../components/statics/unauth";
+import HelpButton from "../../components/navigation/help";
+import Loader from "../../components/statics/loader";
+import Welcome from "../../components/statics/welcome";
 import {
   STATUS_CODES,
   HOUSEHOLD_TYPES,
@@ -100,32 +99,57 @@ import {
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY,
   TERRITORY_TYPES,
-  ASSIGNMENT_MODAL_ID,
   WIKI_CATEGORIES,
   DEFAULT_CONGREGATION_MAX_TRIES
 } from "../../utils/constants";
 import ModalManager from "@ebay/nice-modal-react";
-import {
-  ChangeAddressName,
-  ChangeAddressPostalCode,
-  ChangePassword,
-  ChangeTerritoryCode,
-  ChangeTerritoryName,
-  GetAssignments,
-  GetProfile,
-  InviteUser,
-  NewPrivateAddress,
-  NewPublicAddress,
-  NewTerritoryCode,
-  NewUnit,
-  UpdateAddressFeedback,
-  UpdateAddressInstructions,
-  UpdateCongregationSettings,
-  ConfirmSlipDetails,
-  UpdateUnit,
-  UpdateUnitStatus,
-  UpdateUser
-} from "../../components/modals";
+import SuspenseComponent from "../../components/utils/suspense";
+const UpdateUser = lazy(() => import("../../components/modal/updateuser"));
+const UpdateUnitStatus = lazy(
+  () => import("../../components/modal/updatestatus")
+);
+const UpdateUnit = lazy(() => import("../../components/modal/updateunit"));
+const ConfirmSlipDetails = lazy(
+  () => import("../../components/modal/slipdetails")
+);
+const UpdateCongregationSettings = lazy(
+  () => import("../../components/modal/congsettings")
+);
+const UpdateAddressInstructions = lazy(
+  () => import("../../components/modal/instructions")
+);
+const UpdateAddressFeedback = lazy(
+  () => import("../../components/modal/updateaddfeedback")
+);
+const NewUnit = lazy(() => import("../../components/modal/newunit"));
+const NewTerritoryCode = lazy(
+  () => import("../../components/modal/newterritorycd")
+);
+const NewPublicAddress = lazy(
+  () => import("../../components/modal/newpublicadd")
+);
+const NewPrivateAddress = lazy(
+  () => import("../../components/modal/newprivateadd")
+);
+const InviteUser = lazy(() => import("../../components/modal/inviteuser"));
+const GetProfile = lazy(() => import("../../components/modal/profile"));
+const GetAssignments = lazy(() => import("../../components/modal/assignments"));
+const ChangeTerritoryName = lazy(
+  () => import("../../components/modal/changeterritoryname")
+);
+const ChangeTerritoryCode = lazy(
+  () => import("../../components/modal/changeterritorycd")
+);
+const ChangePassword = lazy(
+  () => import("../../components/modal/changepassword")
+);
+const ChangeAddressPostalCode = lazy(
+  () => import("../../components/modal/changepostalcd")
+);
+const ChangeAddressName = lazy(
+  () => import("../../components/modal/changeaddname")
+);
+
 function Admin({ user }: adminProps) {
   const { code } = useParams();
   const [isSettingPersonalLink, setIsSettingPersonalLink] =
@@ -481,7 +505,7 @@ function Admin({ user }: adminProps) {
     const floorUnits = floors.find((e) => e.floor === floor);
     const unitDetails = floorUnits?.units.find((e) => e.number === unit);
 
-    ModalManager.show(UpdateUnitStatus, {
+    ModalManager.show(SuspenseComponent(UpdateUnitStatus), {
       addressName: name,
       userAccessLevel: userAccessLevel,
       territoryType: addressData.type,
@@ -649,7 +673,7 @@ function Admin({ user }: adminProps) {
     if (!userKey) return;
     const details = congUsers.get(userKey);
     if (!details) return;
-    ModalManager.show(UpdateUser, {
+    ModalManager.show(SuspenseComponent(UpdateUser), {
       uid: userKey,
       congregation: code,
       footerSaveAcl: userAccessLevel,
@@ -817,7 +841,6 @@ function Admin({ user }: adminProps) {
             linkListing.push(new LinkSession(linkData[linkId], linkId));
           }
         }
-        if (linkListing.length === 0) ModalManager.hide(ASSIGNMENT_MODAL_ID);
         setAssignments(linkListing);
       },
       (reason) => {
@@ -930,7 +953,7 @@ function Admin({ user }: adminProps) {
                     size="sm"
                     variant="outline-primary"
                     onClick={() =>
-                      ModalManager.show(NewTerritoryCode, {
+                      ModalManager.show(SuspenseComponent(NewTerritoryCode), {
                         footerSaveAcl: userAccessLevel,
                         congregation: code
                       })
@@ -979,7 +1002,7 @@ function Admin({ user }: adminProps) {
                   </Dropdown.Item>
                   <Dropdown.Item
                     onClick={() => {
-                      ModalManager.show(InviteUser, {
+                      ModalManager.show(SuspenseComponent(InviteUser), {
                         email: user.email,
                         congregation: code,
                         footerSaveAcl: userAccessLevel
@@ -1003,7 +1026,7 @@ function Admin({ user }: adminProps) {
                   >
                     <Dropdown.Item
                       onClick={() =>
-                        ModalManager.show(NewTerritoryCode, {
+                        ModalManager.show(SuspenseComponent(NewTerritoryCode), {
                           footerSaveAcl: userAccessLevel,
                           congregation: code
                         })
@@ -1013,11 +1036,14 @@ function Admin({ user }: adminProps) {
                     </Dropdown.Item>
                     <Dropdown.Item
                       onClick={() =>
-                        ModalManager.show(ChangeTerritoryCode, {
-                          footerSaveAcl: userAccessLevel,
-                          congregation: code,
-                          territoryCode: selectedTerritoryCode
-                        }).then((updatedCode) =>
+                        ModalManager.show(
+                          SuspenseComponent(ChangeTerritoryCode),
+                          {
+                            footerSaveAcl: userAccessLevel,
+                            congregation: code,
+                            territoryCode: selectedTerritoryCode
+                          }
+                        ).then((updatedCode) =>
                           processSelectedTerritory(updatedCode as string)
                         )
                       }
@@ -1077,12 +1103,15 @@ function Admin({ user }: adminProps) {
                     </Dropdown.Item>
                     <Dropdown.Item
                       onClick={() =>
-                        ModalManager.show(ChangeTerritoryName, {
-                          footerSaveAcl: userAccessLevel,
-                          congregation: code,
-                          territoryCode: selectedTerritoryCode,
-                          name: selectedTerritoryName
-                        }).then((updatedName) =>
+                        ModalManager.show(
+                          SuspenseComponent(ChangeTerritoryName),
+                          {
+                            footerSaveAcl: userAccessLevel,
+                            congregation: code,
+                            territoryCode: selectedTerritoryCode,
+                            name: selectedTerritoryName
+                          }
+                        ).then((updatedName) =>
                           setSelectedTerritoryName(updatedName as string)
                         )
                       }
@@ -1163,7 +1192,7 @@ function Admin({ user }: adminProps) {
                   >
                     <Dropdown.Item
                       onClick={() =>
-                        ModalManager.show(NewPublicAddress, {
+                        ModalManager.show(SuspenseComponent(NewPublicAddress), {
                           footerSaveAcl: userAccessLevel,
                           congregation: code,
                           territoryCode: selectedTerritoryCode
@@ -1179,11 +1208,14 @@ function Admin({ user }: adminProps) {
                     </Dropdown.Item>
                     <Dropdown.Item
                       onClick={() =>
-                        ModalManager.show(NewPrivateAddress, {
-                          footerSaveAcl: userAccessLevel,
-                          congregation: code,
-                          territoryCode: selectedTerritoryCode
-                        }).then(
+                        ModalManager.show(
+                          SuspenseComponent(NewPrivateAddress),
+                          {
+                            footerSaveAcl: userAccessLevel,
+                            congregation: code,
+                            territoryCode: selectedTerritoryCode
+                          }
+                        ).then(
                           async () =>
                             await refreshCongregationTerritory(
                               selectedTerritoryCode || ""
@@ -1205,7 +1237,7 @@ function Admin({ user }: adminProps) {
               >
                 <Dropdown.Item
                   onClick={() => {
-                    ModalManager.show(GetProfile, {
+                    ModalManager.show(SuspenseComponent(GetProfile), {
                       user: user,
                       homeLanguage: trackLanguages
                         ? getLanguageDisplayByCode(
@@ -1219,27 +1251,35 @@ function Admin({ user }: adminProps) {
                 </Dropdown.Item>
                 <Dropdown.Item
                   onClick={() =>
-                    ModalManager.show(UpdateCongregationSettings, {
-                      currentName: `${name}`,
-                      currentCongregation: `${code}`,
-                      currentMaxTries:
-                        policy?.getMaxTries() || DEFAULT_CONGREGATION_MAX_TRIES,
-                      currentDefaultExpiryHrs: defaultExpiryHours
-                    })
+                    ModalManager.show(
+                      SuspenseComponent(UpdateCongregationSettings),
+                      {
+                        currentName: `${name}`,
+                        currentCongregation: `${code}`,
+                        currentMaxTries:
+                          policy?.getMaxTries() ||
+                          DEFAULT_CONGREGATION_MAX_TRIES,
+                        currentDefaultExpiryHrs: defaultExpiryHours
+                      }
+                    )
                   }
                 >
                   Congregation
                 </Dropdown.Item>
                 {assignments && assignments.length > 0 && (
                   <Dropdown.Item
-                    onClick={() => ModalManager.show(ASSIGNMENT_MODAL_ID)}
+                    onClick={() =>
+                      ModalManager.show(SuspenseComponent(GetAssignments), {
+                        assignments: assignments
+                      })
+                    }
                   >
                     Assignments
                   </Dropdown.Item>
                 )}
                 <Dropdown.Item
                   onClick={() =>
-                    ModalManager.show(ChangePassword, {
+                    ModalManager.show(SuspenseComponent(ChangePassword), {
                       user: user,
                       userAccessLevel: userAccessLevel
                     })
@@ -1325,11 +1365,14 @@ function Admin({ user }: adminProps) {
                                 alert(UNSUPPORTED_BROWSER_MSG);
                                 return;
                               }
-                              ModalManager.show(ConfirmSlipDetails, {
-                                addressName: currentPostalname,
-                                userAccessLevel: userAccessLevel,
-                                isPersonalSlip: true
-                              }).then((linkReturn) => {
+                              ModalManager.show(
+                                SuspenseComponent(ConfirmSlipDetails),
+                                {
+                                  addressName: currentPostalname,
+                                  userAccessLevel: userAccessLevel,
+                                  isPersonalSlip: true
+                                }
+                              ).then((linkReturn) => {
                                 const linkObject = linkReturn as Record<
                                   string,
                                   unknown
@@ -1379,11 +1422,14 @@ function Admin({ user }: adminProps) {
                                   alert(UNSUPPORTED_BROWSER_MSG);
                                   return;
                                 }
-                                ModalManager.show(ConfirmSlipDetails, {
-                                  addressName: currentPostalname,
-                                  userAccessLevel: userAccessLevel,
-                                  isPersonalSlip: false
-                                }).then((linkReturn) => {
+                                ModalManager.show(
+                                  SuspenseComponent(ConfirmSlipDetails),
+                                  {
+                                    addressName: currentPostalname,
+                                    userAccessLevel: userAccessLevel,
+                                    isPersonalSlip: false
+                                  }
+                                ).then((linkReturn) => {
                                   const linkObject = linkReturn as Record<
                                     string,
                                     unknown
@@ -1481,16 +1527,19 @@ function Admin({ user }: adminProps) {
                           variant="outline-primary"
                           className="m-1"
                           onClick={() =>
-                            ModalManager.show(UpdateAddressFeedback, {
-                              footerSaveAcl: userAccessLevel,
-                              name: currentPostalname,
-                              congregation: code || "",
-                              postalCode: currentPostalcode,
-                              currentFeedback: addressElement.feedback,
-                              currentName: user.displayName || "",
-                              helpLink:
-                                WIKI_CATEGORIES.CONDUCTOR_ADDRESS_FEEDBACK
-                            })
+                            ModalManager.show(
+                              SuspenseComponent(UpdateAddressFeedback),
+                              {
+                                footerSaveAcl: userAccessLevel,
+                                name: currentPostalname,
+                                congregation: code || "",
+                                postalCode: currentPostalcode,
+                                currentFeedback: addressElement.feedback,
+                                currentName: user.displayName || "",
+                                helpLink:
+                                  WIKI_CATEGORIES.CONDUCTOR_ADDRESS_FEEDBACK
+                              }
+                            )
                           }
                         >
                           <span
@@ -1504,14 +1553,17 @@ function Admin({ user }: adminProps) {
                         <InstructionsButton
                           instructions={addressElement.instructions}
                           handleSave={() =>
-                            ModalManager.show(UpdateAddressInstructions, {
-                              congregation: code || "",
-                              postalCode: currentPostalcode,
-                              userAccessLevel: userAccessLevel,
-                              addressName: currentPostalname,
-                              instructions: addressElement.instructions,
-                              userName: user.displayName || ""
-                            })
+                            ModalManager.show(
+                              SuspenseComponent(UpdateAddressInstructions),
+                              {
+                                congregation: code || "",
+                                postalCode: currentPostalcode,
+                                userAccessLevel: userAccessLevel,
+                                addressName: currentPostalname,
+                                instructions: addressElement.instructions,
+                                userName: user.displayName || ""
+                              }
+                            )
                           }
                           userAcl={userAccessLevel}
                         />
@@ -1530,12 +1582,15 @@ function Admin({ user }: adminProps) {
                           >
                             <Dropdown.Item
                               onClick={() =>
-                                ModalManager.show(ChangeAddressPostalCode, {
-                                  footerSaveAcl: userAccessLevel,
-                                  congregation: code,
-                                  postalCode: currentPostalcode,
-                                  territoryCode: selectedTerritoryCode
-                                }).then(
+                                ModalManager.show(
+                                  SuspenseComponent(ChangeAddressPostalCode),
+                                  {
+                                    footerSaveAcl: userAccessLevel,
+                                    congregation: code,
+                                    postalCode: currentPostalcode,
+                                    territoryCode: selectedTerritoryCode
+                                  }
+                                ).then(
                                   async () =>
                                     await refreshCongregationTerritory(
                                       selectedTerritoryCode || ""
@@ -1558,18 +1613,21 @@ function Admin({ user }: adminProps) {
                             </Dropdown.Item>
                             <Dropdown.Item
                               onClick={() =>
-                                ModalManager.show(ChangeAddressName, {
-                                  footerSaveAcl: userAccessLevel,
-                                  postal: currentPostalcode,
-                                  name: currentPostalname
-                                })
+                                ModalManager.show(
+                                  SuspenseComponent(ChangeAddressName),
+                                  {
+                                    footerSaveAcl: userAccessLevel,
+                                    postal: currentPostalcode,
+                                    name: currentPostalname
+                                  }
+                                )
                               }
                             >
                               Rename
                             </Dropdown.Item>
                             <Dropdown.Item
                               onClick={() =>
-                                ModalManager.show(NewUnit, {
+                                ModalManager.show(SuspenseComponent(NewUnit), {
                                   footerSaveAcl: userAccessLevel,
                                   postalCode: currentPostalcode,
                                   addressData: addressElement
@@ -1760,7 +1818,7 @@ function Admin({ user }: adminProps) {
                         const { sequence, unitno, length } =
                           event.currentTarget.dataset;
                         if (!isAdmin) return;
-                        ModalManager.show(UpdateUnit, {
+                        ModalManager.show(SuspenseComponent(UpdateUnit), {
                           postalCode: currentPostalcode,
                           unitNo: unitno || "",
                           unitLength: Number(length),
@@ -1840,7 +1898,6 @@ function Admin({ user }: adminProps) {
           })}
         </Accordion>
         <BackToTopButton showButton={showBkTopButton} />
-        <GetAssignments id={ASSIGNMENT_MODAL_ID} assignments={assignments} />
       </>
     </Fade>
   );

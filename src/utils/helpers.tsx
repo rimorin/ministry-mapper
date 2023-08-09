@@ -14,7 +14,13 @@ import {
 } from "firebase/database";
 import Rollbar from "rollbar";
 import { database } from "../firebase";
-import { Policy, floorDetails, unitDetails } from "../utils/interface";
+import {
+  Policy,
+  addressDetails,
+  floorDetails,
+  unitDetails,
+  unitMaps
+} from "../utils/interface";
 import { LinkSession, LinkCounts } from "../utils/policies";
 import {
   LINK_TYPES,
@@ -25,7 +31,9 @@ import {
   TERRITORY_TYPES,
   SPECIAL_CHARACTERS,
   MINIMUM_POSTAL_LENGTH,
-  NUMERIC_CHARACTERS
+  NUMERIC_CHARACTERS,
+  HOUSEHOLD_TYPES,
+  STATUS_CODES
 } from "../utils/constants";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -344,6 +352,49 @@ const setNotification = async (
   );
 };
 
+const processPostalUnitNumber = async (
+  postalCode: string,
+  unitNumber: string,
+  addressData: addressDetails | undefined,
+  isDelete = false
+) => {
+  if (!addressData) return;
+
+  if (!isDelete) {
+    const existingUnitNo = await get(
+      ref(
+        database,
+        `/${postalCode}/units/${addressData.floors[0].floor}/${unitNumber}`
+      )
+    );
+    if (existingUnitNo.exists()) {
+      alert(`Unit number, ${unitNumber} already exist.`);
+      return;
+    }
+  }
+
+  const unitUpdates: unitMaps = {};
+  const lastSequenceNo = addressData.floors[0].units.length + 1;
+  for (const index in addressData.floors) {
+    const floorDetails = addressData.floors[index];
+    floorDetails.units.forEach(() => {
+      unitUpdates[`/${postalCode}/units/${floorDetails.floor}/${unitNumber}`] =
+        isDelete
+          ? {}
+          : {
+              type: HOUSEHOLD_TYPES.CHINESE,
+              note: "",
+              status: STATUS_CODES.DEFAULT,
+              nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+              x_floor: floorDetails.floor,
+              languages: "",
+              sequence: lastSequenceNo
+            };
+    });
+  }
+  await pollingVoidFunction(() => update(ref(database), unitUpdates));
+};
+
 export {
   getLanguageDisplayByCode,
   ZeroPad,
@@ -371,5 +422,6 @@ export {
   LinkDateFormatter,
   processCompletedPercentage,
   checkCongregationMaxTries,
-  setNotification
+  setNotification,
+  processPostalUnitNumber
 };

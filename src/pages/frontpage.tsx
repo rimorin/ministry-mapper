@@ -24,8 +24,9 @@ import {
   PASSWORD_POLICY,
   WIKI_CATEGORIES
 } from "../utils/constants";
-import { HelpButton, NavBarBranding } from "../components/navigation";
-import { FrontLogo } from "../components/static";
+import HelpButton from "../components/navigation/help";
+import NavBarBranding from "../components/navigation/branding";
+import FrontLogo from "../components/statics/logo";
 
 const FrontPage = () => {
   const [loginEmail, setLoginEmail] = useState("");
