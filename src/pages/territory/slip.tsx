@@ -3,23 +3,19 @@ import { ref, child, onValue } from "firebase/database";
 import { database } from "../../firebase";
 import { Container, Fade, Navbar, NavDropdown } from "react-bootstrap";
 import { floorDetails, valuesDetails, Policy } from "../../utils/interface";
-import { PublisherTerritoryTable } from "../../components/table";
+import PublisherTerritoryTable from "../../components/table/publisher";
 import { RacePolicy, LanguagePolicy } from "../../utils/policies";
-import {
-  ZeroPad,
-  processAddressData,
-  checkTraceLangStatus,
-  checkTraceRaceStatus,
-  getMaxUnitLength,
-  getCompletedPercent,
-  SetPollerInterval
-} from "../../utils/helpers";
-import {
-  Legend,
-  EnvironmentIndicator,
-  NavBarBranding
-} from "../../components/navigation";
-import { Loader } from "../../components/static";
+import ZeroPad from "../../utils/helpers/zeropad";
+import processAddressData from "../../utils/helpers/processadddata";
+import checkTraceLangStatus from "../../utils/helpers/checklangstatus";
+import checkTraceRaceStatus from "../../utils/helpers/checkracestatus";
+import getMaxUnitLength from "../../utils/helpers/maxunitlength";
+import getCompletedPercent from "../../utils/helpers/getcompletedpercent";
+import SetPollerInterval from "../../utils/helpers/pollinginterval";
+import Legend from "../../components/navigation/legend";
+import EnvironmentIndicator from "../../components/navigation/environment";
+import NavBarBranding from "../../components/navigation/branding";
+import Loader from "../../components/statics/loader";
 import {
   DEFAULT_FLOOR_PADDING,
   RELOAD_INACTIVITY_DURATION,
@@ -32,11 +28,9 @@ import "../../css/slip.css";
 import Countdown from "react-countdown";
 import { ReactComponent as InfoImg } from "../../assets/information.svg";
 import ModalManager from "@ebay/nice-modal-react";
-import {
-  UpdateAddressFeedback,
-  UpdateAddressInstructions,
-  UpdateUnitStatus
-} from "../../components/modals";
+import UpdateAddressFeedback from "../../components/modal/updateaddfeedback";
+import UpdateAddressInstructions from "../../components/modal/instructions";
+import UpdateUnitStatus from "../../components/modal/updatestatus";
 const Slip = ({
   tokenEndtime = 0,
   postalcode = "",
