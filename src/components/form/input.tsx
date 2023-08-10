@@ -24,6 +24,7 @@ const GenericInputField = ({
         required={required}
         placeholder={placeholder}
         readOnly={readOnly}
+        // autofocus does not work for ios safari
         autoFocus={focus}
       />
       {information && <Form.Text muted>{information}</Form.Text>}
