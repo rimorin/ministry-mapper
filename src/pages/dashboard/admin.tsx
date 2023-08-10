@@ -18,7 +18,14 @@ import {
 import "../../css/admin.css";
 import { signOut, User } from "firebase/auth";
 import { nanoid } from "nanoid";
-import { useEffect, useState, useCallback, useMemo, lazy } from "react";
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  lazy,
+  Suspense
+} from "react";
 import {
   Accordion,
   Badge,
@@ -78,7 +85,6 @@ import AggregationBadge from "../../components/navigation/aggrbadge";
 import ComponentAuthorizer from "../../components/navigation/authorizer";
 import TerritoryHeader from "../../components/navigation/territoryheader";
 import BackToTopButton from "../../components/navigation/backtotop";
-import UnauthorizedPage from "../../components/statics/unauth";
 import HelpButton from "../../components/navigation/help";
 import Loader from "../../components/statics/loader";
 import Welcome from "../../components/statics/welcome";
@@ -102,6 +108,7 @@ import {
 } from "../../utils/constants";
 import ModalManager from "@ebay/nice-modal-react";
 import SuspenseComponent from "../../components/utils/suspense";
+const UnauthorizedPage = lazy(() => import("../../components/statics/unauth"));
 const UpdateUser = lazy(() => import("../../components/modal/updateuser"));
 const UpdateUnitStatus = lazy(
   () => import("../../components/modal/updatestatus")
@@ -880,7 +887,12 @@ function Admin({ user }: adminProps) {
   if (isLoading) return <Loader />;
   if (isUnauthorised)
     return (
-      <UnauthorizedPage handleClick={logoutUser} name={`${user.displayName}`} />
+      <Suspense fallback={<Loader />}>
+        <UnauthorizedPage
+          handleClick={logoutUser}
+          name={`${user.displayName}`}
+        />
+      </Suspense>
     );
   const isDataCompletelyFetched = addressData.size === sortedAddressList.length;
   const isAdmin = userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE;

@@ -6,8 +6,6 @@ import Slip from "./slip";
 import { LinkSession } from "../../utils/policies";
 import Loader from "../../components/statics/loader";
 import SetPollerInterval from "../../utils/helpers/pollinginterval";
-
-//lazy load notfoundpage and invalidpage
 const NotFoundPage = lazy(() => import("../../components/statics/notfound"));
 const InvalidPage = lazy(() => import("../../components/statics/invalidpage"));
 

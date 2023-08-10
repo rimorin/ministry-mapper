@@ -1,4 +1,4 @@
-import { lazy, useState } from "react";
+import { useState } from "react";
 import {
   sendPasswordResetEmail,
   signInWithEmailAndPassword
@@ -9,12 +9,7 @@ import { FirebaseError } from "firebase/app";
 import { useRollbar } from "@rollbar/react";
 import errorHandler from "../utils/helpers/errorhandler";
 import errorMessage from "../utils/helpers/errormsg";
-import SuspenseComponent from "../components/utils/suspense";
-
-// //lazy load EnvironmentIndicato
-const EnvironmentIndicator = lazy(
-  () => import("../components/navigation/environment")
-);
+import EnvironmentIndicator from "../components/navigation/environment";
 
 const Login = () => {
   const [loginEmail, setLoginEmail] = useState("");
@@ -71,11 +66,9 @@ const Login = () => {
   };
 
   const toggleForgotPassword = () => setIsForgotPassword(!isForgotPassword);
-
   return (
     <>
-      {!process.env.REACT_APP_ROLLBAR_ENVIRONMENT?.startsWith("production") &&
-        SuspenseComponent(EnvironmentIndicator)}
+      <EnvironmentIndicator />
       <Container
         fluid
         className="d-flex align-items-center justify-content-center vh-100"
