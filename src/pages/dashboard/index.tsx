@@ -1,13 +1,14 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, lazy } from "react";
 import { auth } from "../../firebase";
 import Loader from "../../components/statics/loader";
 import { sendEmailVerification, signOut, User } from "firebase/auth";
 import { useParams } from "react-router-dom";
 import { useRollbar } from "@rollbar/react";
-const Login = lazy(() => import("../login"));
-const Admin = lazy(() => import("./admin"));
-const VerificationPage = lazy(
-  () => import("../../components/navigation/verification")
+import SuspenseComponent from "../../components/utils/suspense";
+const Login = SuspenseComponent(lazy(() => import("../login")));
+const Admin = SuspenseComponent(lazy(() => import("./admin")));
+const VerificationPage = SuspenseComponent(
+  lazy(() => import("../../components/navigation/verification"))
 );
 
 function Dashboard() {
@@ -27,26 +28,20 @@ function Dashboard() {
       `Unverified user attempting to access ${code}! Email: ${loginUser.email}, Name: ${loginUser.displayName}`
     );
     return (
-      <Suspense fallback={<Loader />}>
-        <VerificationPage
-          handleResendMail={() => {
-            sendEmailVerification(loginUser).then(() =>
-              alert(
-                "Resent verification email! Please check your inbox or spam folder."
-              )
-            );
-          }}
-          handleClick={() => signOut(auth)}
-          name={`${loginUser.displayName}`}
-        />
-      </Suspense>
+      <VerificationPage
+        handleResendMail={() => {
+          sendEmailVerification(loginUser).then(() =>
+            alert(
+              "Resent verification email! Please check your inbox or spam folder."
+            )
+          );
+        }}
+        handleClick={() => signOut(auth)}
+        name={`${loginUser.displayName}`}
+      />
     );
   }
-  return (
-    <Suspense fallback={<Loader />}>
-      {loginUser ? <Admin user={loginUser} /> : <Login />}
-    </Suspense>
-  );
+  return loginUser ? <Admin user={loginUser} /> : <Login />;
 }
 
 export default Dashboard;

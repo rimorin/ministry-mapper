@@ -9,8 +9,11 @@ import "react-calendar/dist/Calendar.css";
 import "../css/main.css";
 import "../css/common.css";
 import Loader from "../components/statics/loader";
+import SuspenseComponent from "../components/utils/suspense";
 
-const MaintenanceMode = lazy(() => import("../components/statics/maintenance"));
+const MaintenanceMode = SuspenseComponent(
+  lazy(() => import("../components/statics/maintenance"))
+);
 const NotFoundPage = lazy(() => import("../components/statics/notfound"));
 const FrontPage = lazy(() => import("./frontpage"));
 const Territory = lazy(() => import("./territory/index"));
@@ -27,12 +30,7 @@ function Main() {
       }
     });
   }, []);
-  if (isMaintenance)
-    return (
-      <Suspense fallback={<Loader />}>
-        <MaintenanceMode />
-      </Suspense>
-    );
+  if (isMaintenance) return <MaintenanceMode />;
   return (
     <Container className="pt-2" fluid>
       <Suspense fallback={<Loader />}>

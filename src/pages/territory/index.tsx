@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, lazy } from "react";
 import { database } from "../../firebase";
 import { useParams } from "react-router-dom";
 import { child, onValue, ref } from "firebase/database";
@@ -6,8 +6,13 @@ import Slip from "./slip";
 import { LinkSession } from "../../utils/policies";
 import Loader from "../../components/statics/loader";
 import SetPollerInterval from "../../utils/helpers/pollinginterval";
-const NotFoundPage = lazy(() => import("../../components/statics/notfound"));
-const InvalidPage = lazy(() => import("../../components/statics/invalidpage"));
+import SuspenseComponent from "../../components/utils/suspense";
+const NotFoundPage = SuspenseComponent(
+  lazy(() => import("../../components/statics/notfound"))
+);
+const InvalidPage = SuspenseComponent(
+  lazy(() => import("../../components/statics/invalidpage"))
+);
 
 function Territory() {
   const { id, postalcode, congregationcode } = useParams();
@@ -26,6 +31,7 @@ function Territory() {
     onValue(linkReference, (snapshot) => {
       clearInterval(pollerId);
       setIsTokenLoading(false);
+      setIsLinkExpired(true);
       if (snapshot.exists()) {
         const linkrec = new LinkSession(snapshot.val());
         setLinkSession(linkrec);
@@ -34,8 +40,6 @@ function Territory() {
         setTokenEndTime(tokenEndtime);
         setIsLinkExpired(currentTimestamp > tokenEndtime);
         setPublisherName(linkrec.publisherName);
-      } else {
-        setIsLinkExpired(true);
       }
     });
     onValue(
@@ -51,19 +55,10 @@ function Territory() {
     );
   }, [id, postalcode]);
   if (isLoading || isTokenLoading) return <Loader />;
-  if (!isValidPostalcode)
-    return (
-      <Suspense fallback={<Loader />}>
-        <NotFoundPage />
-      </Suspense>
-    );
+  if (!isValidPostalcode) return <NotFoundPage />;
   if (isLinkExpired) {
     document.title = "Ministry Mapper";
-    return (
-      <Suspense fallback={<Loader />}>
-        <InvalidPage />
-      </Suspense>
-    );
+    return <InvalidPage />;
   }
   return (
     <Slip

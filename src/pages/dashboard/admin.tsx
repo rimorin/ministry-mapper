@@ -18,14 +18,7 @@ import {
 import "../../css/admin.css";
 import { signOut, User } from "firebase/auth";
 import { nanoid } from "nanoid";
-import {
-  useEffect,
-  useState,
-  useCallback,
-  useMemo,
-  lazy,
-  Suspense
-} from "react";
+import { useEffect, useState, useCallback, useMemo, lazy } from "react";
 import {
   Accordion,
   Badge,
@@ -108,7 +101,9 @@ import {
 } from "../../utils/constants";
 import ModalManager from "@ebay/nice-modal-react";
 import SuspenseComponent from "../../components/utils/suspense";
-const UnauthorizedPage = lazy(() => import("../../components/statics/unauth"));
+const UnauthorizedPage = SuspenseComponent(
+  lazy(() => import("../../components/statics/unauth"))
+);
 const UpdateUser = lazy(() => import("../../components/modal/updateuser"));
 const UpdateUnitStatus = lazy(
   () => import("../../components/modal/updatestatus")
@@ -887,12 +882,7 @@ function Admin({ user }: adminProps) {
   if (isLoading) return <Loader />;
   if (isUnauthorised)
     return (
-      <Suspense fallback={<Loader />}>
-        <UnauthorizedPage
-          handleClick={logoutUser}
-          name={`${user.displayName}`}
-        />
-      </Suspense>
+      <UnauthorizedPage handleClick={logoutUser} name={`${user.displayName}`} />
     );
   const isDataCompletelyFetched = addressData.size === sortedAddressList.length;
   const isAdmin = userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE;
