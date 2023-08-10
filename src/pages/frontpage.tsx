@@ -16,7 +16,8 @@ import {
 import { auth } from "../firebase";
 import { FirebaseError } from "firebase/app";
 import { useRollbar } from "@rollbar/react";
-import { errorHandler, errorMessage } from "../utils/helpers";
+import errorHandler from "../utils/helpers/errorhandler";
+import errorMessage from "../utils/helpers/errormsg";
 import PasswordChecklist from "react-password-checklist";
 import {
   MINIMUM_PASSWORD_LENGTH,
@@ -24,8 +25,9 @@ import {
   PASSWORD_POLICY,
   WIKI_CATEGORIES
 } from "../utils/constants";
-import { HelpButton, NavBarBranding } from "../components/navigation";
-import { FrontLogo } from "../components/static";
+import HelpButton from "../components/navigation/help";
+import NavBarBranding from "../components/navigation/branding";
+import FrontLogo from "../components/statics/logo";
 
 const FrontPage = () => {
   const [loginEmail, setLoginEmail] = useState("");

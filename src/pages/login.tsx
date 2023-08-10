@@ -7,8 +7,9 @@ import { Card, Form, Button, Container, Spinner, Modal } from "react-bootstrap";
 import { auth } from "../firebase";
 import { FirebaseError } from "firebase/app";
 import { useRollbar } from "@rollbar/react";
-import { errorHandler, errorMessage } from "../utils/helpers";
-import { EnvironmentIndicator } from "../components/navigation";
+import errorHandler from "../utils/helpers/errorhandler";
+import errorMessage from "../utils/helpers/errormsg";
+import EnvironmentIndicator from "../components/navigation/environment";
 
 const Login = () => {
   const [loginEmail, setLoginEmail] = useState("");
@@ -65,7 +66,6 @@ const Login = () => {
   };
 
   const toggleForgotPassword = () => setIsForgotPassword(!isForgotPassword);
-
   return (
     <>
       <EnvironmentIndicator />
