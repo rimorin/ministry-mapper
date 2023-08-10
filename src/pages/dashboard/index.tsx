@@ -1,12 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy } from "react";
 import { auth } from "../../firebase";
-import Admin from "./admin";
-import Login from "../login";
-import { Loader } from "../../components/static";
+import Loader from "../../components/statics/loader";
 import { sendEmailVerification, signOut, User } from "firebase/auth";
 import { useParams } from "react-router-dom";
 import { useRollbar } from "@rollbar/react";
-import { VerificationPage } from "../../components/navigation";
+import SuspenseComponent from "../../components/utils/suspense";
+const Login = SuspenseComponent(lazy(() => import("../login")));
+const Admin = SuspenseComponent(lazy(() => import("./admin")));
+const VerificationPage = SuspenseComponent(
+  lazy(() => import("../../components/navigation/verification"))
+);
 
 function Dashboard() {
   const [isLoading, setIsLoading] = useState<boolean>(true);

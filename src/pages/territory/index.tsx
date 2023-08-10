@@ -1,11 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy } from "react";
 import { database } from "../../firebase";
 import { useParams } from "react-router-dom";
 import { child, onValue, ref } from "firebase/database";
 import Slip from "./slip";
 import { LinkSession } from "../../utils/policies";
-import { Loader, NotFoundPage, InvalidPage } from "../../components/static";
-import { SetPollerInterval } from "../../utils/helpers";
+import Loader from "../../components/statics/loader";
+import SetPollerInterval from "../../utils/helpers/pollinginterval";
+import SuspenseComponent from "../../components/utils/suspense";
+const NotFoundPage = SuspenseComponent(
+  lazy(() => import("../../components/statics/notfound"))
+);
+const InvalidPage = SuspenseComponent(
+  lazy(() => import("../../components/statics/invalidpage"))
+);
 
 function Territory() {
   const { id, postalcode, congregationcode } = useParams();
@@ -15,6 +22,7 @@ function Territory() {
   const [isValidPostalcode, setIsValidPostalcode] = useState<boolean>(true);
   const [tokenEndTime, setTokenEndTime] = useState<number>(0);
   const [linkSession, setLinkSession] = useState<LinkSession>();
+  const [publisherName, setPublisherName] = useState<string>("");
 
   useEffect(() => {
     const linkReference = child(ref(database), `/links/${id}`);
@@ -23,6 +31,7 @@ function Territory() {
     onValue(linkReference, (snapshot) => {
       clearInterval(pollerId);
       setIsTokenLoading(false);
+      setIsLinkExpired(true);
       if (snapshot.exists()) {
         const linkrec = new LinkSession(snapshot.val());
         setLinkSession(linkrec);
@@ -30,8 +39,7 @@ function Territory() {
         const currentTimestamp = new Date().getTime();
         setTokenEndTime(tokenEndtime);
         setIsLinkExpired(currentTimestamp > tokenEndtime);
-      } else {
-        setIsLinkExpired(true);
+        setPublisherName(linkrec.publisherName);
       }
     });
     onValue(
@@ -59,6 +67,7 @@ function Territory() {
       congregationcode={congregationcode}
       maxTries={linkSession?.maxTries}
       homeLanguage={linkSession?.homeLanguage}
+      pubName={publisherName}
     ></Slip>
   );
 }

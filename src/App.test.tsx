@@ -1,24 +1,21 @@
 import { render, screen } from "@testing-library/react";
 import Login from "./pages/login";
-import {
-  GenericTextAreaField,
-  HHLangField,
-  HHNotHomeField,
-  HHStatusField,
-  HHTypeField
-} from "./components/form";
+import GenericTextAreaField from "./components/form/textarea";
+import HHLangField from "./components/form/language";
+import HHNotHomeField from "./components/form/nothome";
+import HHStatusField from "./components/form/status";
+import HHTypeField from "./components/form/type";
 import { Provider } from "@rollbar/react";
 import { LanguagePolicy, RacePolicy } from "./utils/policies";
-import { UnitStatus } from "./components/table";
-import { Legend, UnauthorizedPage } from "./components/navigation";
-import {
-  FrontLogo,
-  MaintenanceMode,
-  NotFoundPage,
-  InvalidPage,
-  Welcome,
-  Loader
-} from "./components/static";
+import UnitStatus from "./components/table/unit";
+import Legend from "./components/navigation/legend";
+import UnauthorizedPage from "./components/statics/unauth";
+import FrontLogo from "./components/statics/logo";
+import MaintenanceMode from "./components/statics/maintenance";
+import NotFoundPage from "./components/statics/notfound";
+import InvalidPage from "./components/statics/invalidpage";
+import Welcome from "./components/statics/welcome";
+import Loader from "./components/statics/loader";
 import {
   STATUS_CODES,
   HOUSEHOLD_TYPES,

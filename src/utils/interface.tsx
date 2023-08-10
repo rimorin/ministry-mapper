@@ -104,6 +104,7 @@ export interface FormProps {
   information?: string;
   inputType?: string;
   readOnly?: boolean;
+  focus?: boolean;
 }
 
 export interface FloorProps {
