@@ -1,3 +1,43 @@
+# [1.20.0](https://github.com/rimorin/ministry-mapper/compare/v1.19.0...v1.20.0) (2023-08-10)
+
+
+### Bug Fixes
+
+* check on policy/floors before processing completion ([227f81d](https://github.com/rimorin/ministry-mapper/commit/227f81df8faf14917ae367e003a4e07c90bb3ebf))
+* reauth user before changing password ([ccd21d5](https://github.com/rimorin/ministry-mapper/commit/ccd21d59e3e35085a01deb6f9ad226b206872a41))
+
+
+### Features
+
+* allow congregation name to be updated ([f4e0918](https://github.com/rimorin/ministry-mapper/commit/f4e0918f99698b04c2d9e5bcaa0f689d05ee2e6f))
+* allow profile name to be updated ([5911239](https://github.com/rimorin/ministry-mapper/commit/5911239ed3732653e4e083f42bc8e9d5380bb23e))
+* implement feedback/instruction email notifications ([aa069eb](https://github.com/rimorin/ministry-mapper/commit/aa069ebd53fab356a14a4e84e747cd35520f1e3f))
+
+
+### Performance Improvements
+
+* focus on pub name input on load ([97410a2](https://github.com/rimorin/ministry-mapper/commit/97410a2719d72a82ea1463422dc1572d6f1adee9))
+* optimised web rendering ([4b05be5](https://github.com/rimorin/ministry-mapper/commit/4b05be5159ff34d443c42ad3e6a8cf0b05a8ae32))
+
+# [1.19.0](https://github.com/rimorin/ministry-mapper/compare/v1.18.1...v1.19.0) (2023-07-31)
+
+
+### Bug Fixes
+
+* incorrect condition check for maxTries ([3ae78c2](https://github.com/rimorin/ministry-mapper/commit/3ae78c242eb47d9dc09ce2fb6523c5c52673e76b))
+
+
+### Features
+
+* implement congregation settings screen ([34518b2](https://github.com/rimorin/ministry-mapper/commit/34518b26a63df3a3afd5986d36196e8ad47afeb5))
+
+## [1.18.1](https://github.com/rimorin/ministry-mapper/compare/v1.18.0...v1.18.1) (2023-07-19)
+
+
+### Performance Improvements
+
+* optimised percentage calculator function ([d51a054](https://github.com/rimorin/ministry-mapper/commit/d51a05468fe43832574a24b64bebb70aa10afa1f))
+
 # [1.18.0](https://github.com/rimorin/ministry-mapper/compare/v1.17.1...v1.18.0) (2023-05-31)
 
 
