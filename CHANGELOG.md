@@ -1,3 +1,10 @@
+## [1.20.1](https://github.com/rimorin/ministry-mapper/compare/v1.20.0...v1.20.1) (2023-08-29)
+
+
+### Bug Fixes
+
+* check invalid territory code path ([1b77a79](https://github.com/rimorin/ministry-mapper/commit/1b77a799488bc287f51c0ed4c49e4f082b34eea3))
+
 # [1.20.0](https://github.com/rimorin/ministry-mapper/compare/v1.19.0...v1.20.0) (2023-08-10)
 
 
