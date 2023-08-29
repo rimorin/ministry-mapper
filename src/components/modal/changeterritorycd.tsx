@@ -10,6 +10,7 @@ import errorHandler from "../../utils/helpers/errorhandler";
 import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";
 import HelpButton from "../navigation/help";
+import IsValidTerritoryCode from "../../utils/helpers/checkterritorycd";
 
 const ChangeTerritoryCode = NiceModal.create(
   ({
@@ -77,6 +78,9 @@ const ChangeTerritoryCode = NiceModal.create(
               name="code"
               handleChange={(event: ChangeEvent<HTMLElement>) => {
                 const { value } = event.target as HTMLInputElement;
+                if (!IsValidTerritoryCode(value)) {
+                  return;
+                }
                 setNewTerritoryCode(value);
               }}
               changeValue={newTerritoryCode}

@@ -11,6 +11,7 @@ import pollingQueryFunction from "../../utils/helpers/pollingquery";
 import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";
 import HelpButton from "../navigation/help";
+import IsValidTerritoryCode from "../../utils/helpers/checkterritorycd";
 
 const NewTerritoryCode = NiceModal.create(
   ({
@@ -68,6 +69,9 @@ const NewTerritoryCode = NiceModal.create(
               name="code"
               handleChange={(e: ChangeEvent<HTMLElement>) => {
                 const { value } = e.target as HTMLInputElement;
+                if (!IsValidTerritoryCode(value)) {
+                  return;
+                }
                 setCode(value);
               }}
               changeValue={code}
