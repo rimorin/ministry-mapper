@@ -1,17 +1,15 @@
 import { memo } from "react";
 import { Badge } from "react-bootstrap";
-import { STATUS_CODES, HOUSEHOLD_TYPES } from "../../utils/constants";
+import { STATUS_CODES } from "../../utils/constants";
 import { unitProps } from "../../utils/interface";
 import NotHomeIcon from "./nothome";
 
 const UnitStatus = memo((props: unitProps) => {
-  const householdRace = props.type;
+  const householdType = props.type;
   const note = props.note;
   const currentStatus = props.status;
   const nhcount = props.nhcount;
-  const languages = props.languages;
-  const isTrackRace = props.trackRace || false;
-  const isTrackLanguages = props.trackLanguages || false;
+  const defaultOption = props.defaultOption || "";
   let status = "";
 
   if (currentStatus === STATUS_CODES.INVALID) {
@@ -32,12 +30,11 @@ const UnitStatus = memo((props: unitProps) => {
         <NotHomeIcon nhcount={nhcount} classProp={"me-1"} />
       )}
       {note && <>🗒️ </>}
-      {isTrackRace && householdRace !== HOUSEHOLD_TYPES.CHINESE && (
+      {householdType !== defaultOption && (
         <Badge bg="secondary" className="me-1" pill>
-          {householdRace}
+          {householdType}
         </Badge>
       )}
-      {isTrackLanguages && languages && <span>{languages.toUpperCase()}</span>}
     </>
   );
 });

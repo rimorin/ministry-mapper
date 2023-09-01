@@ -2,13 +2,11 @@ import { IdTokenResult } from "firebase/auth";
 import {
   NOT_HOME_STATUS_CODES,
   COUNTABLE_HOUSEHOLD_STATUS,
-  HOUSEHOLD_TYPES,
   STATUS_CODES,
-  HOUSEHOLD_LANGUAGES,
   LINK_TYPES,
   DEFAULT_CONGREGATION_MAX_TRIES
 } from "./constants";
-import { unitDetails, Policy } from "./interface";
+import { HHOptionProps, unitDetails } from "./interface";
 
 const AVAILABLE_STYLE_CLASS = "available";
 
@@ -23,13 +21,26 @@ const processAvailableColour = (
   return `${AVAILABLE_STYLE_CLASS} cell-highlight`;
 };
 
-export class RacePolicy implements Policy {
+export class Policy {
   maxTries: number;
+  countableTypes: Array<string>;
+  defaultType: string;
   constructor(
     userData?: IdTokenResult,
+    options?: Array<HHOptionProps>,
     maxtries = parseInt(NOT_HOME_STATUS_CODES.SECOND_TRY)
   ) {
     this.maxTries = maxtries;
+    this.countableTypes = [];
+    this.defaultType = "";
+    options?.forEach((option) => {
+      if (option.isCountable) {
+        this.countableTypes.push(option.code);
+      }
+      if (option.isDefault) {
+        this.defaultType = option.code;
+      }
+    });
     if (!userData) return;
     const userClaims = userData.claims;
     if (!userClaims) return;
@@ -40,7 +51,7 @@ export class RacePolicy implements Policy {
   isCountable(unit: unitDetails): boolean {
     return (
       COUNTABLE_HOUSEHOLD_STATUS.includes(unit.status as string) &&
-      unit.type !== HOUSEHOLD_TYPES.MALAY
+      this.countableTypes.includes(unit.type as string)
     );
   }
   isCompleted(unit: unitDetails): boolean {
@@ -57,68 +68,11 @@ export class RacePolicy implements Policy {
       progress
     );
   }
-  getHomeLanguage(): string {
-    return "";
-  }
-  getMaxTries(): number {
-    return this.maxTries;
-  }
-}
-
-export class LanguagePolicy extends RacePolicy implements Policy {
-  homeLanguage: string;
-  constructor(
-    userData?: IdTokenResult,
-    maxtries = parseInt(NOT_HOME_STATUS_CODES.SECOND_TRY),
-    homelanguage = HOUSEHOLD_LANGUAGES.ENGLISH.CODE
-  ) {
-    super();
-    this.maxTries = maxtries;
-    this.homeLanguage = homelanguage;
-    if (!userData) return;
-    const userClaims = userData.claims;
-    if (!userClaims) return;
-    if (userClaims.maxTries !== undefined) {
-      this.maxTries = userClaims.maxTries;
-    }
-    if (userClaims.homeLanguage !== undefined) {
-      this.homeLanguage = userClaims.homeLanguage;
-    }
-  }
-  isHomeLanguage(unit: unitDetails): boolean {
-    const languageValue = unit.languages.toUpperCase().trim();
-    if (languageValue.length < 1) {
-      return true;
-    }
-    const languages = languageValue.split(",");
-    return (
-      languages.includes(this.homeLanguage.toUpperCase()) ||
-      languages.length === 0
-    );
-  }
-  isCountable(unit: unitDetails): boolean {
-    return (
-      COUNTABLE_HOUSEHOLD_STATUS.includes(unit.status as string) &&
-      this.isHomeLanguage(unit)
-    );
-  }
-  isCompleted(unit: unitDetails): boolean {
-    const tries: number = parseInt(unit.nhcount as string);
-    return (
-      (unit.status === STATUS_CODES.DONE ||
-        (unit.status === STATUS_CODES.NOT_HOME && tries >= this.maxTries)) &&
-      this.isHomeLanguage(unit)
-    );
-  }
-  getHomeLanguage(): string {
-    return this.homeLanguage;
-  }
 }
 
 export class LinkSession {
   tokenEndtime: number;
   postalCode: string;
-  homeLanguage: string;
   maxTries: number;
   linkType: number;
   userId: string;
@@ -131,7 +85,6 @@ export class LinkSession {
   constructor(linkData?: any, key?: string) {
     this.tokenEndtime = 0;
     this.postalCode = "";
-    this.homeLanguage = HOUSEHOLD_LANGUAGES.ENGLISH.CODE;
     this.maxTries = DEFAULT_CONGREGATION_MAX_TRIES;
     this.linkType = LINK_TYPES.VIEW;
     this.tokenCreatetime = new Date().getTime();
@@ -154,7 +107,6 @@ export class LinkSession {
       this.postalCode = linkData.postalCode;
       this.linkType = linkData.linkType;
       this.maxTries = linkData.maxTries;
-      this.homeLanguage = linkData.homeLanguage;
     }
   }
 }

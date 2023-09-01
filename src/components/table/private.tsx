@@ -1,15 +1,12 @@
 import { Row, Col, Card } from "react-bootstrap";
 import { territoryLandedProps } from "../../utils/interface";
-// import { UnitStatus } from "../table";
 import UnitStatus from "../table/unit";
 
 const PrivateTerritoryTable = ({
   isAdmin,
   houses,
   completedPercent,
-  policy,
-  trackRace,
-  trackLanguages,
+  policy: hhpolicy,
   handleHouseUpdate
 }: territoryLandedProps) => (
   <div className={`${isAdmin ? "" : "sticky-body"} p-2`}>
@@ -30,7 +27,6 @@ const PrivateTerritoryTable = ({
                 data-hhnote={element.note}
                 data-hhstatus={element.status}
                 data-nhcount={element.nhcount}
-                data-languages={element.languages}
                 data-dnctime={element.dnctime}
                 data-sequence={element.sequence}
               >
@@ -41,7 +37,7 @@ const PrivateTerritoryTable = ({
                   {element.number}
                 </Card.Header>
                 <div
-                  className={`landed-unit fluid-bolding fluid-text ${policy?.getUnitColor(
+                  className={`landed-unit fluid-bolding fluid-text ${hhpolicy?.getUnitColor(
                     element,
                     completedPercent.completedValue
                   )}`}
@@ -52,9 +48,7 @@ const PrivateTerritoryTable = ({
                     note={element.note}
                     status={element.status}
                     nhcount={element.nhcount}
-                    languages={element.languages}
-                    trackRace={trackRace}
-                    trackLanguages={trackLanguages}
+                    defaultOption={hhpolicy?.defaultType}
                   />
                 </div>
               </Card.Body>

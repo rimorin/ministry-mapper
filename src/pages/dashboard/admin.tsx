@@ -35,14 +35,14 @@ import {
 import { database, auth, functions } from "../../firebase";
 import { httpsCallable } from "firebase/functions";
 import {
-  Policy,
   valuesDetails,
   floorDetails,
   territoryDetails,
   addressDetails,
   adminProps,
   unitMaps,
-  userDetails
+  userDetails,
+  OptionProps
 } from "../../utils/interface";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
@@ -50,7 +50,7 @@ import { useParams } from "react-router-dom";
 import InstructionsButton from "../../components/form/instructions";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
-import { RacePolicy, LanguagePolicy, LinkSession } from "../../utils/policies";
+import { LinkSession, Policy } from "../../utils/policies";
 import AdminTable from "../../components/table/admin";
 import pollingQueryFunction from "../../utils/helpers/pollingquery";
 import processAddressData from "../../utils/helpers/processadddata";
@@ -62,9 +62,6 @@ import triggerPostalCodeListeners from "../../utils/helpers/postalcodelistener";
 import assignmentMessage from "../../utils/helpers/assignmentmsg";
 import getMaxUnitLength from "../../utils/helpers/maxunitlength";
 import getCompletedPercent from "../../utils/helpers/getcompletedpercent";
-import checkTraceLangStatus from "../../utils/helpers/checklangstatus";
-import checkTraceRaceStatus from "../../utils/helpers/checkracestatus";
-import getLanguageDisplayByCode from "../../utils/helpers/getlangbycode";
 import checkCongregationExpireHours from "../../utils/helpers/checkcongexp";
 import SetPollerInterval from "../../utils/helpers/pollinginterval";
 import pollingVoidFunction from "../../utils/helpers/pollingvoid";
@@ -83,7 +80,6 @@ import Loader from "../../components/statics/loader";
 import Welcome from "../../components/statics/welcome";
 import {
   STATUS_CODES,
-  HOUSEHOLD_TYPES,
   NOT_HOME_STATUS_CODES,
   MUTABLE_CODES,
   DEFAULT_FLOOR_PADDING,
@@ -101,6 +97,7 @@ import {
 } from "../../utils/constants";
 import ModalManager from "@ebay/nice-modal-react";
 import SuspenseComponent from "../../components/utils/suspense";
+import getOptions from "../../utils/helpers/getcongoptions";
 const UnauthorizedPage = SuspenseComponent(
   lazy(() => import("../../components/statics/unauth"))
 );
@@ -167,8 +164,6 @@ function Admin({ user }: adminProps) {
   const [isShowingUserListing, setIsShowingUserListing] =
     useState<boolean>(false);
   const [congUsers, setCongUsers] = useState(new Map<string, userDetails>());
-  const [trackRace, setTrackRace] = useState<boolean>(true);
-  const [trackLanguages, setTrackLanguages] = useState<boolean>(true);
   const [showChangeAddressTerritory, setShowChangeAddressTerritory] =
     useState<boolean>(false);
   const [name, setName] = useState<string>();
@@ -185,12 +180,13 @@ function Admin({ user }: adminProps) {
     new Map<string, addressDetails>()
   );
   const [accordingKeys, setAccordionKeys] = useState<Array<string>>([]);
-  const [policy, setPolicy] = useState<Policy>();
   const [userAccessLevel, setUserAccessLevel] = useState<number>();
   const [defaultExpiryHours, setDefaultExpiryHours] = useState<number>(
     DEFAULT_SELF_DESTRUCT_HOURS
   );
   const [assignments, setAssignments] = useState<Array<LinkSession>>([]);
+  const [policy, setPolicy] = useState<Policy>(new Policy());
+  const [options, setOptions] = useState<Array<OptionProps>>([]);
   const domain = process.env.PUBLIC_URL;
   const rollbar = useRollbar();
   let unsubscribers = new Array<Unsubscribe>();
@@ -433,11 +429,10 @@ function Admin({ user }: adminProps) {
     blockFloorDetails.units.forEach((element) => {
       unitUpdates[`/${postalcode}/units/${newFloor}/${element.number}`] = {
         status: STATUS_CODES.DEFAULT,
-        type: HOUSEHOLD_TYPES.CHINESE,
+        type: policy.defaultType,
         note: "",
         nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
-        sequence: element.sequence ? element.sequence : 0,
-        languages: ""
+        sequence: element.sequence ? element.sequence : 0
       };
     });
     try {
@@ -482,7 +477,6 @@ function Admin({ user }: adminProps) {
         unitUpdates[`${unitPath}/note`] = element.note;
         unitUpdates[`${unitPath}/status`] = currentStatus;
         unitUpdates[`${unitPath}/nhcount`] = NOT_HOME_STATUS_CODES.DEFAULT;
-        unitUpdates[`${unitPath}/languages`] = element.languages;
         unitUpdates[`${unitPath}/dnctime`] = element.dnctime;
       });
     }
@@ -500,12 +494,14 @@ function Admin({ user }: adminProps) {
     unit: string,
     maxUnitNumber: number,
     name: string,
-    addressData: addressDetails
+    addressData: addressDetails,
+    options: Array<OptionProps>
   ) => {
     const floorUnits = floors.find((e) => e.floor === floor);
     const unitDetails = floorUnits?.units.find((e) => e.number === unit);
 
     ModalManager.show(SuspenseComponent(UpdateUnitStatus), {
+      options: options,
       addressName: name,
       userAccessLevel: userAccessLevel,
       territoryType: addressData.type,
@@ -515,8 +511,6 @@ function Admin({ user }: adminProps) {
       unitNoDisplay: ZeroPad(unit, maxUnitNumber),
       floor: floor,
       floorDisplay: ZeroPad(floor, DEFAULT_FLOOR_PADDING),
-      trackRace: trackRace,
-      trackLanguages: trackLanguages,
       unitDetails: unitDetails,
       addressData: addressData
     });
@@ -534,12 +528,7 @@ function Admin({ user }: adminProps) {
     link.tokenEndtime = addHours(hours);
     link.postalCode = postalCode;
     link.linkType = linktype;
-    let currentPolicy = policy;
-    if (currentPolicy === undefined) {
-      currentPolicy = new LanguagePolicy();
-    }
-    link.homeLanguage = currentPolicy.getHomeLanguage();
-    link.maxTries = currentPolicy.getMaxTries();
+    link.maxTries = policy.maxTries;
     // dont set user if its view type link. This will prevent this kind of links from appearing in assignments
     if (linktype != LINK_TYPES.VIEW) link.userId = user.uid;
     link.congregation = code;
@@ -785,23 +774,11 @@ function Admin({ user }: adminProps) {
       const maxTries = snapshot.exists()
         ? snapshot.val()
         : DEFAULT_CONGREGATION_MAX_TRIES;
-      checkTraceLangStatus(`${code}`).then(async (snapshot) => {
-        const isTrackLanguages = snapshot.val();
-        setTrackLanguages(isTrackLanguages);
-        if (isTrackLanguages) {
-          setPolicy(
-            new LanguagePolicy(await user.getIdTokenResult(true), maxTries)
-          );
-        }
-      });
-      checkTraceRaceStatus(`${code}`).then(async (snapshot) => {
-        const isTrackRace = snapshot.val();
-        setTrackRace(isTrackRace);
-        if (isTrackRace) {
-          setPolicy(
-            new RacePolicy(await user.getIdTokenResult(true), maxTries)
-          );
-        }
+      getOptions(`${code}`).then(async (options) => {
+        setOptions(options);
+        setPolicy(
+          new Policy(await user.getIdTokenResult(true), options, maxTries)
+        );
       });
     });
 
@@ -1195,7 +1172,8 @@ function Admin({ user }: adminProps) {
                         ModalManager.show(SuspenseComponent(NewPublicAddress), {
                           footerSaveAcl: userAccessLevel,
                           congregation: code,
-                          territoryCode: selectedTerritoryCode
+                          territoryCode: selectedTerritoryCode,
+                          defaultType: policy.defaultType
                         }).then(
                           async () =>
                             await refreshCongregationTerritory(
@@ -1213,7 +1191,8 @@ function Admin({ user }: adminProps) {
                           {
                             footerSaveAcl: userAccessLevel,
                             congregation: code,
-                            territoryCode: selectedTerritoryCode
+                            territoryCode: selectedTerritoryCode,
+                            defaultType: policy.defaultType
                           }
                         ).then(
                           async () =>
@@ -1238,12 +1217,7 @@ function Admin({ user }: adminProps) {
                 <Dropdown.Item
                   onClick={() => {
                     ModalManager.show(SuspenseComponent(GetProfile), {
-                      user: user,
-                      homeLanguage: trackLanguages
-                        ? getLanguageDisplayByCode(
-                            policy?.getHomeLanguage() as string
-                          )
-                        : undefined
+                      user: user
                     });
                   }}
                 >
@@ -1257,8 +1231,7 @@ function Admin({ user }: adminProps) {
                         currentName: `${name}`,
                         currentCongregation: `${code}`,
                         currentMaxTries:
-                          policy?.getMaxTries() ||
-                          DEFAULT_CONGREGATION_MAX_TRIES,
+                          policy?.maxTries || DEFAULT_CONGREGATION_MAX_TRIES,
                         currentDefaultExpiryHrs: defaultExpiryHours
                       }
                     )
@@ -1630,7 +1603,8 @@ function Admin({ user }: adminProps) {
                                 ModalManager.show(SuspenseComponent(NewUnit), {
                                   footerSaveAcl: userAccessLevel,
                                   postalCode: currentPostalcode,
-                                  addressData: addressElement
+                                  addressData: addressElement,
+                                  defaultType: policy.defaultType
                                 })
                               }
                             >
@@ -1794,8 +1768,6 @@ function Admin({ user }: adminProps) {
                       maxUnitNumberLength={maxUnitNumberLength}
                       policy={policy}
                       completedPercent={completedPercent}
-                      trackRace={trackRace}
-                      trackLanguages={trackLanguages}
                       postalCode={`${currentPostalcode}`}
                       territoryType={addressElement.type}
                       userAccessLevel={userAccessLevel}
@@ -1808,7 +1780,8 @@ function Admin({ user }: adminProps) {
                           unitno || "",
                           maxUnitNumberLength,
                           currentPostalname,
-                          addressElement
+                          addressElement,
+                          options
                         );
                       }}
                       adminUnitHeaderStyle={`${

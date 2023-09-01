@@ -8,7 +8,6 @@ import {
   USER_ACCESS_LEVELS,
   TERRITORY_TYPES,
   STATUS_CODES,
-  HOUSEHOLD_TYPES,
   NOT_HOME_STATUS_CODES,
   WIKI_CATEGORIES
 } from "../../utils/constants";
@@ -28,11 +27,13 @@ const NewPublicAddress = NiceModal.create(
   ({
     footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     congregation,
-    territoryCode
+    territoryCode,
+    defaultType
   }: {
     footerSaveAcl: number | undefined;
     congregation: string | undefined;
     territoryCode: string;
+    defaultType: string;
   }) => {
     const [postalCode, setPostalCode] = useState("");
     const [name, setName] = useState("");
@@ -71,10 +72,9 @@ const NewPublicAddress = NiceModal.create(
           if (!processedUnitNumber) return;
           floorMap[processedUnitNumber] = {
             status: STATUS_CODES.DEFAULT,
-            type: HOUSEHOLD_TYPES.CHINESE,
+            type: defaultType,
             note: "",
             nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
-            languages: "",
             sequence: index
           };
         });

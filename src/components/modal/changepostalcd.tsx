@@ -74,7 +74,6 @@ const ChangeAddressPostalCode = NiceModal.create(
         await remove(ref(database, `${postalCode}`));
         await deleteTerritoryAddress(territoryCode, postalCode);
         if (showAlert) alert(`Deleted address, ${name}.`);
-        // await refreshCongregationTerritory(`${selectedTerritoryCode}`);
       } catch (error) {
         errorHandler(error, rollbar);
       }
