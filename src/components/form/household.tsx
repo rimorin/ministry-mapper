@@ -15,6 +15,7 @@ const HouseholdField = ({
         onChange={handleChange}
         defaultValue={options.filter((option) => option.value === changeValue)}
         isSearchable={false}
+        required
       />
     </Form.Group>
   );

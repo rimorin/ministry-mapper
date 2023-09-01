@@ -4,7 +4,8 @@ import {
   COUNTABLE_HOUSEHOLD_STATUS,
   STATUS_CODES,
   LINK_TYPES,
-  DEFAULT_CONGREGATION_MAX_TRIES
+  DEFAULT_CONGREGATION_MAX_TRIES,
+  OTHERS_HOUSEHOLD_TYPE
 } from "./constants";
 import { HHOptionProps, unitDetails } from "./interface";
 
@@ -31,7 +32,8 @@ export class Policy {
     maxtries = parseInt(NOT_HOME_STATUS_CODES.SECOND_TRY)
   ) {
     this.maxTries = maxtries;
-    this.countableTypes = [];
+    // include others as countable so that existing ot households can be counted
+    this.countableTypes = [OTHERS_HOUSEHOLD_TYPE];
     this.defaultType = "";
     options?.forEach((option) => {
       if (option.isCountable) {
