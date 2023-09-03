@@ -1,3 +1,10 @@
+# [1.21.0](https://github.com/rimorin/ministry-mapper/compare/v1.20.1...v1.21.0) (2023-09-03)
+
+
+### Features
+
+* implement dynamic congregation options for household ([d593b57](https://github.com/rimorin/ministry-mapper/commit/d593b5703f3348487023b93003fb079c47db191b))
+
 ## [1.20.1](https://github.com/rimorin/ministry-mapper/compare/v1.20.0...v1.20.1) (2023-08-29)
 
 
