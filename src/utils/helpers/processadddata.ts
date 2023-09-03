@@ -27,7 +27,6 @@ const processAddressData = async (postal: string, data: any) => {
         type: unitValues.type || "",
         status: unitValues.status,
         nhcount: unitValues.nhcount || NOT_HOME_STATUS_CODES.DEFAULT,
-        languages: unitValues.languages || "",
         dnctime: unitValues.dnctime || null,
         sequence: unitValues.sequence
       });

@@ -21,19 +21,21 @@ import {
 } from "../../utils/constants";
 import pollingVoidFunction from "../../utils/helpers/pollingvoid";
 import errorHandler from "../../utils/helpers/errorhandler";
-import processHHLanguages from "../../utils/helpers/processhhlang";
-import parseHHLanguages from "../../utils/helpers/parsehhlang";
 import processPostalUnitNumber from "../../utils/helpers/processpostalno";
-import { addressDetails, unitDetails } from "../../utils/interface";
+import {
+  addressDetails,
+  OptionProps,
+  SelectProps,
+  unitDetails
+} from "../../utils/interface";
 import DncDateField from "../form/dncdate";
 import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";
-import HHLangField from "../form/language";
 import HHNotHomeField from "../form/nothome";
 import HHStatusField from "../form/status";
 import GenericTextAreaField from "../form/textarea";
 import ModalUnitTitle from "../form/title";
-import HHTypeField from "../form/type";
+import HHTypeField from "../form/household";
 import ComponentAuthorizer from "../navigation/authorizer";
 import HelpButton from "../navigation/help";
 
@@ -49,8 +51,8 @@ const UpdateUnitStatus = NiceModal.create(
     floor,
     floorDisplay,
     unitDetails,
-    trackRace = false,
-    trackLanguages = false
+    options,
+    defaultOption
   }: {
     addressName: string | undefined;
     userAccessLevel: number | undefined;
@@ -61,10 +63,10 @@ const UpdateUnitStatus = NiceModal.create(
     floorDisplay: string;
     unitNo: string;
     unitNoDisplay: string;
-    trackRace: boolean;
-    trackLanguages: boolean;
     addressData: addressDetails | undefined;
     unitDetails: unitDetails | undefined;
+    options: Array<OptionProps>;
+    defaultOption: string;
   }) => {
     const status = unitDetails?.status;
     const [isNotHome, setIsNotHome] = useState(
@@ -81,7 +83,6 @@ const UpdateUnitStatus = NiceModal.create(
       string | undefined
     >(unitDetails?.propertyPostal);
     const [hhNhcount, setHhNhcount] = useState(unitDetails?.nhcount);
-    const [hhLanguages, setHhLanguages] = useState(unitDetails?.languages);
     const [hhNote, setHhNote] = useState(unitDetails?.note);
     const [unitSequence, setUnitSequence] = useState<undefined | number>(
       unitDetails?.sequence
@@ -96,7 +97,6 @@ const UpdateUnitStatus = NiceModal.create(
         note: string | undefined;
         status: string | undefined;
         nhcount: string | undefined;
-        languages: string | undefined;
         dnctime: number | string;
         sequence?: number;
         x_zip?: string;
@@ -105,7 +105,6 @@ const UpdateUnitStatus = NiceModal.create(
         note: hhNote,
         status: unitStatus,
         nhcount: hhNhcount,
-        languages: hhLanguages,
         dnctime: hhDnctime || ""
       };
       // Include sequence update value only when administering private territories
@@ -182,23 +181,16 @@ const UpdateUnitStatus = NiceModal.create(
                 />
               </div>
             </Collapse>
-            {trackRace && (
-              <HHTypeField
-                handleChange={(e: ChangeEvent<HTMLElement>) => {
-                  const { value } = e.target as HTMLInputElement;
-                  setHhtype(value);
-                }}
-                changeValue={hhType}
-              />
-            )}
-            {trackLanguages && (
-              <HHLangField
-                handleChangeValues={(languages) =>
-                  setHhLanguages(processHHLanguages(languages))
-                }
-                changeValues={parseHHLanguages(hhLanguages)}
-              />
-            )}
+            <HHTypeField
+              handleChange={(option: SelectProps) => {
+                setHhtype(option.value);
+              }}
+              changeValue={hhType}
+              options={options.map((option) => ({
+                value: option.code,
+                label: option.description
+              }))}
+            />
             <GenericTextAreaField
               label="Notes"
               name="note"
@@ -278,7 +270,8 @@ const UpdateUnitStatus = NiceModal.create(
                                 postalCode,
                                 unitNo,
                                 addressData,
-                                true
+                                true,
+                                defaultOption
                               );
                               onClose();
                             }}

@@ -1,4 +1,5 @@
 import { User } from "firebase/auth";
+import { Policy } from "./policies";
 
 export interface unitDetails {
   number: string;
@@ -6,7 +7,6 @@ export interface unitDetails {
   type: string;
   status: string;
   nhcount: string;
-  languages: string;
   dnctime: number;
   sequence?: number;
   propertyPostal?: string;
@@ -27,9 +27,7 @@ export interface unitProps {
   note?: string;
   status: string;
   nhcount?: string;
-  languages?: string;
-  trackRace?: boolean;
-  trackLanguages?: boolean;
+  defaultOption?: string;
 }
 
 export interface valuesDetails {
@@ -39,7 +37,6 @@ export interface valuesDetails {
   unitDisplay?: string;
   type: string;
   note: string;
-  languages?: string;
   postal?: string;
   feedback: string;
   status: string;
@@ -179,14 +176,6 @@ export interface RouteDetails {
   name: string;
 }
 
-export interface Policy {
-  isCountable(unit: unitDetails): boolean;
-  isCompleted(unit: unitDetails): boolean;
-  getUnitColor(unit: unitDetails, progress: number): string;
-  getHomeLanguage(): string;
-  getMaxTries(): number;
-}
-
 export interface AuthorizerProp {
   requiredPermission: number;
   userPermission: number | undefined;
@@ -228,8 +217,6 @@ export interface territoryTableProps {
     completedValue: number;
     completedDisplay: string;
   };
-  trackRace: boolean;
-  trackLanguages: boolean;
   postalCode: string;
   adminUnitHeaderStyle?: string;
   userAccessLevel?: number;
@@ -247,8 +234,6 @@ export interface territoryLandedProps {
     completedValue: number;
     completedDisplay: string;
   };
-  trackRace: boolean;
-  trackLanguages: boolean;
   postalCode: string;
   adminUnitHeaderStyle?: string;
   userAccessLevel?: number;
@@ -304,4 +289,29 @@ export interface UserModalProps {
   name?: string;
   role?: number | undefined;
   footerSaveAcl: number | undefined;
+}
+
+export interface SelectProps {
+  value: string;
+  label: string;
+}
+
+export interface OptionProps {
+  code: string;
+  description: string;
+}
+
+export interface HouseholdProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handleChange?: any;
+  changeValue?: string;
+  options: Array<SelectProps>;
+}
+
+export interface HHOptionProps {
+  code: string;
+  description: string;
+  isCountable: boolean;
+  isDefault?: boolean;
+  sequence: number;
 }

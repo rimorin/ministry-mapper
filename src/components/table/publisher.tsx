@@ -4,7 +4,6 @@ import {
   territoryTableProps,
   territoryLandedProps
 } from "../../utils/interface";
-// import { UnitStatus } from "../table";
 import UnitStatus from "../table/unit";
 import PublicTerritoryTable from "./public";
 
@@ -13,9 +12,7 @@ const PublisherTerritoryTable = ({
   floors,
   maxUnitNumberLength,
   completedPercent,
-  policy,
-  trackRace,
-  trackLanguages,
+  policy: policy,
   territoryType,
   handleUnitStatusUpdate
 }: territoryTableProps) => {
@@ -27,8 +24,6 @@ const PublisherTerritoryTable = ({
         houses={floors[0]}
         policy={policy}
         completedPercent={completedPercent}
-        trackLanguages={trackLanguages}
-        trackRace={trackRace}
         handleHouseUpdate={handleUnitStatusUpdate}
       />
     );
@@ -38,11 +33,9 @@ const PublisherTerritoryTable = ({
       postalCode={postalCode}
       floors={floors}
       maxUnitNumberLength={maxUnitNumberLength}
-      policy={policy}
       completedPercent={completedPercent}
-      trackLanguages={trackLanguages}
-      trackRace={trackRace}
       handleUnitStatusUpdate={handleUnitStatusUpdate}
+      policy={policy}
     />
   );
 };
@@ -52,8 +45,6 @@ const PrivateTerritoryTable = ({
   houses,
   completedPercent,
   policy,
-  trackRace,
-  trackLanguages,
   handleHouseUpdate
 }: territoryLandedProps) => (
   <div className={`${isAdmin ? "" : "sticky-body"} p-2`}>
@@ -74,7 +65,6 @@ const PrivateTerritoryTable = ({
                 data-hhnote={element.note}
                 data-hhstatus={element.status}
                 data-nhcount={element.nhcount}
-                data-languages={element.languages}
                 data-dnctime={element.dnctime}
                 data-sequence={element.sequence}
               >
@@ -96,9 +86,7 @@ const PrivateTerritoryTable = ({
                     note={element.note}
                     status={element.status}
                     nhcount={element.nhcount}
-                    languages={element.languages}
-                    trackRace={trackRace}
-                    trackLanguages={trackLanguages}
+                    defaultOption={policy?.defaultType}
                   />
                 </div>
               </Card.Body>

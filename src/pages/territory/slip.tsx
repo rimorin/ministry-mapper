@@ -2,16 +2,19 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { ref, child, onValue } from "firebase/database";
 import { database } from "../../firebase";
 import { Container, Fade, Navbar, NavDropdown } from "react-bootstrap";
-import { floorDetails, valuesDetails, Policy } from "../../utils/interface";
+import {
+  OptionProps,
+  floorDetails,
+  valuesDetails
+} from "../../utils/interface";
 import PublisherTerritoryTable from "../../components/table/publisher";
-import { RacePolicy, LanguagePolicy } from "../../utils/policies";
+import { Policy } from "../../utils/policies";
 import ZeroPad from "../../utils/helpers/zeropad";
 import processAddressData from "../../utils/helpers/processadddata";
-import checkTraceLangStatus from "../../utils/helpers/checklangstatus";
-import checkTraceRaceStatus from "../../utils/helpers/checkracestatus";
 import getMaxUnitLength from "../../utils/helpers/maxunitlength";
 import getCompletedPercent from "../../utils/helpers/getcompletedpercent";
 import SetPollerInterval from "../../utils/helpers/pollinginterval";
+import getOptions from "../../utils/helpers/getcongoptions";
 import Legend from "../../components/navigation/legend";
 import EnvironmentIndicator from "../../components/navigation/environment";
 import NavBarBranding from "../../components/navigation/branding";
@@ -36,18 +39,16 @@ const Slip = ({
   postalcode = "",
   congregationcode = "",
   maxTries = 0,
-  homeLanguage = "",
   pubName = ""
 }) => {
   const [showLegend, setShowLegend] = useState<boolean>(false);
   const [isPostalLoading, setIsPostalLoading] = useState<boolean>(true);
-  const [trackRace, setTrackRace] = useState<boolean>(true);
-  const [trackLanguages, setTrackLanguages] = useState<boolean>(true);
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
   const [postalName, setPostalName] = useState<string>();
   const [postalZip, setPostalZip] = useState<string>();
   const [values, setValues] = useState<object>({});
-  const [policy, setPolicy] = useState<Policy>();
+  const [policy, setPolicy] = useState<Policy>(new Policy());
+  const [options, setOptions] = useState<Array<OptionProps>>([]);
   const [territoryType, setTerritoryType] = useState<number>(
     TERRITORY_TYPES.PUBLIC
   );
@@ -55,12 +56,14 @@ const Slip = ({
   const handleUnitUpdate = (
     floor: string,
     unit: string,
-    maxUnitNumber: number
+    maxUnitNumber: number,
+    options: Array<OptionProps>
   ) => {
     const floorUnits = floors.find((e) => e.floor === floor);
     const unitDetails = floorUnits?.units.find((e) => e.number === unit);
 
     ModalManager.show(UpdateUnitStatus, {
+      options: options,
       addressName: postalName,
       // CONDUCTOR ACL because publishers should be able to update status
       userAccessLevel: USER_ACCESS_LEVELS.CONDUCTOR.CODE,
@@ -71,10 +74,9 @@ const Slip = ({
       unitNoDisplay: ZeroPad(unit, maxUnitNumber),
       floor: floor,
       floorDisplay: ZeroPad(floor, DEFAULT_FLOOR_PADDING),
-      trackRace: trackRace,
-      trackLanguages: trackLanguages,
       unitDetails: unitDetails,
-      addressData: undefined
+      addressData: undefined,
+      defaultOption: policy.defaultType
     });
   };
 
@@ -83,19 +85,9 @@ const Slip = ({
   }, [showLegend]);
 
   useEffect(() => {
-    checkTraceLangStatus(congregationcode).then((snapshot) => {
-      const isTrackLanguages = snapshot.val();
-      setTrackLanguages(isTrackLanguages);
-      if (isTrackLanguages) {
-        setPolicy(new LanguagePolicy(undefined, maxTries, homeLanguage));
-      }
-    });
-    checkTraceRaceStatus(congregationcode).then((snapshot) => {
-      const isTrackRace = snapshot.val();
-      setTrackRace(isTrackRace);
-      if (isTrackRace) {
-        setPolicy(new RacePolicy(undefined, maxTries));
-      }
+    getOptions(congregationcode).then((options) => {
+      setOptions(options);
+      setPolicy(new Policy(undefined, options, maxTries));
     });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -141,7 +133,7 @@ const Slip = ({
     document.body.addEventListener("touchstart", setActivityTime);
 
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-  }, [tokenEndtime, postalcode, congregationcode, maxTries, homeLanguage]);
+  }, [tokenEndtime, postalcode, congregationcode, maxTries]);
 
   const maxUnitNumberLength = useMemo(() => getMaxUnitLength(floors), [floors]);
   const completedPercent = useMemo(
@@ -241,12 +233,15 @@ const Slip = ({
           maxUnitNumberLength={maxUnitNumberLength}
           policy={policy}
           completedPercent={completedPercent}
-          trackLanguages={trackLanguages}
-          trackRace={trackRace}
           territoryType={territoryType}
           handleUnitStatusUpdate={(event) => {
             const { floor, unitno } = event.currentTarget.dataset;
-            handleUnitUpdate(floor || "", unitno || "", maxUnitNumberLength);
+            handleUnitUpdate(
+              floor || "",
+              unitno || "",
+              maxUnitNumberLength,
+              options
+            );
           }}
         />
       </>

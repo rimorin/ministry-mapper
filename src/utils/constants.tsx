@@ -28,18 +28,6 @@ const USER_ACCESS_LEVELS = {
   }
 };
 
-const HOUSEHOLD_TYPES = {
-  CHINESE: "cn",
-  MALAY: "ml",
-  INDIAN: "in",
-  FILIPINO: "fp",
-  INDONESIAN: "id",
-  BURMESE: "bm",
-  THAI: "th",
-  VIETNAMESE: "vn",
-  OTHER: "ot"
-};
-
 const MUTABLE_CODES = [
   STATUS_CODES.DONE,
   STATUS_CODES.NOT_HOME,
@@ -81,20 +69,6 @@ const LINK_SELECTOR_VIEWPORT_HEIGHT = "40vh";
 
 const TERRITORY_VIEW_WINDOW_WELCOME_TEXT =
   "<!DOCTYPE html><html><head><title>Loading Territory...</title></<head><body><style> body {display: flex; justify-content: center;align-items: center;}</style><h1>Loading Territory...</h1></body></html>";
-
-const HOUSEHOLD_LANGUAGES = {
-  ENGLISH: { CODE: "e", DISPLAY: "English" },
-  CHINESE: { CODE: "c", DISPLAY: "Chinese" },
-  BURMESE: { CODE: "b", DISPLAY: "Burmese" },
-  TAMIL: { CODE: "t", DISPLAY: "Tamil" },
-  TAGALOG: { CODE: "tg", DISPLAY: "Tagalog" },
-  INDONESIAN: { CODE: "id", DISPLAY: "Indonesian" },
-  MALAY: { CODE: "m", DISPLAY: "Malay" }
-};
-
-const UA_DEVICE_MAKES = {
-  HUAWEI: "Huawei"
-};
 
 const UNSUPPORTED_BROWSER_MSG = "Browser doesn't support this feature.";
 const PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY = 600;
@@ -163,13 +137,11 @@ const WIKI_CATEGORIES = {
 const DEFAULT_FB_CLOUD_FUNCTIONS_REGION = "asia-southeast1";
 
 export {
-  UA_DEVICE_MAKES,
   UNSUPPORTED_BROWSER_MSG,
   STATUS_CODES,
   MUTABLE_CODES,
   DEFAULT_FLOOR_PADDING,
   DEFAULT_SELF_DESTRUCT_HOURS,
-  HOUSEHOLD_TYPES,
   FIREBASE_AUTH_UNAUTHORISED_MSG,
   RELOAD_CHECK_INTERVAL_MS,
   RELOAD_INACTIVITY_DURATION,
@@ -178,7 +150,6 @@ export {
   MIN_START_FLOOR,
   MAX_TOP_FLOOR,
   COUNTABLE_HOUSEHOLD_STATUS,
-  HOUSEHOLD_LANGUAGES,
   USER_ACCESS_LEVELS,
   LINK_TYPES,
   TERRITORY_SELECTOR_VIEWPORT_HEIGHT,

@@ -1,10 +1,6 @@
 import { get, ref, update } from "firebase/database";
 import { database } from "../../firebase";
-import {
-  HOUSEHOLD_TYPES,
-  STATUS_CODES,
-  NOT_HOME_STATUS_CODES
-} from "../constants";
+import { STATUS_CODES, NOT_HOME_STATUS_CODES } from "../constants";
 import { addressDetails, unitMaps } from "../interface";
 import pollingVoidFunction from "./pollingvoid";
 
@@ -12,7 +8,8 @@ const processPostalUnitNumber = async (
   postalCode: string,
   unitNumber: string,
   addressData: addressDetails | undefined,
-  isDelete = false
+  isDelete = false,
+  defaultType?: string
 ) => {
   if (!addressData) return;
 
@@ -38,12 +35,11 @@ const processPostalUnitNumber = async (
         isDelete
           ? {}
           : {
-              type: HOUSEHOLD_TYPES.CHINESE,
+              type: defaultType,
               note: "",
               status: STATUS_CODES.DEFAULT,
               nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
               x_floor: floorDetails.floor,
-              languages: "",
               sequence: lastSequenceNo
             };
     });

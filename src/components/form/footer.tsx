@@ -1,7 +1,6 @@
 import { Modal, Button } from "react-bootstrap";
 import { USER_ACCESS_LEVELS, TERRITORY_TYPES } from "../../utils/constants";
 import { FooterProps } from "../../utils/interface";
-// import { ModalSubmitButton } from "../form";
 import ModalSubmitButton from "../form/submit";
 import ComponentAuthorizer from "../navigation/authorizer";
 
