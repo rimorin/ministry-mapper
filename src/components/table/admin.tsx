@@ -17,8 +17,6 @@ const AdminTable = ({
   maxUnitNumberLength,
   completedPercent,
   policy,
-  trackRace,
-  trackLanguages,
   adminUnitHeaderStyle,
   handleUnitNoUpdate,
   handleUnitStatusUpdate,
@@ -32,11 +30,9 @@ const AdminTable = ({
         isAdmin={true}
         postalCode={postalCode}
         houses={floors[0]}
-        policy={policy}
         completedPercent={completedPercent}
-        trackLanguages={trackLanguages}
-        trackRace={trackRace}
         handleHouseUpdate={handleUnitStatusUpdate}
+        policy={policy}
       />
     );
   }
@@ -112,7 +108,6 @@ const AdminTable = ({
                   data-hhnote={detailsElement.note}
                   data-hhstatus={detailsElement.status}
                   data-nhcount={detailsElement.nhcount}
-                  data-languages={detailsElement.languages}
                   data-dnctime={
                     detailsElement.dnctime || DEFAULT_UNIT_DNC_MS_TIME
                   }
@@ -123,9 +118,7 @@ const AdminTable = ({
                     note={detailsElement.note}
                     status={detailsElement.status}
                     nhcount={detailsElement.nhcount}
-                    languages={detailsElement.languages}
-                    trackRace={trackRace}
-                    trackLanguages={trackLanguages}
+                    defaultOption={policy?.defaultType}
                   />
                 </td>
               ))}

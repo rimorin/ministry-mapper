@@ -66,7 +66,6 @@ function Territory() {
       postalcode={postalcode}
       congregationcode={congregationcode}
       maxTries={linkSession?.maxTries}
-      homeLanguage={linkSession?.homeLanguage}
       pubName={publisherName}
     ></Slip>
   );

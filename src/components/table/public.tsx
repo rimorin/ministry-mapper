@@ -1,6 +1,5 @@
 import { Table } from "react-bootstrap";
 import { territoryTableProps } from "../../utils/interface";
-// import { TableHeader, FloorHeader, UnitStatus } from "../table";
 import TableHeader from "../table/header";
 import FloorHeader from "../table/floor";
 import UnitStatus from "../table/unit";
@@ -9,9 +8,7 @@ const PublicTerritoryTable = ({
   floors,
   maxUnitNumberLength,
   completedPercent,
-  policy,
-  trackRace,
-  trackLanguages,
+  policy: hhPolicy,
   handleUnitStatusUpdate
 }: territoryTableProps) => (
   <div className="sticky-body">
@@ -30,7 +27,7 @@ const PublicTerritoryTable = ({
               <FloorHeader index={index} floor={item.floor} />
               {item.units.map((element) => (
                 <td
-                  className={`text-center align-middle inline-cell ${policy?.getUnitColor(
+                  className={`text-center align-middle inline-cell ${hhPolicy?.getUnitColor(
                     element,
                     completedPercent.completedValue
                   )}`}
@@ -44,9 +41,7 @@ const PublicTerritoryTable = ({
                     note={element.note}
                     status={element.status}
                     nhcount={element.nhcount}
-                    languages={element.languages}
-                    trackRace={trackRace}
-                    trackLanguages={trackLanguages}
+                    defaultOption={hhPolicy?.defaultType}
                   />
                 </td>
               ))}

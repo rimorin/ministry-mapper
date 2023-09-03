@@ -1,4 +1,5 @@
-import { Policy, floorDetails } from "../interface";
+import { floorDetails } from "../interface";
+import { Policy } from "../policies";
 import processCompletedPercentage from "./processcompletedpercent";
 
 const getCompletedPercent = (policy: Policy, floors: floorDetails[]) => {

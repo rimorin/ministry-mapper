@@ -18,11 +18,13 @@ const NewUnit = NiceModal.create(
   ({
     footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     postalCode,
-    addressData
+    addressData,
+    defaultType
   }: {
     footerSaveAcl: number | undefined;
     postalCode: string;
     addressData: addressDetails;
+    defaultType: string;
   }) => {
     const [unit, setUnit] = useState("");
     const [isSaving, setIsSaving] = useState(false);
@@ -33,7 +35,13 @@ const NewUnit = NiceModal.create(
       event.preventDefault();
       setIsSaving(true);
       try {
-        processPostalUnitNumber(postalCode, unit, addressData);
+        processPostalUnitNumber(
+          postalCode,
+          unit,
+          addressData,
+          false,
+          defaultType
+        );
         modal.hide();
       } catch (error) {
         errorHandler(error, rollbar);
