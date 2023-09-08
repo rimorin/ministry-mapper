@@ -45,7 +45,7 @@ function Main() {
         </Routes>
       </Suspense>
       <div className="fixed-bottom text-muted opacity-25 m-2">
-        <>v{process.env.REACT_APP_VERSION}</>
+        <>v{import.meta.env.VITE_VERSION}</>
       </div>
     </Container>
   );

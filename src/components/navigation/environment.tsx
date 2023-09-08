@@ -5,7 +5,7 @@ const ProgressBar = SuspenseComponent(
 );
 
 const EnvironmentIndicator = memo(() => {
-  if (process.env.REACT_APP_ROLLBAR_ENVIRONMENT?.startsWith("production"))
+  if (import.meta.env.VITE_ROLLBAR_ENVIRONMENT?.startsWith("production"))
     return <></>;
   return (
     <ProgressBar
@@ -18,7 +18,7 @@ const EnvironmentIndicator = memo(() => {
         fontWeight: "bold",
         zIndex: 1000
       }}
-      label={`${process.env.REACT_APP_ROLLBAR_ENVIRONMENT} environment`}
+      label={`${import.meta.env.VITE_ROLLBAR_ENVIRONMENT} environment`}
     />
   );
 });

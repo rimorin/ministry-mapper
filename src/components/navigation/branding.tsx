@@ -7,7 +7,7 @@ const NavBarBranding = memo(({ naming }: BrandingProps) => {
     <Navbar.Brand className="brand-wrap">
       <img
         alt=""
-        src={`${process.env.PUBLIC_URL}/favicon-32x32.png`}
+        src="/favicon-32x32.png"
         width="32"
         height="32"
         className="d-inline-block align-top"

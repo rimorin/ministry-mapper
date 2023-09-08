@@ -1,4 +1,3 @@
-import { Form } from "react-bootstrap";
 import { HouseholdProps } from "../../utils/interface";
 import Select from "react-select";
 
@@ -8,8 +7,8 @@ const HouseholdField = ({
   options
 }: HouseholdProps) => {
   return (
-    <Form.Group className="mb-3" controlId="formBasicSelect">
-      <Form.Label>Household</Form.Label>
+    <div className="mb-3">
+      <div className="mb-2 inline-block">Household</div>
       <Select
         options={options}
         onChange={handleChange}
@@ -17,7 +16,7 @@ const HouseholdField = ({
         isSearchable={false}
         required
       />
-    </Form.Group>
+    </div>
   );
 };
 
