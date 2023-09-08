@@ -7,36 +7,19 @@
       name="description"
       content="A digital territory platform created for real-time collaboration in the ministry."
     />
-    <link
-      rel="apple-touch-icon"
-      sizes="180x180"
-      href="%PUBLIC_URL%/apple-touch-icon.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="%PUBLIC_URL%/favicon-32x32.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="%PUBLIC_URL%/favicon-16x16.png"
-    />
-    <link rel="manifest" href="%PUBLIC_URL%/site.webmanifest" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta name="robots" content="noindex" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="%PUBLIC_URL%" />
+    <meta property="og:url" content="/" />
     <meta property="og:title" content="Ministry Mapper" />
     <meta
       property="og:description"
       content="A digital territory platform created for real-time collaboration in the ministry."
     />
-    <meta
-      property="og:image"
-      content="%PUBLIC_URL%/android-chrome-192x192.png"
-    />
+    <meta property="og:image" content="/android-chrome-192x192.png" />
     <meta name="author" content="John Eric" />
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
@@ -52,15 +35,11 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
+    <script type="module" src="/src/index.tsx"></script>
+    <script>
+      if (global === undefined) {
+        var global = window;
+      }
+    </script>
   </body>
 </html>

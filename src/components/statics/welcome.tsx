@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { Container, Card } from "react-bootstrap";
+import imgUrl from "/logo.png";
 
 const Welcome = memo(({ name }: { name?: string }) => {
   return (
@@ -8,7 +9,7 @@ const Welcome = memo(({ name }: { name?: string }) => {
         <Card.Img
           alt="Ministry Mapper main logo"
           className="mm-main-image"
-          src={`${process.env.PUBLIC_URL}/logo.png`}
+          src={imgUrl}
         />
         <Card.Body>
           <Card.Title className="text-center">
