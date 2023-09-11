@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { Container, Image } from "react-bootstrap";
+import imgUrl from "/logo.png";
 
 const FrontLogo = memo(() => (
   <Container className="container-main">
@@ -7,7 +8,7 @@ const FrontLogo = memo(() => (
       width={"60%"}
       alt="Ministry Mapper small logo"
       fluid
-      src={`${process.env.PUBLIC_URL}/logo.png`}
+      src={imgUrl}
     ></Image>
   </Container>
 ));

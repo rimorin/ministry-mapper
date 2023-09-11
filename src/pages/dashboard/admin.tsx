@@ -187,7 +187,6 @@ function Admin({ user }: adminProps) {
   const [assignments, setAssignments] = useState<Array<LinkSession>>([]);
   const [policy, setPolicy] = useState<Policy>(new Policy());
   const [options, setOptions] = useState<Array<OptionProps>>([]);
-  const domain = process.env.PUBLIC_URL;
   const rollbar = useRollbar();
   let unsubscribers = new Array<Unsubscribe>();
 
@@ -556,7 +555,7 @@ function Admin({ user }: adminProps) {
         linkid,
         `Units for ${name}`,
         assignmentMessage(name),
-        `${domain}/${postalCode}/${code}/${linkid}`,
+        `/${postalCode}/${code}/${linkid}`,
         linkExpiryHrs,
         publisherName
       );
@@ -1414,7 +1413,7 @@ function Admin({ user }: adminProps) {
                                     addressLinkId,
                                     `Units for ${currentPostalname}`,
                                     assignmentMessage(currentPostalname),
-                                    `${domain}/${currentPostalcode}/${code}/${addressLinkId}`,
+                                    `/${currentPostalcode}/${code}/${addressLinkId}`,
                                     defaultExpiryHours,
                                     linkObject.publisherName as string
                                   );
@@ -1460,7 +1459,7 @@ function Admin({ user }: adminProps) {
                                     user.displayName || ""
                                   );
                                   if (territoryWindow) {
-                                    territoryWindow.location.href = `${domain}/${currentPostalcode}/${code}/${addressLinkId}`;
+                                    territoryWindow.location.href = `/${currentPostalcode}/${code}/${addressLinkId}`;
                                   }
                                 } catch (error) {
                                   errorHandler(error, rollbar);

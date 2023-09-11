@@ -1,16 +1,11 @@
-import {
-  Form,
-  InputGroup,
-  ToggleButtonGroup,
-  ToggleButton
-} from "react-bootstrap";
+import { InputGroup, ToggleButtonGroup, ToggleButton } from "react-bootstrap";
 import { NOT_HOME_STATUS_CODES } from "../../utils/constants";
 import { FormProps } from "../../utils/interface";
 
 const HHNotHomeField = ({ handleGroupChange, changeValue }: FormProps) => {
   return (
-    <Form.Group className="mb-1" controlId="formBasicNtHomebtnCheckbox">
-      <Form.Label>Number of tries</Form.Label>
+    <div className="mb-1">
+      <div className="mb-2 inline-block">Number of tries</div>
       <InputGroup className="justify-content-center">
         <ToggleButtonGroup
           name="nhcount"
@@ -49,7 +44,7 @@ const HHNotHomeField = ({ handleGroupChange, changeValue }: FormProps) => {
           </ToggleButton>
         </ToggleButtonGroup>
       </InputGroup>
-    </Form.Group>
+    </div>
   );
 };
 

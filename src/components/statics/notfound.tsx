@@ -6,7 +6,7 @@ const NotFoundPage = () => (
       <Card.Img
         alt="Ministry Mapper logo"
         className="mm-logo"
-        src={`${process.env.PUBLIC_URL}/android-chrome-192x192.png`}
+        src="/android-chrome-192x192.png"
       />
       <Card.Body>
         <Card.Title className="text-center">404 Page Not Found 🚫</Card.Title>

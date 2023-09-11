@@ -5,22 +5,19 @@ import { BrowserRouter } from "react-router-dom";
 import { StrictMode } from "react";
 import { Provider } from "@rollbar/react";
 import NiceModal from "@ebay/nice-modal-react";
-const {
-  REACT_APP_ROLLBAR_ACCESS_TOKEN,
-  REACT_APP_ROLLBAR_ENVIRONMENT,
-  REACT_APP_VERSION
-} = process.env;
+const { VITE_ROLLBAR_ACCESS_TOKEN, VITE_ROLLBAR_ENVIRONMENT, VITE_VERSION } =
+  import.meta.env;
 
 const DEFEAULT_ROLLBAR_ENVIRONMENT = "staging";
 
 const rollbarConfig = {
-  accessToken: REACT_APP_ROLLBAR_ACCESS_TOKEN,
+  accessToken: VITE_ROLLBAR_ACCESS_TOKEN,
   payload: {
-    environment: REACT_APP_ROLLBAR_ENVIRONMENT || DEFEAULT_ROLLBAR_ENVIRONMENT,
+    environment: VITE_ROLLBAR_ENVIRONMENT || DEFEAULT_ROLLBAR_ENVIRONMENT,
     client: {
       javascript: {
         source_map_enabled: true,
-        code_version: REACT_APP_VERSION
+        code_version: VITE_VERSION
       }
     }
   }
