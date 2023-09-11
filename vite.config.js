@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
 import visualizer from "rollup-plugin-visualizer";
 import checker from "vite-plugin-checker";
+import { ViteImageOptimizer } from "vite-plugin-image-optimizer";
 export default defineConfig(() => {
   return {
     build: {
@@ -25,7 +26,13 @@ export default defineConfig(() => {
       port: 3000,
       host: true
     },
-    plugins: [react(), svgr(), visualizer(), checker({ typescript: true })],
+    plugins: [
+      react(),
+      svgr(),
+      visualizer(),
+      checker({ typescript: true }),
+      ViteImageOptimizer()
+    ],
     test: {
       globals: true,
       environment: "jsdom",
