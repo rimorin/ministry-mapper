@@ -10,10 +10,7 @@ export default defineConfig(() => {
       rollupOptions: {
         output: {
           manualChunks: {
-            react: ["react"],
-            reactDom: ["react-dom"],
-            reactRouter: ["react-router"],
-            reactSelect: ["react-select"],
+            react: ["react", "react-dom", "react-router", "react-router-dom"],
             rollbar: ["rollbar"],
             fbApp: ["@firebase/app"],
             fbAuth: ["@firebase/auth"],
