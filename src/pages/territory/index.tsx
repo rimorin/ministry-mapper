@@ -13,6 +13,9 @@ const NotFoundPage = SuspenseComponent(
 const InvalidPage = SuspenseComponent(
   lazy(() => import("../../components/statics/invalidpage"))
 );
+const OfflinePage = SuspenseComponent(
+  lazy(() => import("../../components/statics/offline"))
+);
 
 function Territory() {
   const { id, postalcode, congregationcode } = useParams();
@@ -23,10 +26,12 @@ function Territory() {
   const [tokenEndTime, setTokenEndTime] = useState<number>(0);
   const [linkSession, setLinkSession] = useState<LinkSession>();
   const [publisherName, setPublisherName] = useState<string>("");
+  const [isConnected, setIsConnected] = useState<boolean>(true);
 
   useEffect(() => {
     const linkReference = child(ref(database), `/links/${id}`);
     const postalData = child(ref(database), `/${postalcode}`);
+
     const pollerId = SetPollerInterval();
     onValue(linkReference, (snapshot) => {
       clearInterval(pollerId);
@@ -53,6 +58,9 @@ function Territory() {
       },
       { onlyOnce: true }
     );
+    onValue(ref(database, ".info/connected"), (snapshot) => {
+      setIsConnected(snapshot.val());
+    });
   }, [id, postalcode]);
   if (isLoading || isTokenLoading) return <Loader />;
   if (!isValidPostalcode) return <NotFoundPage />;
@@ -60,6 +68,7 @@ function Territory() {
     document.title = "Ministry Mapper";
     return <InvalidPage />;
   }
+  if (!isConnected) return <OfflinePage />;
   return (
     <Slip
       tokenEndtime={tokenEndTime}

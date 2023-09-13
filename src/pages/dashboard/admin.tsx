@@ -78,6 +78,7 @@ import BackToTopButton from "../../components/navigation/backtotop";
 import HelpButton from "../../components/navigation/help";
 import Loader from "../../components/statics/loader";
 import Welcome from "../../components/statics/welcome";
+import Offline from "../../components/statics/offline";
 import {
   STATUS_CODES,
   NOT_HOME_STATUS_CODES,
@@ -190,6 +191,7 @@ function Admin({ user }: adminProps) {
   const [assignments, setAssignments] = useState<Array<LinkSession>>([]);
   const [policy, setPolicy] = useState<Policy>(new Policy());
   const [options, setOptions] = useState<Array<OptionProps>>([]);
+  const [isConnected, setIsConnected] = useState<boolean>(true);
   const rollbar = useRollbar();
   let unsubscribers = new Array<Unsubscribe>();
 
@@ -828,6 +830,10 @@ function Admin({ user }: adminProps) {
       }
     );
 
+    onValue(ref(database, ".info/connected"), (snapshot) => {
+      setIsConnected(snapshot.val());
+    });
+
     let currentTime = new Date().getTime();
 
     const setActivityTime = () => {
@@ -863,6 +869,7 @@ function Admin({ user }: adminProps) {
     return (
       <UnauthorizedPage handleClick={logoutUser} name={`${user.displayName}`} />
     );
+  if (!isConnected) return <Offline />;
   const isDataCompletelyFetched = addressData.size === sortedAddressList.length;
   const isAdmin = userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE;
   const isReadonly = userAccessLevel === USER_ACCESS_LEVELS.READ_ONLY.CODE;
