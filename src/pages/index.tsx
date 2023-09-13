@@ -14,9 +14,6 @@ import SuspenseComponent from "../components/utils/suspense";
 const MaintenanceMode = SuspenseComponent(
   lazy(() => import("../components/statics/maintenance"))
 );
-const OfflineMode = SuspenseComponent(
-  lazy(() => import("../components/statics/offline"))
-);
 const NotFoundPage = lazy(() => import("../components/statics/notfound"));
 const FrontPage = lazy(() => import("./frontpage"));
 const Territory = lazy(() => import("./territory/index"));
@@ -24,7 +21,6 @@ const Dashboard = lazy(() => import("./dashboard/index"));
 
 function Main() {
   const [isMaintenance, setIsMaintenance] = useState<boolean>(false);
-  const [isConnected, setIsConnected] = useState<boolean>(true);
 
   useEffect(() => {
     const maintenanceReference = child(ref(database), `/maintenance`);
@@ -33,12 +29,7 @@ function Main() {
         setIsMaintenance(snapshot.val());
       }
     });
-    const connectedRef = ref(database, ".info/connected");
-    onValue(connectedRef, (snapshot) => {
-      setIsConnected(snapshot.val());
-    });
   }, []);
-  if (!isConnected) return <OfflineMode />;
   if (isMaintenance) return <MaintenanceMode />;
   return (
     <Container className="pt-2" fluid>
