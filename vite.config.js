@@ -32,7 +32,12 @@ export default defineConfig(() => {
       react(),
       svgr(),
       visualizer(),
-      checker({ typescript: true }),
+      checker({
+        typescript: true,
+        eslint: {
+          lintCommand: 'eslint "./src/**/*.{js,jsx,ts,tsx}"'
+        }
+      }),
       ViteImageOptimizer(),
       TurboConsole(),
       progress()
