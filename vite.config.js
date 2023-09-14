@@ -5,6 +5,7 @@ import visualizer from "rollup-plugin-visualizer";
 import checker from "vite-plugin-checker";
 import { ViteImageOptimizer } from "vite-plugin-image-optimizer";
 import TurboConsole from "vite-plugin-turbo-console";
+import htmlPurge from "vite-plugin-purgecss";
 export default defineConfig(() => {
   return {
     build: {
@@ -38,7 +39,8 @@ export default defineConfig(() => {
         }
       }),
       ViteImageOptimizer(),
-      TurboConsole()
+      TurboConsole(),
+      htmlPurge()
     ],
     test: {
       globals: true,
