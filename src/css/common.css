@@ -10,6 +10,13 @@
   z-index: 2;
 }
 
+.sticky-top-cell {
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 3;
+}
+
 .inline-cell {
   white-space: nowrap;
 }

@@ -314,4 +314,5 @@ export interface HHOptionProps {
   isCountable: boolean;
   isDefault?: boolean;
   sequence: number;
+  isNew?: boolean;
 }

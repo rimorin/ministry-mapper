@@ -4,6 +4,7 @@ import svgr from "vite-plugin-svgr";
 import visualizer from "rollup-plugin-visualizer";
 import checker from "vite-plugin-checker";
 import { ViteImageOptimizer } from "vite-plugin-image-optimizer";
+import TurboConsole from "vite-plugin-turbo-console";
 export default defineConfig(() => {
   return {
     build: {
@@ -30,8 +31,14 @@ export default defineConfig(() => {
       react(),
       svgr(),
       visualizer(),
-      checker({ typescript: true }),
-      ViteImageOptimizer()
+      checker({
+        typescript: true,
+        eslint: {
+          lintCommand: 'eslint "./src/**/*.{js,jsx,ts,tsx}"'
+        }
+      }),
+      ViteImageOptimizer(),
+      TurboConsole()
     ],
     test: {
       globals: true,
