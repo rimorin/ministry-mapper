@@ -112,6 +112,9 @@ const ConfirmSlipDetails = lazy(
 const UpdateCongregationSettings = lazy(
   () => import("../../components/modal/congsettings")
 );
+const UpdateCongregationOptions = lazy(
+  () => import("../../components/modal/congoptions")
+);
 const UpdateAddressInstructions = lazy(
   () => import("../../components/modal/instructions")
 );
@@ -939,56 +942,6 @@ function Admin({ user }: adminProps) {
                   </Button>
                 </ComponentAuthorizer>
               )}
-              <ComponentAuthorizer
-                requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
-                userPermission={userAccessLevel}
-              >
-                <DropdownButton
-                  className="dropdown-btn"
-                  variant="outline-primary"
-                  size="sm"
-                  title={
-                    <>
-                      {isShowingUserListing && (
-                        <>
-                          <Spinner
-                            as="span"
-                            animation="border"
-                            size="sm"
-                            aria-hidden="true"
-                          />{" "}
-                        </>
-                      )}{" "}
-                      Users
-                    </>
-                  }
-                >
-                  <Dropdown.Item onClick={async () => await getUsers()}>
-                    {isShowingUserListing && (
-                      <>
-                        <Spinner
-                          as="span"
-                          animation="border"
-                          size="sm"
-                          aria-hidden="true"
-                        />{" "}
-                      </>
-                    )}
-                    Manage
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={() => {
-                      ModalManager.show(SuspenseComponent(InviteUser), {
-                        email: user.email,
-                        congregation: code,
-                        footerSaveAcl: userAccessLevel
-                      });
-                    }}
-                  >
-                    Invite
-                  </Dropdown.Item>
-                </DropdownButton>
-              </ComponentAuthorizer>
               {selectedTerritoryCode && (
                 <ComponentAuthorizer
                   requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
@@ -1206,6 +1159,85 @@ function Admin({ user }: adminProps) {
                   </DropdownButton>
                 </ComponentAuthorizer>
               )}
+              <ComponentAuthorizer
+                requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
+                userPermission={userAccessLevel}
+              >
+                <DropdownButton
+                  className="dropdown-btn"
+                  size="sm"
+                  variant="outline-primary"
+                  title={
+                    <>
+                      {isShowingUserListing && (
+                        <>
+                          <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            aria-hidden="true"
+                          />{" "}
+                        </>
+                      )}{" "}
+                      Congregation
+                    </>
+                  }
+                  align={{ lg: "end" }}
+                >
+                  <Dropdown.Item
+                    onClick={() =>
+                      ModalManager.show(
+                        SuspenseComponent(UpdateCongregationSettings),
+                        {
+                          currentName: `${name}`,
+                          currentCongregation: `${code}`,
+                          currentMaxTries:
+                            policy?.maxTries || DEFAULT_CONGREGATION_MAX_TRIES,
+                          currentDefaultExpiryHrs: defaultExpiryHours
+                        }
+                      )
+                    }
+                  >
+                    Settings
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() =>
+                      ModalManager.show(
+                        SuspenseComponent(UpdateCongregationOptions),
+                        {
+                          currentCongregation: `${code}`
+                        }
+                      )
+                    }
+                  >
+                    Household Options
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={async () => await getUsers()}>
+                    {isShowingUserListing && (
+                      <>
+                        <Spinner
+                          as="span"
+                          animation="border"
+                          size="sm"
+                          aria-hidden="true"
+                        />{" "}
+                      </>
+                    )}
+                    Manage Users
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() => {
+                      ModalManager.show(SuspenseComponent(InviteUser), {
+                        email: user.email,
+                        congregation: code,
+                        footerSaveAcl: userAccessLevel
+                      });
+                    }}
+                  >
+                    Invite User
+                  </Dropdown.Item>
+                </DropdownButton>
+              </ComponentAuthorizer>
               <DropdownButton
                 className="dropdown-btn"
                 size="sm"
@@ -1221,22 +1253,6 @@ function Admin({ user }: adminProps) {
                   }}
                 >
                   Profile
-                </Dropdown.Item>
-                <Dropdown.Item
-                  onClick={() =>
-                    ModalManager.show(
-                      SuspenseComponent(UpdateCongregationSettings),
-                      {
-                        currentName: `${name}`,
-                        currentCongregation: `${code}`,
-                        currentMaxTries:
-                          policy?.maxTries || DEFAULT_CONGREGATION_MAX_TRIES,
-                        currentDefaultExpiryHrs: defaultExpiryHours
-                      }
-                    )
-                  }
-                >
-                  Congregation
                 </Dropdown.Item>
                 {assignments && assignments.length > 0 && (
                   <Dropdown.Item

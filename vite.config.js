@@ -5,7 +5,6 @@ import visualizer from "rollup-plugin-visualizer";
 import checker from "vite-plugin-checker";
 import { ViteImageOptimizer } from "vite-plugin-image-optimizer";
 import TurboConsole from "vite-plugin-turbo-console";
-import progress from "vite-plugin-progress";
 export default defineConfig(() => {
   return {
     build: {
@@ -39,8 +38,7 @@ export default defineConfig(() => {
         }
       }),
       ViteImageOptimizer(),
-      TurboConsole(),
-      progress()
+      TurboConsole()
     ],
     test: {
       globals: true,

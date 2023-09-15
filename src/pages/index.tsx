@@ -4,7 +4,7 @@ import { Container } from "react-bootstrap";
 import { Routes, Route } from "react-router-dom";
 import { database } from "../firebase";
 // Load bootstrap first followed by your custom styles
-import "bootstrap/dist/css/bootstrap.min.css";
+import "../App.scss";
 import "react-calendar/dist/Calendar.css";
 import "../css/main.css";
 import "../css/common.css";

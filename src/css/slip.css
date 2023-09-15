@@ -2,10 +2,3 @@
   height: 75vh;
   overflow-y: auto;
 }
-
-.sticky-top-cell {
-  position: sticky;
-  top: 0;
-  background-color: white;
-  z-index: 3;
-}
