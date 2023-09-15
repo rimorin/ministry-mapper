@@ -135,8 +135,7 @@ const UpdateCongregationOptions = NiceModal.create(
             description: option.description,
             isCountable: option.isCountable,
             isDefault: option.isDefault || false,
-            sequence: option.sequence,
-            isNew: false
+            sequence: option.sequence
           };
         });
         await pollingVoidFunction(() =>
