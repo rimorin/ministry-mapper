@@ -1,3 +1,15 @@
+# [1.22.0](https://github.com/rimorin/ministry-mapper/compare/v1.21.0...v1.22.0) (2023-09-15)
+
+
+### Features
+
+* implement admin module for hh options ([6654a90](https://github.com/rimorin/ministry-mapper/commit/6654a9087db03279506e8cbaf95fb64ea0df607f))
+
+
+### Reverts
+
+* Revert "feat: implement offline screen to indicate poor or zero internet connection" ([95165a4](https://github.com/rimorin/ministry-mapper/commit/95165a4b8c1814ccc7b248db57e6dcf376884e66))
+
 # [1.21.0](https://github.com/rimorin/ministry-mapper/compare/v1.20.1...v1.21.0) (2023-09-03)
 
 
