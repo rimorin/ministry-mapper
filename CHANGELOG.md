@@ -1,3 +1,10 @@
+## [1.22.1](https://github.com/rimorin/ministry-mapper/compare/v1.22.0...v1.22.1) (2023-09-15)
+
+
+### Bug Fixes
+
+* remove unnecessary isNew field for option ([7425b8f](https://github.com/rimorin/ministry-mapper/commit/7425b8fc5007d4ff4ef8134c688250be370040d4))
+
 # [1.22.0](https://github.com/rimorin/ministry-mapper/compare/v1.21.0...v1.22.0) (2023-09-15)
 
 
