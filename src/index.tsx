@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import App from "./App";
+import Main from "./pages/index";
 import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter } from "react-router-dom";
 import { StrictMode } from "react";
@@ -29,7 +29,7 @@ root.render(
     <Provider config={rollbarConfig}>
       <NiceModal.Provider>
         <BrowserRouter>
-          <App />
+          <Main />
         </BrowserRouter>
       </NiceModal.Provider>
     </Provider>
