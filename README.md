@@ -30,10 +30,10 @@ Disadvantages of Ministry Mapper
 
 Configuration is done using a seperate [administration module](https://github.com/rimorin/ministry-mapper-admin).
 
-  1. Create account
-  2. Configure user roles
-  3. Configure congregation 
-  4. Access url, https://your_domain/congregation_code to begin administering.
+1. Create account
+2. Configure user roles
+3. Configure congregation
+4. Access url, https://your_domain/congregation_code to begin administering.
 
 ### Deployment
 
@@ -45,11 +45,11 @@ Configuration is done using a seperate [administration module](https://github.co
 - Firebase Appcheck setup (Recommend to setup once app domain is active)
 
   1. Register domain in Google [Recaptcha](https://www.google.com/recaptcha/about/) v3 (Not enterprise).
-  2. Copy public key to environment variable, `REACT_APP_FIREBASE_RECAPTCHA_PUBLIC_KEY`.
+  2. Copy public key to environment variable, `VITE_FIREBASE_RECAPTCHA_PUBLIC_KEY`.
   3. Copy secret key to Firebase appcheck
   4. Enforce
   5. Build package
-  6. For local developement, generate a token from Appcheck and copy key to environment variable, `REACT_APP_FIREBASE_APPCHECK_DEBUG_TOKEN`.
+  6. For local developement, generate a token from Appcheck and copy key to environment variable, `VITE_FIREBASE_APPCHECK_DEBUG_TOKEN`.
 
 - Firebase Functions. Refer to [documentation](https://github.com/rimorin/ministry-mapper-cron) for deployment.
 
@@ -58,39 +58,41 @@ Configuration is done using a seperate [administration module](https://github.co
   1. Create [Rollbar](https://rollbar.com/) account
   2. Create a React project
   3. Go to setting and retrieve client keys DSN.
-  4. Copy access token to environment variable, `REACT_APP_ROLLBAR_ACCESS_TOKEN` when building for production.
+  4. Copy access token to environment variable, `VITE_ROLLBAR_ACCESS_TOKEN` when building for production.
 
 - Local deployment
   1. Setup .env with the following environment variables and their values.
-     - REACT_APP_FIREBASE_API_KEY=key_from_firebase_account
-     - REACT_APP_FIREBASE_AUTH_DOMAIN=domain_from_firebase_account
-     - REACT_APP_FIREBASE_DB_URL=url_from_firebase_account
-     - REACT_APP_FIREBASE_PROJECT_ID=id_from_firebase_account
-     - REACT_APP_FIREBASE_BUCKET=bucket_from_firebase_account
-     - REACT_APP_FIREBASE_SENDER_ID=sender_id_from_firebase_account
-     - REACT_APP_FIREBASE_APP_ID=app_id_from_firebase_account
-     - REACT_APP_FIREBASE_APPCHECK_DEBUG_TOKEN=token generated from appcheck
+     - VITE_FIREBASE_API_KEY=key_from_firebase_account
+     - VITE_FIREBASE_AUTH_DOMAIN=domain_from_firebase_account
+     - VITE_FIREBASE_DB_URL=url_from_firebase_account
+     - VITE_FIREBASE_PROJECT_ID=id_from_firebase_account
+     - VITE_FIREBASE_BUCKET=bucket_from_firebase_account
+     - VITE_FIREBASE_SENDER_ID=sender_id_from_firebase_account
+     - VITE_FIREBASE_APP_ID=app_id_from_firebase_account
+     - VITE_FIREBASE_APPCHECK_DEBUG_TOKEN=token generated from appcheck
   2. Restart shell and run `npm start`
 - Production deployment
   1. Run `npm run build`
   2. Copy build package into a cloud CDN provider of your choice.
   3. When deploying, ensure the following environment variables are configured.
-     - REACT_APP_FIREBASE_API_KEY=key_from_firebase_account
-     - REACT_APP_FIREBASE_AUTH_DOMAIN=domain_from_firebase_account
-     - REACT_APP_FIREBASE_DB_URL=url_from_firebase_account
-     - REACT_APP_FIREBASE_PROJECT_ID=id_from_firebase_account
-     - REACT_APP_FIREBASE_BUCKET=bucket_from_firebase_account
-     - REACT_APP_FIREBASE_SENDER_ID=sender_id_from_firebase_account
-     - REACT_APP_FIREBASE_APP_ID=app_id_from_firebase_account
-     - REACT_APP_SENTRY_LOGGING_DSN=DSN from Sentry account
+     - VITE_FIREBASE_API_KEY=key_from_firebase_account
+     - VITE_FIREBASE_AUTH_DOMAIN=domain_from_firebase_account
+     - VITE_FIREBASE_DB_URL=url_from_firebase_account
+     - VITE_FIREBASE_PROJECT_ID=id_from_firebase_account
+     - VITE_FIREBASE_BUCKET=bucket_from_firebase_account
+     - VITE_FIREBASE_SENDER_ID=sender_id_from_firebase_account
+     - VITE_FIREBASE_APP_ID=app_id_from_firebase_account
+     - VITE_SENTRY_LOGGING_DSN=DSN from Sentry account
 
 ### Technologies Used
 
 1. Bootstrap - CSS Framework
-2. ReactJs - Javascript UI Framework
-3. Typescript - Javascript typed implementation library
-4. Rollbar - App error tracking and monitoring
-5. Firebase Real-time database - Cloud based database with real time synchronization across all clients.
-6. Firebase Authentication - Cloud based authentication service.
-7. Firebase Appcheck - Protects your app from abuse by attesting that incoming traffic and blocking traffic without valid credentials.
-8. Firebase Functions - Cloud based backend job scheduler
+2. Vite - Build tool
+3. ReactJs - Javascript UI Framework
+4. Typescript - Javascript typed implementation library
+5. Rollbar - App error tracking and monitoring
+6. Firebase Real-time database - Cloud based database with real time synchronization across all clients.
+7. Firebase Authentication - Cloud based authentication service.
+8. Firebase Appcheck - Protects your app from abuse by attesting that incoming traffic and blocking traffic without valid credentials.
+9. Firebase Functions - Cloud based backend job scheduler
+10. MailerSend - Email delivery service
