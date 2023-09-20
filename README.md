@@ -44,8 +44,8 @@ Configuration is done using a seperate [administration module](https://github.co
 
 - Firebase Appcheck setup (Recommend to setup once app domain is active)
 
-  1. Register domain in Google [Recaptcha](https://www.google.com/recaptcha/about/) v3 (Not enterprise).
-  2. Copy public key to environment variable, `VITE_FIREBASE_RECAPTCHA_PUBLIC_KEY`.
+  1. Register domain in Google [Recaptcha](https://www.google.com/recaptcha/about/) enterprise.
+  2. Copy public key to environment variable, `VITE_FIREBASE_RECAPTCHA_ENTERPRISE_SITE_KEY`.
   3. Copy secret key to Firebase appcheck
   4. Enforce
   5. Build package
