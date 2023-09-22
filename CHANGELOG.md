@@ -1,3 +1,10 @@
+# [1.23.0](https://github.com/rimorin/ministry-mapper/compare/v1.22.1...v1.23.0) (2023-09-22)
+
+
+### Features
+
+* gmap territory directions ([a455211](https://github.com/rimorin/ministry-mapper/commit/a4552111393bf053f1a55b63b323ab8478e6767e))
+
 ## [1.22.1](https://github.com/rimorin/ministry-mapper/compare/v1.22.0...v1.22.1) (2023-09-15)
 
 
