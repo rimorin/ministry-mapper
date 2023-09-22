@@ -3,6 +3,7 @@ import { USER_ACCESS_LEVELS, TERRITORY_TYPES } from "../../utils/constants";
 import { FooterProps } from "../../utils/interface";
 import ModalSubmitButton from "../form/submit";
 import ComponentAuthorizer from "../navigation/authorizer";
+import GetDirection from "../../utils/helpers/directiongenerator";
 
 const ModalFooter = ({
   propertyPostal,
@@ -32,12 +33,9 @@ const ModalFooter = ({
           {propertyPostal && (
             <Button
               variant="secondary"
-              onClick={() => {
-                window.open(
-                  `http://maps.google.com.sg/maps?q=${encodedPropertyPostal}`,
-                  "_blank"
-                );
-              }}
+              onClick={() =>
+                window.open(GetDirection(encodedPropertyPostal), "_blank")
+              }
             >
               Direction
             </Button>
