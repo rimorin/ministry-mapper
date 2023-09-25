@@ -98,6 +98,8 @@ import {
 import ModalManager from "@ebay/nice-modal-react";
 import SuspenseComponent from "../../components/utils/suspense";
 import getOptions from "../../utils/helpers/getcongoptions";
+import GetDirection from "../../utils/helpers/directiongenerator";
+
 const UnauthorizedPage = SuspenseComponent(
   lazy(() => import("../../components/statics/unauth"))
 );
@@ -1502,11 +1504,9 @@ function Admin({ user }: adminProps) {
                           size="sm"
                           variant="outline-primary"
                           className="m-1"
-                          onClick={() => {
-                            window.open(
-                              `http://maps.google.com.sg/maps?q=${zipcode}`
-                            );
-                          }}
+                          onClick={() =>
+                            window.open(GetDirection(zipcode), "_blank")
+                          }
                         >
                           Direction
                         </Button>

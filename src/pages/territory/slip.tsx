@@ -34,6 +34,7 @@ import ModalManager from "@ebay/nice-modal-react";
 import UpdateAddressFeedback from "../../components/modal/updateaddfeedback";
 import UpdateAddressInstructions from "../../components/modal/instructions";
 import UpdateUnitStatus from "../../components/modal/updatestatus";
+import GetDirection from "../../utils/helpers/directiongenerator";
 const Slip = ({
   tokenEndtime = 0,
   postalcode = "",
@@ -176,9 +177,7 @@ const Slip = ({
               )}
               <NavDropdown.Item onClick={toggleLegend}>Legend</NavDropdown.Item>
               <NavDropdown.Item
-                onClick={() =>
-                  window.open(`http://maps.google.com.sg/maps?q=${zipcode}`)
-                }
+                onClick={() => window.open(GetDirection(zipcode), "_blank")}
               >
                 Direction
               </NavDropdown.Item>

@@ -1,3 +1,43 @@
+# [1.23.0](https://github.com/rimorin/ministry-mapper/compare/v1.22.1...v1.23.0) (2023-09-22)
+
+
+### Features
+
+* gmap territory directions ([a455211](https://github.com/rimorin/ministry-mapper/commit/a4552111393bf053f1a55b63b323ab8478e6767e))
+
+## [1.22.1](https://github.com/rimorin/ministry-mapper/compare/v1.22.0...v1.22.1) (2023-09-15)
+
+
+### Bug Fixes
+
+* remove unnecessary isNew field for option ([7425b8f](https://github.com/rimorin/ministry-mapper/commit/7425b8fc5007d4ff4ef8134c688250be370040d4))
+
+# [1.22.0](https://github.com/rimorin/ministry-mapper/compare/v1.21.0...v1.22.0) (2023-09-15)
+
+
+### Features
+
+* implement admin module for hh options ([6654a90](https://github.com/rimorin/ministry-mapper/commit/6654a9087db03279506e8cbaf95fb64ea0df607f))
+
+
+### Reverts
+
+* Revert "feat: implement offline screen to indicate poor or zero internet connection" ([95165a4](https://github.com/rimorin/ministry-mapper/commit/95165a4b8c1814ccc7b248db57e6dcf376884e66))
+
+# [1.21.0](https://github.com/rimorin/ministry-mapper/compare/v1.20.1...v1.21.0) (2023-09-03)
+
+
+### Features
+
+* implement dynamic congregation options for household ([d593b57](https://github.com/rimorin/ministry-mapper/commit/d593b5703f3348487023b93003fb079c47db191b))
+
+## [1.20.1](https://github.com/rimorin/ministry-mapper/compare/v1.20.0...v1.20.1) (2023-08-29)
+
+
+### Bug Fixes
+
+* check invalid territory code path ([1b77a79](https://github.com/rimorin/ministry-mapper/commit/1b77a799488bc287f51c0ed4c49e4f082b34eea3))
+
 # [1.20.0](https://github.com/rimorin/ministry-mapper/compare/v1.19.0...v1.20.0) (2023-08-10)
 
 
