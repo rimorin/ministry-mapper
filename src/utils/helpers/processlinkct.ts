@@ -10,10 +10,10 @@ import {
 } from "firebase/database";
 import { database } from "../../firebase";
 import { LINK_TYPES } from "../constants";
-import { LinkCounts, LinkSession } from "../policies";
+import { LinkDetails, LinkSession } from "../policies";
 import pollingQueryFunction from "./pollingquery";
 
-const processLinkCounts = async (postal: string) => {
+const processLinkDetails = async (postal: string) => {
   const postalCode = postal as string;
   // need to add to rules for links: ".indexOn": "postalCode",
   const linksSnapshot = await pollingQueryFunction(() =>
@@ -26,20 +26,19 @@ const processLinkCounts = async (postal: string) => {
       )
     )
   );
-  const currentTimestamp = new Date().getTime();
-  const counts = new LinkCounts();
+  const details = new LinkDetails();
   linksSnapshot.forEach((rec: DataSnapshot) => {
     const link = rec.val() as LinkSession;
-    if (link.tokenEndtime > currentTimestamp) {
-      if (link.linkType === LINK_TYPES.ASSIGNMENT) {
-        counts.assigneeCount++;
-      }
-      if (link.linkType === LINK_TYPES.PERSONAL) {
-        counts.personalCount++;
-      }
+    const linkId = rec.key as string;
+    const linkDetails = new LinkSession(link, linkId);
+    if (link.linkType === LINK_TYPES.ASSIGNMENT) {
+      details.assigneeDetailsList.push(linkDetails);
+    }
+    if (link.linkType === LINK_TYPES.PERSONAL) {
+      details.personalDetailsList.push(linkDetails);
     }
   });
-  return counts;
+  return details;
 };
 
-export default processLinkCounts;
+export default processLinkDetails;

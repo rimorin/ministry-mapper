@@ -1,5 +1,5 @@
 import { User } from "firebase/auth";
-import { Policy } from "./policies";
+import { LinkSession, Policy } from "./policies";
 
 export interface unitDetails {
   number: string;
@@ -71,8 +71,8 @@ export interface territoryDetails {
 }
 
 export interface addressDetails {
-  assigneeCount: number;
-  personalCount: number;
+  assigneeDetailsList: Array<LinkSession>;
+  personalDetailsList: Array<LinkSession>;
   x_zip: string;
   name: string;
   postalcode: string;
@@ -315,4 +315,10 @@ export interface HHOptionProps {
   isDefault?: boolean;
   sequence: number;
   isNew?: boolean;
+}
+
+export interface AssignmentModalProps {
+  assignments: LinkSession[];
+  assignmentType?: number;
+  assignmentTerritory?: string;
 }

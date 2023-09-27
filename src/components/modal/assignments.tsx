@@ -15,9 +15,14 @@ import ModalFooter from "../form/footer";
 import HelpButton from "../navigation/help";
 import { database } from "../../firebase";
 import { useEffect, useState } from "react";
+import { AssignmentModalProps } from "../../utils/interface";
 
 const GetAssignments = NiceModal.create(
-  ({ assignments }: { assignments: LinkSession[] }) => {
+  ({
+    assignments,
+    assignmentType,
+    assignmentTerritory
+  }: AssignmentModalProps) => {
     const modal = useModal();
 
     const [currentAssignments, setCurrentAssignments] =
@@ -29,10 +34,18 @@ const GetAssignments = NiceModal.create(
       }
     }, [currentAssignments]);
 
+    const isAssignOrPersonalAssignments = assignmentType && assignmentTerritory;
+
     return (
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
-          <Modal.Title>Assignments</Modal.Title>
+          <Modal.Title>
+            {isAssignOrPersonalAssignments
+              ? `${assignmentTerritory} ${LinkTypeDescription(
+                  assignmentType
+                )} Links`
+              : "Assignments"}
+          </Modal.Title>
           <HelpButton link={WIKI_CATEGORIES.GET_ASSIGNMENTS} />
         </Modal.Header>
         <Modal.Body>
@@ -55,12 +68,16 @@ const GetAssignments = NiceModal.create(
                         target="_blank"
                         rel="noreferrer"
                       >
-                        {assignment.name}
+                        {isAssignOrPersonalAssignments
+                          ? "Link"
+                          : assignment.name}
                       </a>
                     </div>
-                    <div className="fluid-text">
-                      {LinkTypeDescription(assignment.linkType)}
-                    </div>
+                    {!isAssignOrPersonalAssignments && (
+                      <div className="fluid-text">
+                        {LinkTypeDescription(assignment.linkType)}
+                      </div>
+                    )}
                     {assignment.publisherName && (
                       <div className="fluid-text">
                         Publisher : {assignment.publisherName}
