@@ -1,3 +1,10 @@
+# [1.24.0](https://github.com/rimorin/ministry-mapper/compare/v1.23.0...v1.24.0) (2023-09-27)
+
+
+### Features
+
+* assign-personal listing ([83576b1](https://github.com/rimorin/ministry-mapper/commit/83576b18e52d8a15a44c640bc9bd1a9993635a12))
+
 # [1.23.0](https://github.com/rimorin/ministry-mapper/compare/v1.22.1...v1.23.0) (2023-09-22)
 
 
