@@ -30,7 +30,8 @@ import {
   Fade,
   Navbar,
   ProgressBar,
-  Spinner
+  Spinner,
+  ButtonGroup
 } from "react-bootstrap";
 import { database, auth, functions } from "../../firebase";
 import { httpsCallable } from "firebase/functions";
@@ -54,7 +55,7 @@ import { LinkSession, Policy } from "../../utils/policies";
 import AdminTable from "../../components/table/admin";
 import pollingQueryFunction from "../../utils/helpers/pollingquery";
 import processAddressData from "../../utils/helpers/processadddata";
-import processLinkCounts from "../../utils/helpers/processlinkct";
+import processLinkDetails from "../../utils/helpers/processlinkct";
 import errorHandler from "../../utils/helpers/errorhandler";
 import ZeroPad from "../../utils/helpers/zeropad";
 import addHours from "../../utils/helpers/addhours";
@@ -297,10 +298,10 @@ function Admin({ user }: adminProps) {
               postalCode,
               postalSnapshot.units
             );
-            const counts = await processLinkCounts(postalCode);
+            const linkDetails = await processLinkDetails(postalCode);
             const addressData = {
-              assigneeCount: counts.assigneeCount,
-              personalCount: counts.personalCount,
+              assigneeDetailsList: linkDetails.assigneeDetailsList,
+              personalDetailsList: linkDetails.personalDetailsList,
               x_zip: postalSnapshot.x_zip,
               name: postalSnapshot.name,
               postalcode: postalCode,
@@ -1317,6 +1318,8 @@ function Admin({ user }: adminProps) {
               addressElement.x_zip == null
                 ? currentPostalcode
                 : addressElement.x_zip;
+            const assigneeCount = addressElement.assigneeDetailsList.length;
+            const personalCount = addressElement.personalDetailsList.length;
             return (
               <Accordion.Item
                 key={`accordion-${currentPostalcode}`}
@@ -1346,67 +1349,82 @@ function Admin({ user }: adminProps) {
                           }
                           userPermission={userAccessLevel}
                         >
-                          <Button
-                            key={`assigndrop-${currentPostalcode}`}
-                            size="sm"
-                            variant="outline-primary"
-                            onClick={() => {
-                              if (!navigator.share) {
-                                alert(UNSUPPORTED_BROWSER_MSG);
-                                return;
-                              }
-                              ModalManager.show(
-                                SuspenseComponent(ConfirmSlipDetails),
-                                {
-                                  addressName: currentPostalname,
-                                  userAccessLevel: userAccessLevel,
-                                  isPersonalSlip: true
+                          <ButtonGroup className="m-1">
+                            <Button
+                              key={`assigndrop-${currentPostalcode}`}
+                              size="sm"
+                              variant="outline-primary"
+                              onClick={() => {
+                                if (!navigator.share) {
+                                  alert(UNSUPPORTED_BROWSER_MSG);
+                                  return;
                                 }
-                              ).then((linkReturn) => {
-                                const linkObject = linkReturn as Record<
-                                  string,
-                                  unknown
-                                >;
-                                handleSubmitPersonalSlip(
-                                  currentPostalcode,
-                                  currentPostalname,
-                                  addressLinkId,
-                                  linkObject.linkExpiryHrs as number,
-                                  linkObject.publisherName as string
-                                );
-                              });
-                            }}
-                          >
-                            {isSettingPersonalLink &&
+                                ModalManager.show(
+                                  SuspenseComponent(ConfirmSlipDetails),
+                                  {
+                                    addressName: currentPostalname,
+                                    userAccessLevel: userAccessLevel,
+                                    isPersonalSlip: true
+                                  }
+                                ).then((linkReturn) => {
+                                  const linkObject = linkReturn as Record<
+                                    string,
+                                    unknown
+                                  >;
+                                  handleSubmitPersonalSlip(
+                                    currentPostalcode,
+                                    currentPostalname,
+                                    addressLinkId,
+                                    linkObject.linkExpiryHrs as number,
+                                    linkObject.publisherName as string
+                                  );
+                                });
+                              }}
+                            >
+                              Personal
+                            </Button>
+                            {(isSettingPersonalLink &&
                               selectedPostal === currentPostalcode && (
-                                <>
+                                <Button size="sm" variant="outline-primary">
                                   <Spinner
                                     as="span"
                                     animation="border"
                                     size="sm"
                                     aria-hidden="true"
                                   />{" "}
-                                </>
-                              )}
-                            {addressElement.personalCount > 0 && (
-                              <>
-                                <Badge bg="danger">
-                                  {`${addressElement.personalCount}`}
-                                </Badge>{" "}
-                              </>
-                            )}
-                            Personal
-                          </Button>
+                                </Button>
+                              )) ||
+                              (personalCount > 0 && (
+                                <Button
+                                  size="sm"
+                                  variant="outline-primary"
+                                  onClick={() =>
+                                    ModalManager.show(
+                                      SuspenseComponent(GetAssignments),
+                                      {
+                                        assignments:
+                                          addressElement.personalDetailsList,
+                                        assignmentType: LINK_TYPES.PERSONAL,
+                                        assignmentTerritory: currentPostalname
+                                      }
+                                    )
+                                  }
+                                >
+                                  <Badge bg="danger" className="me-1">
+                                    {personalCount}
+                                  </Badge>
+                                </Button>
+                              ))}
+                          </ButtonGroup>
                         </ComponentAuthorizer>
                         <ComponentAuthorizer
                           requiredPermission={USER_ACCESS_LEVELS.CONDUCTOR.CODE}
                           userPermission={userAccessLevel}
                         >
-                          <>
+                          <ButtonGroup className="m-1">
                             <Button
                               size="sm"
                               variant="outline-primary"
-                              className="m-1"
                               onClick={() => {
                                 if (!navigator.share) {
                                   alert(UNSUPPORTED_BROWSER_MSG);
@@ -1438,68 +1456,84 @@ function Admin({ user }: adminProps) {
                                 });
                               }}
                             >
-                              {isSettingAssignLink &&
-                                selectedPostal === currentPostalcode && (
-                                  <>
-                                    <Spinner
-                                      as="span"
-                                      animation="border"
-                                      size="sm"
-                                      aria-hidden="true"
-                                    />{" "}
-                                  </>
-                                )}
-                              {addressElement.assigneeCount > 0 && (
-                                <Badge bg="danger" className="me-1">
-                                  {`${addressElement.assigneeCount}`}
-                                </Badge>
-                              )}
                               Assign
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="outline-primary"
-                              className="m-1"
-                              onClick={async () => {
-                                setIsSettingViewLink(true);
-                                try {
-                                  const territoryWindow = window.open("");
-                                  if (territoryWindow) {
-                                    territoryWindow.document.body.innerHTML =
-                                      TERRITORY_VIEW_WINDOW_WELCOME_TEXT;
-                                  }
-                                  await setTimedLink(
-                                    LINK_TYPES.VIEW,
-                                    currentPostalcode,
-                                    currentPostalname,
-                                    addressLinkId,
-                                    defaultExpiryHours,
-                                    user.displayName || ""
-                                  );
-                                  if (territoryWindow) {
-                                    territoryWindow.location.href = `/${currentPostalcode}/${code}/${addressLinkId}`;
-                                  }
-                                } catch (error) {
-                                  errorHandler(error, rollbar);
-                                } finally {
-                                  setIsSettingViewLink(false);
-                                }
-                              }}
-                            >
-                              {isSettingViewLink && (
-                                <>
+                            {(isSettingAssignLink &&
+                              selectedPostal === currentPostalcode && (
+                                <Button size="sm" variant="outline-primary">
                                   <Spinner
                                     as="span"
                                     animation="border"
                                     size="sm"
                                     aria-hidden="true"
                                   />{" "}
-                                </>
-                              )}
-                              View
-                            </Button>
-                          </>
+                                </Button>
+                              )) ||
+                              (assigneeCount > 0 && (
+                                <Button
+                                  size="sm"
+                                  variant="outline-primary"
+                                  onClick={() =>
+                                    ModalManager.show(
+                                      SuspenseComponent(GetAssignments),
+                                      {
+                                        assignments:
+                                          addressElement.assigneeDetailsList,
+                                        assignmentType: LINK_TYPES.ASSIGNMENT,
+                                        assignmentTerritory: currentPostalname
+                                      }
+                                    )
+                                  }
+                                >
+                                  <Badge bg="danger" className="me-1">
+                                    {assigneeCount}
+                                  </Badge>
+                                </Button>
+                              ))}
+                          </ButtonGroup>
                         </ComponentAuthorizer>
+                        <Button
+                          size="sm"
+                          variant="outline-primary"
+                          className="m-1"
+                          onClick={async () => {
+                            setIsSettingViewLink(true);
+                            try {
+                              const territoryWindow = window.open("");
+                              if (territoryWindow) {
+                                territoryWindow.document.body.innerHTML =
+                                  TERRITORY_VIEW_WINDOW_WELCOME_TEXT;
+                              }
+                              await setTimedLink(
+                                LINK_TYPES.VIEW,
+                                currentPostalcode,
+                                currentPostalname,
+                                addressLinkId,
+                                defaultExpiryHours,
+                                user.displayName || ""
+                              );
+                              if (territoryWindow) {
+                                territoryWindow.location.href = `/${currentPostalcode}/${code}/${addressLinkId}`;
+                              }
+                            } catch (error) {
+                              errorHandler(error, rollbar);
+                            } finally {
+                              setIsSettingViewLink(false);
+                            }
+                          }}
+                        >
+                          {isSettingViewLink && (
+                            <>
+                              <Spinner
+                                as="span"
+                                animation="border"
+                                size="sm"
+                                aria-hidden="true"
+                              />{" "}
+                            </>
+                          )}
+                          View
+                        </Button>
                         <Button
                           size="sm"
                           variant="outline-primary"
