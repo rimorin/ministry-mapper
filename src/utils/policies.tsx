@@ -111,11 +111,11 @@ export class LinkSession {
   }
 }
 
-export class LinkCounts {
-  assigneeCount: number;
-  personalCount: number;
+export class LinkDetails {
+  assigneeDetailsList: Array<LinkSession>;
+  personalDetailsList: Array<LinkSession>;
   constructor() {
-    this.assigneeCount = 0;
-    this.personalCount = 0;
+    this.assigneeDetailsList = [];
+    this.personalDetailsList = [];
   }
 }
