@@ -1,3 +1,11 @@
+## [1.24.1](https://github.com/rimorin/ministry-mapper/compare/v1.24.0...v1.24.1) (2023-09-28)
+
+
+### Bug Fixes
+
+* increase public housing floor limit to 50 ([3dc90d0](https://github.com/rimorin/ministry-mapper/commit/3dc90d0a1990acc849fa1c3392ece4abffe10050))
+* remove empty code string check ([6fcb7e4](https://github.com/rimorin/ministry-mapper/commit/6fcb7e466299c4e32f84192e02cdf9278d577014))
+
 # [1.24.0](https://github.com/rimorin/ministry-mapper/compare/v1.23.0...v1.24.0) (2023-09-27)
 
 
