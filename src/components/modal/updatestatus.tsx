@@ -25,7 +25,6 @@ import processPostalUnitNumber from "../../utils/helpers/processpostalno";
 import {
   addressDetails,
   OptionProps,
-  SelectProps,
   unitDetails
 } from "../../utils/interface";
 import DncDateField from "../form/dncdate";
@@ -182,8 +181,9 @@ const UpdateUnitStatus = NiceModal.create(
               </div>
             </Collapse>
             <HHTypeField
-              handleChange={(option: SelectProps) => {
-                setHhtype(option.value);
+              handleChange={(e: ChangeEvent<HTMLElement>) => {
+                const { value } = e.target as HTMLInputElement;
+                setHhtype(value);
               }}
               changeValue={hhType}
               options={options.map((option) => ({
