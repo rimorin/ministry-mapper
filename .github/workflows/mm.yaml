@@ -208,7 +208,7 @@ jobs:
                   "color": "good",
                   "fields": [
                     {
-                      "title": "*Triggered chromatic publishing*"
+                      "title": "*Published to chromatic*"
                     }
                   ]
                 }
