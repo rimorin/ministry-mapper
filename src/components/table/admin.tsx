@@ -9,7 +9,7 @@ import ZeroPad from "../../utils/helpers/zeropad";
 import { territoryTableProps } from "../../utils/interface";
 import ComponentAuthorizer from "../navigation/authorizer";
 import UnitStatus from "./unit";
-import PrivateTerritoryTable from "./private";
+import PrivateTerritoryTable from "./privatetable";
 
 const AdminTable = ({
   postalCode,

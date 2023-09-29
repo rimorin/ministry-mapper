@@ -4,13 +4,15 @@ import { Image } from "react-bootstrap";
 import envelopeImage from "../../assets/envelope.svg";
 
 const NotHomeIcon = memo(({ nhcount, classProp }: nothomeProps) => {
-  let containerClass = "container-nothome";
-  if (classProp) containerClass += ` ${classProp}`;
+  let parentClass = "parent-nothome";
+  if (classProp) parentClass += ` ${classProp}`;
   return (
-    <span className={containerClass}>
-      <Image fluid src={envelopeImage} className="nothome-envelope" />
-      {nhcount && <div className="badge-nothome">{nhcount}</div>}
-    </span>
+    <div className={parentClass}>
+      <div className="container-nothome">
+        <Image fluid src={envelopeImage} className="nothome-envelope" />
+        {nhcount && <div className="badge-nothome">{nhcount}</div>}
+      </div>
+    </div>
   );
 });
 export default NotHomeIcon;

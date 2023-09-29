@@ -873,7 +873,9 @@ function Admin({ user }: adminProps) {
   return (
     <Fade appear={true} in={true}>
       <>
-        <EnvironmentIndicator />
+        <EnvironmentIndicator
+          environment={import.meta.env.VITE_ROLLBAR_ENVIRONMENT}
+        />
         <TerritoryListing
           showListing={showTerritoryListing}
           territories={congregationTerritoryList}

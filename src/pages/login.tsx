@@ -68,7 +68,9 @@ const Login = () => {
   const toggleForgotPassword = () => setIsForgotPassword(!isForgotPassword);
   return (
     <>
-      <EnvironmentIndicator />
+      <EnvironmentIndicator
+        environment={import.meta.env.VITE_ROLLBAR_ENVIRONMENT}
+      />
       <Container
         fluid
         className="d-flex align-items-center justify-content-center vh-100"

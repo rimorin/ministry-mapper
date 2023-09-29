@@ -1,8 +1,8 @@
 import { Table } from "react-bootstrap";
 import { territoryTableProps } from "../../utils/interface";
-import TableHeader from "../table/header";
-import FloorHeader from "../table/floor";
-import UnitStatus from "../table/unit";
+import TableHeader from "./header";
+import FloorHeader from "./floor";
+import UnitStatus from "./unit";
 const PublicTerritoryTable = ({
   postalCode,
   floors,

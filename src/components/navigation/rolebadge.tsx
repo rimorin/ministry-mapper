@@ -3,7 +3,7 @@ import { Badge } from "react-bootstrap";
 import { USER_ACCESS_LEVELS } from "../../utils/constants";
 
 const UserRoleBadge = memo(({ role }: { role: number | undefined }) => {
-  if (!role) return <></>;
+  if (!role) return <Badge bg="secondary">?</Badge>;
 
   switch (role) {
     case USER_ACCESS_LEVELS.READ_ONLY.CODE:
@@ -23,7 +23,7 @@ const UserRoleBadge = memo(({ role }: { role: number | undefined }) => {
         </Badge>
       );
     default:
-      return <></>;
+      return <Badge bg="secondary">?</Badge>;
   }
 });
 
