@@ -170,6 +170,11 @@ jobs:
                 }
               ]
             }
+      - name: Publish to Chromatic
+        uses: chromaui/action@v1
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          exitZeroOnChanges: true
   staging_deployment:
     if: contains(github.event_name, 'push') && contains(github.ref, 'refs/heads/staging')
     runs-on: ubuntu-latest
