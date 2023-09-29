@@ -149,7 +149,9 @@ const Slip = ({
     <Fade appear={true} in={true}>
       <>
         <Legend showLegend={showLegend} hideFunction={toggleLegend} />
-        <EnvironmentIndicator />
+        <EnvironmentIndicator
+          environment={import.meta.env.VITE_ROLLBAR_ENVIRONMENT}
+        />
         <Navbar bg="light" expand="sm">
           <Container fluid>
             <NavBarBranding naming={`${postalName}`} />

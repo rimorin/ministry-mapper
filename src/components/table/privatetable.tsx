@@ -1,6 +1,6 @@
 import { Row, Col, Card } from "react-bootstrap";
 import { territoryLandedProps } from "../../utils/interface";
-import UnitStatus from "../table/unit";
+import UnitStatus from "./unit";
 
 const PrivateTerritoryTable = ({
   isAdmin,
