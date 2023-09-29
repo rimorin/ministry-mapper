@@ -177,6 +177,43 @@ jobs:
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           exitZeroOnChanges: true
+      - name: Failed chromatic publishing notification
+        if: failure()
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
+          payload: |
+            {
+              "attachments": [
+                {
+                  "color": "danger",
+                  "fields": [
+                    {
+                      "title": "*Failed to publish to chromatic*",
+                      "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
+      - name: Success chromatic publishing notification
+        if: success()
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
+          payload: |
+            {
+              "attachments": [
+                {
+                  "color": "good",
+                  "fields": [
+                    {
+                      "title": "*Triggered chromatic publishing*"
+                    }
+                  ]
+                }
+              ]
+            }
   staging_deployment:
     if: contains(github.event_name, 'push') && contains(github.ref, 'refs/heads/staging')
     runs-on: ubuntu-latest
