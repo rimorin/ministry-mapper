@@ -302,7 +302,8 @@ export interface OptionProps {
 }
 
 export interface HouseholdProps {
-  handleChange?: (event: React.ChangeEvent<HTMLElement>) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handleChange?: any;
   changeValue?: string;
   options: Array<SelectProps>;
 }

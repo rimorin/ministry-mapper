@@ -25,6 +25,3 @@ yarn-error.log*
 
 # vite visualization
 stats.html
-
-# storybook logs
-build-storybook.log

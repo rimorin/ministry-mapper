@@ -1,5 +1,5 @@
-import { Form } from "react-bootstrap";
 import { HouseholdProps } from "../../utils/interface";
+import Select from "react-select";
 
 const HouseholdField = ({
   handleChange,
@@ -9,19 +9,13 @@ const HouseholdField = ({
   return (
     <div className="mb-3">
       <div className="mb-2 inline-block">Household</div>
-      <Form.Select
-        aria-label="Household selection"
+      <Select
+        options={options}
         onChange={handleChange}
-        value={changeValue}
+        defaultValue={options.filter((option) => option.value === changeValue)}
+        isSearchable={false}
         required
-      >
-        {options &&
-          options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-      </Form.Select>
+      />
     </div>
   );
 };
