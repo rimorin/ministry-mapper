@@ -169,7 +169,7 @@ const Slip = ({
         />
         <Navbar bg="light" expand="sm">
           <Container fluid>
-            <NavBarBranding naming={`${postalName}`} />
+            <NavBarBranding naming={postalName as string} />
             <NavDropdown
               title={
                 <InfoImg className={`${instructions ? "blinking" : ""}`} />
@@ -183,7 +183,7 @@ const Slip = ({
                       congregation: congregationcode,
                       postalCode: postalcode,
                       userAccessLevel: USER_ACCESS_LEVELS.READ_ONLY.CODE,
-                      addressName: `${postalName}`,
+                      addressName: postalName as string,
                       instructions: instructions,
                       userName: ""
                     })

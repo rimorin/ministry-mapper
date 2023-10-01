@@ -37,7 +37,7 @@ function Dashboard() {
           );
         }}
         handleClick={() => signOut(auth)}
-        name={`${loginUser.displayName}`}
+        name={loginUser.displayName}
       />
     );
   }

@@ -174,7 +174,7 @@ function Admin({ user }: adminProps) {
   const [congUsers, setCongUsers] = useState(new Map<string, userDetails>());
   const [showChangeAddressTerritory, setShowChangeAddressTerritory] =
     useState<boolean>(false);
-  const [name, setName] = useState<string>();
+  const [name, setName] = useState<string>("");
   const [values, setValues] = useState<object>({});
   const [territories, setTerritories] = useState(
     new Map<string, territoryDetails>()
@@ -290,7 +290,7 @@ function Admin({ user }: adminProps) {
     const pollerId = SetPollerInterval();
     for (const details of detailsListing) {
       const postalCode = details.code;
-      setAccordionKeys((existingKeys) => [...existingKeys, `${postalCode}`]);
+      setAccordionKeys((existingKeys) => [...existingKeys, postalCode]);
       unsubscribers.push(
         onValue(child(ref(database), `/${postalCode}`), async (snapshot) => {
           clearInterval(pollerId);
@@ -356,7 +356,7 @@ function Admin({ user }: adminProps) {
         for (const addkey in addressData) {
           const postalcode = addressData[addkey];
           await pollingVoidFunction(() =>
-            remove(ref(database, `${postalcode}`))
+            remove(ref(database, postalcode as string))
           );
         }
       }
@@ -406,10 +406,10 @@ function Admin({ user }: adminProps) {
   ) => {
     if (!selectedTerritoryCode) return;
     try {
-      await remove(ref(database, `${postalCode}`));
+      await remove(ref(database, postalCode));
       await deleteTerritoryAddress(selectedTerritoryCode, postalCode);
       if (showAlert) alert(`Deleted address, ${name}.`);
-      await refreshCongregationTerritory(`${selectedTerritoryCode}`);
+      await refreshCongregationTerritory(selectedTerritoryCode);
     } catch (error) {
       errorHandler(error, rollbar);
     }
@@ -477,7 +477,7 @@ function Admin({ user }: adminProps) {
       floorDetails.units.forEach((element) => {
         const unitPath = `/${postalcode}/units/${floorDetails.floor}/${element.number}`;
         let currentStatus = element.status;
-        if (MUTABLE_CODES.includes(`${currentStatus}`)) {
+        if (MUTABLE_CODES.includes(currentStatus)) {
           currentStatus = STATUS_CODES.DEFAULT;
         }
         unitUpdates[`${unitPath}/type`] = element.type;
@@ -626,7 +626,7 @@ function Admin({ user }: adminProps) {
     if (!snapshot) return;
     const data = snapshot.val();
     if (!data) return;
-    document.title = `${data["name"]}`;
+    document.title = data["name"] as string;
     const congregationTerritories = data["territories"];
     const territoryList = new Map<string, territoryDetails>();
     for (const territory in congregationTerritories) {
@@ -639,7 +639,7 @@ function Admin({ user }: adminProps) {
       });
     }
     setTerritories(territoryList);
-    setName(`${data["name"]}`);
+    setName(data["name"] as string);
     return territoryList;
   };
 
@@ -654,7 +654,7 @@ function Admin({ user }: adminProps) {
 
   const handleTerritorySelect = useCallback(
     (eventKey: string | null) => {
-      processSelectedTerritory(`${eventKey}`);
+      processSelectedTerritory(eventKey as string);
       toggleTerritoryListing();
     },
     // Reset cache when the territory dropdown is selected
@@ -710,11 +710,11 @@ function Admin({ user }: adminProps) {
         )
       );
       await deleteTerritoryAddress(
-        `${selectedTerritoryCode}`,
+        selectedTerritoryCode as string,
         selectedPostalcode
       );
       toggleAddressTerritoryListing();
-      await refreshCongregationTerritory(`${selectedTerritoryCode}`);
+      await refreshCongregationTerritory(selectedTerritoryCode as string);
       alert(
         `Changed territory of ${selectedPostalcode} from ${selectedTerritoryCode} to ${newTerritoryCode}.`
       );
@@ -916,7 +916,7 @@ function Admin({ user }: adminProps) {
         />
         <Navbar bg="light" variant="light" expand="lg">
           <Container fluid>
-            <NavBarBranding naming={`${name}`} />
+            <NavBarBranding naming={name} />
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Navbar.Collapse
               id="basic-navbar-nav"
@@ -1210,7 +1210,7 @@ function Admin({ user }: adminProps) {
                       ModalManager.show(
                         SuspenseComponent(UpdateCongregationSettings),
                         {
-                          currentName: `${name}`,
+                          currentName: name,
                           currentCongregation: code,
                           currentMaxTries:
                             policy?.maxTries || DEFAULT_CONGREGATION_MAX_TRIES,
@@ -1342,7 +1342,7 @@ function Admin({ user }: adminProps) {
             return (
               <Accordion.Item
                 key={`accordion-${currentPostalcode}`}
-                eventKey={`${currentPostalcode}`}
+                eventKey={currentPostalcode}
               >
                 <Accordion.Header>
                   <span className="fluid-bolding fluid-text">
@@ -1836,7 +1836,7 @@ function Admin({ user }: adminProps) {
                       maxUnitNumberLength={maxUnitNumberLength}
                       policy={policy}
                       completedPercent={completedPercent}
-                      postalCode={`${currentPostalcode}`}
+                      postalCode={currentPostalcode}
                       territoryType={addressElement.type}
                       userAccessLevel={userAccessLevel}
                       handleUnitStatusUpdate={(event) => {
@@ -1908,7 +1908,7 @@ function Admin({ user }: adminProps) {
                                       onClick={() => {
                                         deleteBlockFloor(
                                           currentPostalcode,
-                                          `${floor}`
+                                          floor as string
                                         );
                                         onClose();
                                       }}

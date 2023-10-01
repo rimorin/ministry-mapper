@@ -233,7 +233,9 @@ const UpdateUnitStatus = NiceModal.create(
                       );
                     }}
                     changeValue={
-                      unitSequence === undefined ? undefined : `${unitSequence}`
+                      unitSequence === undefined
+                        ? undefined
+                        : unitSequence.toString()
                     }
                   />
                   <GenericInputField
