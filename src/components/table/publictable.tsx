@@ -42,6 +42,7 @@ const PublicTerritoryTable = ({
                     status={element.status}
                     nhcount={element.nhcount}
                     defaultOption={hhPolicy?.defaultType}
+                    optionMultiSelect={hhPolicy?.isMultiselect}
                   />
                 </td>
               ))}

@@ -94,12 +94,14 @@ import {
   PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY,
   TERRITORY_TYPES,
   WIKI_CATEGORIES,
-  DEFAULT_CONGREGATION_MAX_TRIES
+  DEFAULT_CONGREGATION_MAX_TRIES,
+  DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE
 } from "../../utils/constants";
 import ModalManager from "@ebay/nice-modal-react";
 import SuspenseComponent from "../../components/utils/suspense";
 import getOptions from "../../utils/helpers/getcongoptions";
 import GetDirection from "../../utils/helpers/directiongenerator";
+import getOptionIsMultiSelect from "../../utils/helpers/getoptionmultiselect";
 
 const UnauthorizedPage = SuspenseComponent(
   lazy(() => import("../../components/statics/unauth"))
@@ -154,7 +156,7 @@ const ChangeAddressName = lazy(
 );
 
 function Admin({ user }: adminProps) {
-  const { code } = useParams();
+  const { code } = useParams() as { code: string };
   const [isSettingPersonalLink, setIsSettingPersonalLink] =
     useState<boolean>(false);
   const [isSettingAssignLink, setIsSettingAssignLink] =
@@ -517,7 +519,8 @@ function Admin({ user }: adminProps) {
       floor: floor,
       floorDisplay: ZeroPad(floor, DEFAULT_FLOOR_PADDING),
       unitDetails: unitDetails,
-      addressData: addressData
+      addressData: addressData,
+      isMultiselect: policy.isMultiselect
     });
   };
 
@@ -760,32 +763,45 @@ function Admin({ user }: adminProps) {
   };
 
   useEffect(() => {
-    getUserAccessLevel(user, code).then((userAccessLevel) => {
-      if (!userAccessLevel) {
-        setIsUnauthorised(true);
-        errorHandler(
-          `Unauthorised access to ${code} by ${user.email}`,
-          rollbar,
-          false
+    Promise.all([
+      getUserAccessLevel(user, code),
+      checkCongregationExpireHours(code),
+      checkCongregationMaxTries(code),
+      getOptions(code),
+      getOptionIsMultiSelect(code)
+    ]).then(
+      async ([
+        userAccessLevel,
+        snapshot,
+        maxTries,
+        options,
+        optionIsMultiselect
+      ]) => {
+        if (!userAccessLevel) {
+          setIsUnauthorised(true);
+          errorHandler(
+            `Unauthorised access to ${code} by ${user.email}`,
+            rollbar,
+            false
+          );
+        }
+        setUserAccessLevel(Number(userAccessLevel));
+        setDefaultExpiryHours(
+          snapshot.exists() ? snapshot.val() : DEFAULT_SELF_DESTRUCT_HOURS
         );
-      }
-      setUserAccessLevel(Number(userAccessLevel));
-    });
-    checkCongregationExpireHours(`${code}`).then((snapshot) => {
-      if (!snapshot.exists()) return;
-      setDefaultExpiryHours(snapshot.val());
-    });
-    checkCongregationMaxTries(`${code}`).then((snapshot) => {
-      const maxTries = snapshot.exists()
-        ? snapshot.val()
-        : DEFAULT_CONGREGATION_MAX_TRIES;
-      getOptions(`${code}`).then(async (options) => {
         setOptions(options);
         setPolicy(
-          new Policy(await user.getIdTokenResult(true), options, maxTries)
+          new Policy(
+            await user.getIdTokenResult(true),
+            options,
+            maxTries.exists() ? maxTries.val() : DEFAULT_CONGREGATION_MAX_TRIES,
+            optionIsMultiselect.exists()
+              ? optionIsMultiselect.val()
+              : DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE
+          )
         );
-      });
-    });
+      }
+    );
 
     const congregationReference = child(ref(database), `congregations/${code}`);
     const pollerId = SetPollerInterval();
@@ -1195,10 +1211,11 @@ function Admin({ user }: adminProps) {
                         SuspenseComponent(UpdateCongregationSettings),
                         {
                           currentName: `${name}`,
-                          currentCongregation: `${code}`,
+                          currentCongregation: code,
                           currentMaxTries:
                             policy?.maxTries || DEFAULT_CONGREGATION_MAX_TRIES,
-                          currentDefaultExpiryHrs: defaultExpiryHours
+                          currentDefaultExpiryHrs: defaultExpiryHours,
+                          currentIsMultipleSelection: policy?.isMultiselect
                         }
                       )
                     }
@@ -1210,7 +1227,7 @@ function Admin({ user }: adminProps) {
                       ModalManager.show(
                         SuspenseComponent(UpdateCongregationOptions),
                         {
-                          currentCongregation: `${code}`
+                          currentCongregation: code
                         }
                       )
                     }

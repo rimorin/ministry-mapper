@@ -28,6 +28,7 @@ export interface unitProps {
   status: string;
   nhcount?: string;
   defaultOption?: string;
+  optionMultiSelect?: boolean;
 }
 
 export interface valuesDetails {
@@ -306,6 +307,7 @@ export interface HouseholdProps {
   handleChange?: any;
   changeValue?: string;
   options: Array<SelectProps>;
+  isMultiselect?: boolean;
 }
 
 export interface HHOptionProps {

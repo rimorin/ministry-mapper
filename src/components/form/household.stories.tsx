@@ -57,3 +57,53 @@ export const ExistingValueSelected: Story = {
     ]
   }
 };
+
+export const MultipleValuesSelectedWithMultiSelect: Story = {
+  args: {
+    isMultiselect: true,
+    changeValue: "1,2",
+    options: [
+      {
+        value: "1",
+        label: "Human"
+      },
+      {
+        value: "2",
+        label: "Klingon"
+      },
+      {
+        value: "3",
+        label: "Vulcan"
+      },
+      {
+        value: "4",
+        label: "Romulan"
+      }
+    ]
+  }
+};
+
+export const MultipleValuesSelectedWithoutMultiSelect: Story = {
+  args: {
+    isMultiselect: false,
+    changeValue: "1,2",
+    options: [
+      {
+        value: "1",
+        label: "Human"
+      },
+      {
+        value: "2",
+        label: "Klingon"
+      },
+      {
+        value: "3",
+        label: "Vulcan"
+      },
+      {
+        value: "4",
+        label: "Romulan"
+      }
+    ]
+  }
+};

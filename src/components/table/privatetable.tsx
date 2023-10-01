@@ -49,6 +49,7 @@ const PrivateTerritoryTable = ({
                     status={element.status}
                     nhcount={element.nhcount}
                     defaultOption={hhpolicy?.defaultType}
+                    optionMultiSelect={hhpolicy?.isMultiselect}
                   />
                 </div>
               </Card.Body>
