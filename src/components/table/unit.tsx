@@ -1,10 +1,6 @@
 import { memo } from "react";
 import { Badge } from "react-bootstrap";
-import {
-  DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
-  DEFAULT_MULTPLE_OPTION_DELIMITER,
-  STATUS_CODES
-} from "../../utils/constants";
+import { STATUS_CODES } from "../../utils/constants";
 import { unitProps } from "../../utils/interface";
 import NotHomeIcon from "./nothome";
 
@@ -14,8 +10,6 @@ const UnitStatus = memo((props: unitProps) => {
   const currentStatus = props.status;
   const nhcount = props.nhcount;
   const defaultOption = props.defaultOption || "";
-  const isMultiSelect =
-    props.optionMultiSelect || DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE;
   let status = "";
 
   if (currentStatus === STATUS_CODES.INVALID) {
@@ -29,22 +23,7 @@ const UnitStatus = memo((props: unitProps) => {
     status = "🚫 ";
   }
 
-  const getHouseholdBadge = (
-    householdType: string,
-    isMultiSelect: boolean,
-    defaultOption: string
-  ) => {
-    if (isMultiSelect) {
-      const multHouseholdTypes = householdType
-        .split(DEFAULT_MULTPLE_OPTION_DELIMITER)
-        .filter((type) => type !== defaultOption)
-        .join(DEFAULT_MULTPLE_OPTION_DELIMITER);
-      return (
-        <Badge bg="secondary" className="me-1" pill>
-          {multHouseholdTypes}
-        </Badge>
-      );
-    }
+  const getHouseholdBadge = (householdType: string, defaultOption: string) => {
     if (householdType === defaultOption) {
       return <></>;
     }
@@ -62,7 +41,7 @@ const UnitStatus = memo((props: unitProps) => {
         <NotHomeIcon nhcount={nhcount} classProp={"me-1"} />
       )}
       {note && <>🗒️ </>}
-      {getHouseholdBadge(householdType, isMultiSelect, defaultOption)}
+      {getHouseholdBadge(householdType, defaultOption)}
     </>
   );
 });

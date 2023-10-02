@@ -28,7 +28,6 @@ export interface unitProps {
   status: string;
   nhcount?: string;
   defaultOption?: string;
-  optionMultiSelect?: boolean;
 }
 
 export interface valuesDetails {

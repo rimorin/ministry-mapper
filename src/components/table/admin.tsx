@@ -119,7 +119,6 @@ const AdminTable = ({
                     status={detailsElement.status}
                     nhcount={detailsElement.nhcount}
                     defaultOption={policy?.defaultType}
-                    optionMultiSelect={policy?.isMultiselect}
                   />
                 </td>
               ))}

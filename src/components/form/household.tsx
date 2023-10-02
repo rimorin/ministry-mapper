@@ -28,12 +28,8 @@ const HouseholdField = ({
       DEFAULT_MULTPLE_OPTION_DELIMITER
     );
     if (hasExistingMultipleValues) {
-      return [
-        true,
-        changeValue?.split(DEFAULT_MULTPLE_OPTION_DELIMITER).map((value) => {
-          return options.find((option) => option.value === value);
-        })
-      ];
+      // if there are existing multiple values after switching from multiselect to single select, clear the value in the dropdown
+      return [isMultiselect, []];
     }
 
     return [
