@@ -282,14 +282,14 @@ export interface UserRoleProps {
   isUpdate?: boolean;
 }
 
-export interface UserModalProps {
+export type UserModalProps = {
   email?: string | null;
   uid?: string;
   congregation: string | undefined;
   name?: string;
   role?: number | undefined;
   footerSaveAcl: number | undefined;
-}
+};
 
 export interface SelectProps {
   value: string;
@@ -318,8 +318,8 @@ export interface HHOptionProps {
   isNew?: boolean;
 }
 
-export interface AssignmentModalProps {
+export type AssignmentModalProps = {
   assignments: LinkSession[];
   assignmentType?: number;
   assignmentTerritory?: string;
-}
+};
