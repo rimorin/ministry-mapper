@@ -2,7 +2,7 @@ import UnauthorizedPage from "./unauth";
 import { Meta, StoryObj } from "@storybook/react";
 
 const meta: Meta = {
-  title: "Navigation/Unauthorized Page",
+  title: "Statics/Unauthorized Page",
   component: UnauthorizedPage,
   parameters: {
     handleClick: {

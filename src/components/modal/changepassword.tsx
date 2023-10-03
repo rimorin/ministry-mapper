@@ -46,9 +46,6 @@ const ChangePassword = NiceModal.create(
           EmailAuthProvider.credential(user.email || "", existingPassword)
         );
         await updatePassword(user, password);
-        rollbar.info(
-          `User updated password! Email: ${user.email}, Name: ${user.displayName}`
-        );
         alert("Password updated.");
         modal.hide();
       } catch (error) {
