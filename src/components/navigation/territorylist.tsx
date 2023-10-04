@@ -34,7 +34,7 @@ const TerritoryListing = memo(
                 <ListGroup.Item
                   action
                   key={`list-group-item-${element.code}`}
-                  eventKey={`${element.code}`}
+                  eventKey={element.code}
                   active={selectedTerritory === element.code}
                 >
                   {element.code} - {element.name}

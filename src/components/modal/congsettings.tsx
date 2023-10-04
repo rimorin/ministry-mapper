@@ -8,7 +8,8 @@ import {
   DEFAULT_CONGREGATION_MAX_TRIES,
   DEFAULT_SELF_DESTRUCT_HOURS,
   WIKI_CATEGORIES,
-  USER_ACCESS_LEVELS
+  USER_ACCESS_LEVELS,
+  DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE
 } from "../../utils/constants";
 import errorHandler from "../../utils/helpers/errorhandler";
 import pollingVoidFunction from "../../utils/helpers/pollingvoid";
@@ -21,12 +22,14 @@ const UpdateCongregationSettings = NiceModal.create(
     currentName,
     currentCongregation,
     currentMaxTries = DEFAULT_CONGREGATION_MAX_TRIES,
-    currentDefaultExpiryHrs = DEFAULT_SELF_DESTRUCT_HOURS
+    currentDefaultExpiryHrs = DEFAULT_SELF_DESTRUCT_HOURS,
+    currentIsMultipleSelection = DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE
   }: {
     currentName: string;
     currentCongregation: string;
     currentMaxTries: number;
     currentDefaultExpiryHrs: number;
+    currentIsMultipleSelection: boolean;
   }) => {
     const modal = useModal();
     const rollbar = useRollbar();
@@ -35,6 +38,9 @@ const UpdateCongregationSettings = NiceModal.create(
       currentDefaultExpiryHrs
     );
     const [name, setName] = useState(currentName);
+    const [isMultipleSelection, setIsMultipleSelection] = useState<boolean>(
+      currentIsMultipleSelection
+    );
     const [isSaving, setIsSaving] = useState(false);
 
     const handleSubmitCongSettings = async (event: FormEvent<HTMLElement>) => {
@@ -47,6 +53,14 @@ const UpdateCongregationSettings = NiceModal.create(
             expiryHours: defaultExpiryHrs,
             maxTries: maxTries
           })
+        );
+        await pollingVoidFunction(() =>
+          update(
+            ref(database, `congregations/${currentCongregation}/options`),
+            {
+              isMultiSelect: isMultipleSelection
+            }
+          )
         );
         alert("Congregation settings updated.");
         window.location.reload();
@@ -126,6 +140,22 @@ const UpdateCongregationSettings = NiceModal.create(
               </Col>
               <Form.Text muted>
                 The duration of the territory slip link before it expires
+              </Form.Text>
+            </Form.Group>
+            <Form.Group
+              className="mb-3"
+              controlId="formSwitchMultipleSelection"
+            >
+              <Form.Check
+                type="switch"
+                label="Multiple Household Types"
+                checked={isMultipleSelection}
+                onChange={(event) => {
+                  setIsMultipleSelection(event.target.checked);
+                }}
+              />
+              <Form.Text muted>
+                Allow multiple options to be selected in the household dropdown
               </Form.Text>
             </Form.Group>
           </Modal.Body>

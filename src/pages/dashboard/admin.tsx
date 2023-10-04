@@ -94,12 +94,14 @@ import {
   PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY,
   TERRITORY_TYPES,
   WIKI_CATEGORIES,
-  DEFAULT_CONGREGATION_MAX_TRIES
+  DEFAULT_CONGREGATION_MAX_TRIES,
+  DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE
 } from "../../utils/constants";
 import ModalManager from "@ebay/nice-modal-react";
 import SuspenseComponent from "../../components/utils/suspense";
 import getOptions from "../../utils/helpers/getcongoptions";
 import GetDirection from "../../utils/helpers/directiongenerator";
+import getOptionIsMultiSelect from "../../utils/helpers/getoptionmultiselect";
 
 const UnauthorizedPage = SuspenseComponent(
   lazy(() => import("../../components/statics/unauth"))
@@ -154,7 +156,7 @@ const ChangeAddressName = lazy(
 );
 
 function Admin({ user }: adminProps) {
-  const { code } = useParams();
+  const { code } = useParams() as { code: string };
   const [isSettingPersonalLink, setIsSettingPersonalLink] =
     useState<boolean>(false);
   const [isSettingAssignLink, setIsSettingAssignLink] =
@@ -172,7 +174,7 @@ function Admin({ user }: adminProps) {
   const [congUsers, setCongUsers] = useState(new Map<string, userDetails>());
   const [showChangeAddressTerritory, setShowChangeAddressTerritory] =
     useState<boolean>(false);
-  const [name, setName] = useState<string>();
+  const [name, setName] = useState<string>("");
   const [values, setValues] = useState<object>({});
   const [territories, setTerritories] = useState(
     new Map<string, territoryDetails>()
@@ -288,7 +290,7 @@ function Admin({ user }: adminProps) {
     const pollerId = SetPollerInterval();
     for (const details of detailsListing) {
       const postalCode = details.code;
-      setAccordionKeys((existingKeys) => [...existingKeys, `${postalCode}`]);
+      setAccordionKeys((existingKeys) => [...existingKeys, postalCode]);
       unsubscribers.push(
         onValue(child(ref(database), `/${postalCode}`), async (snapshot) => {
           clearInterval(pollerId);
@@ -354,7 +356,7 @@ function Admin({ user }: adminProps) {
         for (const addkey in addressData) {
           const postalcode = addressData[addkey];
           await pollingVoidFunction(() =>
-            remove(ref(database, `${postalcode}`))
+            remove(ref(database, postalcode as string))
           );
         }
       }
@@ -404,10 +406,10 @@ function Admin({ user }: adminProps) {
   ) => {
     if (!selectedTerritoryCode) return;
     try {
-      await remove(ref(database, `${postalCode}`));
+      await remove(ref(database, postalCode));
       await deleteTerritoryAddress(selectedTerritoryCode, postalCode);
       if (showAlert) alert(`Deleted address, ${name}.`);
-      await refreshCongregationTerritory(`${selectedTerritoryCode}`);
+      await refreshCongregationTerritory(selectedTerritoryCode);
     } catch (error) {
       errorHandler(error, rollbar);
     }
@@ -475,7 +477,7 @@ function Admin({ user }: adminProps) {
       floorDetails.units.forEach((element) => {
         const unitPath = `/${postalcode}/units/${floorDetails.floor}/${element.number}`;
         let currentStatus = element.status;
-        if (MUTABLE_CODES.includes(`${currentStatus}`)) {
+        if (MUTABLE_CODES.includes(currentStatus)) {
           currentStatus = STATUS_CODES.DEFAULT;
         }
         unitUpdates[`${unitPath}/type`] = element.type;
@@ -517,7 +519,8 @@ function Admin({ user }: adminProps) {
       floor: floor,
       floorDisplay: ZeroPad(floor, DEFAULT_FLOOR_PADDING),
       unitDetails: unitDetails,
-      addressData: addressData
+      addressData: addressData,
+      isMultiselect: policy.isMultiselect
     });
   };
 
@@ -623,7 +626,7 @@ function Admin({ user }: adminProps) {
     if (!snapshot) return;
     const data = snapshot.val();
     if (!data) return;
-    document.title = `${data["name"]}`;
+    document.title = data["name"] as string;
     const congregationTerritories = data["territories"];
     const territoryList = new Map<string, territoryDetails>();
     for (const territory in congregationTerritories) {
@@ -636,7 +639,7 @@ function Admin({ user }: adminProps) {
       });
     }
     setTerritories(territoryList);
-    setName(`${data["name"]}`);
+    setName(data["name"] as string);
     return territoryList;
   };
 
@@ -651,7 +654,7 @@ function Admin({ user }: adminProps) {
 
   const handleTerritorySelect = useCallback(
     (eventKey: string | null) => {
-      processSelectedTerritory(`${eventKey}`);
+      processSelectedTerritory(eventKey as string);
       toggleTerritoryListing();
     },
     // Reset cache when the territory dropdown is selected
@@ -707,11 +710,11 @@ function Admin({ user }: adminProps) {
         )
       );
       await deleteTerritoryAddress(
-        `${selectedTerritoryCode}`,
+        selectedTerritoryCode as string,
         selectedPostalcode
       );
       toggleAddressTerritoryListing();
-      await refreshCongregationTerritory(`${selectedTerritoryCode}`);
+      await refreshCongregationTerritory(selectedTerritoryCode as string);
       alert(
         `Changed territory of ${selectedPostalcode} from ${selectedTerritoryCode} to ${newTerritoryCode}.`
       );
@@ -760,32 +763,45 @@ function Admin({ user }: adminProps) {
   };
 
   useEffect(() => {
-    getUserAccessLevel(user, code).then((userAccessLevel) => {
-      if (!userAccessLevel) {
-        setIsUnauthorised(true);
-        errorHandler(
-          `Unauthorised access to ${code} by ${user.email}`,
-          rollbar,
-          false
+    Promise.all([
+      getUserAccessLevel(user, code),
+      checkCongregationExpireHours(code),
+      checkCongregationMaxTries(code),
+      getOptions(code),
+      getOptionIsMultiSelect(code)
+    ]).then(
+      async ([
+        userAccessLevel,
+        snapshot,
+        maxTries,
+        options,
+        optionIsMultiselect
+      ]) => {
+        if (!userAccessLevel) {
+          setIsUnauthorised(true);
+          errorHandler(
+            `Unauthorised access to ${code} by ${user.email}`,
+            rollbar,
+            false
+          );
+        }
+        setUserAccessLevel(Number(userAccessLevel));
+        setDefaultExpiryHours(
+          snapshot.exists() ? snapshot.val() : DEFAULT_SELF_DESTRUCT_HOURS
         );
-      }
-      setUserAccessLevel(Number(userAccessLevel));
-    });
-    checkCongregationExpireHours(`${code}`).then((snapshot) => {
-      if (!snapshot.exists()) return;
-      setDefaultExpiryHours(snapshot.val());
-    });
-    checkCongregationMaxTries(`${code}`).then((snapshot) => {
-      const maxTries = snapshot.exists()
-        ? snapshot.val()
-        : DEFAULT_CONGREGATION_MAX_TRIES;
-      getOptions(`${code}`).then(async (options) => {
         setOptions(options);
         setPolicy(
-          new Policy(await user.getIdTokenResult(true), options, maxTries)
+          new Policy(
+            await user.getIdTokenResult(true),
+            options,
+            maxTries.exists() ? maxTries.val() : DEFAULT_CONGREGATION_MAX_TRIES,
+            optionIsMultiselect.exists()
+              ? optionIsMultiselect.val()
+              : DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE
+          )
         );
-      });
-    });
+      }
+    );
 
     const congregationReference = child(ref(database), `congregations/${code}`);
     const pollerId = SetPollerInterval();
@@ -900,7 +916,7 @@ function Admin({ user }: adminProps) {
         />
         <Navbar bg="light" variant="light" expand="lg">
           <Container fluid>
-            <NavBarBranding naming={`${name}`} />
+            <NavBarBranding naming={name} />
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Navbar.Collapse
               id="basic-navbar-nav"
@@ -1194,11 +1210,12 @@ function Admin({ user }: adminProps) {
                       ModalManager.show(
                         SuspenseComponent(UpdateCongregationSettings),
                         {
-                          currentName: `${name}`,
-                          currentCongregation: `${code}`,
+                          currentName: name,
+                          currentCongregation: code,
                           currentMaxTries:
                             policy?.maxTries || DEFAULT_CONGREGATION_MAX_TRIES,
-                          currentDefaultExpiryHrs: defaultExpiryHours
+                          currentDefaultExpiryHrs: defaultExpiryHours,
+                          currentIsMultipleSelection: policy?.isMultiselect
                         }
                       )
                     }
@@ -1210,7 +1227,7 @@ function Admin({ user }: adminProps) {
                       ModalManager.show(
                         SuspenseComponent(UpdateCongregationOptions),
                         {
-                          currentCongregation: `${code}`
+                          currentCongregation: code
                         }
                       )
                     }
@@ -1325,7 +1342,7 @@ function Admin({ user }: adminProps) {
             return (
               <Accordion.Item
                 key={`accordion-${currentPostalcode}`}
-                eventKey={`${currentPostalcode}`}
+                eventKey={currentPostalcode}
               >
                 <Accordion.Header>
                   <span className="fluid-bolding fluid-text">
@@ -1819,7 +1836,7 @@ function Admin({ user }: adminProps) {
                       maxUnitNumberLength={maxUnitNumberLength}
                       policy={policy}
                       completedPercent={completedPercent}
-                      postalCode={`${currentPostalcode}`}
+                      postalCode={currentPostalcode}
                       territoryType={addressElement.type}
                       userAccessLevel={userAccessLevel}
                       handleUnitStatusUpdate={(event) => {
@@ -1891,7 +1908,7 @@ function Admin({ user }: adminProps) {
                                       onClick={() => {
                                         deleteBlockFloor(
                                           currentPostalcode,
-                                          `${floor}`
+                                          floor as string
                                         );
                                         onClose();
                                       }}

@@ -23,6 +23,17 @@ const UnitStatus = memo((props: unitProps) => {
     status = "🚫 ";
   }
 
+  const getHouseholdBadge = (householdType: string, defaultOption: string) => {
+    if (householdType === defaultOption) {
+      return <></>;
+    }
+    return (
+      <Badge bg="secondary" className="me-1" pill>
+        {householdType}
+      </Badge>
+    );
+  };
+
   return (
     <>
       {currentStatus !== STATUS_CODES.NOT_HOME && <>{status}</>}
@@ -30,11 +41,7 @@ const UnitStatus = memo((props: unitProps) => {
         <NotHomeIcon nhcount={nhcount} classProp={"me-1"} />
       )}
       {note && <>🗒️ </>}
-      {householdType !== defaultOption && (
-        <Badge bg="secondary" className="me-1" pill>
-          {householdType}
-        </Badge>
-      )}
+      {getHouseholdBadge(householdType, defaultOption)}
     </>
   );
 });

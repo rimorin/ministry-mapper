@@ -282,14 +282,14 @@ export interface UserRoleProps {
   isUpdate?: boolean;
 }
 
-export interface UserModalProps {
+export type UserModalProps = {
   email?: string | null;
   uid?: string;
   congregation: string | undefined;
   name?: string;
   role?: number | undefined;
   footerSaveAcl: number | undefined;
-}
+};
 
 export interface SelectProps {
   value: string;
@@ -306,6 +306,7 @@ export interface HouseholdProps {
   handleChange?: any;
   changeValue?: string;
   options: Array<SelectProps>;
+  isMultiselect?: boolean;
 }
 
 export interface HHOptionProps {
@@ -317,8 +318,8 @@ export interface HHOptionProps {
   isNew?: boolean;
 }
 
-export interface AssignmentModalProps {
+export type AssignmentModalProps = {
   assignments: LinkSession[];
   assignmentType?: number;
   assignmentTerritory?: string;
-}
+};
