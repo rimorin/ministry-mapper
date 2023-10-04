@@ -32,7 +32,7 @@ const UserListing = memo(
                 <ListGroup.Item
                   action
                   key={`list-group-item-${element.uid}`}
-                  eventKey={`${element.uid}`}
+                  eventKey={element.uid}
                 >
                   <div
                     style={{ justifyContent: "space-between", display: "flex" }}

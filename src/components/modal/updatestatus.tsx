@@ -17,7 +17,8 @@ import {
   STATUS_CODES,
   TERRITORY_TYPES,
   NOT_HOME_STATUS_CODES,
-  WIKI_CATEGORIES
+  WIKI_CATEGORIES,
+  DEFAULT_MULTPLE_OPTION_DELIMITER
 } from "../../utils/constants";
 import pollingVoidFunction from "../../utils/helpers/pollingvoid";
 import errorHandler from "../../utils/helpers/errorhandler";
@@ -52,7 +53,8 @@ const UpdateUnitStatus = NiceModal.create(
     floorDisplay,
     unitDetails,
     options,
-    defaultOption
+    defaultOption,
+    isMultiselect
   }: {
     addressName: string | undefined;
     userAccessLevel: number | undefined;
@@ -67,6 +69,7 @@ const UpdateUnitStatus = NiceModal.create(
     unitDetails: unitDetails | undefined;
     options: Array<OptionProps>;
     defaultOption: string;
+    isMultiselect: boolean;
   }) => {
     const status = unitDetails?.status;
     const [isNotHome, setIsNotHome] = useState(
@@ -182,7 +185,17 @@ const UpdateUnitStatus = NiceModal.create(
               </div>
             </Collapse>
             <HHTypeField
-              handleChange={(option: SelectProps) => {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              handleChange={(option: any) => {
+                if (isMultiselect) {
+                  const values: string[] = [];
+                  option.forEach((opt: SelectProps) => {
+                    values.push(opt.value);
+                  });
+                  setHhtype(values.join(DEFAULT_MULTPLE_OPTION_DELIMITER));
+                  return;
+                }
+
                 setHhtype(option.value);
               }}
               changeValue={hhType}
@@ -190,6 +203,7 @@ const UpdateUnitStatus = NiceModal.create(
                 value: option.code,
                 label: option.description
               }))}
+              isMultiselect={isMultiselect}
             />
             <GenericTextAreaField
               label="Notes"
@@ -219,7 +233,9 @@ const UpdateUnitStatus = NiceModal.create(
                       );
                     }}
                     changeValue={
-                      unitSequence === undefined ? undefined : `${unitSequence}`
+                      unitSequence === undefined
+                        ? undefined
+                        : unitSequence.toString()
                     }
                   />
                   <GenericInputField

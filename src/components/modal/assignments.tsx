@@ -104,7 +104,7 @@ const GetAssignments = NiceModal.create(
                       await pollingVoidFunction(() =>
                         remove(ref(database, `links/${linkid}`))
                       );
-                      await triggerPostalCodeListeners(`${postal}`);
+                      await triggerPostalCodeListeners(postal as string);
                       setCurrentAssignments((currentAssignments) =>
                         currentAssignments.filter(
                           (assignment) => assignment.key !== linkid

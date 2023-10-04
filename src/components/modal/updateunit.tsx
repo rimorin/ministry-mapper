@@ -85,7 +85,9 @@ const UpdateUnit = NiceModal.create(
                 const parsedValue = parseInt(value);
                 setUnitSeq(isNaN(parsedValue) ? undefined : parsedValue);
               }}
-              changeValue={unitSeq === undefined ? undefined : `${unitSeq}`}
+              changeValue={
+                unitSeq === undefined ? undefined : unitSeq.toString()
+              }
             />
           </Modal.Body>
           <Modal.Footer className="justify-content-around">

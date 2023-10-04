@@ -25,7 +25,8 @@ import {
   RELOAD_CHECK_INTERVAL_MS,
   TERRITORY_TYPES,
   USER_ACCESS_LEVELS,
-  WIKI_CATEGORIES
+  WIKI_CATEGORIES,
+  DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE
 } from "../../utils/constants";
 import "../../css/slip.css";
 import Countdown from "react-countdown";
@@ -35,6 +36,7 @@ import UpdateAddressFeedback from "../../components/modal/updateaddfeedback";
 import UpdateAddressInstructions from "../../components/modal/instructions";
 import UpdateUnitStatus from "../../components/modal/updatestatus";
 import GetDirection from "../../utils/helpers/directiongenerator";
+import getOptionIsMultiSelect from "../../utils/helpers/getoptionmultiselect";
 const Slip = ({
   tokenEndtime = 0,
   postalcode = "",
@@ -77,7 +79,8 @@ const Slip = ({
       floorDisplay: ZeroPad(floor, DEFAULT_FLOOR_PADDING),
       unitDetails: unitDetails,
       addressData: undefined,
-      defaultOption: policy.defaultType
+      defaultOption: policy.defaultType,
+      isMultiselect: policy.isMultiselect
     });
   };
 
@@ -86,9 +89,21 @@ const Slip = ({
   }, [showLegend]);
 
   useEffect(() => {
-    getOptions(congregationcode).then((options) => {
+    Promise.all([
+      getOptions(congregationcode),
+      getOptionIsMultiSelect(congregationcode)
+    ]).then(([options, isMultiselect]) => {
       setOptions(options);
-      setPolicy(new Policy(undefined, options, maxTries));
+      setPolicy(
+        new Policy(
+          undefined,
+          options,
+          maxTries,
+          isMultiselect.exists()
+            ? isMultiselect.val()
+            : DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE
+        )
+      );
     });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -154,7 +169,7 @@ const Slip = ({
         />
         <Navbar bg="light" expand="sm">
           <Container fluid>
-            <NavBarBranding naming={`${postalName}`} />
+            <NavBarBranding naming={postalName as string} />
             <NavDropdown
               title={
                 <InfoImg className={`${instructions ? "blinking" : ""}`} />
@@ -168,7 +183,7 @@ const Slip = ({
                       congregation: congregationcode,
                       postalCode: postalcode,
                       userAccessLevel: USER_ACCESS_LEVELS.READ_ONLY.CODE,
-                      addressName: `${postalName}`,
+                      addressName: postalName as string,
                       instructions: instructions,
                       userName: ""
                     })

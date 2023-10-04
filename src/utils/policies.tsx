@@ -4,7 +4,9 @@ import {
   COUNTABLE_HOUSEHOLD_STATUS,
   STATUS_CODES,
   LINK_TYPES,
-  DEFAULT_CONGREGATION_MAX_TRIES
+  DEFAULT_CONGREGATION_MAX_TRIES,
+  DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
+  DEFAULT_MULTPLE_OPTION_DELIMITER
 } from "./constants";
 import { HHOptionProps, unitDetails } from "./interface";
 
@@ -25,14 +27,17 @@ export class Policy {
   maxTries: number;
   countableTypes: Array<string>;
   defaultType: string;
+  isMultiselect: boolean;
   constructor(
     userData?: IdTokenResult,
     options?: Array<HHOptionProps>,
-    maxtries = parseInt(NOT_HOME_STATUS_CODES.SECOND_TRY)
+    maxtries = parseInt(NOT_HOME_STATUS_CODES.SECOND_TRY),
+    isMultiselect = DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE
   ) {
     this.maxTries = maxtries;
     this.countableTypes = [];
     this.defaultType = "";
+    this.isMultiselect = isMultiselect;
     options?.forEach((option) => {
       if (option.isCountable) {
         this.countableTypes.push(option.code);
@@ -43,12 +48,23 @@ export class Policy {
     });
     if (!userData) return;
     const userClaims = userData.claims;
+    // check for customised user max tries and countable types
     if (!userClaims) return;
     if (userClaims.maxTries !== undefined) {
       this.maxTries = userClaims.maxTries;
     }
+    if (userClaims.countableTypes !== undefined) {
+      this.countableTypes = userClaims.countableTypes;
+    }
   }
   isCountable(unit: unitDetails): boolean {
+    if (this.isMultiselect) {
+      const multipleTypes = unit.type.split(DEFAULT_MULTPLE_OPTION_DELIMITER);
+      return (
+        COUNTABLE_HOUSEHOLD_STATUS.includes(unit.status as string) &&
+        multipleTypes.some((type) => this.countableTypes.includes(type))
+      );
+    }
     return (
       COUNTABLE_HOUSEHOLD_STATUS.includes(unit.status as string) &&
       this.countableTypes.includes(unit.type as string)
