@@ -246,7 +246,7 @@ jobs:
                   "fields": [
                     {
                       "title": "*Deployed staging to Cloudflare Pages*",
-                      "value": ${{ steps.action.outputs.url }}
+                      "value": "${{ steps.action.outputs.url }}"
                     }
                   ]
                 }
@@ -311,7 +311,7 @@ jobs:
                   "fields": [
                     {
                       "title": "*Deployed production to Cloudflare Pages*",
-                      "value": ${{ steps.action.outputs.url }}
+                      "value": "${{ steps.action.outputs.url }}"
                     }
                   ]
                 }
