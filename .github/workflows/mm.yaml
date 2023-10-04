@@ -175,7 +175,7 @@ jobs:
             }
   publish_chromatic:
     name: Publish to chromatic
-    if: github.event_name  == 'pull_request' && contains(github.ref, 'refs/heads/master')
+    if: github.event_name  == 'pull_request' && github.head_ref == 'master'
     needs: verify
     runs-on: ubuntu-latest
     steps:
