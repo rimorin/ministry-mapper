@@ -1,0 +1,33 @@
+name: Cloudflare Pages
+on:
+  check_run:
+    types: [completed]
+
+jobs:
+  build:
+    name: Feature Branch Deployment
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get Deployment URL
+        run: echo "DEPLOYMENT_URL=$(echo "${{ github.event.check_run.output.summary }}" | grep -o "href\=.*>https" | cut -c 7-43)" >> $GITHUB_ENV
+      - run: echo $DEPLOYMENT_URL
+      - name: Deployment notification
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ secrets.SLACK_API_CHANNEL_ID }}
+          payload: |
+            {
+              "attachments": [
+                {
+                  "color": "good",
+                  "fields": [
+                    {
+                      "title": "*Feature branch deployed*",
+                      "value": "$DEPLOYMENT_URL"
+                    }
+                  ]
+                }
+              ]
+            }
