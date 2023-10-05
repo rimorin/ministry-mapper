@@ -1,15 +1,18 @@
 import { expect } from "@storybook/jest";
 import { StoryObj, Meta } from "@storybook/react";
 import NiceModal from "@ebay/nice-modal-react";
-import { Button } from "react-bootstrap";
-import ModalManager from "@ebay/nice-modal-react";
-import { userEvent, within } from "@storybook/testing-library";
+import { within } from "@storybook/testing-library";
 import NewUnit from "./newunit";
 import { Provider } from "@rollbar/react";
 
 const meta: Meta = {
   title: "Administrator/New Unit",
-  component: NewUnit
+  component: NewUnit,
+  decorators: [
+    (storyFn) => (
+      <div style={{ width: "1200px", height: "800px" }}>{storyFn()}</div>
+    )
+  ]
 };
 
 export default meta;
@@ -26,31 +29,24 @@ export const Default: Story = {
   render: ({ footerSaveAcl, postalCode, addressData, defaultType }) => (
     <Provider>
       <NiceModal.Provider>
-        <Button
-          variant="outline-primary"
-          onClick={() => {
-            ModalManager.show(NewUnit, {
-              footerSaveAcl,
-              postalCode,
-              addressData,
-              defaultType
-            });
-          }}
-        >
-          Test newunit
-        </Button>
+        <NewUnit
+          id="1"
+          defaultVisible
+          footerSaveAcl={footerSaveAcl}
+          postalCode={postalCode}
+          addressData={addressData}
+          defaultType={defaultType}
+        />
       </NiceModal.Provider>
     </Provider>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement.parentNode as HTMLElement);
-    await userEvent.click(canvas.getByRole("button"));
     await expect(
       await canvas.findByText("Add unit to test")
     ).toBeInTheDocument();
     await expect(
       await canvas.findByLabelText("Unit number")
     ).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
   }
 };

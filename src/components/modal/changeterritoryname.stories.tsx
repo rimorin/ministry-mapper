@@ -3,14 +3,17 @@ import { StoryObj, Meta } from "@storybook/react";
 import { USER_ACCESS_LEVELS } from "../../utils/constants";
 import ChangeTerritoryName from "./changeterritoryname";
 import NiceModal from "@ebay/nice-modal-react";
-import { Button } from "react-bootstrap";
-import ModalManager from "@ebay/nice-modal-react";
-import { userEvent, within } from "@storybook/testing-library";
+import { within } from "@storybook/testing-library";
 import { Provider } from "@rollbar/react";
 
 const meta: Meta = {
   title: "Administrator/ChangeTerritoryName",
-  component: ChangeTerritoryName
+  component: ChangeTerritoryName,
+  decorators: [
+    (storyFn) => (
+      <div style={{ width: "1200px", height: "800px" }}>{storyFn()}</div>
+    )
+  ]
 };
 
 export default meta;
@@ -49,29 +52,22 @@ export const Default: Story = {
   render: ({ name, footerSaveAcl, congregation, territoryCode }) => (
     <Provider>
       <NiceModal.Provider>
-        <Button
-          variant="outline-primary"
-          onClick={() => {
-            ModalManager.show(ChangeTerritoryName, {
-              name,
-              footerSaveAcl,
-              congregation,
-              territoryCode
-            });
-          }}
-        >
-          Test ChangeTerritoryName
-        </Button>
+        <ChangeTerritoryName
+          id="1"
+          defaultVisible
+          name={name}
+          footerSaveAcl={footerSaveAcl}
+          congregation={congregation}
+          territoryCode={territoryCode}
+        />
       </NiceModal.Provider>
     </Provider>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement.parentNode as HTMLElement);
-    await userEvent.click(canvas.getByRole("button"));
     await expect(
       await canvas.findByText("Change Territory Name")
     ).toBeInTheDocument();
     await expect(canvas.getByLabelText("Name")).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
   }
 };

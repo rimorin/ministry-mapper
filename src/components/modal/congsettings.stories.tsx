@@ -1,15 +1,18 @@
 import { expect } from "@storybook/jest";
 import { StoryObj, Meta } from "@storybook/react";
 import NiceModal from "@ebay/nice-modal-react";
-import { Button } from "react-bootstrap";
-import ModalManager from "@ebay/nice-modal-react";
-import { userEvent, within } from "@storybook/testing-library";
+import { within } from "@storybook/testing-library";
 import UpdateCongregationSettings from "./congsettings";
 import { Provider } from "@rollbar/react";
 
 const meta: Meta = {
   title: "Administrator/Congregation Settings",
-  component: UpdateCongregationSettings
+  component: UpdateCongregationSettings,
+  decorators: [
+    (storyFn) => (
+      <div style={{ width: "1200px", height: "800px" }}>{storyFn()}</div>
+    )
+  ]
 };
 
 export default meta;
@@ -60,27 +63,20 @@ export const Default: Story = {
   }) => (
     <Provider>
       <NiceModal.Provider>
-        <Button
-          variant="outline-primary"
-          onClick={(e) => {
-            e.preventDefault();
-            ModalManager.show(UpdateCongregationSettings, {
-              currentCongregation,
-              currentName,
-              currentMaxTries,
-              currentDefaultExpiryHrs,
-              currentIsMultipleSelection
-            });
-          }}
-        >
-          Test congsettings
-        </Button>
+        <UpdateCongregationSettings
+          id="1"
+          defaultVisible
+          currentCongregation={currentCongregation}
+          currentName={currentName}
+          currentMaxTries={currentMaxTries}
+          currentDefaultExpiryHrs={currentDefaultExpiryHrs}
+          currentIsMultipleSelection={currentIsMultipleSelection}
+        />
       </NiceModal.Provider>
     </Provider>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement.parentNode as HTMLElement);
-    await userEvent.click(canvas.getByRole("button"));
     await expect(
       await canvas.findByText("Congregation Settings")
     ).toBeInTheDocument();
@@ -94,6 +90,5 @@ export const Default: Story = {
     await expect(
       await canvas.findByLabelText("Multiple Household Types")
     ).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
   }
 };

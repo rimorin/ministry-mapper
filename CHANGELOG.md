@@ -1,3 +1,20 @@
+# [1.25.0](https://github.com/rimorin/ministry-mapper/compare/v1.24.2...v1.25.0) (2023-10-04)
+
+
+### Bug Fixes
+
+* multi select logic ([cf6d26a](https://github.com/rimorin/ministry-mapper/commit/cf6d26a5bab8f26405320e9179a09b3f0a999593))
+
+
+### Features
+
+* implement multi household types ([7b9767e](https://github.com/rimorin/ministry-mapper/commit/7b9767e9dea500d644c3ad00a1c24e92eed9d0e8))
+
+
+### Reverts
+
+* Revert "build: remove react select" ([dc13eae](https://github.com/rimorin/ministry-mapper/commit/dc13eae9e51721a3d8d67e7943c304e4bcc24822))
+
 ## [1.24.2](https://github.com/rimorin/ministry-mapper/compare/v1.24.1...v1.24.2) (2023-09-29)
 
 
