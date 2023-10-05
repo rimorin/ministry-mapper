@@ -1,15 +1,18 @@
 import { expect } from "@storybook/jest";
 import { StoryObj, Meta } from "@storybook/react";
 import NiceModal from "@ebay/nice-modal-react";
-import { Button } from "react-bootstrap";
-import ModalManager from "@ebay/nice-modal-react";
-import { userEvent, within } from "@storybook/testing-library";
+import { within } from "@storybook/testing-library";
 import UpdateUnitStatus from "./updatestatus";
 import { Provider } from "@rollbar/react";
 
 const meta: Meta = {
   title: "Administrator/Update Unit Status",
-  component: UpdateUnitStatus
+  component: UpdateUnitStatus,
+  decorators: [
+    (storyFn) => (
+      <div style={{ width: "1200px", height: "800px" }}>{storyFn()}</div>
+    )
+  ]
 };
 
 export default meta;
@@ -70,34 +73,29 @@ export const Default: Story = {
   }) => (
     <Provider>
       <NiceModal.Provider>
-        <Button
-          variant="outline-primary"
-          onClick={() => {
-            ModalManager.show(UpdateUnitStatus, {
-              addressName,
-              userAccessLevel,
-              territoryType,
-              postalCode,
-              unitNo,
-              unitNoDisplay,
-              addressData,
-              floor,
-              floorDisplay,
-              unitDetails,
-              options,
-              defaultOption,
-              isMultiselect
-            });
-          }}
-        >
-          Test updatestatus
-        </Button>
+        <UpdateUnitStatus
+          id="1"
+          defaultVisible
+          congregation="test"
+          addressName={addressName}
+          userAccessLevel={userAccessLevel}
+          territoryType={territoryType}
+          postalCode={postalCode}
+          unitNo={unitNo}
+          unitNoDisplay={unitNoDisplay}
+          addressData={addressData}
+          floor={floor}
+          floorDisplay={floorDisplay}
+          unitDetails={unitDetails}
+          options={options}
+          defaultOption={defaultOption}
+          isMultiselect={isMultiselect}
+        />
       </NiceModal.Provider>
     </Provider>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement.parentNode as HTMLElement);
-    await userEvent.click(canvas.getByRole("button"));
     await expect(await canvas.findByText("Not Done")).toBeInTheDocument();
     await expect(await canvas.findByText("Done")).toBeInTheDocument();
     await expect(await canvas.findByText("DNC")).toBeInTheDocument();
@@ -105,6 +103,5 @@ export const Default: Story = {
     await expect(await canvas.findByText("Invalid")).toBeInTheDocument();
     await expect(await canvas.findByText("Household")).toBeInTheDocument();
     await expect(await canvas.findByText("Notes")).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
   }
 };

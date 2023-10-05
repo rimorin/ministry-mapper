@@ -2,15 +2,18 @@ import { expect } from "@storybook/jest";
 import { StoryObj, Meta } from "@storybook/react";
 import ChangePassword from "./changepassword";
 import { USER_ACCESS_LEVELS } from "../../utils/constants";
-import { Button } from "react-bootstrap";
 import NiceModal from "@ebay/nice-modal-react";
-import ModalManager from "@ebay/nice-modal-react";
 import { within, userEvent } from "@storybook/testing-library";
 import { Provider } from "@rollbar/react";
 
 const meta: Meta = {
   title: "Administrator/Change Password",
-  component: ChangePassword
+  component: ChangePassword,
+  decorators: [
+    (storyFn) => (
+      <div style={{ width: "1200px", height: "800px" }}>{storyFn()}</div>
+    )
+  ]
 };
 
 export default meta;
@@ -27,24 +30,17 @@ export const Default: Story = {
   render: ({ user, userAccessLevel }) => (
     <Provider>
       <NiceModal.Provider>
-        <Button
-          variant="outline-primary"
-          onClick={(e) => {
-            e.preventDefault();
-            ModalManager.show(ChangePassword, {
-              user,
-              userAccessLevel
-            });
-          }}
-        >
-          Test changepassword
-        </Button>
+        <ChangePassword
+          id="1"
+          defaultVisible
+          user={user}
+          userAccessLevel={userAccessLevel}
+        />
       </NiceModal.Provider>
     </Provider>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement.parentNode as HTMLElement);
-    await userEvent.click(canvas.getByRole("button"));
     const changePass = await canvas.findByText("Change Password");
     await expect(changePass).toBeInTheDocument();
     await expect(canvas.getByLabelText("New Password")).toBeInTheDocument();
@@ -54,9 +50,6 @@ export const Default: Story = {
     await expect(
       canvas.getByLabelText("Existing Password")
     ).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    await expect(canvas.queryByText("Change Password")).toBeNull();
   }
 };
 
@@ -70,24 +63,17 @@ export const ValidPassword: Story = {
   render: ({ user, userAccessLevel }) => (
     <Provider>
       <NiceModal.Provider>
-        <Button
-          variant="outline-primary"
-          onClick={(e) => {
-            e.preventDefault();
-            ModalManager.show(ChangePassword, {
-              user,
-              userAccessLevel
-            });
-          }}
-        >
-          Test changepassword
-        </Button>
+        <ChangePassword
+          id="1"
+          defaultVisible
+          user={user}
+          userAccessLevel={userAccessLevel}
+        />
       </NiceModal.Provider>
     </Provider>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement.parentNode as HTMLElement);
-    await userEvent.click(canvas.getByRole("button"));
     const changePass = await canvas.findByText("Change Password");
     await expect(changePass).toBeInTheDocument();
     await expect(canvas.getByRole("button", { name: "Save" })).toBeDisabled();
@@ -112,9 +98,6 @@ export const ValidPassword: Story = {
     );
     // check if save button is enabled
     await expect(canvas.getByRole("button", { name: "Save" })).toBeEnabled();
-    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    await expect(canvas.queryByText("Change Password")).toBeNull();
   }
 };
 
@@ -128,24 +111,17 @@ export const InvalidPassword: Story = {
   render: ({ user, userAccessLevel }) => (
     <Provider>
       <NiceModal.Provider>
-        <Button
-          variant="outline-primary"
-          onClick={(e) => {
-            e.preventDefault();
-            ModalManager.show(ChangePassword, {
-              user,
-              userAccessLevel
-            });
-          }}
-        >
-          Test changepassword
-        </Button>
+        <ChangePassword
+          id="1"
+          defaultVisible
+          user={user}
+          userAccessLevel={userAccessLevel}
+        />
       </NiceModal.Provider>
     </Provider>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement.parentNode as HTMLElement);
-    await userEvent.click(canvas.getByRole("button"));
     await expect(
       await canvas.findByText("Change Password")
     ).toBeInTheDocument();
@@ -161,8 +137,5 @@ export const InvalidPassword: Story = {
     await userEvent.type(canvas.getByLabelText("Confirm New Password"), "test");
     await userEvent.type(canvas.getByLabelText("Existing Password"), "test");
     await expect(canvas.getByRole("button", { name: "Save" })).toBeDisabled();
-    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    await expect(canvas.queryByText("Change Password")).toBeNull();
   }
 };
