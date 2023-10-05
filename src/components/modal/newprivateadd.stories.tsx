@@ -1,8 +1,6 @@
 import { expect } from "@storybook/jest";
 import { StoryObj, Meta } from "@storybook/react";
 import NiceModal from "@ebay/nice-modal-react";
-import { Button } from "react-bootstrap";
-import ModalManager from "@ebay/nice-modal-react";
 import { userEvent, within } from "@storybook/testing-library";
 import NewPrivateAddress from "./newprivateadd";
 import { Provider } from "@rollbar/react";
@@ -26,25 +24,19 @@ export const Default: Story = {
   render: ({ footerSaveAcl, congregation, territoryCode, defaultType }) => (
     <Provider>
       <NiceModal.Provider>
-        <Button
-          variant="outline-primary"
-          onClick={() => {
-            ModalManager.show(NewPrivateAddress, {
-              footerSaveAcl,
-              congregation,
-              territoryCode,
-              defaultType
-            });
-          }}
-        >
-          Test newprivateadd
-        </Button>
+        <NewPrivateAddress
+          id="1"
+          defaultVisible
+          footerSaveAcl={footerSaveAcl}
+          congregation={congregation}
+          territoryCode={territoryCode}
+          defaultType={defaultType}
+        />
       </NiceModal.Provider>
     </Provider>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement.parentNode as HTMLElement);
-    await userEvent.click(canvas.getByRole("button"));
     await expect(
       await canvas.findByText("Create Private Address")
     ).toBeInTheDocument();

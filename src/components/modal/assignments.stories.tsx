@@ -3,8 +3,6 @@ import { expect } from "@storybook/jest";
 import { StoryObj, Meta } from "@storybook/react";
 import GetAssignments from "./assignments";
 import { LINK_TYPES } from "../../utils/constants";
-import ModalManager from "@ebay/nice-modal-react";
-import { Button } from "react-bootstrap";
 import NiceModal from "@ebay/nice-modal-react";
 
 const meta: Meta = {
@@ -43,24 +41,17 @@ export const AllLinks: Story = {
   },
   render: ({ assignments, assignmentType, assignmentTerritory }) => (
     <NiceModal.Provider>
-      <Button
-        variant="outline-primary"
-        onClick={(e) => {
-          e.preventDefault();
-          ModalManager.show(GetAssignments, {
-            assignments,
-            assignmentType,
-            assignmentTerritory
-          });
-        }}
-      >
-        Get All Links
-      </Button>
+      <GetAssignments
+        defaultVisible
+        id="1"
+        assignmentTerritory={assignmentTerritory}
+        assignments={assignments}
+        assignmentType={assignmentType}
+      />
     </NiceModal.Provider>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement.parentNode as HTMLElement);
-    await userEvent.click(canvas.getByRole("button"));
     await expect(await canvas.findByText("Assignments")).toBeInTheDocument();
     await expect(canvas.getByText("Publisher : john")).toBeInTheDocument();
     await expect(canvas.getByText("Assign")).toBeInTheDocument();
@@ -89,31 +80,23 @@ export const PersonalLinks: Story = {
   },
   render: ({ assignments, assignmentType, assignmentTerritory }) => (
     <NiceModal.Provider>
-      <Button
-        variant="outline-primary"
-        onClick={(e) => {
-          e.preventDefault();
-          ModalManager.show(GetAssignments, {
-            assignments,
-            assignmentType,
-            assignmentTerritory
-          });
-        }}
-      >
-        Get Personal Links
-      </Button>
+      <GetAssignments
+        defaultVisible
+        id="1"
+        assignmentTerritory={assignmentTerritory}
+        assignments={assignments}
+        assignmentType={assignmentType}
+      />
     </NiceModal.Provider>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement.parentNode as HTMLElement);
-    await userEvent.click(canvas.getByRole("button"));
     await expect(
       await canvas.findByText("Starfleet Personal Links")
     ).toBeInTheDocument();
     await expect(canvas.getByText("Publisher : john")).toBeInTheDocument();
     await expect(canvas.getByText("Link")).toBeInTheDocument();
     await userEvent.click(canvas.getByRole("button", { name: "Close" }));
-    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 };
 
@@ -136,24 +119,17 @@ export const AssignmentLinks: Story = {
   },
   render: ({ assignments, assignmentType, assignmentTerritory }) => (
     <NiceModal.Provider>
-      <Button
-        variant="outline-primary"
-        onClick={(e) => {
-          e.preventDefault();
-          ModalManager.show(GetAssignments, {
-            assignments,
-            assignmentType,
-            assignmentTerritory
-          });
-        }}
-      >
-        Get Assign Links
-      </Button>
+      <GetAssignments
+        defaultVisible
+        id="1"
+        assignmentTerritory={assignmentTerritory}
+        assignments={assignments}
+        assignmentType={assignmentType}
+      />
     </NiceModal.Provider>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement.parentNode as HTMLElement);
-    await userEvent.click(canvas.getByRole("button"));
     await expect(
       await canvas.findByText("Starfleet Assign Links")
     ).toBeInTheDocument();
