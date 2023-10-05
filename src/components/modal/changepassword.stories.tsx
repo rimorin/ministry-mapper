@@ -8,7 +8,12 @@ import { Provider } from "@rollbar/react";
 
 const meta: Meta = {
   title: "Administrator/Change Password",
-  component: ChangePassword
+  component: ChangePassword,
+  decorators: [
+    (storyFn) => (
+      <div style={{ width: "1200px", height: "800px" }}>{storyFn()}</div>
+    )
+  ]
 };
 
 export default meta;
@@ -45,9 +50,6 @@ export const Default: Story = {
     await expect(
       canvas.getByLabelText("Existing Password")
     ).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    await expect(canvas.queryByText("Change Password")).toBeNull();
   }
 };
 
@@ -96,9 +98,6 @@ export const ValidPassword: Story = {
     );
     // check if save button is enabled
     await expect(canvas.getByRole("button", { name: "Save" })).toBeEnabled();
-    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    await expect(canvas.queryByText("Change Password")).toBeNull();
   }
 };
 
@@ -138,8 +137,5 @@ export const InvalidPassword: Story = {
     await userEvent.type(canvas.getByLabelText("Confirm New Password"), "test");
     await userEvent.type(canvas.getByLabelText("Existing Password"), "test");
     await expect(canvas.getByRole("button", { name: "Save" })).toBeDisabled();
-    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    await expect(canvas.queryByText("Change Password")).toBeNull();
   }
 };

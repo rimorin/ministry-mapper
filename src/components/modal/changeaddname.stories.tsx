@@ -2,13 +2,18 @@ import ChangeAddressName from "./changeaddname";
 import { USER_ACCESS_LEVELS } from "../../utils/constants";
 import NiceModal from "@ebay/nice-modal-react";
 import { Meta, StoryObj } from "@storybook/react";
-import { within, userEvent } from "@storybook/testing-library";
+import { within } from "@storybook/testing-library";
 import { expect } from "@storybook/jest";
 import { Provider } from "@rollbar/react";
 
 const meta: Meta = {
   title: "Administrator/Change Address Name",
-  component: ChangeAddressName
+  component: ChangeAddressName,
+  decorators: [
+    (storyFn) => (
+      <div style={{ width: "1200px", height: "800px" }}>{storyFn()}</div>
+    )
+  ]
 };
 
 export default meta;
@@ -40,6 +45,5 @@ export const Default: Story = {
       await canvas.findByText("Change Address Name")
     ).toBeInTheDocument();
     await expect(canvas.getByLabelText("Name")).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
   }
 };

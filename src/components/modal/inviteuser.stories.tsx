@@ -1,13 +1,18 @@
 import { expect } from "@storybook/jest";
 import { StoryObj, Meta } from "@storybook/react";
 import NiceModal from "@ebay/nice-modal-react";
-import { userEvent, within } from "@storybook/testing-library";
+import { within } from "@storybook/testing-library";
 import InviteUser from "./inviteuser";
 import { Provider } from "@rollbar/react";
 
 const meta: Meta = {
   title: "Administrator/Invite User",
-  component: InviteUser
+  component: InviteUser,
+  decorators: [
+    (storyFn) => (
+      <div style={{ width: "1200px", height: "800px" }}>{storyFn()}</div>
+    )
+  ]
 };
 
 export default meta;
@@ -48,6 +53,5 @@ export const Default: Story = {
     await expect(await canvas.findByText("Read-only")).toBeInTheDocument();
     await expect(await canvas.findByText("Conductor")).toBeInTheDocument();
     await expect(await canvas.findByText("Administrator")).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
   }
 };

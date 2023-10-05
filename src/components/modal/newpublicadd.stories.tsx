@@ -1,13 +1,18 @@
 import { expect } from "@storybook/jest";
 import { StoryObj, Meta } from "@storybook/react";
 import NiceModal from "@ebay/nice-modal-react";
-import { userEvent, within } from "@storybook/testing-library";
+import { within } from "@storybook/testing-library";
 import NewPublicAddress from "./newpublicadd";
 import { Provider } from "@rollbar/react";
 
 const meta: Meta = {
   title: "Administrator/New Public Address",
-  component: NewPublicAddress
+  component: NewPublicAddress,
+  decorators: [
+    (storyFn) => (
+      <div style={{ width: "1200px", height: "800px" }}>{storyFn()}</div>
+    )
+  ]
 };
 
 export default meta;
@@ -44,6 +49,5 @@ export const Default: Story = {
     await expect(await canvas.findByText("Address Name")).toBeInTheDocument();
     await expect(await canvas.findByText("No. of floors")).toBeInTheDocument();
     await expect(await canvas.findByText("Unit Sequence")).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
   }
 };

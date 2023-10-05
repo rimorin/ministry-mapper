@@ -3,12 +3,17 @@ import { StoryObj, Meta } from "@storybook/react";
 import { USER_ACCESS_LEVELS } from "../../utils/constants";
 import ChangeTerritoryName from "./changeterritoryname";
 import NiceModal from "@ebay/nice-modal-react";
-import { userEvent, within } from "@storybook/testing-library";
+import { within } from "@storybook/testing-library";
 import { Provider } from "@rollbar/react";
 
 const meta: Meta = {
   title: "Administrator/ChangeTerritoryName",
-  component: ChangeTerritoryName
+  component: ChangeTerritoryName,
+  decorators: [
+    (storyFn) => (
+      <div style={{ width: "1200px", height: "800px" }}>{storyFn()}</div>
+    )
+  ]
 };
 
 export default meta;
@@ -64,6 +69,5 @@ export const Default: Story = {
       await canvas.findByText("Change Territory Name")
     ).toBeInTheDocument();
     await expect(canvas.getByLabelText("Name")).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
   }
 };

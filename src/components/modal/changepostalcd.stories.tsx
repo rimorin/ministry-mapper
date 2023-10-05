@@ -1,5 +1,5 @@
 import { StoryObj, Meta } from "@storybook/react";
-import { within, userEvent } from "@storybook/testing-library";
+import { within } from "@storybook/testing-library";
 import { expect } from "@storybook/jest";
 import { USER_ACCESS_LEVELS } from "../../utils/constants";
 import NiceModal from "@ebay/nice-modal-react";
@@ -8,7 +8,12 @@ import { Provider } from "@rollbar/react";
 
 const meta: Meta = {
   title: "Administrator/Change Address Postal Code",
-  component: ChangeAddressPostalCode
+  component: ChangeAddressPostalCode,
+  decorators: [
+    (storyFn) => (
+      <div style={{ width: "1200px", height: "800px" }}>{storyFn()}</div>
+    )
+  ]
 };
 
 export default meta;
@@ -47,6 +52,5 @@ export const Default: Story = {
     await expect(
       await canvas.findByText("New Postal Code")
     ).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
   }
 };

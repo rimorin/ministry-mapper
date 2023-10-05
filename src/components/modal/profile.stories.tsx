@@ -1,13 +1,18 @@
 import { expect } from "@storybook/jest";
 import { StoryObj, Meta } from "@storybook/react";
 import NiceModal from "@ebay/nice-modal-react";
-import { userEvent, within } from "@storybook/testing-library";
+import { within } from "@storybook/testing-library";
 import GetProfile from "./profile";
 import { Provider } from "@rollbar/react";
 
 const meta: Meta = {
   title: "Administrator/Profile",
-  component: GetProfile
+  component: GetProfile,
+  decorators: [
+    (storyFn) => (
+      <div style={{ width: "1200px", height: "800px" }}>{storyFn()}</div>
+    )
+  ]
 };
 
 export default meta;
@@ -33,6 +38,5 @@ export const Default: Story = {
     await expect(await canvas.findByText("My Profile")).toBeInTheDocument();
     await expect(await canvas.findByLabelText("Email")).toBeInTheDocument();
     await expect(await canvas.findByLabelText("Name")).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
   }
 };

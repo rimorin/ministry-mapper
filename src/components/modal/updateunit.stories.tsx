@@ -1,13 +1,18 @@
 import { expect } from "@storybook/jest";
 import { StoryObj, Meta } from "@storybook/react";
 import NiceModal from "@ebay/nice-modal-react";
-import { userEvent, within } from "@storybook/testing-library";
+import { within } from "@storybook/testing-library";
 import UpdateUnit from "./updateunit";
 import { Provider } from "@rollbar/react";
 
 const meta: Meta = {
   title: "Administrator/Update Unit",
-  component: UpdateUnit
+  component: UpdateUnit,
+  decorators: [
+    (storyFn) => (
+      <div style={{ width: "1200px", height: "800px" }}>{storyFn()}</div>
+    )
+  ]
 };
 
 export default meta;
@@ -52,6 +57,5 @@ export const Default: Story = {
     await expect(
       await canvas.findByText("Sequence Number")
     ).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
   }
 };

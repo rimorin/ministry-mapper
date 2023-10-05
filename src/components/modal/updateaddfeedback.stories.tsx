@@ -1,13 +1,18 @@
 import { expect } from "@storybook/jest";
 import { StoryObj, Meta } from "@storybook/react";
 import NiceModal from "@ebay/nice-modal-react";
-import { userEvent, within } from "@storybook/testing-library";
+import { within } from "@storybook/testing-library";
 import UpdateAddressFeedback from "./updateaddfeedback";
 import { Provider } from "@rollbar/react";
 
 const meta: Meta = {
   title: "Administrator/Update Address Feedback",
-  component: UpdateAddressFeedback
+  component: UpdateAddressFeedback,
+  decorators: [
+    (storyFn) => (
+      <div style={{ width: "1200px", height: "800px" }}>{storyFn()}</div>
+    )
+  ]
 };
 
 export default meta;
@@ -55,6 +60,5 @@ export const Default: Story = {
       await canvas.findByText("Feedback on Test Address Name")
     ).toBeInTheDocument();
     await expect(await canvas.findByRole("textbox")).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
   }
 };

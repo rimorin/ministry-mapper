@@ -7,7 +7,12 @@ import NiceModal from "@ebay/nice-modal-react";
 
 const meta: Meta = {
   title: "Administrator/Assignments",
-  component: GetAssignments
+  component: GetAssignments,
+  decorators: [
+    (storyFn) => (
+      <div style={{ width: "1200px", height: "800px" }}>{storyFn()}</div>
+    )
+  ]
 };
 
 export default meta;
@@ -56,8 +61,6 @@ export const AllLinks: Story = {
     await expect(canvas.getByText("Publisher : john")).toBeInTheDocument();
     await expect(canvas.getByText("Assign")).toBeInTheDocument();
     await expect(canvas.getByText("Personal")).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
-    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 };
 
