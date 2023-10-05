@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { ref, child, onValue } from "firebase/database";
 import { database } from "../../firebase";
 import { Container, Fade, Navbar, NavDropdown } from "react-bootstrap";
@@ -55,6 +55,7 @@ const Slip = ({
   const [territoryType, setTerritoryType] = useState<number>(
     TERRITORY_TYPES.PUBLIC
   );
+  const currentTime = useRef<number>(new Date().getTime());
 
   const handleUnitUpdate = (
     floor: string,
@@ -87,6 +88,19 @@ const Slip = ({
   const toggleLegend = useCallback(() => {
     setShowLegend(!showLegend);
   }, [showLegend]);
+
+  const refreshPage = () => {
+    const inactivityPeriod = new Date().getTime() - currentTime.current;
+    if (inactivityPeriod >= RELOAD_INACTIVITY_DURATION) {
+      window.location.reload();
+    } else {
+      setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
+    }
+  };
+
+  const setActivityTime = () => {
+    currentTime.current = new Date().getTime();
+  };
 
   useEffect(() => {
     Promise.all([
@@ -130,24 +144,9 @@ const Slip = ({
       setIsPostalLoading(false);
     });
 
-    let currentTime = new Date().getTime();
-    const setActivityTime = () => {
-      currentTime = new Date().getTime();
-    };
-
-    const refreshPage = () => {
-      const inactivityPeriod = new Date().getTime() - currentTime;
-      if (inactivityPeriod >= RELOAD_INACTIVITY_DURATION) {
-        window.location.reload();
-      } else {
-        setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-      }
-    };
-
     document.body.addEventListener("mousemove", setActivityTime);
     document.body.addEventListener("keypress", setActivityTime);
     document.body.addEventListener("touchstart", setActivityTime);
-
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
   }, [tokenEndtime, postalcode, congregationcode, maxTries]);
 
