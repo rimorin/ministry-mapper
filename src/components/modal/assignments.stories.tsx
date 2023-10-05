@@ -1,4 +1,4 @@
-import { within, userEvent } from "@storybook/testing-library";
+import { within } from "@storybook/testing-library";
 import { expect } from "@storybook/jest";
 import { StoryObj, Meta } from "@storybook/react";
 import GetAssignments from "./assignments";
@@ -99,7 +99,6 @@ export const PersonalLinks: Story = {
     ).toBeInTheDocument();
     await expect(canvas.getByText("Publisher : john")).toBeInTheDocument();
     await expect(canvas.getByText("Link")).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
   }
 };
 
@@ -138,7 +137,5 @@ export const AssignmentLinks: Story = {
     ).toBeInTheDocument();
     await expect(canvas.getByText("Publisher : john")).toBeInTheDocument();
     await expect(canvas.getByText("Link")).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
-    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 };
