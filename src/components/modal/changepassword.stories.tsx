@@ -41,7 +41,7 @@ export const Default: Story = {
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement.parentNode as HTMLElement);
-    const changePass = await canvas.findByText("Change Password");
+    const changePass = await canvas.findByText("BREAKING Password");
     await expect(changePass).toBeInTheDocument();
     await expect(canvas.getByLabelText("New Password")).toBeInTheDocument();
     await expect(
@@ -74,7 +74,7 @@ export const ValidPassword: Story = {
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement.parentNode as HTMLElement);
-    const changePass = await canvas.findByText("Change Password");
+    const changePass = await canvas.findByText("BREAKING Password");
     await expect(changePass).toBeInTheDocument();
     await expect(canvas.getByRole("button", { name: "Save" })).toBeDisabled();
     await expect(canvas.getByLabelText("New Password")).toBeInTheDocument();
@@ -123,7 +123,7 @@ export const InvalidPassword: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement.parentNode as HTMLElement);
     await expect(
-      await canvas.findByText("Change Password")
+      await canvas.findByText("BREAKING Password")
     ).toBeInTheDocument();
     await expect(canvas.getByRole("button", { name: "Save" })).toBeDisabled();
     await expect(canvas.getByLabelText("New Password")).toBeInTheDocument();

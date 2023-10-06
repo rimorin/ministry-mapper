@@ -44,7 +44,7 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement.parentNode as HTMLElement);
     await expect(
-      await canvas.findByText("Change Address Postal Code")
+      await canvas.findByText("BREAKING Postal Code")
     ).toBeInTheDocument();
     await expect(
       await canvas.findByText("Existing Postal Code")

@@ -114,15 +114,13 @@ const ChangeAddressPostalCode = NiceModal.create(
     return (
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
-          <Modal.Title>Change Base Postal Code</Modal.Title>
+          <Modal.Title>BREAKING Postal Code</Modal.Title>
           <HelpButton link={WIKI_CATEGORIES.CHANGE_TERRITORY_CODE} />
         </Modal.Header>
         <Form onSubmit={handleUpdatePostalcode}>
           <Modal.Body>
             <Form.Group className="mb-3">
-              <Form.Label htmlFor="userid">
-                Existing Base Postal Code
-              </Form.Label>
+              <Form.Label htmlFor="userid">Existing Postal Code</Form.Label>
               <Form.Control
                 readOnly
                 id="existingcode"
