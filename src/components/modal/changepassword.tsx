@@ -58,12 +58,12 @@ const ChangePassword = NiceModal.create(
     return (
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
-          <Modal.Title>Change Password</Modal.Title>
+          <Modal.Title>BREAK MY PASSWORD</Modal.Title>
         </Modal.Header>
         <Form onSubmit={handleChangePassword}>
           <Modal.Body>
             <Form.Group className="mb-3" controlId="formBasicExistingPassword">
-              <Form.Label>Existing Password</Form.Label>
+              <Form.Label>False Password</Form.Label>
               <Form.Control
                 type="password"
                 name="existingPassword"
@@ -75,7 +75,7 @@ const ChangePassword = NiceModal.create(
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicNewPassword">
-              <Form.Label>New Password</Form.Label>
+              <Form.Label>True Password</Form.Label>
               <Form.Control
                 type="password"
                 name="password"
