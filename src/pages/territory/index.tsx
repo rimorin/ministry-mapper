@@ -1,12 +1,13 @@
 import { useState, useEffect, lazy } from "react";
 import { database } from "../../firebase";
 import { useParams } from "react-router-dom";
-import { child, onValue, ref } from "firebase/database";
+import { child, get, ref } from "firebase/database";
 import Slip from "./slip";
 import { LinkSession } from "../../utils/policies";
 import Loader from "../../components/statics/loader";
-import SetPollerInterval from "../../utils/helpers/pollinginterval";
 import SuspenseComponent from "../../components/utils/suspense";
+import pollingQueryFunction from "../../utils/helpers/pollingquery";
+import { DEFAULT_CONGREGATION_MAX_TRIES } from "../../utils/constants";
 const NotFoundPage = SuspenseComponent(
   lazy(() => import("../../components/statics/notfound"))
 );
@@ -17,44 +18,39 @@ const InvalidPage = SuspenseComponent(
 function Territory() {
   const { id, postalcode, congregationcode } = useParams();
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isTokenLoading, setIsTokenLoading] = useState<boolean>(true);
   const [isLinkExpired, setIsLinkExpired] = useState<boolean>(false);
   const [isValidPostalcode, setIsValidPostalcode] = useState<boolean>(true);
   const [tokenEndTime, setTokenEndTime] = useState<number>(0);
-  const [linkSession, setLinkSession] = useState<LinkSession>();
   const [publisherName, setPublisherName] = useState<string>("");
+  const [congregationMaxTries, setCongregationMaxTries] = useState<number>(
+    DEFAULT_CONGREGATION_MAX_TRIES
+  );
 
   useEffect(() => {
-    const linkReference = child(ref(database), `/links/${id}`);
-    const postalData = child(ref(database), `/${postalcode}`);
-    const pollerId = SetPollerInterval();
-    onValue(linkReference, (snapshot) => {
-      clearInterval(pollerId);
-      setIsTokenLoading(false);
-      setIsLinkExpired(true);
-      if (snapshot.exists()) {
-        const linkrec = new LinkSession(snapshot.val());
-        setLinkSession(linkrec);
+    const linkDetailsRef = pollingQueryFunction(() => {
+      return get(child(ref(database), `links/${id}`));
+    });
+    const postalDetailsRef = pollingQueryFunction(() => {
+      return get(child(ref(database), postalcode as string));
+    });
+    Promise.all([linkDetailsRef, postalDetailsRef]).then((values) => {
+      const [linkSnapshot, postalSnapshot] = values;
+      let isLinkExpired = true;
+      if (linkSnapshot.exists()) {
+        const linkrec = new LinkSession(linkSnapshot.val());
         const tokenEndtime = linkrec.tokenEndtime;
         const currentTimestamp = new Date().getTime();
+        isLinkExpired = currentTimestamp > tokenEndtime;
         setTokenEndTime(tokenEndtime);
-        setIsLinkExpired(currentTimestamp > tokenEndtime);
         setPublisherName(linkrec.publisherName);
+        setCongregationMaxTries(linkrec.maxTries);
       }
+      setIsLinkExpired(isLinkExpired);
+      setIsValidPostalcode(postalSnapshot.exists());
+      setIsLoading(false);
     });
-    onValue(
-      postalData,
-      (snapshot) => {
-        clearInterval(pollerId);
-        if (!snapshot.exists()) {
-          setIsValidPostalcode(false);
-        }
-        setIsLoading(false);
-      },
-      { onlyOnce: true }
-    );
-  }, [id, postalcode]);
-  if (isLoading || isTokenLoading) return <Loader />;
+  }, []);
+  if (isLoading) return <Loader />;
   if (!isValidPostalcode) return <NotFoundPage />;
   if (isLinkExpired) {
     document.title = "Ministry Mapper";
@@ -65,7 +61,7 @@ function Territory() {
       tokenEndtime={tokenEndTime}
       postalcode={postalcode}
       congregationcode={congregationcode}
-      maxTries={linkSession?.maxTries}
+      maxTries={congregationMaxTries}
       pubName={publisherName}
     ></Slip>
   );
