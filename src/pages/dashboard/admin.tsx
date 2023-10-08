@@ -565,7 +565,7 @@ function Admin({ user }: adminProps) {
         linkid,
         `Units for ${name}`,
         assignmentMessage(name),
-        `/${postalCode}/${code}/${linkid}`,
+        `${code}/${linkid}`,
         linkExpiryHrs,
         publisherName
       );
@@ -1452,7 +1452,7 @@ function Admin({ user }: adminProps) {
                                     addressLinkId,
                                     `Units for ${currentPostalname}`,
                                     assignmentMessage(currentPostalname),
-                                    `/${currentPostalcode}/${code}/${addressLinkId}`,
+                                    `${code}/${addressLinkId}`,
                                     defaultExpiryHours,
                                     linkObject.publisherName as string
                                   );
@@ -1516,7 +1516,7 @@ function Admin({ user }: adminProps) {
                                 user.displayName || ""
                               );
                               if (territoryWindow) {
-                                territoryWindow.location.href = `/${currentPostalcode}/${code}/${addressLinkId}`;
+                                territoryWindow.location.href = `${code}/${addressLinkId}`;
                               }
                             } catch (error) {
                               errorHandler(error, rollbar);

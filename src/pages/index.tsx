@@ -38,10 +38,7 @@ function Main() {
           <Route path="*" element={<NotFoundPage />} />
           <Route path="/" element={<FrontPage />} />
           <Route path={"/:code"} element={<Dashboard />} />
-          <Route
-            path={"/:postalcode/:congregationcode/:id"}
-            element={<Territory />}
-          />
+          <Route path={"/:code/:id"} element={<Territory />} />
         </Routes>
       </Suspense>
       <div className="fixed-bottom text-muted opacity-25 m-2">
