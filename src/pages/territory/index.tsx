@@ -1,7 +1,7 @@
 import { useState, useEffect, lazy } from "react";
 import { database } from "../../firebase";
 import { useParams } from "react-router-dom";
-import { child, get, ref } from "firebase/database";
+import { get, onChildRemoved, ref } from "firebase/database";
 import Slip from "./slip";
 import { LinkSession } from "../../utils/policies";
 import Loader from "../../components/statics/loader";
@@ -27,14 +27,15 @@ function Territory() {
   );
 
   useEffect(() => {
-    const linkDetailsRef = pollingQueryFunction(() => {
-      return get(child(ref(database), `links/${id}`));
-    });
-    const postalDetailsRef = pollingQueryFunction(() => {
-      return get(child(ref(database), postalcode as string));
-    });
-    Promise.all([linkDetailsRef, postalDetailsRef]).then((values) => {
-      const [linkSnapshot, postalSnapshot] = values;
+    const linkRef = ref(database, `links/${id}`);
+    Promise.all([
+      pollingQueryFunction(() => {
+        return get(linkRef);
+      }),
+      pollingQueryFunction(() => {
+        return get(ref(database, postalcode as string));
+      })
+    ]).then(([linkSnapshot, postalSnapshot]) => {
       let isLinkExpired = true;
       if (linkSnapshot.exists()) {
         const linkrec = new LinkSession(linkSnapshot.val());
@@ -44,6 +45,9 @@ function Territory() {
         setTokenEndTime(tokenEndtime);
         setPublisherName(linkrec.publisherName);
         setCongregationMaxTries(linkrec.maxTries);
+        onChildRemoved(linkRef, () => {
+          setIsLinkExpired(true);
+        });
       }
       setIsLinkExpired(isLinkExpired);
       setIsValidPostalcode(postalSnapshot.exists());
