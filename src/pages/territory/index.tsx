@@ -29,7 +29,6 @@ function Territory() {
       return get(linkRef);
     })
       .then((linkSnapshot) => {
-        let isLinkExpired = true;
         if (!linkSnapshot.exists()) {
           return;
         }
@@ -39,9 +38,8 @@ function Territory() {
         setPostalcode(linkrec.postalCode);
         const tokenEndtime = linkrec.tokenEndtime;
         const currentTimestamp = new Date().getTime();
-        isLinkExpired = currentTimestamp > tokenEndtime;
         setTokenEndTime(tokenEndtime);
-        setIsLinkExpired(isLinkExpired);
+        setIsLinkExpired(currentTimestamp > tokenEndtime);
         onChildRemoved(linkRef, () => window.location.reload());
       })
       .finally(() => {
