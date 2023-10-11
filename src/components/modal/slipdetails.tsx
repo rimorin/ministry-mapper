@@ -6,17 +6,14 @@ import { WIKI_CATEGORIES, USER_ACCESS_LEVELS } from "../../utils/constants";
 import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";
 import HelpButton from "../navigation/help";
+import { ConfirmSlipDetailsModalProps } from "../../utils/interface";
 
 const ConfirmSlipDetails = NiceModal.create(
   ({
     addressName,
     userAccessLevel,
     isPersonalSlip = true
-  }: {
-    addressName: string;
-    userAccessLevel: number | undefined;
-    isPersonalSlip: boolean;
-  }) => {
+  }: ConfirmSlipDetailsModalProps) => {
     const modal = useModal();
     const [linkExpiryHrs, setLinkExpiryHrs] = useState<number | undefined>();
     const [name, setName] = useState<string>();

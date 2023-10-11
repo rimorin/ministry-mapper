@@ -11,17 +11,14 @@ import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";
 import HelpButton from "../navigation/help";
 import IsValidTerritoryCode from "../../utils/helpers/checkterritorycd";
+import { ChangeTerritoryCodeModalProps } from "../../utils/interface";
 
 const ChangeTerritoryCode = NiceModal.create(
   ({
     footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     congregation,
     territoryCode
-  }: {
-    footerSaveAcl: number | undefined;
-    congregation: string | undefined;
-    territoryCode: string;
-  }) => {
+  }: ChangeTerritoryCodeModalProps) => {
     const [newTerritoryCode, setNewTerritoryCode] = useState(territoryCode);
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();

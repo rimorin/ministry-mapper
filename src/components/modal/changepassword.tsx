@@ -2,7 +2,6 @@ import NiceModal, { useModal, bootstrapDialog } from "@ebay/nice-modal-react";
 import { useRollbar } from "@rollbar/react";
 import { FirebaseError } from "firebase/app";
 import {
-  User,
   reauthenticateWithCredential,
   EmailAuthProvider,
   updatePassword
@@ -17,15 +16,10 @@ import errorHandler from "../../utils/helpers/errorhandler";
 import errorMessage from "../../utils/helpers/errormsg";
 import ModalFooter from "../form/footer";
 import PasswordChecklist from "react-password-checklist";
+import { ChangePasswordModalProps } from "../../utils/interface";
 
 const ChangePassword = NiceModal.create(
-  ({
-    user,
-    userAccessLevel
-  }: {
-    user: User;
-    userAccessLevel: number | undefined;
-  }) => {
+  ({ user, userAccessLevel }: ChangePasswordModalProps) => {
     const modal = useModal();
     const rollbar = useRollbar();
     const [existingPassword, setExistingPassword] = useState("");

@@ -318,8 +318,143 @@ export interface HHOptionProps {
   isNew?: boolean;
 }
 
+export interface EnvironmentIndicatorProps {
+  environment: string;
+}
+
+export interface UserRoleBadgeProps {
+  role: number | undefined;
+}
+
+export interface WelcomeProps {
+  name?: string;
+}
 export interface AssignmentModalProps {
   assignments: LinkSession[];
   assignmentType?: number;
   assignmentTerritory?: string;
+}
+
+export interface ChangeAddressNameModalProps {
+  name: string;
+  footerSaveAcl?: number;
+  postal: string;
+}
+
+export interface ChangePasswordModalProps {
+  user: User;
+  userAccessLevel: number | undefined;
+}
+
+export interface ChangeAddressPostalCodeModalProps {
+  footerSaveAcl: number | undefined;
+  congregation: string | undefined;
+  territoryCode: string | undefined;
+  postalCode: string;
+}
+
+export interface ChangeTerritoryCodeModalProps {
+  footerSaveAcl: number | undefined;
+  congregation: string | undefined;
+  territoryCode: string;
+}
+
+export interface ChangeTerritoryNameModalProps {
+  name: string | undefined;
+  footerSaveAcl: number | undefined;
+  congregation: string | undefined;
+  territoryCode: string;
+}
+
+export interface UpdateCongregationOptionsModalProps {
+  currentCongregation: string;
+}
+
+export interface UpdateCongregationSettingsModalProps {
+  currentName: string;
+  currentCongregation: string;
+  currentMaxTries: number;
+  currentDefaultExpiryHrs: number;
+  currentIsMultipleSelection: boolean;
+}
+
+export interface UpdateAddressInstructionsModalProps {
+  addressName: string;
+  congregation: string;
+  postalCode: string;
+  userAccessLevel: number | undefined;
+  instructions: string | undefined;
+  userName: string;
+}
+
+export interface NewPrivateAddressModalProps {
+  footerSaveAcl: number | undefined;
+  congregation: string | undefined;
+  territoryCode: string;
+  defaultType: string;
+}
+
+export interface NewPublicAddressModalProps {
+  footerSaveAcl: number | undefined;
+  congregation: string | undefined;
+  territoryCode: string;
+  defaultType: string;
+}
+
+export interface NewTerritoryCodeModalProps {
+  footerSaveAcl: number | undefined;
+  congregation: string | undefined;
+}
+
+export interface NewUnitModalProps {
+  footerSaveAcl: number | undefined;
+  postalCode: string;
+  addressData: addressDetails;
+  defaultType: string;
+}
+
+export interface UpdateProfileModalProps {
+  user: User;
+}
+
+export interface ConfirmSlipDetailsModalProps {
+  addressName: string;
+  userAccessLevel: number | undefined;
+  isPersonalSlip: boolean;
+}
+
+export interface UpdateAddressFeedbackModalProps {
+  name: string;
+  footerSaveAcl: number | undefined;
+  postalCode: string;
+  congregation: string;
+  helpLink: string;
+  currentFeedback: string;
+  currentName: string;
+}
+
+export interface UpdateAddressStatusModalProps {
+  addressName: string | undefined;
+  userAccessLevel: number | undefined;
+  congregation: string | undefined;
+  territoryType: number | undefined;
+  postalCode: string;
+  floor: string;
+  floorDisplay: string;
+  unitNo: string;
+  unitNoDisplay: string;
+  addressData: addressDetails | undefined;
+  unitDetails: unitDetails | undefined;
+  options: Array<OptionProps>;
+  defaultOption: string;
+  isMultiselect: boolean;
+}
+
+export interface UpdateUnitModalProps {
+  unitSequence: number | undefined;
+  unitLength: number;
+  unitNo: string;
+  unitDisplay: string;
+  postalCode: string;
+  addressData: addressDetails;
 }

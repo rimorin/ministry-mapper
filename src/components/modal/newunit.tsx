@@ -9,7 +9,7 @@ import {
 } from "../../utils/constants";
 import processPostalUnitNumber from "../../utils/helpers/processpostalno";
 import errorHandler from "../../utils/helpers/errorhandler";
-import { addressDetails } from "../../utils/interface";
+import { NewUnitModalProps } from "../../utils/interface";
 import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";
 import HelpButton from "../navigation/help";
@@ -20,12 +20,7 @@ const NewUnit = NiceModal.create(
     postalCode,
     addressData,
     defaultType
-  }: {
-    footerSaveAcl: number | undefined;
-    postalCode: string;
-    addressData: addressDetails;
-    defaultType: string;
-  }) => {
+  }: NewUnitModalProps) => {
     const [unit, setUnit] = useState("");
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();

@@ -24,10 +24,8 @@ import pollingVoidFunction from "../../utils/helpers/pollingvoid";
 import errorHandler from "../../utils/helpers/errorhandler";
 import processPostalUnitNumber from "../../utils/helpers/processpostalno";
 import {
-  addressDetails,
-  OptionProps,
   SelectProps,
-  unitDetails
+  UpdateAddressStatusModalProps
 } from "../../utils/interface";
 import DncDateField from "../form/dncdate";
 import ModalFooter from "../form/footer";
@@ -55,22 +53,7 @@ const UpdateUnitStatus = NiceModal.create(
     options,
     defaultOption,
     isMultiselect
-  }: {
-    addressName: string | undefined;
-    userAccessLevel: number | undefined;
-    congregation: string | undefined;
-    territoryType: number | undefined;
-    postalCode: string;
-    floor: string;
-    floorDisplay: string;
-    unitNo: string;
-    unitNoDisplay: string;
-    addressData: addressDetails | undefined;
-    unitDetails: unitDetails | undefined;
-    options: Array<OptionProps>;
-    defaultOption: string;
-    isMultiselect: boolean;
-  }) => {
+  }: UpdateAddressStatusModalProps) => {
     const status = unitDetails?.status;
     const [isNotHome, setIsNotHome] = useState(
       status === STATUS_CODES.NOT_HOME

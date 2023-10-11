@@ -9,7 +9,7 @@ import { WIKI_CATEGORIES } from "../../utils/constants";
 import pollingVoidFunction from "../../utils/helpers/pollingvoid";
 import errorHandler from "../../utils/helpers/errorhandler";
 import processPostalUnitNumber from "../../utils/helpers/processpostalno";
-import { addressDetails, unitMaps } from "../../utils/interface";
+import { UpdateUnitModalProps, unitMaps } from "../../utils/interface";
 import GenericInputField from "../form/input";
 import ModalSubmitButton from "../form/submit";
 import HelpButton from "../navigation/help";
@@ -22,14 +22,7 @@ const UpdateUnit = NiceModal.create(
     unitLength,
     unitDisplay,
     addressData
-  }: {
-    unitSequence: number | undefined;
-    unitLength: number;
-    unitNo: string;
-    unitDisplay: string;
-    postalCode: string;
-    addressData: addressDetails;
-  }) => {
+  }: UpdateUnitModalProps) => {
     const [unitSeq, setUnitSeq] = useState(unitSequence);
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();

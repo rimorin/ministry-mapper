@@ -1,15 +1,16 @@
 import NiceModal, { useModal, bootstrapDialog } from "@ebay/nice-modal-react";
 import { useRollbar } from "@rollbar/react";
 import { FirebaseError } from "firebase/app";
-import { User, updateProfile } from "firebase/auth";
+import { updateProfile } from "firebase/auth";
 import { useState, FormEvent, ChangeEvent } from "react";
 import { Modal, Form } from "react-bootstrap";
 import { USER_ACCESS_LEVELS } from "../../utils/constants";
 import errorHandler from "../../utils/helpers/errorhandler";
 import errorMessage from "../../utils/helpers/errormsg";
 import ModalFooter from "../form/footer";
+import { UpdateProfileModalProps } from "../../utils/interface";
 
-const GetProfile = NiceModal.create(({ user }: { user: User }) => {
+const GetProfile = NiceModal.create(({ user }: UpdateProfileModalProps) => {
   const modal = useModal();
   const rollbar = useRollbar();
   const [isSaving, setIsSaving] = useState(false);

@@ -10,6 +10,7 @@ import errorHandler from "../../utils/helpers/errorhandler";
 import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";
 import HelpButton from "../navigation/help";
+import { ChangeTerritoryNameModalProps } from "../../utils/interface";
 
 const ChangeTerritoryName = NiceModal.create(
   ({
@@ -17,12 +18,7 @@ const ChangeTerritoryName = NiceModal.create(
     footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     congregation,
     territoryCode
-  }: {
-    name: string | undefined;
-    footerSaveAcl: number | undefined;
-    congregation: string | undefined;
-    territoryCode: string;
-  }) => {
+  }: ChangeTerritoryNameModalProps) => {
     const [territoryName, setTerritoryName] = useState(name);
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();
