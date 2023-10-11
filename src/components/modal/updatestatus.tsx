@@ -123,7 +123,7 @@ const UpdateUnitStatus = NiceModal.create(
         <ModalUnitTitle
           unit={unitNoDisplay}
           propertyPostal={unitDetails?.propertyPostal}
-          floor={floorDisplay}
+          floor={floorDisplay as string}
           postal={postalCode}
           type={territoryType}
           name={addressName || ""}

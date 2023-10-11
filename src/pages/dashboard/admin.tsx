@@ -307,7 +307,7 @@ function Admin({ user }: adminProps) {
               personalDetailsList: linkDetails.personalDetailsList,
               x_zip: postalSnapshot.x_zip,
               name: postalSnapshot.name,
-              postalcode: postalCode,
+              postalCode: postalCode,
               floors: floorData,
               feedback: postalSnapshot.feedback,
               type: postalSnapshot.type,
@@ -744,7 +744,7 @@ function Admin({ user }: adminProps) {
     let totalPercent = 0;
 
     addresses.forEach((address) => {
-      const postalCode = address.postalcode;
+      const postalCode = address.postalCode;
       const maxUnitNumberLength = getMaxUnitLength(address.floors);
       const completedPercent = getCompletedPercent(policy, address.floors);
       unitLengths.set(postalCode, maxUnitNumberLength);
