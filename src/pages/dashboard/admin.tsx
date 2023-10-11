@@ -823,27 +823,29 @@ function Admin({ user }: adminProps) {
         processCongregationTerritories(
           congregationDetails.exists() ? congregationDetails : undefined
         );
-        setIsLoading(false);
-      }
-    );
-
-    const linkPollerId = SetPollerInterval();
-    onValue(
-      query(ref(database, "links"), orderByChild("userId"), equalTo(user.uid)),
-      (snapshot) => {
-        clearInterval(linkPollerId);
-        const linkListing = new Array<LinkSession>();
-        if (snapshot.exists()) {
-          const linkData = snapshot.val();
-          for (const linkId in linkData) {
-            linkListing.push(new LinkSession(linkData[linkId], linkId));
+        onValue(
+          query(
+            ref(database, "links"),
+            orderByChild("userId"),
+            equalTo(user.uid)
+          ),
+          (linkSnapshot) => {
+            if (!linkSnapshot.exists()) {
+              setAssignments([]);
+              return;
+            }
+            const linkData = linkSnapshot.val();
+            const linkListing = new Array<LinkSession>();
+            for (const linkId in linkData) {
+              linkListing.push(new LinkSession(linkData[linkId], linkId));
+            }
+            setAssignments(linkListing);
+          },
+          (reason) => {
+            errorHandler(reason, rollbar, false);
           }
-        }
-        setAssignments(linkListing);
-      },
-      (reason) => {
-        clearInterval(linkPollerId);
-        errorHandler(reason, rollbar, false);
+        );
+        setIsLoading(false);
       }
     );
 
