@@ -1,3 +1,10 @@
+## [1.25.1](https://github.com/rimorin/ministry-mapper/compare/v1.25.0...v1.25.1) (2023-10-12)
+
+
+### Bug Fixes
+
+* hide postal code from shared link for better security ([825dfa2](https://github.com/rimorin/ministry-mapper/commit/825dfa2a93557bccb3eb055114b5bb5c591fa050))
+
 # [1.25.0](https://github.com/rimorin/ministry-mapper/compare/v1.24.2...v1.25.0) (2023-10-04)
 
 
