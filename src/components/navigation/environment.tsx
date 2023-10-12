@@ -1,11 +1,12 @@
 import { lazy, memo } from "react";
 import SuspenseComponent from "../utils/suspense";
+import { EnvironmentIndicatorProps } from "../../utils/interface";
 const ProgressBar = SuspenseComponent(
   lazy(() => import("react-bootstrap/ProgressBar"))
 );
 
 const EnvironmentIndicator = memo(
-  ({ environment = "production" }: { environment: string }) => {
+  ({ environment = "production" }: EnvironmentIndicatorProps) => {
     if (environment.startsWith("production")) return <></>;
     return (
       <ProgressBar

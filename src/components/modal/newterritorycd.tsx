@@ -12,15 +12,13 @@ import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";
 import HelpButton from "../navigation/help";
 import IsValidTerritoryCode from "../../utils/helpers/checkterritorycd";
+import { NewTerritoryCodeModalProps } from "../../utils/interface";
 
 const NewTerritoryCode = NiceModal.create(
   ({
     footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     congregation
-  }: {
-    footerSaveAcl: number | undefined;
-    congregation: string | undefined;
-  }) => {
+  }: NewTerritoryCodeModalProps) => {
     const [code, setCode] = useState("");
     const [name, setName] = useState("");
     const [isSaving, setIsSaving] = useState(false);

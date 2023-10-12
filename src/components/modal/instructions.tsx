@@ -15,6 +15,7 @@ import errorHandler from "../../utils/helpers/errorhandler";
 import ModalFooter from "../form/footer";
 import GenericTextAreaField from "../form/textarea";
 import HelpButton from "../navigation/help";
+import { UpdateAddressInstructionsModalProps } from "../../utils/interface";
 
 const UpdateAddressInstructions = NiceModal.create(
   ({
@@ -24,14 +25,7 @@ const UpdateAddressInstructions = NiceModal.create(
     userAccessLevel,
     instructions,
     userName
-  }: {
-    addressName: string;
-    congregation: string;
-    postalCode: string;
-    userAccessLevel: number | undefined;
-    instructions: string | undefined;
-    userName: string;
-  }) => {
+  }: UpdateAddressInstructionsModalProps) => {
     const modal = useModal();
     const rollbar = useRollbar();
     const [addressInstructions, setAddressInstructions] =

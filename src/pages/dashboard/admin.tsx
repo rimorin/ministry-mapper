@@ -307,7 +307,7 @@ function Admin({ user }: adminProps) {
               personalDetailsList: linkDetails.personalDetailsList,
               x_zip: postalSnapshot.x_zip,
               name: postalSnapshot.name,
-              postalcode: postalCode,
+              postalCode: postalCode,
               floors: floorData,
               feedback: postalSnapshot.feedback,
               type: postalSnapshot.type,
@@ -565,7 +565,7 @@ function Admin({ user }: adminProps) {
         linkid,
         `Units for ${name}`,
         assignmentMessage(name),
-        `/${postalCode}/${code}/${linkid}`,
+        `${code}/${linkid}`,
         linkExpiryHrs,
         publisherName
       );
@@ -744,7 +744,7 @@ function Admin({ user }: adminProps) {
     let totalPercent = 0;
 
     addresses.forEach((address) => {
-      const postalCode = address.postalcode;
+      const postalCode = address.postalCode;
       const maxUnitNumberLength = getMaxUnitLength(address.floors);
       const completedPercent = getCompletedPercent(policy, address.floors);
       unitLengths.set(postalCode, maxUnitNumberLength);
@@ -823,27 +823,29 @@ function Admin({ user }: adminProps) {
         processCongregationTerritories(
           congregationDetails.exists() ? congregationDetails : undefined
         );
-        setIsLoading(false);
-      }
-    );
-
-    const linkPollerId = SetPollerInterval();
-    onValue(
-      query(ref(database, "links"), orderByChild("userId"), equalTo(user.uid)),
-      (snapshot) => {
-        clearInterval(linkPollerId);
-        const linkListing = new Array<LinkSession>();
-        if (snapshot.exists()) {
-          const linkData = snapshot.val();
-          for (const linkId in linkData) {
-            linkListing.push(new LinkSession(linkData[linkId], linkId));
+        onValue(
+          query(
+            ref(database, "links"),
+            orderByChild("userId"),
+            equalTo(user.uid)
+          ),
+          (linkSnapshot) => {
+            if (!linkSnapshot.exists()) {
+              setAssignments([]);
+              return;
+            }
+            const linkData = linkSnapshot.val();
+            const linkListing = new Array<LinkSession>();
+            for (const linkId in linkData) {
+              linkListing.push(new LinkSession(linkData[linkId], linkId));
+            }
+            setAssignments(linkListing);
+          },
+          (reason) => {
+            errorHandler(reason, rollbar, false);
           }
-        }
-        setAssignments(linkListing);
-      },
-      (reason) => {
-        clearInterval(linkPollerId);
-        errorHandler(reason, rollbar, false);
+        );
+        setIsLoading(false);
       }
     );
 
@@ -1452,7 +1454,7 @@ function Admin({ user }: adminProps) {
                                     addressLinkId,
                                     `Units for ${currentPostalname}`,
                                     assignmentMessage(currentPostalname),
-                                    `/${currentPostalcode}/${code}/${addressLinkId}`,
+                                    `${code}/${addressLinkId}`,
                                     defaultExpiryHours,
                                     linkObject.publisherName as string
                                   );
@@ -1516,7 +1518,7 @@ function Admin({ user }: adminProps) {
                                 user.displayName || ""
                               );
                               if (territoryWindow) {
-                                territoryWindow.location.href = `/${currentPostalcode}/${code}/${addressLinkId}`;
+                                territoryWindow.location.href = `${code}/${addressLinkId}`;
                               }
                             } catch (error) {
                               errorHandler(error, rollbar);

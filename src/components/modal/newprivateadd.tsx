@@ -15,7 +15,7 @@ import isValidPostalSequence from "../../utils/helpers/checkvalidseq";
 import processPropertyNumber from "../../utils/helpers/processpropertyno";
 import pollingVoidFunction from "../../utils/helpers/pollingvoid";
 import errorHandler from "../../utils/helpers/errorhandler";
-import { unitMaps } from "../../utils/interface";
+import { NewPrivateAddressModalProps, unitMaps } from "../../utils/interface";
 import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";
 import GenericTextAreaField from "../form/textarea";
@@ -28,12 +28,7 @@ const NewPrivateAddress = NiceModal.create(
     congregation,
     territoryCode,
     defaultType
-  }: {
-    footerSaveAcl: number | undefined;
-    congregation: string | undefined;
-    territoryCode: string;
-    defaultType: string;
-  }) => {
+  }: NewPrivateAddressModalProps) => {
     const [postalCode, setPostalCode] = useState("");
     const [name, setName] = useState("");
     const [sequence, setSequence] = useState("");

@@ -10,17 +10,14 @@ import errorHandler from "../../utils/helpers/errorhandler";
 import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";
 import HelpButton from "../navigation/help";
+import { ChangeAddressNameModalProps } from "../../utils/interface";
 
 const ChangeAddressName = NiceModal.create(
   ({
     name,
     footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     postal
-  }: {
-    name: string;
-    footerSaveAcl: number | undefined;
-    postal: string;
-  }) => {
+  }: ChangeAddressNameModalProps) => {
     const [addressName, setAddressName] = useState(name);
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();

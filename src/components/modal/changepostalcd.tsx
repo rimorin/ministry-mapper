@@ -11,6 +11,7 @@ import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";
 import HelpButton from "../navigation/help";
 import { database } from "../../firebase";
+import { ChangeAddressPostalCodeModalProps } from "../../utils/interface";
 
 const ChangeAddressPostalCode = NiceModal.create(
   ({
@@ -18,12 +19,7 @@ const ChangeAddressPostalCode = NiceModal.create(
     congregation,
     territoryCode,
     postalCode
-  }: {
-    footerSaveAcl: number | undefined;
-    congregation: string | undefined;
-    territoryCode: string | undefined;
-    postalCode: string;
-  }) => {
+  }: ChangeAddressPostalCodeModalProps) => {
     const [newPostalCode, setNewPostalCode] = useState("");
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();

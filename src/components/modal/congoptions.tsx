@@ -31,7 +31,10 @@ import errorHandler from "../../utils/helpers/errorhandler";
 import pollingVoidFunction from "../../utils/helpers/pollingvoid";
 import HelpButton from "../navigation/help";
 import { database } from "../../firebase";
-import { HHOptionProps } from "../../utils/interface";
+import {
+  HHOptionProps,
+  UpdateCongregationOptionsModalProps
+} from "../../utils/interface";
 import pollingQueryFunction from "../../utils/helpers/pollingquery";
 import GenericInputField from "../form/input";
 import ModalSubmitButton from "../form/submit";
@@ -39,7 +42,7 @@ import { confirmAlert } from "react-confirm-alert";
 import { flushSync } from "react-dom";
 
 const UpdateCongregationOptions = NiceModal.create(
-  ({ currentCongregation }: { currentCongregation: string }) => {
+  ({ currentCongregation }: UpdateCongregationOptionsModalProps) => {
     const modal = useModal();
     const rollbar = useRollbar();
     const [isSaving, setIsSaving] = useState<boolean>(false);
