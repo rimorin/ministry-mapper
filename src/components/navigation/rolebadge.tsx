@@ -1,8 +1,9 @@
 import { memo } from "react";
 import { Badge } from "react-bootstrap";
 import { USER_ACCESS_LEVELS } from "../../utils/constants";
+import { UserRoleBadgeProps } from "../../utils/interface";
 
-const UserRoleBadge = memo(({ role }: { role: number | undefined }) => {
+const UserRoleBadge = memo(({ role }: UserRoleBadgeProps) => {
   if (!role) return <Badge bg="secondary">?</Badge>;
 
   switch (role) {

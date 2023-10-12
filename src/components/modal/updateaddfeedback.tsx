@@ -11,6 +11,7 @@ import errorHandler from "../../utils/helpers/errorhandler";
 import ModalFooter from "../form/footer";
 import GenericTextAreaField from "../form/textarea";
 import HelpButton from "../navigation/help";
+import { UpdateAddressFeedbackModalProps } from "../../utils/interface";
 
 const UpdateAddressFeedback = NiceModal.create(
   ({
@@ -21,15 +22,7 @@ const UpdateAddressFeedback = NiceModal.create(
     helpLink,
     currentFeedback = "",
     currentName = ""
-  }: {
-    name: string;
-    footerSaveAcl: number | undefined;
-    postalCode: string;
-    congregation: string;
-    helpLink: string;
-    currentFeedback: string;
-    currentName: string;
-  }) => {
+  }: UpdateAddressFeedbackModalProps) => {
     const [feedback, setFeedback] = useState(currentFeedback);
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();

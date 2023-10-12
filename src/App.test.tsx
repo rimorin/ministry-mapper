@@ -79,7 +79,7 @@ test("renders invalid page", () => {
 });
 
 test("renders admin welcome page", () => {
-  render(<Welcome />);
+  render(<Welcome name="" />);
   expect(screen.getByRole("img")).toBeInTheDocument();
   expect(
     screen.getByText("Please select a territory from the above listing.")

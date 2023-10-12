@@ -64,7 +64,7 @@ const GetAssignments = NiceModal.create(
                   <div className="ms-2 me-auto">
                     <div className="fluid-text fw-bold">
                       <a
-                        href={`${assignment.postalCode}/${assignment.congregation}/${assignment.key}`}
+                        href={`${assignment.congregation}/${assignment.key}`}
                         target="_blank"
                         rel="noreferrer"
                       >

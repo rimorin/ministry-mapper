@@ -16,7 +16,7 @@ import isValidPostalSequence from "../../utils/helpers/checkvalidseq";
 import processPropertyNumber from "../../utils/helpers/processpropertyno";
 import pollingVoidFunction from "../../utils/helpers/pollingvoid";
 import errorHandler from "../../utils/helpers/errorhandler";
-import { unitMaps } from "../../utils/interface";
+import { NewPublicAddressModalProps, unitMaps } from "../../utils/interface";
 import FloorField from "../form/floors";
 import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";
@@ -29,12 +29,7 @@ const NewPublicAddress = NiceModal.create(
     congregation,
     territoryCode,
     defaultType
-  }: {
-    footerSaveAcl: number | undefined;
-    congregation: string | undefined;
-    territoryCode: string;
-    defaultType: string;
-  }) => {
+  }: NewPublicAddressModalProps) => {
     const [postalCode, setPostalCode] = useState("");
     const [name, setName] = useState("");
     const [sequence, setSequence] = useState("");

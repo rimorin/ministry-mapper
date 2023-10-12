@@ -1,8 +1,9 @@
 import { memo } from "react";
 import { Container, Card } from "react-bootstrap";
 import imgUrl from "/logo.png";
+import { WelcomeProps } from "../../utils/interface";
 
-const Welcome = memo(({ name }: { name?: string }) => {
+const Welcome = memo(({ name }: WelcomeProps) => {
   return (
     <Container className="container-main" style={{ height: "80vh" }}>
       <Card className="card-main" style={{ width: "100%" }}>

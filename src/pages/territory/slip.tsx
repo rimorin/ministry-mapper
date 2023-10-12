@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { ref, child, onValue } from "firebase/database";
 import { database } from "../../firebase";
 import { Container, Fade, Navbar, NavDropdown } from "react-bootstrap";
@@ -13,7 +13,6 @@ import ZeroPad from "../../utils/helpers/zeropad";
 import processAddressData from "../../utils/helpers/processadddata";
 import getMaxUnitLength from "../../utils/helpers/maxunitlength";
 import getCompletedPercent from "../../utils/helpers/getcompletedpercent";
-import SetPollerInterval from "../../utils/helpers/pollinginterval";
 import getOptions from "../../utils/helpers/getcongoptions";
 import Legend from "../../components/navigation/legend";
 import EnvironmentIndicator from "../../components/navigation/environment";
@@ -45,7 +44,7 @@ const Slip = ({
   pubName = ""
 }) => {
   const [showLegend, setShowLegend] = useState<boolean>(false);
-  const [isPostalLoading, setIsPostalLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
   const [postalName, setPostalName] = useState<string>();
   const [postalZip, setPostalZip] = useState<string>();
@@ -55,6 +54,7 @@ const Slip = ({
   const [territoryType, setTerritoryType] = useState<number>(
     TERRITORY_TYPES.PUBLIC
   );
+  const currentTime = useRef<number>(new Date().getTime());
 
   const handleUnitUpdate = (
     floor: string,
@@ -88,6 +88,19 @@ const Slip = ({
     setShowLegend(!showLegend);
   }, [showLegend]);
 
+  const refreshPage = () => {
+    const inactivityPeriod = new Date().getTime() - currentTime.current;
+    if (inactivityPeriod >= RELOAD_INACTIVITY_DURATION) {
+      window.location.reload();
+    } else {
+      setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
+    }
+  };
+
+  const setActivityTime = () => {
+    currentTime.current = new Date().getTime();
+  };
+
   useEffect(() => {
     Promise.all([
       getOptions(congregationcode),
@@ -104,50 +117,32 @@ const Slip = ({
             : DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE
         )
       );
+      onValue(child(ref(database), postalcode), (snapshot) => {
+        if (snapshot.exists()) {
+          const postalSnapshot = snapshot.val();
+          setValues((values) => ({
+            ...values,
+            feedback: postalSnapshot.feedback,
+            instructions: postalSnapshot.instructions
+          }));
+          setPostalZip(postalSnapshot.x_zip);
+          setPostalName(postalSnapshot.name);
+          setTerritoryType(postalSnapshot.type);
+          processAddressData(postalcode, postalSnapshot.units)
+            .then((data) => {
+              setFloors(data);
+            })
+            .finally(() => {
+              setIsLoading(false);
+            });
+          document.title = postalSnapshot.name;
+        }
+      });
     });
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const processData = async (data: any) => {
-      setFloors(await processAddressData(postalcode, data.units));
-    };
-    const postalDataReference = child(ref(database), `/${postalcode}`);
-    const pollerId = SetPollerInterval();
-    onValue(postalDataReference, (snapshot) => {
-      if (snapshot.exists()) {
-        const dataSnapshot = snapshot.val();
-        processData(dataSnapshot);
-        setValues((values) => ({
-          ...values,
-          feedback: dataSnapshot.feedback,
-          instructions: dataSnapshot.instructions
-        }));
-        setPostalZip(dataSnapshot.x_zip);
-        setPostalName(dataSnapshot.name);
-        setTerritoryType(dataSnapshot.type);
-        document.title = dataSnapshot.name;
-      }
-      clearInterval(pollerId);
-      setIsPostalLoading(false);
-    });
-
-    let currentTime = new Date().getTime();
-    const setActivityTime = () => {
-      currentTime = new Date().getTime();
-    };
-
-    const refreshPage = () => {
-      const inactivityPeriod = new Date().getTime() - currentTime;
-      if (inactivityPeriod >= RELOAD_INACTIVITY_DURATION) {
-        window.location.reload();
-      } else {
-        setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-      }
-    };
 
     document.body.addEventListener("mousemove", setActivityTime);
     document.body.addEventListener("keypress", setActivityTime);
     document.body.addEventListener("touchstart", setActivityTime);
-
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
   }, [tokenEndtime, postalcode, congregationcode, maxTries]);
 
@@ -156,7 +151,7 @@ const Slip = ({
     () => getCompletedPercent(policy as Policy, floors),
     [policy, floors]
   );
-  if (isPostalLoading) return <Loader />;
+  if (isLoading) return <Loader />;
 
   const zipcode = postalZip == null ? postalcode : postalZip;
   const instructions = (values as valuesDetails).instructions;

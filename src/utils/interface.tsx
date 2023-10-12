@@ -1,6 +1,31 @@
 import { User } from "firebase/auth";
 import { LinkSession, Policy } from "./policies";
 
+interface userInterface {
+  user: User;
+}
+
+interface nameInterface {
+  name: string;
+}
+
+interface postalInterface {
+  postalCode: string;
+}
+
+interface congregationInterface {
+  congregation: string;
+}
+
+interface footerInterface {
+  footerSaveAcl: number;
+}
+
+interface floorInterface {
+  floor: string;
+  floorDisplay?: string;
+}
+
 export interface unitDetails {
   number: string;
   note: string;
@@ -17,8 +42,7 @@ export interface nothomeProps {
   classProp?: string;
 }
 
-export interface floorDetails {
-  floor: string;
+export interface floorDetails extends floorInterface {
   units: Array<unitDetails>;
 }
 
@@ -30,9 +54,7 @@ export interface unitProps {
   defaultOption?: string;
 }
 
-export interface valuesDetails {
-  floor: string;
-  floorDisplay?: string;
+export interface valuesDetails extends floorInterface, nameInterface {
   unit: string;
   unitDisplay?: string;
   type: string;
@@ -42,7 +64,6 @@ export interface valuesDetails {
   status: string;
   link?: string;
   nhcount?: string;
-  name?: string;
   units?: string;
   floors?: number;
   newPostal?: string;
@@ -59,23 +80,18 @@ export interface valuesDetails {
   linkExpiryHrs?: number;
 }
 
-export interface adminProps {
-  user: User;
-}
+export type adminProps = userInterface;
 
-export interface territoryDetails {
+export interface territoryDetails extends nameInterface {
   code: string;
-  name: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   addresses: any;
 }
 
-export interface addressDetails {
+export interface addressDetails extends nameInterface, postalInterface {
   assigneeDetailsList: Array<LinkSession>;
   personalDetailsList: Array<LinkSession>;
   x_zip: string;
-  name: string;
-  postalcode: string;
   floors: Array<floorDetails>;
   feedback: string;
   type: number;
@@ -109,12 +125,10 @@ export interface FloorProps {
   changeValue: number;
 }
 
-export interface TitleProps {
-  floor: string;
+export interface TitleProps extends nameInterface, floorInterface {
   unit: string;
   postal?: string;
   type?: number;
-  name: string;
   propertyPostal?: string;
 }
 
@@ -171,10 +185,7 @@ export interface unitMaps {
   [key: string]: object | number | string;
 }
 
-export interface RouteDetails {
-  postalCode: string;
-  name: string;
-}
+export interface RouteDetails extends nameInterface, postalInterface {}
 
 export interface AuthorizerProp {
   requiredPermission: number;
@@ -191,8 +202,7 @@ export interface ExpiryButtonProp {
   endtime: number;
 }
 
-export interface floorHeaderProp {
-  floor: string;
+export interface floorHeaderProp extends floorInterface {
   index: number;
 }
 
@@ -209,7 +219,7 @@ export interface backToTopProp {
   showButton: boolean;
 }
 
-export interface territoryTableProps {
+export interface territoryTableProps extends postalInterface {
   floors: floorDetails[];
   maxUnitNumberLength: number;
   policy: Policy | undefined;
@@ -217,7 +227,6 @@ export interface territoryTableProps {
     completedValue: number;
     completedDisplay: string;
   };
-  postalCode: string;
   adminUnitHeaderStyle?: string;
   userAccessLevel?: number;
   territoryType?: number;
@@ -226,7 +235,7 @@ export interface territoryTableProps {
   handleFloorDelete?: (event: React.MouseEvent<HTMLElement>) => void;
 }
 
-export interface territoryLandedProps {
+export interface territoryLandedProps extends postalInterface {
   isAdmin: boolean;
   houses: floorDetails;
   policy: Policy | undefined;
@@ -234,7 +243,6 @@ export interface territoryLandedProps {
     completedValue: number;
     completedDisplay: string;
   };
-  postalCode: string;
   adminUnitHeaderStyle?: string;
   userAccessLevel?: number;
   handleHouseUpdate: (event: React.MouseEvent<HTMLElement>) => void;
@@ -254,9 +262,8 @@ export interface HelpButtonProps {
   isWarningButton?: boolean;
 }
 
-export interface userDetails {
+export interface userDetails extends nameInterface {
   uid: string;
-  name: string;
   email: string;
   verified: boolean;
   role: number;
@@ -282,14 +289,14 @@ export interface UserRoleProps {
   isUpdate?: boolean;
 }
 
-export type UserModalProps = {
+export interface UserModalProps
+  extends nameInterface,
+    congregationInterface,
+    footerInterface {
   email?: string | null;
   uid?: string;
-  congregation: string | undefined;
-  name?: string;
   role?: number | undefined;
-  footerSaveAcl: number | undefined;
-};
+}
 
 export interface SelectProps {
   value: string;
@@ -318,8 +325,128 @@ export interface HHOptionProps {
   isNew?: boolean;
 }
 
-export type AssignmentModalProps = {
+export interface EnvironmentIndicatorProps {
+  environment: string;
+}
+
+export interface UserRoleBadgeProps {
+  role: number | undefined;
+}
+
+export type WelcomeProps = nameInterface;
+export interface AssignmentModalProps {
   assignments: LinkSession[];
   assignmentType?: number;
   assignmentTerritory?: string;
-};
+}
+
+export interface ChangeAddressNameModalProps
+  extends nameInterface,
+    footerInterface {
+  postal: string;
+}
+
+export interface ChangePasswordModalProps extends userInterface {
+  userAccessLevel: number | undefined;
+}
+
+export interface ChangeAddressPostalCodeModalProps
+  extends postalInterface,
+    congregationInterface,
+    footerInterface {
+  territoryCode: string | undefined;
+}
+
+export interface ChangeTerritoryCodeModalProps
+  extends congregationInterface,
+    footerInterface {
+  territoryCode: string;
+}
+
+export interface ChangeTerritoryNameModalProps
+  extends congregationInterface,
+    footerInterface {
+  name: string | undefined;
+  territoryCode: string;
+}
+
+export interface UpdateCongregationOptionsModalProps {
+  currentCongregation: string;
+}
+
+export interface UpdateCongregationSettingsModalProps {
+  currentName: string;
+  currentCongregation: string;
+  currentMaxTries: number;
+  currentDefaultExpiryHrs: number;
+  currentIsMultipleSelection: boolean;
+}
+
+export interface UpdateAddressInstructionsModalProps
+  extends postalInterface,
+    congregationInterface {
+  addressName: string;
+  userAccessLevel: number | undefined;
+  instructions: string | undefined;
+  userName: string;
+}
+
+export interface NewPrivateAddressModalProps
+  extends congregationInterface,
+    footerInterface {
+  territoryCode: string;
+  defaultType: string;
+}
+
+export type NewPublicAddressModalProps = NewPrivateAddressModalProps;
+
+export interface NewTerritoryCodeModalProps
+  extends congregationInterface,
+    footerInterface {}
+
+export interface NewUnitModalProps extends postalInterface, footerInterface {
+  addressData: addressDetails;
+  defaultType: string;
+}
+
+export type UpdateProfileModalProps = userInterface;
+
+export interface ConfirmSlipDetailsModalProps {
+  addressName: string;
+  userAccessLevel: number | undefined;
+  isPersonalSlip: boolean;
+}
+
+export interface UpdateAddressFeedbackModalProps
+  extends nameInterface,
+    congregationInterface,
+    postalInterface,
+    footerInterface {
+  helpLink: string;
+  currentFeedback: string;
+  currentName: string;
+}
+
+export interface UpdateAddressStatusModalProps
+  extends postalInterface,
+    congregationInterface,
+    floorInterface {
+  addressName: string | undefined;
+  userAccessLevel: number | undefined;
+  territoryType: number | undefined;
+  unitNo: string;
+  unitNoDisplay: string;
+  addressData: addressDetails | undefined;
+  unitDetails: unitDetails | undefined;
+  options: Array<OptionProps>;
+  defaultOption: string;
+  isMultiselect: boolean;
+}
+
+export interface UpdateUnitModalProps extends postalInterface {
+  unitSequence: number | undefined;
+  unitLength: number;
+  unitNo: string;
+  unitDisplay: string;
+  addressData: addressDetails;
+}

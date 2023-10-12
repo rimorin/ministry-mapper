@@ -16,6 +16,7 @@ import pollingVoidFunction from "../../utils/helpers/pollingvoid";
 import HelpButton from "../navigation/help";
 import { database } from "../../firebase";
 import ModalFooter from "../form/footer";
+import { UpdateCongregationSettingsModalProps } from "../../utils/interface";
 
 const UpdateCongregationSettings = NiceModal.create(
   ({
@@ -24,13 +25,7 @@ const UpdateCongregationSettings = NiceModal.create(
     currentMaxTries = DEFAULT_CONGREGATION_MAX_TRIES,
     currentDefaultExpiryHrs = DEFAULT_SELF_DESTRUCT_HOURS,
     currentIsMultipleSelection = DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE
-  }: {
-    currentName: string;
-    currentCongregation: string;
-    currentMaxTries: number;
-    currentDefaultExpiryHrs: number;
-    currentIsMultipleSelection: boolean;
-  }) => {
+  }: UpdateCongregationSettingsModalProps) => {
     const modal = useModal();
     const rollbar = useRollbar();
     const [maxTries, setMaxTries] = useState(currentMaxTries);

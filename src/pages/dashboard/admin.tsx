@@ -18,7 +18,7 @@ import {
 import "../../css/admin.css";
 import { signOut, User } from "firebase/auth";
 import { nanoid } from "nanoid";
-import { useEffect, useState, useCallback, useMemo, lazy } from "react";
+import { useEffect, useState, useCallback, useMemo, lazy, useRef } from "react";
 import {
   Accordion,
   Badge,
@@ -196,10 +196,11 @@ function Admin({ user }: adminProps) {
   const [policy, setPolicy] = useState<Policy>(new Policy());
   const [options, setOptions] = useState<Array<OptionProps>>([]);
   const rollbar = useRollbar();
-  let unsubscribers = new Array<Unsubscribe>();
+  const unsubscribers = useRef<Array<Unsubscribe>>([]);
+  const currentTime = useRef<number>(new Date().getTime());
 
   const refreshAddressState = () => {
-    unsubscribers.forEach((unsubFunction) => {
+    unsubscribers.current.forEach((unsubFunction) => {
       unsubFunction();
     });
     setAddressData(new Map<string, addressDetails>());
@@ -276,7 +277,7 @@ function Admin({ user }: adminProps) {
     setSelectedTerritoryName(territoryNameResult.val());
     // detach unsubscribers listeners first then clear them.
     refreshAddressState();
-    unsubscribers = [] as Array<Unsubscribe>;
+    unsubscribers.current = [] as Array<Unsubscribe>;
     const detailsListing = [] as Array<territoryDetails>;
     territoryAddsResult.forEach((addElement: DataSnapshot) => {
       detailsListing.push({
@@ -291,7 +292,7 @@ function Admin({ user }: adminProps) {
     for (const details of detailsListing) {
       const postalCode = details.code;
       setAccordionKeys((existingKeys) => [...existingKeys, postalCode]);
-      unsubscribers.push(
+      unsubscribers.current.push(
         onValue(child(ref(database), `/${postalCode}`), async (snapshot) => {
           clearInterval(pollerId);
           if (snapshot.exists()) {
@@ -306,7 +307,7 @@ function Admin({ user }: adminProps) {
               personalDetailsList: linkDetails.personalDetailsList,
               x_zip: postalSnapshot.x_zip,
               name: postalSnapshot.name,
-              postalcode: postalCode,
+              postalCode: postalCode,
               floors: floorData,
               feedback: postalSnapshot.feedback,
               type: postalSnapshot.type,
@@ -564,7 +565,7 @@ function Admin({ user }: adminProps) {
         linkid,
         `Units for ${name}`,
         assignmentMessage(name),
-        `/${postalCode}/${code}/${linkid}`,
+        `${code}/${linkid}`,
         linkExpiryHrs,
         publisherName
       );
@@ -622,7 +623,9 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const processCongregationTerritories = (snapshot: DataSnapshot) => {
+  const processCongregationTerritories = (
+    snapshot: DataSnapshot | undefined
+  ) => {
     if (!snapshot) return;
     const data = snapshot.val();
     if (!data) return;
@@ -649,7 +652,7 @@ function Admin({ user }: adminProps) {
   ) => {
     if (!congregationCode) return;
     const tokenData = await user.getIdTokenResult(true);
-    return tokenData.claims[congregationCode];
+    return tokenData.claims[congregationCode] as string;
   };
 
   const handleTerritorySelect = useCallback(
@@ -741,7 +744,7 @@ function Admin({ user }: adminProps) {
     let totalPercent = 0;
 
     addresses.forEach((address) => {
-      const postalCode = address.postalcode;
+      const postalCode = address.postalCode;
       const maxUnitNumberLength = getMaxUnitLength(address.floors);
       const completedPercent = getCompletedPercent(policy, address.floors);
       unitLengths.set(postalCode, maxUnitNumberLength);
@@ -762,20 +765,37 @@ function Admin({ user }: adminProps) {
     };
   };
 
+  const setActivityTime = () => {
+    currentTime.current = new Date().getTime();
+  };
+
+  const refreshPage = () => {
+    const inactivityPeriod = new Date().getTime() - currentTime.current;
+    if (inactivityPeriod >= RELOAD_INACTIVITY_DURATION) {
+      window.location.reload();
+    } else {
+      setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
+    }
+  };
+
   useEffect(() => {
     Promise.all([
       getUserAccessLevel(user, code),
       checkCongregationExpireHours(code),
       checkCongregationMaxTries(code),
       getOptions(code),
-      getOptionIsMultiSelect(code)
+      getOptionIsMultiSelect(code),
+      pollingQueryFunction(() =>
+        get(child(ref(database), `congregations/${code}`))
+      )
     ]).then(
       async ([
         userAccessLevel,
-        snapshot,
+        expireHours,
         maxTries,
         options,
-        optionIsMultiselect
+        optionIsMultiselect,
+        congregationDetails
       ]) => {
         if (!userAccessLevel) {
           setIsUnauthorised(true);
@@ -787,7 +807,7 @@ function Admin({ user }: adminProps) {
         }
         setUserAccessLevel(Number(userAccessLevel));
         setDefaultExpiryHours(
-          snapshot.exists() ? snapshot.val() : DEFAULT_SELF_DESTRUCT_HOURS
+          expireHours.exists() ? expireHours.val() : DEFAULT_SELF_DESTRUCT_HOURS
         );
         setOptions(options);
         setPolicy(
@@ -800,67 +820,34 @@ function Admin({ user }: adminProps) {
               : DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE
           )
         );
-      }
-    );
-
-    const congregationReference = child(ref(database), `congregations/${code}`);
-    const pollerId = SetPollerInterval();
-    onValue(
-      congregationReference,
-      (snapshot) => {
-        clearInterval(pollerId);
-        setIsLoading(false);
-        if (snapshot.exists()) {
-          processCongregationTerritories(snapshot);
-        }
-      },
-      (reason) => {
-        clearInterval(pollerId);
-        setIsLoading(false);
-        errorHandler(reason, rollbar, false);
-      }
-    );
-
-    const linksReference = query(
-      ref(database, "links"),
-      orderByChild("userId"),
-      equalTo(user.uid)
-    );
-
-    const linkPollerId = SetPollerInterval();
-    onValue(
-      linksReference,
-      (snapshot) => {
-        clearInterval(linkPollerId);
-        const linkListing = new Array<LinkSession>();
-        if (snapshot.exists()) {
-          const linkData = snapshot.val();
-          for (const linkId in linkData) {
-            linkListing.push(new LinkSession(linkData[linkId], linkId));
+        processCongregationTerritories(
+          congregationDetails.exists() ? congregationDetails : undefined
+        );
+        onValue(
+          query(
+            ref(database, "links"),
+            orderByChild("userId"),
+            equalTo(user.uid)
+          ),
+          (linkSnapshot) => {
+            if (!linkSnapshot.exists()) {
+              setAssignments([]);
+              return;
+            }
+            const linkData = linkSnapshot.val();
+            const linkListing = new Array<LinkSession>();
+            for (const linkId in linkData) {
+              linkListing.push(new LinkSession(linkData[linkId], linkId));
+            }
+            setAssignments(linkListing);
+          },
+          (reason) => {
+            errorHandler(reason, rollbar, false);
           }
-        }
-        setAssignments(linkListing);
-      },
-      (reason) => {
-        clearInterval(linkPollerId);
-        errorHandler(reason, rollbar, false);
+        );
+        setIsLoading(false);
       }
     );
-
-    let currentTime = new Date().getTime();
-
-    const setActivityTime = () => {
-      currentTime = new Date().getTime();
-    };
-
-    const refreshPage = () => {
-      const inactivityPeriod = new Date().getTime() - currentTime;
-      if (inactivityPeriod >= RELOAD_INACTIVITY_DURATION) {
-        window.location.reload();
-      } else {
-        setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-      }
-    };
 
     document.body.addEventListener("mousemove", setActivityTime);
     document.body.addEventListener("keypress", setActivityTime);
@@ -868,9 +855,8 @@ function Admin({ user }: adminProps) {
     window.addEventListener("scroll", () => {
       setShowBkTopButton(window.scrollY > PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY);
     });
-
     setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-  }, [user, code, rollbar]);
+  }, [user, code]);
 
   const territoryAddressData = useMemo(
     () => getTerritoryAddressData(addressData, policy as Policy),
@@ -1468,7 +1454,7 @@ function Admin({ user }: adminProps) {
                                     addressLinkId,
                                     `Units for ${currentPostalname}`,
                                     assignmentMessage(currentPostalname),
-                                    `/${currentPostalcode}/${code}/${addressLinkId}`,
+                                    `${code}/${addressLinkId}`,
                                     defaultExpiryHours,
                                     linkObject.publisherName as string
                                   );
@@ -1532,7 +1518,7 @@ function Admin({ user }: adminProps) {
                                 user.displayName || ""
                               );
                               if (territoryWindow) {
-                                territoryWindow.location.href = `/${currentPostalcode}/${code}/${addressLinkId}`;
+                                territoryWindow.location.href = `${code}/${addressLinkId}`;
                               }
                             } catch (error) {
                               errorHandler(error, rollbar);
