@@ -192,9 +192,10 @@ function Admin({ user }: adminProps) {
   const [defaultExpiryHours, setDefaultExpiryHours] = useState<number>(
     DEFAULT_SELF_DESTRUCT_HOURS
   );
-  const [assignments, setAssignments] = useState<Array<LinkSession>>([]);
   const [policy, setPolicy] = useState<Policy>(new Policy());
   const [options, setOptions] = useState<Array<OptionProps>>([]);
+  const [isAssignmentLoading, setIsAssignmentLoading] =
+    useState<boolean>(false);
   const rollbar = useRollbar();
   const unsubscribers = useRef<Array<Unsubscribe>>([]);
   const currentTime = useRef<number>(new Date().getTime());
@@ -823,28 +824,6 @@ function Admin({ user }: adminProps) {
         processCongregationTerritories(
           congregationDetails.exists() ? congregationDetails : undefined
         );
-        onValue(
-          query(
-            ref(database, "links"),
-            orderByChild("userId"),
-            equalTo(user.uid)
-          ),
-          (linkSnapshot) => {
-            if (!linkSnapshot.exists()) {
-              setAssignments([]);
-              return;
-            }
-            const linkData = linkSnapshot.val();
-            const linkListing = new Array<LinkSession>();
-            for (const linkId in linkData) {
-              linkListing.push(new LinkSession(linkData[linkId], linkId));
-            }
-            setAssignments(linkListing);
-          },
-          (reason) => {
-            errorHandler(reason, rollbar, false);
-          }
-        );
         setIsLoading(false);
       }
     );
@@ -1221,16 +1200,6 @@ function Admin({ user }: adminProps) {
                     Household Options
                   </Dropdown.Item>
                   <Dropdown.Item onClick={async () => await getUsers()}>
-                    {isShowingUserListing && (
-                      <>
-                        <Spinner
-                          as="span"
-                          animation="border"
-                          size="sm"
-                          aria-hidden="true"
-                        />{" "}
-                      </>
-                    )}
                     Manage Users
                   </Dropdown.Item>
                   <Dropdown.Item
@@ -1250,7 +1219,21 @@ function Admin({ user }: adminProps) {
                 className="dropdown-btn"
                 size="sm"
                 variant="outline-primary"
-                title="Account"
+                title={
+                  <>
+                    {isAssignmentLoading && (
+                      <>
+                        <Spinner
+                          as="span"
+                          animation="border"
+                          size="sm"
+                          aria-hidden="true"
+                        />{" "}
+                      </>
+                    )}{" "}
+                    Account
+                  </>
+                }
                 align={{ lg: "end" }}
               >
                 <Dropdown.Item
@@ -1262,17 +1245,41 @@ function Admin({ user }: adminProps) {
                 >
                   Profile
                 </Dropdown.Item>
-                {assignments && assignments.length > 0 && (
-                  <Dropdown.Item
-                    onClick={() =>
-                      ModalManager.show(SuspenseComponent(GetAssignments), {
-                        assignments: assignments
+                <Dropdown.Item
+                  onClick={() => {
+                    setIsAssignmentLoading(true);
+                    pollingQueryFunction(() =>
+                      get(
+                        query(
+                          ref(database, "links"),
+                          orderByChild("userId"),
+                          equalTo(user.uid)
+                        )
+                      )
+                    )
+                      .then((snapshot) => {
+                        if (!snapshot.exists()) {
+                          alert("No assignments found.");
+                          return;
+                        }
+                        const assignmentListing = snapshot.val();
+                        const linkListing = new Array<LinkSession>();
+                        for (const linkId in assignmentListing) {
+                          linkListing.push(
+                            new LinkSession(assignmentListing[linkId], linkId)
+                          );
+                        }
+                        ModalManager.show(SuspenseComponent(GetAssignments), {
+                          assignments: linkListing
+                        });
                       })
-                    }
-                  >
-                    Assignments
-                  </Dropdown.Item>
-                )}
+                      .finally(() => {
+                        setIsAssignmentLoading(false);
+                      });
+                  }}
+                >
+                  Assignments
+                </Dropdown.Item>
                 <Dropdown.Item
                   onClick={() =>
                     ModalManager.show(SuspenseComponent(ChangePassword), {
