@@ -1,3 +1,10 @@
+## [1.25.2](https://github.com/rimorin/ministry-mapper/compare/v1.25.1...v1.25.2) (2023-10-13)
+
+
+### Bug Fixes
+
+* load links on demand ([3da68b1](https://github.com/rimorin/ministry-mapper/commit/3da68b10f9b34cace107dbf259bb03953417f43a))
+
 ## [1.25.1](https://github.com/rimorin/ministry-mapper/compare/v1.25.0...v1.25.1) (2023-10-12)
 
 
