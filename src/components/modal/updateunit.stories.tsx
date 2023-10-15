@@ -41,6 +41,7 @@ export const Default: Story = {
         <UpdateUnit
           id="1"
           defaultVisible
+          congregation="test"
           postalCode={postalCode}
           unitNo={unitNo}
           unitSequence={unitSequence}

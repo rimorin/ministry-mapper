@@ -334,7 +334,7 @@ export interface UserRoleBadgeProps {
 }
 
 export type WelcomeProps = nameInterface;
-export interface AssignmentModalProps {
+export interface AssignmentModalProps extends congregationInterface {
   assignments: LinkSession[];
   assignmentType?: number;
   assignmentTerritory?: string;
@@ -342,7 +342,8 @@ export interface AssignmentModalProps {
 
 export interface ChangeAddressNameModalProps
   extends nameInterface,
-    footerInterface {
+    footerInterface,
+    congregationInterface {
   postal: string;
 }
 
@@ -404,7 +405,10 @@ export interface NewTerritoryCodeModalProps
   extends congregationInterface,
     footerInterface {}
 
-export interface NewUnitModalProps extends postalInterface, footerInterface {
+export interface NewUnitModalProps
+  extends postalInterface,
+    footerInterface,
+    congregationInterface {
   addressData: addressDetails;
   defaultType: string;
 }
@@ -443,7 +447,9 @@ export interface UpdateAddressStatusModalProps
   isMultiselect: boolean;
 }
 
-export interface UpdateUnitModalProps extends postalInterface {
+export interface UpdateUnitModalProps
+  extends postalInterface,
+    congregationInterface {
   unitSequence: number | undefined;
   unitLength: number;
   unitNo: string;

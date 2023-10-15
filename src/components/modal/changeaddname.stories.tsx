@@ -31,6 +31,7 @@ export const Default: Story = {
       <NiceModal.Provider>
         <ChangeAddressName
           id="1"
+          congregation="test"
           defaultVisible
           name={name}
           footerSaveAcl={footerSaveAcl}

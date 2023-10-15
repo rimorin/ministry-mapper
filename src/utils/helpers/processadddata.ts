@@ -4,15 +4,19 @@ import { NOT_HOME_STATUS_CODES } from "../constants";
 import { unitDetails } from "../interface";
 import pollingQueryFunction from "./pollingquery";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const processAddressData = async (postal: string, data: any) => {
+const processAddressData = async (
+  congregation: string,
+  postal: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any
+) => {
   const dataList = [];
   for (const floor in data) {
     const unitsDetails: unitDetails[] = [];
     const addressSnapshot = await pollingQueryFunction(() =>
       get(
         query(
-          ref(database, `/${postal}/units/${floor}`),
+          ref(database, `addresses/${congregation}/${postal}/units/${floor}`),
           orderByChild("sequence")
         )
       )

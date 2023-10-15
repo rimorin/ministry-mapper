@@ -36,7 +36,13 @@ const UpdateAddressInstructions = NiceModal.create(
       event.preventDefault();
       try {
         await pollingVoidFunction(() =>
-          set(ref(database, `/${postalCode}/instructions`), addressInstructions)
+          set(
+            ref(
+              database,
+              `addresses/${congregation}/${postalCode}/instructions`
+            ),
+            addressInstructions
+          )
         );
         await setNotification(
           NOTIFICATION_TYPES.INSTRUCTIONS,

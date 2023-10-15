@@ -16,7 +16,8 @@ const ChangeAddressName = NiceModal.create(
   ({
     name,
     footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
-    postal
+    postal,
+    congregation
   }: ChangeAddressNameModalProps) => {
     const [addressName, setAddressName] = useState(name);
     const [isSaving, setIsSaving] = useState(false);
@@ -28,7 +29,10 @@ const ChangeAddressName = NiceModal.create(
       setIsSaving(true);
       try {
         await pollingVoidFunction(() =>
-          set(ref(database, `/${postal}/name`), addressName)
+          set(
+            ref(database, `addresses/${congregation}/${postal}/name`),
+            addressName
+          )
         );
         modal.hide();
       } catch (error) {

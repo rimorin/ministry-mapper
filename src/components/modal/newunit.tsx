@@ -19,7 +19,8 @@ const NewUnit = NiceModal.create(
     footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     postalCode,
     addressData,
-    defaultType
+    defaultType,
+    congregation
   }: NewUnitModalProps) => {
     const [unit, setUnit] = useState("");
     const [isSaving, setIsSaving] = useState(false);
@@ -31,6 +32,7 @@ const NewUnit = NiceModal.create(
       setIsSaving(true);
       try {
         processPostalUnitNumber(
+          congregation,
           postalCode,
           unit,
           addressData,

@@ -9,7 +9,7 @@ const setNotification = async (
   fromUser: string
 ) => {
   await pollingVoidFunction(() =>
-    set(ref(database, `notifications/${postal}-${type}`), {
+    set(ref(database, `notifications/${congregation}-${postal}-${type}`), {
       congregation: congregation,
       type: type,
       postalCode: postal,

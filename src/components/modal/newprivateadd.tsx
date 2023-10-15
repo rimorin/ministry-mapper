@@ -73,7 +73,10 @@ const NewPrivateAddress = NiceModal.create(
 
       setIsSaving(true);
       try {
-        const addressReference = ref(database, postalCode);
+        const addressReference = ref(
+          database,
+          `addresses/${congregation}/${postalCode}`
+        );
         const existingAddress = await get(addressReference);
         if (existingAddress.exists()) {
           alert(`Postal address, ${postalCode} already exist.`);
