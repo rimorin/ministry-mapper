@@ -11,7 +11,11 @@ const meta: Meta = {
     (storyFn) => (
       <div style={{ width: "1200px", height: "800px" }}>{storyFn()}</div>
     )
-  ]
+  ],
+  parameters: {
+    // Fixed date so that calendar UI does not change on every storybook test
+    date: new Date("September 15, 2023 10:00:00")
+  }
 };
 
 export default meta;
