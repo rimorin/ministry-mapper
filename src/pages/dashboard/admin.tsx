@@ -294,34 +294,40 @@ function Admin({ user }: adminProps) {
       const postalCode = details.code;
       setAccordionKeys((existingKeys) => [...existingKeys, postalCode]);
       unsubscribers.current.push(
-        onValue(child(ref(database), `/${postalCode}`), async (snapshot) => {
-          clearInterval(pollerId);
-          if (snapshot.exists()) {
-            const postalSnapshot = snapshot.val();
-            const floorData = await processAddressData(
-              postalCode,
-              postalSnapshot.units
-            );
-            const linkDetails = await processLinkDetails(postalCode);
-            const addressData = {
-              assigneeDetailsList: linkDetails.assigneeDetailsList,
-              personalDetailsList: linkDetails.personalDetailsList,
-              x_zip: postalSnapshot.x_zip,
-              name: postalSnapshot.name,
-              postalCode: postalCode,
-              floors: floorData,
-              feedback: postalSnapshot.feedback,
-              type: postalSnapshot.type,
-              instructions: postalSnapshot.instructions
-            };
-            setAddressData(
-              (existingAddresses) =>
-                new Map<string, addressDetails>(
-                  existingAddresses.set(postalCode, addressData)
-                )
-            );
+        onValue(
+          child(ref(database), `addresses/${code}/${postalCode}`),
+          async (snapshot) => {
+            clearInterval(pollerId);
+            if (snapshot.exists()) {
+              const postalSnapshot = snapshot.val();
+              console.log(postalSnapshot);
+              const floorData = await processAddressData(
+                code,
+                postalCode,
+                postalSnapshot.units
+              );
+              console.log(floorData);
+              const linkDetails = await processLinkDetails(code, postalCode);
+              const addressData = {
+                assigneeDetailsList: linkDetails.assigneeDetailsList,
+                personalDetailsList: linkDetails.personalDetailsList,
+                x_zip: postalSnapshot.x_zip,
+                name: postalSnapshot.name,
+                postalCode: postalCode,
+                floors: floorData,
+                feedback: postalSnapshot.feedback,
+                type: postalSnapshot.type,
+                instructions: postalSnapshot.instructions
+              };
+              setAddressData(
+                (existingAddresses) =>
+                  new Map<string, addressDetails>(
+                    existingAddresses.set(postalCode, addressData)
+                  )
+              );
+            }
           }
-        })
+        )
       );
     }
   };
@@ -329,7 +335,7 @@ function Admin({ user }: adminProps) {
   const deleteBlockFloor = async (postalcode: string, floor: string) => {
     try {
       await pollingVoidFunction(() =>
-        remove(ref(database, `${postalcode}/units/${floor}`))
+        remove(ref(database, `addresses/${code}/${postalcode}/units/${floor}`))
       );
     } catch (error) {
       errorHandler(error, rollbar);
@@ -357,9 +363,8 @@ function Admin({ user }: adminProps) {
         const addressData = addressesSnapshot.val();
         for (const addkey in addressData) {
           const postalcode = addressData[addkey];
-          await pollingVoidFunction(() =>
-            remove(ref(database, postalcode as string))
-          );
+          const postalPath = `addresses/${code}/${postalcode}`;
+          await pollingVoidFunction(() => remove(ref(database, postalPath)));
         }
       }
       await pollingVoidFunction(() =>
@@ -436,7 +441,9 @@ function Admin({ user }: adminProps) {
       newFloor = currentFloor - 1;
     }
     blockFloorDetails.units.forEach((element) => {
-      unitUpdates[`/${postalcode}/units/${newFloor}/${element.number}`] = {
+      unitUpdates[
+        `addresses/${code}/${postalcode}/units/${newFloor}/${element.number}`
+      ] = {
         status: STATUS_CODES.DEFAULT,
         type: policy.defaultType,
         note: "",
@@ -477,7 +484,7 @@ function Admin({ user }: adminProps) {
     for (const index in blockAddresses.floors) {
       const floorDetails = blockAddresses.floors[index];
       floorDetails.units.forEach((element) => {
-        const unitPath = `/${postalcode}/units/${floorDetails.floor}/${element.number}`;
+        const unitPath = `addresses/${code}/${postalcode}/units/${floorDetails.floor}/${element.number}`;
         let currentStatus = element.status;
         if (MUTABLE_CODES.includes(currentStatus)) {
           currentStatus = STATUS_CODES.DEFAULT;
@@ -545,8 +552,8 @@ function Admin({ user }: adminProps) {
     link.name = postalName;
     link.publisherName = publisherName;
     return pollingVoidFunction(async () => {
-      await set(ref(database, `links/${addressLinkId}`), link);
-      await triggerPostalCodeListeners(link.postalCode);
+      await set(ref(database, `links/${code}/${addressLinkId}`), link);
+      await triggerPostalCodeListeners(code, link.postalCode);
     });
   };
 
@@ -1650,6 +1657,7 @@ function Admin({ user }: adminProps) {
                                 ModalManager.show(
                                   SuspenseComponent(ChangeAddressName),
                                   {
+                                    congregation: code,
                                     footerSaveAcl: userAccessLevel,
                                     postal: currentPostalcode,
                                     name: currentPostalname

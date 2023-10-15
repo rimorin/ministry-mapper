@@ -40,6 +40,7 @@ import HelpButton from "../navigation/help";
 
 const UpdateUnitStatus = NiceModal.create(
   ({
+    congregation,
     addressName,
     userAccessLevel = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     territoryType,
@@ -107,7 +108,10 @@ const UpdateUnitStatus = NiceModal.create(
       try {
         await pollingVoidFunction(() =>
           update(
-            ref(database, `/${postalCode}/units/${floor}/${unitNo}`),
+            ref(
+              database,
+              `addresses/${congregation}/${postalCode}/units/${floor}/${unitNo}`
+            ),
             updateData
           )
         );
@@ -266,6 +270,7 @@ const UpdateUnitStatus = NiceModal.create(
                             variant="primary"
                             onClick={() => {
                               processPostalUnitNumber(
+                                congregation,
                                 postalCode,
                                 unitNo,
                                 addressData,

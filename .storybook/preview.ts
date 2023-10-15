@@ -6,6 +6,8 @@ import "./../src/css/main.css";
 import "./../src/css/slip.css";
 import "react-calendar/dist/Calendar.css";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
+import { mockDateDecorator } from "storybook-mock-date-decorator";
+export const decorators = [mockDateDecorator];
 
 const preview: Preview = {
   parameters: {

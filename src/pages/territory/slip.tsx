@@ -117,27 +117,34 @@ const Slip = ({
             : DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE
         )
       );
-      onValue(child(ref(database), postalcode), (snapshot) => {
-        if (snapshot.exists()) {
-          const postalSnapshot = snapshot.val();
-          setValues((values) => ({
-            ...values,
-            feedback: postalSnapshot.feedback,
-            instructions: postalSnapshot.instructions
-          }));
-          setPostalZip(postalSnapshot.x_zip);
-          setPostalName(postalSnapshot.name);
-          setTerritoryType(postalSnapshot.type);
-          processAddressData(postalcode, postalSnapshot.units)
-            .then((data) => {
-              setFloors(data);
-            })
-            .finally(() => {
-              setIsLoading(false);
-            });
-          document.title = postalSnapshot.name;
+      onValue(
+        child(ref(database), `addresses/${congregationcode}/${postalcode}`),
+        (snapshot) => {
+          if (snapshot.exists()) {
+            const postalSnapshot = snapshot.val();
+            setValues((values) => ({
+              ...values,
+              feedback: postalSnapshot.feedback,
+              instructions: postalSnapshot.instructions
+            }));
+            setPostalZip(postalSnapshot.x_zip);
+            setPostalName(postalSnapshot.name);
+            setTerritoryType(postalSnapshot.type);
+            processAddressData(
+              congregationcode,
+              postalcode,
+              postalSnapshot.units
+            )
+              .then((data) => {
+                setFloors(data);
+              })
+              .finally(() => {
+                setIsLoading(false);
+              });
+            document.title = postalSnapshot.name;
+          }
         }
-      });
+      );
     });
 
     document.body.addEventListener("mousemove", setActivityTime);

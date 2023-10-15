@@ -16,6 +16,7 @@ import HelpButton from "../navigation/help";
 
 const UpdateUnit = NiceModal.create(
   ({
+    congregation,
     postalCode,
     unitNo,
     unitSequence,
@@ -40,7 +41,7 @@ const UpdateUnit = NiceModal.create(
         const floorDetails = addressData.floors[index];
         floorDetails.units.forEach(() => {
           unitUpdates[
-            `/${postalCode}/units/${floorDetails.floor}/${unitNumber}/sequence`
+            `addresses/${congregation}/${postalCode}/units/${floorDetails.floor}/${unitNumber}/sequence`
           ] = sequence === undefined ? {} : sequence;
         });
       }
@@ -119,6 +120,7 @@ const UpdateUnit = NiceModal.create(
                               variant="primary"
                               onClick={() => {
                                 processPostalUnitNumber(
+                                  congregation,
                                   postalCode,
                                   unitNo,
                                   addressData,

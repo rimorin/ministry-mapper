@@ -21,7 +21,8 @@ const GetAssignments = NiceModal.create(
   ({
     assignments,
     assignmentType,
-    assignmentTerritory
+    assignmentTerritory,
+    congregation
   }: AssignmentModalProps) => {
     const modal = useModal();
 
@@ -102,9 +103,12 @@ const GetAssignments = NiceModal.create(
                     onClick={async (event) => {
                       const { linkid, postal } = event.currentTarget.dataset;
                       await pollingVoidFunction(() =>
-                        remove(ref(database, `links/${linkid}`))
+                        remove(ref(database, `links/${congregation}/${linkid}`))
                       );
-                      await triggerPostalCodeListeners(postal as string);
+                      await triggerPostalCodeListeners(
+                        congregation,
+                        postal as string
+                      );
                       setCurrentAssignments((currentAssignments) =>
                         currentAssignments.filter(
                           (assignment) => assignment.key !== linkid

@@ -49,6 +49,7 @@ export const AllLinks: Story = {
       <GetAssignments
         defaultVisible
         id="1"
+        congregation="test"
         assignmentTerritory={assignmentTerritory}
         assignments={assignments}
         assignmentType={assignmentType}
@@ -86,6 +87,7 @@ export const PersonalLinks: Story = {
       <GetAssignments
         defaultVisible
         id="1"
+        congregation="test"
         assignmentTerritory={assignmentTerritory}
         assignments={assignments}
         assignmentType={assignmentType}
@@ -124,6 +126,7 @@ export const AssignmentLinks: Story = {
       <GetAssignments
         defaultVisible
         id="1"
+        congregation="test"
         assignmentTerritory={assignmentTerritory}
         assignments={assignments}
         assignmentType={assignmentType}
