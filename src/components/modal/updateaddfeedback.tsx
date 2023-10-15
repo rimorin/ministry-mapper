@@ -33,7 +33,10 @@ const UpdateAddressFeedback = NiceModal.create(
       setIsSaving(true);
       try {
         await pollingVoidFunction(() =>
-          set(ref(database, `/${postalCode}/feedback`), feedback)
+          set(
+            ref(database, `addresses/${congregation}/${postalCode}/feedback`),
+            feedback
+          )
         );
         await setNotification(
           NOTIFICATION_TYPES.FEEDBACK,

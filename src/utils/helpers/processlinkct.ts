@@ -13,13 +13,13 @@ import { LINK_TYPES } from "../constants";
 import { LinkDetails, LinkSession } from "../policies";
 import pollingQueryFunction from "./pollingquery";
 
-const processLinkDetails = async (postal: string) => {
+const processLinkDetails = async (congregation: string, postal: string) => {
   const postalCode = postal as string;
   // need to add to rules for links: ".indexOn": "postalCode",
   const linksSnapshot = await pollingQueryFunction(() =>
     get(
       query(
-        child(ref(database), "links"),
+        child(ref(database), `links/${congregation}`),
         orderByChild("postalCode"),
         startAt(postalCode),
         endAt(postalCode)

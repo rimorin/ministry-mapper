@@ -61,13 +61,14 @@ const ChangeAddressPostalCode = NiceModal.create(
     };
 
     const deleteBlock = async (
+      congregation: string,
       postalCode: string,
       name: string,
       showAlert: boolean
     ) => {
       if (!territoryCode) return;
       try {
-        await remove(ref(database, postalCode));
+        await remove(ref(database, `addresses/${congregation}/${postalCode}`));
         await deleteTerritoryAddress(territoryCode, postalCode);
         if (showAlert) alert(`Deleted address, ${name}.`);
       } catch (error) {
@@ -79,13 +80,18 @@ const ChangeAddressPostalCode = NiceModal.create(
       event.preventDefault();
       setIsSaving(true);
       try {
-        const newPostalRef = ref(database, newPostalCode);
+        const newPostalRef = ref(
+          database,
+          `addresses/${congregation}/${newPostalCode}`
+        );
         const existingAddress = await get(newPostalRef);
         if (existingAddress.exists()) {
           alert(`Postal address, ${newPostalCode} already exist.`);
           return;
         }
-        const oldPostalData = await get(ref(database, postalCode));
+        const oldPostalData = await get(
+          ref(database, `addresses/${congregation}/${postalCode}`)
+        );
         await pollingVoidFunction(() => set(newPostalRef, oldPostalData.val()));
         await pollingVoidFunction(() =>
           set(
@@ -98,7 +104,9 @@ const ChangeAddressPostalCode = NiceModal.create(
             newPostalCode
           )
         );
-        await pollingVoidFunction(() => deleteBlock(postalCode, "", false));
+        await pollingVoidFunction(() =>
+          deleteBlock(congregation, postalCode, "", false)
+        );
         modal.resolve();
         modal.hide();
       } catch (error) {

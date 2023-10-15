@@ -24,7 +24,7 @@ function Territory() {
   const [postalcode, setPostalcode] = useState<string>("");
 
   useEffect(() => {
-    const linkRef = ref(database, `links/${id}`);
+    const linkRef = ref(database, `links/${code}/${id}`);
     pollingQueryFunction(() => {
       return get(linkRef);
     })

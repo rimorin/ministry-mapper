@@ -32,6 +32,7 @@ export const Default: Story = {
         <NewUnit
           id="1"
           defaultVisible
+          congregation="test"
           footerSaveAcl={footerSaveAcl}
           postalCode={postalCode}
           addressData={addressData}

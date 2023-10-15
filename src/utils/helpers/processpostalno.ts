@@ -5,6 +5,7 @@ import { addressDetails, unitMaps } from "../interface";
 import pollingVoidFunction from "./pollingvoid";
 
 const processPostalUnitNumber = async (
+  congregationCode: string,
   postalCode: string,
   unitNumber: string,
   addressData: addressDetails | undefined,
@@ -17,7 +18,7 @@ const processPostalUnitNumber = async (
     const existingUnitNo = await get(
       ref(
         database,
-        `/${postalCode}/units/${addressData.floors[0].floor}/${unitNumber}`
+        `addresses/${congregationCode}/${postalCode}/units/${addressData.floors[0].floor}/${unitNumber}`
       )
     );
     if (existingUnitNo.exists()) {
@@ -31,17 +32,18 @@ const processPostalUnitNumber = async (
   for (const index in addressData.floors) {
     const floorDetails = addressData.floors[index];
     floorDetails.units.forEach(() => {
-      unitUpdates[`/${postalCode}/units/${floorDetails.floor}/${unitNumber}`] =
-        isDelete
-          ? {}
-          : {
-              type: defaultType,
-              note: "",
-              status: STATUS_CODES.DEFAULT,
-              nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
-              x_floor: floorDetails.floor,
-              sequence: lastSequenceNo
-            };
+      unitUpdates[
+        `addresses/${congregationCode}/${postalCode}/units/${floorDetails.floor}/${unitNumber}`
+      ] = isDelete
+        ? {}
+        : {
+            type: defaultType,
+            note: "",
+            status: STATUS_CODES.DEFAULT,
+            nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+            x_floor: floorDetails.floor,
+            sequence: lastSequenceNo
+          };
     });
   }
   await pollingVoidFunction(() => update(ref(database), unitUpdates));
