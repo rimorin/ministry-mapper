@@ -1258,7 +1258,7 @@ function Admin({ user }: adminProps) {
                     pollingQueryFunction(() =>
                       get(
                         query(
-                          ref(database, "links"),
+                          ref(database, `links/${code}`),
                           orderByChild("userId"),
                           equalTo(user.uid)
                         )
@@ -1277,7 +1277,8 @@ function Admin({ user }: adminProps) {
                           );
                         }
                         ModalManager.show(SuspenseComponent(GetAssignments), {
-                          assignments: linkListing
+                          assignments: linkListing,
+                          congregation: code
                         });
                       })
                       .finally(() => {
@@ -1424,7 +1425,8 @@ function Admin({ user }: adminProps) {
                                         assignments:
                                           addressElement.personalDetailsList,
                                         assignmentType: LINK_TYPES.PERSONAL,
-                                        assignmentTerritory: currentPostalname
+                                        assignmentTerritory: currentPostalname,
+                                        congregation: code
                                       }
                                     )
                                   }
@@ -1499,7 +1501,8 @@ function Admin({ user }: adminProps) {
                                         assignments:
                                           addressElement.assigneeDetailsList,
                                         assignmentType: LINK_TYPES.ASSIGNMENT,
-                                        assignmentTerritory: currentPostalname
+                                        assignmentTerritory: currentPostalname,
+                                        congregation: code
                                       }
                                     )
                                   }
