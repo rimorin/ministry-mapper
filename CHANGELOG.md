@@ -1,3 +1,10 @@
+## [1.25.4](https://github.com/rimorin/ministry-mapper/compare/v1.25.3...v1.25.4) (2023-10-17)
+
+
+### Bug Fixes
+
+* unable to add/update unit number ([42a1c89](https://github.com/rimorin/ministry-mapper/commit/42a1c897532fc257e105357253875c01e5313183))
+
 ## [1.25.3](https://github.com/rimorin/ministry-mapper/compare/v1.25.2...v1.25.3) (2023-10-17)
 
 
