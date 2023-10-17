@@ -24,7 +24,7 @@ const UpdateUnit = NiceModal.create(
     unitDisplay,
     addressData
   }: UpdateUnitModalProps) => {
-    const [unitSeq, setUnitSeq] = useState(unitSequence);
+    const [unitSeq, setUnitSeq] = useState<number | undefined>(unitSequence);
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();
     const rollbar = useRollbar();

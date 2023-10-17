@@ -300,13 +300,11 @@ function Admin({ user }: adminProps) {
             clearInterval(pollerId);
             if (snapshot.exists()) {
               const postalSnapshot = snapshot.val();
-              console.log(postalSnapshot);
               const floorData = await processAddressData(
                 code,
                 postalCode,
                 postalSnapshot.units
               );
-              console.log(floorData);
               const linkDetails = await processLinkDetails(code, postalCode);
               const addressData = {
                 assigneeDetailsList: linkDetails.assigneeDetailsList,
@@ -1576,10 +1574,10 @@ function Admin({ user }: adminProps) {
                               {
                                 footerSaveAcl: userAccessLevel,
                                 name: currentPostalname,
-                                congregation: code || "",
+                                congregation: code,
                                 postalCode: currentPostalcode,
                                 currentFeedback: addressElement.feedback,
-                                currentName: user.displayName || "",
+                                currentName: user.displayName,
                                 helpLink:
                                   WIKI_CATEGORIES.CONDUCTOR_ADDRESS_FEEDBACK
                               }
@@ -1600,12 +1598,12 @@ function Admin({ user }: adminProps) {
                             ModalManager.show(
                               SuspenseComponent(UpdateAddressInstructions),
                               {
-                                congregation: code || "",
+                                congregation: code,
                                 postalCode: currentPostalcode,
                                 userAccessLevel: userAccessLevel,
                                 addressName: currentPostalname,
                                 instructions: addressElement.instructions,
-                                userName: user.displayName || ""
+                                userName: user.displayName
                               }
                             )
                           }
@@ -1676,7 +1674,8 @@ function Admin({ user }: adminProps) {
                                   footerSaveAcl: userAccessLevel,
                                   postalCode: currentPostalcode,
                                   addressData: addressElement,
-                                  defaultType: policy.defaultType
+                                  defaultType: policy.defaultType,
+                                  congregation: code
                                 })
                               }
                             >
@@ -1875,7 +1874,8 @@ function Admin({ user }: adminProps) {
                             unitno || "",
                             maxUnitNumberLength
                           ),
-                          addressData: addressElement
+                          addressData: addressElement,
+                          congregation: code
                         });
                       }}
                       handleFloorDelete={(event) => {
