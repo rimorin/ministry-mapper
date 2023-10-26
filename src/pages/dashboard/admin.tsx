@@ -411,7 +411,7 @@ function Admin({ user }: adminProps) {
   ) => {
     if (!selectedTerritoryCode) return;
     try {
-      await remove(ref(database, postalCode));
+      await remove(ref(database, `addresses/${code}/${postalCode}`));
       await deleteTerritoryAddress(selectedTerritoryCode, postalCode);
       if (showAlert) alert(`Deleted address, ${name}.`);
       await refreshCongregationTerritory(selectedTerritoryCode);
