@@ -1,3 +1,10 @@
+## [1.25.5](https://github.com/rimorin/ministry-mapper/compare/v1.25.4...v1.25.5) (2023-10-26)
+
+
+### Bug Fixes
+
+* unable to remove block ([8f5f784](https://github.com/rimorin/ministry-mapper/commit/8f5f784d8efca53fa9e54d68fada85478d89cd3d))
+
 ## [1.25.4](https://github.com/rimorin/ministry-mapper/compare/v1.25.3...v1.25.4) (2023-10-17)
 
 
