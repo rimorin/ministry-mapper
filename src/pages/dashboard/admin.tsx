@@ -612,10 +612,11 @@ function Admin({ user }: adminProps) {
         hours,
         publisherName
       );
+      const absoluteUrl = new URL(url, window.location.href);
       await navigator.share({
         title: title,
         text: body,
-        url: url
+        url: absoluteUrl.toString()
       });
       setAccordionKeys((existingKeys) =>
         existingKeys.filter((key) => key !== postalcode)
