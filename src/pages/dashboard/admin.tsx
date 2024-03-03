@@ -571,7 +571,7 @@ function Admin({ user }: adminProps) {
         linkid,
         `Units for ${name}`,
         assignmentMessage(name),
-        `${code}/${linkid}`,
+        linkid,
         linkExpiryHrs,
         publisherName
       );
@@ -1468,7 +1468,7 @@ function Admin({ user }: adminProps) {
                                     addressLinkId,
                                     `Units for ${currentPostalname}`,
                                     assignmentMessage(currentPostalname),
-                                    `${code}/${addressLinkId}`,
+                                    addressLinkId,
                                     defaultExpiryHours,
                                     linkObject.publisherName as string
                                   );
