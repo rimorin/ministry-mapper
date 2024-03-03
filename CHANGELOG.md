@@ -1,3 +1,10 @@
+## [1.25.6](https://github.com/rimorin/ministry-mapper/compare/v1.25.5...v1.25.6) (2024-03-03)
+
+
+### Bug Fixes
+
+* address issue with relative link paths ([44152ac](https://github.com/rimorin/ministry-mapper/commit/44152ac111b48e422ee56bc4c35a807d2d6dcf1f))
+
 ## [1.25.5](https://github.com/rimorin/ministry-mapper/compare/v1.25.4...v1.25.5) (2023-10-26)
 
 
