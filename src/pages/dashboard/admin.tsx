@@ -411,7 +411,7 @@ function Admin({ user }: adminProps) {
   ) => {
     if (!selectedTerritoryCode) return;
     try {
-      await remove(ref(database, postalCode));
+      await remove(ref(database, `addresses/${code}/${postalCode}`));
       await deleteTerritoryAddress(selectedTerritoryCode, postalCode);
       if (showAlert) alert(`Deleted address, ${name}.`);
       await refreshCongregationTerritory(selectedTerritoryCode);
@@ -612,10 +612,11 @@ function Admin({ user }: adminProps) {
         hours,
         publisherName
       );
+      const absoluteUrl = new URL(url, window.location.href);
       await navigator.share({
         title: title,
         text: body,
-        url: url
+        url: absoluteUrl.toString()
       });
       setAccordionKeys((existingKeys) =>
         existingKeys.filter((key) => key !== postalcode)

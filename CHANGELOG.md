@@ -1,3 +1,24 @@
+## [1.25.6](https://github.com/rimorin/ministry-mapper/compare/v1.25.5...v1.25.6) (2024-03-03)
+
+
+### Bug Fixes
+
+* address issue with relative link paths ([44152ac](https://github.com/rimorin/ministry-mapper/commit/44152ac111b48e422ee56bc4c35a807d2d6dcf1f))
+
+## [1.25.5](https://github.com/rimorin/ministry-mapper/compare/v1.25.4...v1.25.5) (2023-10-26)
+
+
+### Bug Fixes
+
+* unable to remove block ([8f5f784](https://github.com/rimorin/ministry-mapper/commit/8f5f784d8efca53fa9e54d68fada85478d89cd3d))
+
+## [1.25.4](https://github.com/rimorin/ministry-mapper/compare/v1.25.3...v1.25.4) (2023-10-17)
+
+
+### Bug Fixes
+
+* unable to add/update unit number ([42a1c89](https://github.com/rimorin/ministry-mapper/commit/42a1c897532fc257e105357253875c01e5313183))
+
 ## [1.25.3](https://github.com/rimorin/ministry-mapper/compare/v1.25.2...v1.25.3) (2023-10-17)
 
 
