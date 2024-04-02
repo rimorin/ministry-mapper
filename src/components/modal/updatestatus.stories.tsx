@@ -77,6 +77,7 @@ export const Default: Story = {
           id="1"
           defaultVisible
           congregation="test"
+          origin="test"
           addressName={addressName}
           userAccessLevel={userAccessLevel}
           territoryType={territoryType}

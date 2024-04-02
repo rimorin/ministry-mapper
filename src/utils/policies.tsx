@@ -6,7 +6,8 @@ import {
   LINK_TYPES,
   DEFAULT_CONGREGATION_MAX_TRIES,
   DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
-  DEFAULT_MULTPLE_OPTION_DELIMITER
+  DEFAULT_MULTPLE_OPTION_DELIMITER,
+  DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
 } from "./constants";
 import { HHOptionProps, unitDetails } from "./interface";
 
@@ -28,16 +29,19 @@ export class Policy {
   countableTypes: Array<string>;
   defaultType: string;
   isMultiselect: boolean;
+  origin: string;
   constructor(
     userData?: IdTokenResult,
     options?: Array<HHOptionProps>,
     maxtries = parseInt(NOT_HOME_STATUS_CODES.SECOND_TRY),
-    isMultiselect = DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE
+    isMultiselect = DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
+    origin = DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
   ) {
     this.maxTries = maxtries;
     this.countableTypes = [];
     this.defaultType = "";
     this.isMultiselect = isMultiselect;
+    this.origin = origin;
     options?.forEach((option) => {
       if (option.isCountable) {
         this.countableTypes.push(option.code);
@@ -83,6 +87,9 @@ export class Policy {
       this.isCountable(unit),
       progress
     );
+  }
+  requiresPostcode(): boolean {
+    return this.origin === DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION;
   }
 }
 

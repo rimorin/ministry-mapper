@@ -18,7 +18,8 @@ import {
   TERRITORY_TYPES,
   NOT_HOME_STATUS_CODES,
   WIKI_CATEGORIES,
-  DEFAULT_MULTPLE_OPTION_DELIMITER
+  DEFAULT_MULTPLE_OPTION_DELIMITER,
+  DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
 } from "../../utils/constants";
 import pollingVoidFunction from "../../utils/helpers/pollingvoid";
 import errorHandler from "../../utils/helpers/errorhandler";
@@ -53,8 +54,11 @@ const UpdateUnitStatus = NiceModal.create(
     unitDetails,
     options,
     defaultOption,
-    isMultiselect
+    isMultiselect,
+    origin
   }: UpdateAddressStatusModalProps) => {
+    const requiresPostalCode =
+      origin === DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION;
     const status = unitDetails?.status;
     const [isNotHome, setIsNotHome] = useState(
       status === STATUS_CODES.NOT_HOME
@@ -128,7 +132,7 @@ const UpdateUnitStatus = NiceModal.create(
           unit={unitNoDisplay}
           propertyPostal={unitDetails?.propertyPostal}
           floor={floorDisplay as string}
-          postal={postalCode}
+          postal={requiresPostalCode ? postalCode : addressName}
           type={territoryType}
           name={addressName || ""}
         />
@@ -225,17 +229,19 @@ const UpdateUnitStatus = NiceModal.create(
                         : unitSequence.toString()
                     }
                   />
-                  <GenericInputField
-                    inputType="string"
-                    label="Property Postal"
-                    name="propertyPostal"
-                    placeholder="Optional postal code for direction to this property"
-                    handleChange={(e: ChangeEvent<HTMLElement>) => {
-                      const { value } = e.target as HTMLInputElement;
-                      setHhPropertyPostal(value);
-                    }}
-                    changeValue={hhPropertyPostal}
-                  />
+                  {requiresPostalCode && (
+                    <GenericInputField
+                      inputType="string"
+                      label="Property Postal"
+                      name="propertyPostal"
+                      placeholder="Optional postal code for direction to this property"
+                      handleChange={(e: ChangeEvent<HTMLElement>) => {
+                        const { value } = e.target as HTMLInputElement;
+                        setHhPropertyPostal(value);
+                      }}
+                      changeValue={hhPropertyPostal}
+                    />
+                  )}
                 </>
               </ComponentAuthorizer>
             )}

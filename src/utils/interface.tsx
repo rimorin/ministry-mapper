@@ -356,6 +356,7 @@ export interface ChangeAddressPostalCodeModalProps
     congregationInterface,
     footerInterface {
   territoryCode: string | undefined;
+  requiresPostalCode: boolean;
 }
 
 export interface ChangeTerritoryCodeModalProps
@@ -397,6 +398,7 @@ export interface NewPrivateAddressModalProps
     footerInterface {
   territoryCode: string;
   defaultType: string;
+  requiresPostalCode: boolean;
 }
 
 export type NewPublicAddressModalProps = NewPrivateAddressModalProps;
@@ -445,6 +447,7 @@ export interface UpdateAddressStatusModalProps
   options: Array<OptionProps>;
   defaultOption: string;
   isMultiselect: boolean;
+  origin: string;
 }
 
 export interface UpdateUnitModalProps
