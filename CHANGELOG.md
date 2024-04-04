@@ -1,3 +1,16 @@
+# [1.26.0](https://github.com/rimorin/ministry-mapper/compare/v1.25.6...v1.26.0) (2024-04-04)
+
+
+### Bug Fixes
+
+* library cleanup ([a6806a7](https://github.com/rimorin/ministry-mapper/commit/a6806a72af8fdacd154660fc17e1329d643a85d9))
+* library update ([5933cb6](https://github.com/rimorin/ministry-mapper/commit/5933cb67ec9c6ec4c6532e9bbb8c431096a434b1))
+
+
+### Features
+
+* congregation origin and map number implementation ([ab0e048](https://github.com/rimorin/ministry-mapper/commit/ab0e048ce0cd87ebff735d10ef55bbed80ae8e7b))
+
 ## [1.25.6](https://github.com/rimorin/ministry-mapper/compare/v1.25.5...v1.25.6) (2024-03-03)
 
 
