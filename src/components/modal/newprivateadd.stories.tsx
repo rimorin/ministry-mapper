@@ -32,6 +32,7 @@ export const Default: Story = {
         <NewPrivateAddress
           id="1"
           defaultVisible
+          requiresPostalCode
           footerSaveAcl={footerSaveAcl}
           congregation={congregation}
           territoryCode={territoryCode}

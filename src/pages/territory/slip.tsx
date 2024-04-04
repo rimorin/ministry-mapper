@@ -25,7 +25,8 @@ import {
   TERRITORY_TYPES,
   USER_ACCESS_LEVELS,
   WIKI_CATEGORIES,
-  DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE
+  DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
+  DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
 } from "../../utils/constants";
 import "../../css/slip.css";
 import Countdown from "react-countdown";
@@ -36,6 +37,7 @@ import UpdateAddressInstructions from "../../components/modal/instructions";
 import UpdateUnitStatus from "../../components/modal/updatestatus";
 import GetDirection from "../../utils/helpers/directiongenerator";
 import getOptionIsMultiSelect from "../../utils/helpers/getoptionmultiselect";
+import getCongregationOrigin from "../../utils/helpers/getcongorigin";
 const Slip = ({
   tokenEndtime = 0,
   postalcode = "",
@@ -80,7 +82,8 @@ const Slip = ({
       unitDetails: unitDetails,
       addressData: undefined,
       defaultOption: policy.defaultType,
-      isMultiselect: policy.isMultiselect
+      isMultiselect: policy.isMultiselect,
+      origin: policy.origin
     });
   };
 
@@ -104,8 +107,9 @@ const Slip = ({
   useEffect(() => {
     Promise.all([
       getOptions(congregationcode),
-      getOptionIsMultiSelect(congregationcode)
-    ]).then(([options, isMultiselect]) => {
+      getOptionIsMultiSelect(congregationcode),
+      getCongregationOrigin(congregationcode)
+    ]).then(([options, isMultiselect, origin]) => {
       setOptions(options);
       setPolicy(
         new Policy(
@@ -114,7 +118,10 @@ const Slip = ({
           maxTries,
           isMultiselect.exists()
             ? isMultiselect.val()
-            : DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE
+            : DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
+          origin.exists()
+            ? origin.val()
+            : DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
         )
       );
       onValue(
@@ -196,7 +203,17 @@ const Slip = ({
               )}
               <NavDropdown.Item onClick={toggleLegend}>Legend</NavDropdown.Item>
               <NavDropdown.Item
-                onClick={() => window.open(GetDirection(zipcode), "_blank")}
+                onClick={() =>
+                  window.open(
+                    GetDirection(
+                      policy.requiresPostcode()
+                        ? zipcode
+                        : (postalName as string),
+                      policy.origin
+                    ),
+                    "_blank"
+                  )
+                }
               >
                 Direction
               </NavDropdown.Item>

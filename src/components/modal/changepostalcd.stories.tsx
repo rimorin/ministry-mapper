@@ -33,6 +33,7 @@ export const Default: Story = {
         <ChangeAddressPostalCode
           id="1"
           defaultVisible
+          requiresPostalCode
           footerSaveAcl={footerSaveAcl}
           congregation={congregation}
           territoryCode={territoryCode}

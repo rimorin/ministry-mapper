@@ -95,13 +95,15 @@ import {
   TERRITORY_TYPES,
   WIKI_CATEGORIES,
   DEFAULT_CONGREGATION_MAX_TRIES,
-  DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE
+  DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
+  DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
 } from "../../utils/constants";
 import ModalManager from "@ebay/nice-modal-react";
 import SuspenseComponent from "../../components/utils/suspense";
 import getOptions from "../../utils/helpers/getcongoptions";
 import GetDirection from "../../utils/helpers/directiongenerator";
 import getOptionIsMultiSelect from "../../utils/helpers/getoptionmultiselect";
+import getCongregationOrigin from "../../utils/helpers/getcongorigin";
 
 const UnauthorizedPage = SuspenseComponent(
   lazy(() => import("../../components/statics/unauth"))
@@ -527,7 +529,8 @@ function Admin({ user }: adminProps) {
       floorDisplay: ZeroPad(floor, DEFAULT_FLOOR_PADDING),
       unitDetails: unitDetails,
       addressData: addressData,
-      isMultiselect: policy.isMultiselect
+      isMultiselect: policy.isMultiselect,
+      origin: policy.origin
     });
   };
 
@@ -794,7 +797,8 @@ function Admin({ user }: adminProps) {
       getOptionIsMultiSelect(code),
       pollingQueryFunction(() =>
         get(child(ref(database), `congregations/${code}`))
-      )
+      ),
+      getCongregationOrigin(code)
     ]).then(
       async ([
         userAccessLevel,
@@ -802,7 +806,8 @@ function Admin({ user }: adminProps) {
         maxTries,
         options,
         optionIsMultiselect,
-        congregationDetails
+        congregationDetails,
+        origin
       ]) => {
         if (!userAccessLevel) {
           setIsUnauthorised(true);
@@ -824,7 +829,11 @@ function Admin({ user }: adminProps) {
             maxTries.exists() ? maxTries.val() : DEFAULT_CONGREGATION_MAX_TRIES,
             optionIsMultiselect.exists()
               ? optionIsMultiselect.val()
-              : DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE
+              : DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
+
+            origin.exists()
+              ? origin.val()
+              : DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
           )
         );
         processCongregationTerritories(
@@ -1117,7 +1126,8 @@ function Admin({ user }: adminProps) {
                           footerSaveAcl: userAccessLevel,
                           congregation: code,
                           territoryCode: selectedTerritoryCode,
-                          defaultType: policy.defaultType
+                          defaultType: policy.defaultType,
+                          requiresPostalCode: policy.requiresPostcode()
                         }).then(
                           async () =>
                             await refreshCongregationTerritory(
@@ -1136,7 +1146,8 @@ function Admin({ user }: adminProps) {
                             footerSaveAcl: userAccessLevel,
                             congregation: code,
                             territoryCode: selectedTerritoryCode,
-                            defaultType: policy.defaultType
+                            defaultType: policy.defaultType,
+                            requiresPostalCode: policy.requiresPostcode()
                           }
                         ).then(
                           async () =>
@@ -1560,7 +1571,15 @@ function Admin({ user }: adminProps) {
                           variant="outline-primary"
                           className="m-1"
                           onClick={() =>
-                            window.open(GetDirection(zipcode), "_blank")
+                            window.open(
+                              GetDirection(
+                                policy.requiresPostcode()
+                                  ? zipcode
+                                  : currentPostalname,
+                                policy.origin
+                              ),
+                              "_blank"
+                            )
                           }
                         >
                           Direction
@@ -1641,7 +1660,10 @@ function Admin({ user }: adminProps) {
                                 )
                               }
                             >
-                              Change Postal Code
+                              Change{" "}
+                              {policy.requiresPostcode()
+                                ? "Postal Code"
+                                : "Map Number"}
                             </Dropdown.Item>
                             <Dropdown.Item
                               onClick={() => {

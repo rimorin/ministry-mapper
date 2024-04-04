@@ -28,7 +28,8 @@ const NewPublicAddress = NiceModal.create(
     footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     congregation,
     territoryCode,
-    defaultType
+    defaultType,
+    requiresPostalCode
   }: NewPublicAddressModalProps) => {
     const [postalCode, setPostalCode] = useState("");
     const [name, setName] = useState("");
@@ -38,6 +39,7 @@ const NewPublicAddress = NiceModal.create(
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();
     const rollbar = useRollbar();
+    const modalDescription = requiresPostalCode ? "Postal Code" : "Map Number";
 
     const handleCreateTerritoryAddress = async (
       event: FormEvent<HTMLElement>
@@ -45,7 +47,7 @@ const NewPublicAddress = NiceModal.create(
       event.preventDefault();
 
       if (!isValidPostal(postalCode)) {
-        alert("Invalid postal code");
+        alert(`Invalid ${modalDescription}`);
         return;
       }
 
@@ -84,7 +86,7 @@ const NewPublicAddress = NiceModal.create(
         );
         const existingAddress = await get(addressReference);
         if (existingAddress.exists()) {
-          alert(`Postal address, ${postalCode} already exist.`);
+          alert(`${modalDescription}, ${postalCode} already exist.`);
           return;
         }
         await pollingVoidFunction(() =>
@@ -106,7 +108,7 @@ const NewPublicAddress = NiceModal.create(
             type: TERRITORY_TYPES.PUBLIC
           })
         );
-        alert(`Created postal address, ${postalCode}.`);
+        alert(`Created ${modalDescription}, ${postalCode}.`);
         modal.resolve();
         modal.hide();
       } catch (error) {
@@ -129,8 +131,8 @@ const NewPublicAddress = NiceModal.create(
             </p>
             <GenericInputField
               inputType="number"
-              label="Postal Code"
-              name="postalcode"
+              label={requiresPostalCode ? "Postal Code" : "Map Number"}
+              name="refNo"
               handleChange={(e: ChangeEvent<HTMLElement>) => {
                 const { value } = e.target as HTMLInputElement;
                 setPostalCode(value);
@@ -138,7 +140,14 @@ const NewPublicAddress = NiceModal.create(
               changeValue={postalCode}
               required={true}
               placeholder={
-                "Block/Building postal code. Eg, 730801, 752367, etc"
+                requiresPostalCode
+                  ? "Block/Building postal code. Eg, 730801, 752367, etc"
+                  : undefined
+              }
+              information={
+                !requiresPostalCode
+                  ? "This is a unique identifier for the map, requiring a minimum of 6 unique digits."
+                  : undefined
               }
             />
             <GenericInputField
