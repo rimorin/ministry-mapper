@@ -18,12 +18,16 @@ const ChangeAddressPostalCode = NiceModal.create(
     footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     congregation,
     territoryCode,
-    postalCode
+    postalCode,
+    requiresPostalCode
   }: ChangeAddressPostalCodeModalProps) => {
     const [newPostalCode, setNewPostalCode] = useState("");
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();
     const rollbar = useRollbar();
+    const modalDescription = requiresPostalCode
+      ? "Address Postal Code"
+      : "Map Number";
 
     const getTerritoryAddress = async (territoryCode: string) => {
       return await pollingQueryFunction(() =>
@@ -118,13 +122,15 @@ const ChangeAddressPostalCode = NiceModal.create(
     return (
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
-          <Modal.Title>Change Address Postal Code</Modal.Title>
+          <Modal.Title>Change {modalDescription}</Modal.Title>
           <HelpButton link={WIKI_CATEGORIES.CHANGE_TERRITORY_CODE} />
         </Modal.Header>
         <Form onSubmit={handleUpdatePostalcode}>
           <Modal.Body>
             <Form.Group className="mb-3">
-              <Form.Label htmlFor="userid">Existing Postal Code</Form.Label>
+              <Form.Label htmlFor="userid">
+                Existing {modalDescription}
+              </Form.Label>
               <Form.Control
                 readOnly
                 id="existingcode"
@@ -133,8 +139,8 @@ const ChangeAddressPostalCode = NiceModal.create(
             </Form.Group>
             <GenericInputField
               inputType="number"
-              label="New Postal Code"
-              name="postalcode"
+              label={`New ${modalDescription}`}
+              name="refNo"
               handleChange={(e: ChangeEvent<HTMLElement>) => {
                 const { value } = e.target as HTMLInputElement;
                 setNewPostalCode(value);
@@ -142,7 +148,9 @@ const ChangeAddressPostalCode = NiceModal.create(
               changeValue={newPostalCode}
               required={true}
               placeholder={
-                "Block/Building postal code. Eg, 730801, 752367, etc"
+                requiresPostalCode
+                  ? "Block/Building postal code. Eg, 730801, 752367, etc"
+                  : undefined
               }
             />
           </Modal.Body>

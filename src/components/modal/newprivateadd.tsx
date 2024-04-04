@@ -27,7 +27,8 @@ const NewPrivateAddress = NiceModal.create(
     footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     congregation,
     territoryCode,
-    defaultType
+    defaultType,
+    requiresPostalCode
   }: NewPrivateAddressModalProps) => {
     const [postalCode, setPostalCode] = useState("");
     const [name, setName] = useState("");
@@ -35,6 +36,7 @@ const NewPrivateAddress = NiceModal.create(
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();
     const rollbar = useRollbar();
+    const modalDescription = requiresPostalCode ? "Postal Code" : "Map Number";
 
     const handleCreateTerritoryAddress = async (
       event: FormEvent<HTMLElement>
@@ -42,7 +44,7 @@ const NewPrivateAddress = NiceModal.create(
       event.preventDefault();
 
       if (!isValidPostal(postalCode)) {
-        alert("Invalid postal code");
+        alert(`Invalid ${modalDescription}`);
         return;
       }
 
@@ -79,7 +81,7 @@ const NewPrivateAddress = NiceModal.create(
         );
         const existingAddress = await get(addressReference);
         if (existingAddress.exists()) {
-          alert(`Postal address, ${postalCode} already exist.`);
+          alert(`${modalDescription}, ${postalCode} already exist.`);
           return;
         }
         await pollingVoidFunction(() =>
@@ -101,7 +103,7 @@ const NewPrivateAddress = NiceModal.create(
             type: TERRITORY_TYPES.PRIVATE
           })
         );
-        alert(`Created private address, ${postalCode}.`);
+        alert(`Created ${modalDescription}, ${postalCode}.`);
         modal.resolve();
         modal.hide();
       } catch (error) {
@@ -124,16 +126,22 @@ const NewPrivateAddress = NiceModal.create(
             </p>
             <GenericInputField
               inputType="number"
-              label="Postal Code"
-              name="postalcode"
+              label={modalDescription}
+              name="refNo"
               handleChange={(e: ChangeEvent<HTMLElement>) => {
                 const { value } = e.target as HTMLInputElement;
                 setPostalCode(value);
               }}
               changeValue={postalCode}
               required={true}
-              placeholder={"Estate postal code"}
-              information="A postal code within the private estate. This code will be used for locating the estate."
+              placeholder={
+                requiresPostalCode ? "Estate postal code" : undefined
+              }
+              information={
+                requiresPostalCode
+                  ? "A postal code within the private estate. This code will be used for locating the estate."
+                  : "This is a unique identifier for the map, requiring a minimum of 6 unique digits."
+              }
             />
             <GenericInputField
               label="Address Name"
