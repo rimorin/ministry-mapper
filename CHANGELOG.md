@@ -1,3 +1,10 @@
+## [1.26.1](https://github.com/rimorin/ministry-mapper/compare/v1.26.0...v1.26.1) (2024-04-04)
+
+
+### Bug Fixes
+
+* invalid change postal description for non-postal congs ([879c7d7](https://github.com/rimorin/ministry-mapper/commit/879c7d78a23c2acf5de5adf7d828f7549bbb104c))
+
 # [1.26.0](https://github.com/rimorin/ministry-mapper/compare/v1.25.6...v1.26.0) (2024-04-04)
 
 
