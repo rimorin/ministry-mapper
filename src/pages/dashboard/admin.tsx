@@ -1650,7 +1650,9 @@ function Admin({ user }: adminProps) {
                                     footerSaveAcl: userAccessLevel,
                                     congregation: code,
                                     postalCode: currentPostalcode,
-                                    territoryCode: selectedTerritoryCode
+                                    territoryCode: selectedTerritoryCode,
+                                    requiresPostalCode:
+                                      policy.requiresPostcode()
                                   }
                                 ).then(
                                   async () =>
