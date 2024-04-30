@@ -1,6 +1,6 @@
 {
   "name": "ministry-mapper",
-  "version": "1.26.1",
+  "version": "1.26.2",
   "private": true,
   "dependencies": {
     "@ebay/nice-modal-react": "^1.2.13",

@@ -1,3 +1,10 @@
+## [1.26.2](https://github.com/rimorin/ministry-mapper/compare/v1.26.1...v1.26.2) (2024-04-30)
+
+
+### Bug Fixes
+
+* alert when unit/propert no is invalid ([d724230](https://github.com/rimorin/ministry-mapper/commit/d724230b9240ef2d314d9b283b50ab1ccccd8fd9))
+
 ## [1.26.1](https://github.com/rimorin/ministry-mapper/compare/v1.26.0...v1.26.1) (2024-04-04)
 
 
