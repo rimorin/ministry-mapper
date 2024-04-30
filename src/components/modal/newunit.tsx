@@ -31,6 +31,12 @@ const NewUnit = NiceModal.create(
       event.preventDefault();
       setIsSaving(true);
       try {
+        if (!/^[a-zA-Z0-9]+$/.test(unit)) {
+          alert(
+            "The Unit/Property number should only include alphanumeric characters."
+          );
+          return;
+        }
         processPostalUnitNumber(
           congregation,
           postalCode,
@@ -53,7 +59,9 @@ const NewUnit = NiceModal.create(
             {`Add ${
               addressData.type === TERRITORY_TYPES.PRIVATE ? "property" : "unit"
             } to ${
-              addressData.type === TERRITORY_TYPES.PRIVATE ? name : postalCode
+              addressData.type === TERRITORY_TYPES.PRIVATE
+                ? addressData.name
+                : postalCode
             }`}
           </Modal.Title>
           {addressData.type === TERRITORY_TYPES.PRIVATE ? (
