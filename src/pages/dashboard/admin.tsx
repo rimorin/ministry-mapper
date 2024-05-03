@@ -973,9 +973,22 @@ function Admin({ user }: adminProps) {
                             congregation: code,
                             territoryCode: selectedTerritoryCode
                           }
-                        ).then((updatedCode) =>
-                          processSelectedTerritory(updatedCode as string)
-                        )
+                        ).then((updatedCode) => {
+                          processSelectedTerritory(updatedCode as string);
+                          const updatedTerritories = new Map();
+                          for (const [key, value] of territories) {
+                            if (key === selectedTerritoryCode && value) {
+                              value.code = updatedCode as string;
+                              updatedTerritories.set(
+                                updatedCode as string,
+                                value
+                              );
+                            } else {
+                              updatedTerritories.set(key, value);
+                            }
+                          }
+                          setTerritories(updatedTerritories);
+                        })
                       }
                     >
                       Change Code
@@ -1041,9 +1054,19 @@ function Admin({ user }: adminProps) {
                             territoryCode: selectedTerritoryCode,
                             name: selectedTerritoryName
                           }
-                        ).then((updatedName) =>
-                          setSelectedTerritoryName(updatedName as string)
-                        )
+                        ).then((updatedName) => {
+                          setSelectedTerritoryName(updatedName as string);
+                          setTerritories(
+                            new Map<string, territoryDetails>(
+                              Array.from(territories).map(([key, value]) => {
+                                if (key === selectedTerritoryCode) {
+                                  value.name = updatedName as string;
+                                }
+                                return [key, value];
+                              })
+                            )
+                          );
+                        })
                       }
                     >
                       Edit Current Name
