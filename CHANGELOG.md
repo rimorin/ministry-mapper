@@ -1,3 +1,10 @@
+## [1.26.3](https://github.com/rimorin/ministry-mapper/compare/v1.26.2...v1.26.3) (2024-05-03)
+
+
+### Bug Fixes
+
+* update territory listing when its updated ([287a055](https://github.com/rimorin/ministry-mapper/commit/287a055188a7be38a1ce0a38a7b94a9c494fde17))
+
 ## [1.26.2](https://github.com/rimorin/ministry-mapper/compare/v1.26.1...v1.26.2) (2024-04-30)
 
 
