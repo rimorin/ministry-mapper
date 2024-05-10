@@ -152,7 +152,7 @@ const NewPublicAddress = NiceModal.create(
               }
             />
             <GenericInputField
-              label="Address Name"
+              label="Map Name"
               name="name"
               handleChange={(e: ChangeEvent<HTMLElement>) => {
                 const { value } = e.target as HTMLInputElement;
@@ -160,11 +160,11 @@ const NewPublicAddress = NiceModal.create(
               }}
               changeValue={name}
               required={true}
-              information="Name of the address"
+              information="Description of the map."
             />
             {!requiresPostalCode && (
               <GenericInputField
-                label="Address Location"
+                label="Map Location"
                 name="location"
                 handleChange={(e: ChangeEvent<HTMLElement>) => {
                   const { value } = e.target as HTMLInputElement;
@@ -172,7 +172,7 @@ const NewPublicAddress = NiceModal.create(
                 }}
                 changeValue={location}
                 required={true}
-                information="Location of the address that will be used for Google Maps directions."
+                information="Location of the map that will be used for Google Maps directions."
               />
             )}
             <FloorField

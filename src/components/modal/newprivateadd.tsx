@@ -136,9 +136,7 @@ const NewPrivateAddress = NiceModal.create(
               }}
               changeValue={postalCode}
               required={true}
-              placeholder={
-                requiresPostalCode ? "Estate postal code" : undefined
-              }
+              placeholder={requiresPostalCode ? "Map postal code" : undefined}
               information={
                 requiresPostalCode
                   ? "A postal code within the private estate. This code will be used for locating the estate."
@@ -146,7 +144,7 @@ const NewPrivateAddress = NiceModal.create(
               }
             />
             <GenericInputField
-              label="Address Name"
+              label="Map Name"
               name="name"
               handleChange={(e: ChangeEvent<HTMLElement>) => {
                 const { value } = e.target as HTMLInputElement;
@@ -154,11 +152,11 @@ const NewPrivateAddress = NiceModal.create(
               }}
               changeValue={name}
               required={true}
-              information="Name of the address"
+              information="Description of the map."
             />
             {!requiresPostalCode && (
               <GenericInputField
-                label="Address Location"
+                label="Map Location"
                 name="location"
                 handleChange={(e: ChangeEvent<HTMLElement>) => {
                   const { value } = e.target as HTMLInputElement;
