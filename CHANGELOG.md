@@ -1,3 +1,15 @@
+# [1.27.0](https://github.com/rimorin/ministry-mapper/compare/v1.26.3...v1.27.0) (2024-05-10)
+
+
+### Bug Fixes
+
+* field naming of public/private mapping ([d390cd0](https://github.com/rimorin/ministry-mapper/commit/d390cd00a890b3ee0573af61e110c7dd7927f9ad))
+
+
+### Features
+
+* implement location field for non postal congs ([dec25db](https://github.com/rimorin/ministry-mapper/commit/dec25db6ef6ac175dccb994ca83d9784eb98a566))
+
 ## [1.26.3](https://github.com/rimorin/ministry-mapper/compare/v1.26.2...v1.26.3) (2024-05-03)
 
 
