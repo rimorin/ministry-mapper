@@ -153,6 +153,9 @@ const ChangePassword = lazy(
 const ChangeAddressPostalCode = lazy(
   () => import("../../components/modal/changepostalcd")
 );
+const ChangeAddressLocation = lazy(
+  () => import("../../components/modal/changeaddlocation")
+);
 const ChangeAddressName = lazy(
   () => import("../../components/modal/changeaddname")
 );
@@ -317,7 +320,8 @@ function Admin({ user }: adminProps) {
                 floors: floorData,
                 feedback: postalSnapshot.feedback,
                 type: postalSnapshot.type,
-                instructions: postalSnapshot.instructions
+                instructions: postalSnapshot.instructions,
+                location: postalSnapshot.location
               };
               setAddressData(
                 (existingAddresses) =>
@@ -1373,6 +1377,7 @@ function Admin({ user }: adminProps) {
                 : addressElement.x_zip;
             const assigneeCount = addressElement.assigneeDetailsList.length;
             const personalCount = addressElement.personalDetailsList.length;
+            const currentLocation = addressElement.location || "";
             return (
               <Accordion.Item
                 key={`accordion-${currentPostalcode}`}
@@ -1598,7 +1603,7 @@ function Admin({ user }: adminProps) {
                               GetDirection(
                                 policy.requiresPostcode()
                                   ? zipcode
-                                  : currentPostalname,
+                                  : currentLocation,
                                 policy.origin
                               ),
                               "_blank"
@@ -1690,6 +1695,23 @@ function Admin({ user }: adminProps) {
                                 ? "Postal Code"
                                 : "Map Number"}
                             </Dropdown.Item>
+                            {!policy.requiresPostcode() && (
+                              <Dropdown.Item
+                                onClick={() =>
+                                  ModalManager.show(
+                                    SuspenseComponent(ChangeAddressLocation),
+                                    {
+                                      congregation: code,
+                                      footerSaveAcl: userAccessLevel,
+                                      postalCode: currentPostalcode,
+                                      location: currentLocation
+                                    }
+                                  )
+                                }
+                              >
+                                Change Location
+                              </Dropdown.Item>
+                            )}
                             <Dropdown.Item
                               onClick={() => {
                                 setValues({

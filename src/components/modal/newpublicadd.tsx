@@ -35,7 +35,7 @@ const NewPublicAddress = NiceModal.create(
     const [name, setName] = useState("");
     const [sequence, setSequence] = useState("");
     const [floors, setFloors] = useState(1);
-
+    const [location, setLocation] = useState("");
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();
     const rollbar = useRollbar();
@@ -105,7 +105,8 @@ const NewPublicAddress = NiceModal.create(
             name: name,
             feedback: "",
             units: floorDetails,
-            type: TERRITORY_TYPES.PUBLIC
+            type: TERRITORY_TYPES.PUBLIC,
+            location: location
           })
         );
         alert(`Created ${modalDescription}, ${postalCode}.`);
@@ -159,10 +160,21 @@ const NewPublicAddress = NiceModal.create(
               }}
               changeValue={name}
               required={true}
-              placeholder={
-                "Block/Building name. Eg, 367, Sembawang Star Crescent"
-              }
+              information="Name of the address"
             />
+            {!requiresPostalCode && (
+              <GenericInputField
+                label="Address Location"
+                name="location"
+                handleChange={(e: ChangeEvent<HTMLElement>) => {
+                  const { value } = e.target as HTMLInputElement;
+                  setLocation(value);
+                }}
+                changeValue={location}
+                required={true}
+                information="Location of the address that will be used for Google Maps directions."
+              />
+            )}
             <FloorField
               handleChange={(e: ChangeEvent<HTMLElement>) => {
                 const { value } = e.target as HTMLInputElement;

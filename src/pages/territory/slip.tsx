@@ -50,6 +50,7 @@ const Slip = ({
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
   const [postalName, setPostalName] = useState<string>();
   const [postalZip, setPostalZip] = useState<string>();
+  const [addressLocation, setAddressLocation] = useState<string>();
   const [values, setValues] = useState<object>({});
   const [policy, setPolicy] = useState<Policy>(new Policy());
   const [options, setOptions] = useState<Array<OptionProps>>([]);
@@ -137,6 +138,7 @@ const Slip = ({
             setPostalZip(postalSnapshot.x_zip);
             setPostalName(postalSnapshot.name);
             setTerritoryType(postalSnapshot.type);
+            setAddressLocation(postalSnapshot.location);
             processAddressData(
               congregationcode,
               postalcode,
@@ -183,7 +185,7 @@ const Slip = ({
               title={
                 <InfoImg className={`${instructions ? "blinking" : ""}`} />
               }
-              align="end"
+              align={{ sm: "end" }}
             >
               {instructions && (
                 <NavDropdown.Item
@@ -208,7 +210,7 @@ const Slip = ({
                     GetDirection(
                       policy.requiresPostcode()
                         ? zipcode
-                        : (postalName as string),
+                        : (addressLocation as string),
                       policy.origin
                     ),
                     "_blank"

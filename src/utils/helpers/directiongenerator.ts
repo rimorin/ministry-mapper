@@ -4,7 +4,14 @@ const getDirection = (
   postalCode: string,
   country = DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
 ) => {
-  return `https://www.google.com/maps/dir/?api=1&destination=${postalCode},${country}&travelmode=walking`;
+  const travelMode =
+    country !== DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
+      ? ""
+      : "&travelmode=walking";
+
+  const destination = encodeURIComponent(`${postalCode},${country}`);
+
+  return `https://www.google.com/maps/dir/?api=1&destination=${destination}${travelMode}`;
 };
 
 export default getDirection;
