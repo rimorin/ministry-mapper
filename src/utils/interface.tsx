@@ -96,6 +96,7 @@ export interface addressDetails extends nameInterface, postalInterface {
   feedback: string;
   type: number;
   instructions: string;
+  location?: string;
 }
 
 export interface FormProps {
@@ -357,6 +358,13 @@ export interface ChangeAddressPostalCodeModalProps
     footerInterface {
   territoryCode: string | undefined;
   requiresPostalCode: boolean;
+}
+
+export interface ChangeAddressLocationModalProps
+  extends postalInterface,
+    congregationInterface,
+    footerInterface {
+  location: string | undefined;
 }
 
 export interface ChangeTerritoryCodeModalProps

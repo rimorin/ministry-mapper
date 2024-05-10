@@ -32,6 +32,7 @@ const NewPrivateAddress = NiceModal.create(
   }: NewPrivateAddressModalProps) => {
     const [postalCode, setPostalCode] = useState("");
     const [name, setName] = useState("");
+    const [location, setLocation] = useState("");
     const [sequence, setSequence] = useState("");
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();
@@ -99,6 +100,7 @@ const NewPrivateAddress = NiceModal.create(
           set(addressReference, {
             name: name,
             feedback: "",
+            location: location,
             units: floorDetails,
             type: TERRITORY_TYPES.PRIVATE
           })
@@ -134,9 +136,7 @@ const NewPrivateAddress = NiceModal.create(
               }}
               changeValue={postalCode}
               required={true}
-              placeholder={
-                requiresPostalCode ? "Estate postal code" : undefined
-              }
+              placeholder={requiresPostalCode ? "Map postal code" : undefined}
               information={
                 requiresPostalCode
                   ? "A postal code within the private estate. This code will be used for locating the estate."
@@ -144,7 +144,7 @@ const NewPrivateAddress = NiceModal.create(
               }
             />
             <GenericInputField
-              label="Address Name"
+              label="Map Name"
               name="name"
               handleChange={(e: ChangeEvent<HTMLElement>) => {
                 const { value } = e.target as HTMLInputElement;
@@ -152,8 +152,21 @@ const NewPrivateAddress = NiceModal.create(
               }}
               changeValue={name}
               required={true}
-              placeholder={"For eg, Sembawang Boulevard Crescent"}
+              information="Description of the map."
             />
+            {!requiresPostalCode && (
+              <GenericInputField
+                label="Map Location"
+                name="location"
+                handleChange={(e: ChangeEvent<HTMLElement>) => {
+                  const { value } = e.target as HTMLInputElement;
+                  setLocation(value);
+                }}
+                changeValue={location}
+                required={true}
+                information="Location of the address that will be used for Google Maps directions."
+              />
+            )}
             <GenericTextAreaField
               label="House Sequence"
               name="units"
