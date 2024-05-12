@@ -4,7 +4,7 @@ import svgr from "vite-plugin-svgr";
 import visualizer from "rollup-plugin-visualizer";
 import checker from "vite-plugin-checker";
 import { ViteImageOptimizer } from "vite-plugin-image-optimizer";
-import TurboConsole from "vite-plugin-turbo-console";
+import TurboConsole from "unplugin-turbo-console/vite";
 export default defineConfig(() => {
   return {
     build: {

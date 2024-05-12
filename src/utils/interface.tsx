@@ -1,5 +1,6 @@
 import { User } from "firebase/auth";
 import { LinkSession, Policy } from "./policies";
+import { Value } from "react-calendar/dist/cjs/shared/types";
 
 interface userInterface {
   user: User;
@@ -106,7 +107,7 @@ export interface FormProps {
     event: React.ChangeEvent<HTMLElement>
   ) => void;
   handleChangeValues?: (values: string[]) => void;
-  handleDateChange?: (date: Date) => void;
+  handleDateChange?: (date: Value) => void;
   changeDate?: number;
   changeValue?: string;
   changeValues?: string[];

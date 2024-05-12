@@ -160,7 +160,8 @@ const UpdateUnitStatus = NiceModal.create(
                 <DncDateField
                   changeDate={hhDnctime}
                   handleDateChange={(date) => {
-                    setHhDnctime(date.getTime());
+                    const dateValue = date as Date;
+                    setHhDnctime(dateValue.getTime());
                   }}
                 />
               </div>

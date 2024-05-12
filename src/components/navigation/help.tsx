@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { HelpButtonProps } from "../../utils/interface";
-import { ReactComponent as QuestionImage } from "../../assets/question.svg";
+import QuestionImage from "../../assets/question.svg?react";
 const HelpButton = memo(
   ({ link, isWarningButton = false }: HelpButtonProps) => (
     <QuestionImage
