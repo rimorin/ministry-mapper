@@ -14,11 +14,11 @@ export default defineConfig(() => {
           manualChunks: {
             react: ["react", "react-dom", "react-router", "react-router-dom"],
             rollbar: ["rollbar"],
-            fbApp: ["@firebase/app"],
-            fbAuth: ["@firebase/auth"],
-            fbCheck: ["@firebase/app-check"],
-            fbDb: ["@firebase/database"],
-            fbFunctions: ["@firebase/functions"]
+            fbApp: ["firebase/app"],
+            fbAuth: ["firebase/auth"],
+            fbCheck: ["firebase/app-check"],
+            fbDb: ["firebase/database"],
+            fbFunctions: ["firebase/functions"]
           }
         }
       }
