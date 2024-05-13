@@ -30,7 +30,7 @@ import {
 } from "../../utils/constants";
 import "../../css/slip.css";
 import Countdown from "react-countdown";
-import { ReactComponent as InfoImg } from "../../assets/information.svg";
+import InfoImg from "../../assets/information.svg?react";
 import ModalManager from "@ebay/nice-modal-react";
 import UpdateAddressFeedback from "../../components/modal/updateaddfeedback";
 import UpdateAddressInstructions from "../../components/modal/instructions";
