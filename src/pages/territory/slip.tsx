@@ -5,6 +5,7 @@ import { Container, Fade, Navbar, NavDropdown } from "react-bootstrap";
 import {
   OptionProps,
   floorDetails,
+  latlongInterface,
   valuesDetails
 } from "../../utils/interface";
 import PublisherTerritoryTable from "../../components/table/publisher";
@@ -26,7 +27,8 @@ import {
   USER_ACCESS_LEVELS,
   WIKI_CATEGORIES,
   DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
-  DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
+  DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION,
+  DEFAULT_COORDINATES
 } from "../../utils/constants";
 import "../../css/slip.css";
 import Countdown from "react-countdown";
@@ -49,8 +51,9 @@ const Slip = ({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
   const [postalName, setPostalName] = useState<string>();
-  const [postalZip, setPostalZip] = useState<string>();
-  const [addressLocation, setAddressLocation] = useState<string>();
+  const [coordinates, setCoordinates] = useState<latlongInterface>(
+    DEFAULT_COORDINATES.Singapore
+  );
   const [values, setValues] = useState<object>({});
   const [policy, setPolicy] = useState<Policy>(new Policy());
   const [options, setOptions] = useState<Array<OptionProps>>([]);
@@ -135,10 +138,11 @@ const Slip = ({
               feedback: postalSnapshot.feedback,
               instructions: postalSnapshot.instructions
             }));
-            setPostalZip(postalSnapshot.x_zip);
             setPostalName(postalSnapshot.name);
             setTerritoryType(postalSnapshot.type);
-            setAddressLocation(postalSnapshot.location);
+            setCoordinates(
+              postalSnapshot.coordinates || DEFAULT_COORDINATES.Singapore
+            );
             processAddressData(
               congregationcode,
               postalcode,
@@ -169,7 +173,6 @@ const Slip = ({
   );
   if (isLoading) return <Loader />;
 
-  const zipcode = postalZip == null ? postalcode : postalZip;
   const instructions = (values as valuesDetails).instructions;
   return (
     <Fade appear={true} in={true}>
@@ -205,17 +208,7 @@ const Slip = ({
               )}
               <NavDropdown.Item onClick={toggleLegend}>Legend</NavDropdown.Item>
               <NavDropdown.Item
-                onClick={() =>
-                  window.open(
-                    GetDirection(
-                      policy.requiresPostcode()
-                        ? zipcode
-                        : (addressLocation as string),
-                      policy.origin
-                    ),
-                    "_blank"
-                  )
-                }
+                onClick={() => window.open(GetDirection(coordinates), "_blank")}
               >
                 Direction
               </NavDropdown.Item>

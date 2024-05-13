@@ -32,7 +32,7 @@ export const Default: Story = {
         <NewPublicAddress
           id="1"
           defaultVisible
-          requiresPostalCode
+          origin="testorigin"
           footerSaveAcl={footerSaveAcl}
           congregation={congregation}
           territoryCode={territoryCode}

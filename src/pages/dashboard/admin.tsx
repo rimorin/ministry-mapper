@@ -153,8 +153,8 @@ const ChangePassword = lazy(
 const ChangeAddressPostalCode = lazy(
   () => import("../../components/modal/changepostalcd")
 );
-const ChangeAddressLocation = lazy(
-  () => import("../../components/modal/changeaddlocation")
+const ChangeAddressGeoLocation = lazy(
+  () => import("../../components/modal/changegeolocation")
 );
 const ChangeAddressName = lazy(
   () => import("../../components/modal/changeaddname")
@@ -314,14 +314,14 @@ function Admin({ user }: adminProps) {
               const addressData = {
                 assigneeDetailsList: linkDetails.assigneeDetailsList,
                 personalDetailsList: linkDetails.personalDetailsList,
-                x_zip: postalSnapshot.x_zip,
                 name: postalSnapshot.name,
                 postalCode: postalCode,
                 floors: floorData,
                 feedback: postalSnapshot.feedback,
                 type: postalSnapshot.type,
                 instructions: postalSnapshot.instructions,
-                location: postalSnapshot.location
+                location: postalSnapshot.location,
+                coordinates: postalSnapshot.coordinates
               };
               setAddressData(
                 (existingAddresses) =>
@@ -1154,7 +1154,7 @@ function Admin({ user }: adminProps) {
                           congregation: code,
                           territoryCode: selectedTerritoryCode,
                           defaultType: policy.defaultType,
-                          requiresPostalCode: policy.requiresPostcode()
+                          origin: policy.origin
                         }).then(
                           async () =>
                             await refreshCongregationTerritory(
@@ -1174,7 +1174,7 @@ function Admin({ user }: adminProps) {
                             congregation: code,
                             territoryCode: selectedTerritoryCode,
                             defaultType: policy.defaultType,
-                            requiresPostalCode: policy.requiresPostcode()
+                            origin: policy.origin
                           }
                         ).then(
                           async () =>
@@ -1371,13 +1371,8 @@ function Admin({ user }: adminProps) {
             const completedPercent =
               territoryAddressData.percents.get(currentPostalcode);
             const addressLinkId = nanoid();
-            const zipcode =
-              addressElement.x_zip == null
-                ? currentPostalcode
-                : addressElement.x_zip;
             const assigneeCount = addressElement.assigneeDetailsList.length;
             const personalCount = addressElement.personalDetailsList.length;
-            const currentLocation = addressElement.location || "";
             return (
               <Accordion.Item
                 key={`accordion-${currentPostalcode}`}
@@ -1600,12 +1595,7 @@ function Admin({ user }: adminProps) {
                           className="m-1"
                           onClick={() =>
                             window.open(
-                              GetDirection(
-                                policy.requiresPostcode()
-                                  ? zipcode
-                                  : currentLocation,
-                                policy.origin
-                              ),
+                              GetDirection(addressElement.coordinates),
                               "_blank"
                             )
                           }
@@ -1673,14 +1663,14 @@ function Admin({ user }: adminProps) {
                             <Dropdown.Item
                               onClick={() =>
                                 ModalManager.show(
-                                  SuspenseComponent(ChangeAddressPostalCode),
+                                  SuspenseComponent(ChangeAddressGeoLocation),
                                   {
                                     footerSaveAcl: userAccessLevel,
                                     congregation: code,
                                     postalCode: currentPostalcode,
-                                    territoryCode: selectedTerritoryCode,
-                                    requiresPostalCode:
-                                      policy.requiresPostcode()
+                                    coordinates: addressElement.coordinates,
+                                    name: currentPostalname,
+                                    origin: policy.origin
                                   }
                                 ).then(
                                   async () =>
@@ -1690,12 +1680,29 @@ function Admin({ user }: adminProps) {
                                 )
                               }
                             >
-                              Change{" "}
-                              {policy.requiresPostcode()
-                                ? "Postal Code"
-                                : "Map Number"}
+                              Change Location
                             </Dropdown.Item>
-                            {!policy.requiresPostcode() && (
+                            <Dropdown.Item
+                              onClick={() =>
+                                ModalManager.show(
+                                  SuspenseComponent(ChangeAddressPostalCode),
+                                  {
+                                    footerSaveAcl: userAccessLevel,
+                                    congregation: code,
+                                    postalCode: currentPostalcode,
+                                    territoryCode: selectedTerritoryCode
+                                  }
+                                ).then(
+                                  async () =>
+                                    await refreshCongregationTerritory(
+                                      selectedTerritoryCode || ""
+                                    )
+                                )
+                              }
+                            >
+                              Change Map Number
+                            </Dropdown.Item>
+                            {/* {!policy.requiresPostcode() && (
                               <Dropdown.Item
                                 onClick={() =>
                                   ModalManager.show(
@@ -1711,7 +1718,7 @@ function Admin({ user }: adminProps) {
                               >
                                 Change Location
                               </Dropdown.Item>
-                            )}
+                            )} */}
                             <Dropdown.Item
                               onClick={() => {
                                 setValues({

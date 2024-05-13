@@ -6,7 +6,7 @@ import ComponentAuthorizer from "../navigation/authorizer";
 import GetDirection from "../../utils/helpers/directiongenerator";
 
 const ModalFooter = ({
-  propertyPostal,
+  propertyCoordinates,
   handleClick,
   handleDelete,
   type,
@@ -17,7 +17,6 @@ const ModalFooter = ({
   submitLabel = "Save",
   disableSubmitBtn = false
 }: FooterProps) => {
-  const encodedPropertyPostal = encodeURIComponent(propertyPostal as string);
   return (
     <Modal.Footer className="justify-content-around">
       {type && type === TERRITORY_TYPES.PRIVATE ? (
@@ -30,11 +29,11 @@ const ModalFooter = ({
               Delete Property
             </Button>
           </ComponentAuthorizer>
-          {propertyPostal && (
+          {propertyCoordinates && (
             <Button
               variant="secondary"
               onClick={() =>
-                window.open(GetDirection(encodedPropertyPostal), "_blank")
+                window.open(GetDirection(propertyCoordinates), "_blank")
               }
             >
               Direction

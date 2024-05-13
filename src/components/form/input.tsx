@@ -3,6 +3,7 @@ import { FormProps } from "../../utils/interface";
 
 const GenericInputField = ({
   handleChange,
+  handleClick,
   changeValue,
   name,
   label,
@@ -19,6 +20,7 @@ const GenericInputField = ({
       <Form.Control
         type={inputType}
         onChange={handleChange}
+        onClick={handleClick}
         name={name}
         value={changeValue}
         required={required}

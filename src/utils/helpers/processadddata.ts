@@ -25,7 +25,7 @@ const processAddressData = async (
       const unitValues = element.val();
       const unitNumber = element.key || "";
       unitsDetails.push({
-        propertyPostal: unitValues.x_zip,
+        coordinates: unitValues.coordinates,
         number: unitNumber,
         note: unitValues.note,
         type: unitValues.type || "",

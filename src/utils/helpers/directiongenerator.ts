@@ -1,17 +1,11 @@
-import { DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION } from "../constants";
+import { DEFAULT_COORDINATES } from "../constants";
 
-const getDirection = (
-  postalCode: string,
-  country = DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
-) => {
-  const travelMode =
-    country !== DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
-      ? ""
-      : "&travelmode=walking";
+const getDirection = (coordinates = DEFAULT_COORDINATES.Singapore) => {
+  const destination = encodeURIComponent(
+    `${coordinates.lat},${coordinates.lng}`
+  );
 
-  const destination = encodeURIComponent(`${postalCode},${country}`);
-
-  return `https://www.google.com/maps/dir/?api=1&destination=${destination}${travelMode}`;
+  return `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
 };
 
 export default getDirection;

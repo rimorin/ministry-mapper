@@ -93,9 +93,6 @@ export class Policy {
       progress
     );
   }
-  requiresPostcode(): boolean {
-    return this.origin === DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION;
-  }
 }
 
 export class LinkSession {
