@@ -139,7 +139,20 @@ const WIKI_CATEGORIES = {
 };
 
 const DEFAULT_FB_CLOUD_FUNCTIONS_REGION = "asia-southeast1";
-const DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION = "Singapore";
+const DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION = "sg";
+// create a map of coordinates for each congregation
+// key is the congregation name
+// value is the coordinates
+const DEFAULT_COORDINATES = {
+  Singapore: {
+    lat: 1.2814921633413734,
+    lng: 103.86357685947748
+  },
+  Malaysia: {
+    lat: 4.2105,
+    lng: 101.9758
+  }
+};
 
 export {
   UNSUPPORTED_BROWSER_MSG,
@@ -176,5 +189,6 @@ export {
   NOTIFICATION_TYPES,
   DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION,
   DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
-  DEFAULT_MULTPLE_OPTION_DELIMITER
+  DEFAULT_MULTPLE_OPTION_DELIMITER,
+  DEFAULT_COORDINATES
 };
