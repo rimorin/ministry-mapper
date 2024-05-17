@@ -41,7 +41,7 @@ import ModalUnitTitle from "../form/title";
 import HHTypeField from "../form/household";
 import ComponentAuthorizer from "../navigation/authorizer";
 import HelpButton from "../navigation/help";
-import NewAddressGeolocation from "./newaddgeolocation";
+import ChangeAddressGeolocation from "./changegeolocation";
 
 const UpdateUnitStatus = NiceModal.create(
   ({
@@ -243,8 +243,9 @@ const UpdateUnitStatus = NiceModal.create(
                     label="Map Coordinates"
                     name="location"
                     handleClick={() => {
-                      ModalManager.show(NewAddressGeolocation, {
-                        coordinates: coordinates
+                      ModalManager.show(ChangeAddressGeolocation, {
+                        coordinates: coordinates,
+                        isNew: true
                       }).then((result) => {
                         const coordinates = result as {
                           lat: number;
