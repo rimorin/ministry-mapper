@@ -35,7 +35,6 @@ import {
   Container,
   Dropdown,
   DropdownButton,
-  Fade,
   Navbar,
   ProgressBar,
   Spinner,
@@ -899,71 +898,93 @@ function Admin({ user }: adminProps) {
   const isReadonly = userAccessLevel === USER_ACCESS_LEVELS.READ_ONLY.CODE;
 
   return (
-    <Fade appear={true} in={true}>
-      <>
-        <EnvironmentIndicator
-          environment={import.meta.env.VITE_ROLLBAR_ENVIRONMENT}
-        />
-        <TerritoryListing
-          showListing={showTerritoryListing}
-          territories={congregationTerritoryList}
-          selectedTerritory={selectedTerritoryCode}
-          hideFunction={toggleTerritoryListing}
-          handleSelect={handleTerritorySelect}
-        />
-        <TerritoryListing
-          showListing={showChangeAddressTerritory}
-          territories={congregationTerritoryList}
-          selectedTerritory={selectedTerritoryCode}
-          hideFunction={toggleAddressTerritoryListing}
-          handleSelect={handleAddressTerritorySelect}
-          hideSelectedTerritory={true}
-        />
-        <UserListing
-          showListing={showUserListing}
-          users={Array.from(congUsers.values())}
-          currentUid={user.uid}
-          hideFunction={toggleUserListing}
-          handleSelect={handleUserSelect}
-        />
-        <Navbar bg="light" variant="light" expand="lg">
-          <Container fluid>
-            <NavBarBranding naming={name} />
-            <Navbar.Toggle aria-controls="basic-navbar-nav" />
-            <Navbar.Collapse
-              id="basic-navbar-nav"
-              className="justify-content-end mt-1"
-            >
-              {congregationTerritoryList &&
-                congregationTerritoryList.length > 0 && (
-                  <Button
-                    className="m-1"
-                    size="sm"
-                    variant="outline-primary"
-                    onClick={toggleTerritoryListing}
-                  >
-                    {selectedTerritoryCode ? (
-                      <>
-                        <AggregationBadge
-                          isDataFetched={isDataCompletelyFetched}
-                          aggregate={territoryAddressData.aggregate}
-                        />
-                        {selectedTerritoryCode}
-                      </>
-                    ) : (
-                      "Select Territory"
-                    )}
-                  </Button>
-                )}
-              {!selectedTerritoryCode && (
-                <ComponentAuthorizer
-                  requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
-                  userPermission={userAccessLevel}
+    <>
+      <EnvironmentIndicator
+        environment={import.meta.env.VITE_ROLLBAR_ENVIRONMENT}
+      />
+      <TerritoryListing
+        showListing={showTerritoryListing}
+        territories={congregationTerritoryList}
+        selectedTerritory={selectedTerritoryCode}
+        hideFunction={toggleTerritoryListing}
+        handleSelect={handleTerritorySelect}
+      />
+      <TerritoryListing
+        showListing={showChangeAddressTerritory}
+        territories={congregationTerritoryList}
+        selectedTerritory={selectedTerritoryCode}
+        hideFunction={toggleAddressTerritoryListing}
+        handleSelect={handleAddressTerritorySelect}
+        hideSelectedTerritory={true}
+      />
+      <UserListing
+        showListing={showUserListing}
+        users={Array.from(congUsers.values())}
+        currentUid={user.uid}
+        hideFunction={toggleUserListing}
+        handleSelect={handleUserSelect}
+      />
+      <Navbar bg="light" variant="light" expand="lg">
+        <Container fluid>
+          <NavBarBranding naming={name} />
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <Navbar.Collapse
+            id="basic-navbar-nav"
+            className="justify-content-end mt-1"
+          >
+            {congregationTerritoryList &&
+              congregationTerritoryList.length > 0 && (
+                <Button
+                  className="m-1"
+                  size="sm"
+                  variant="outline-primary"
+                  onClick={toggleTerritoryListing}
                 >
-                  <Button
-                    className="m-1"
-                    size="sm"
-                    variant="outline-primary"
+                  {selectedTerritoryCode ? (
+                    <>
+                      <AggregationBadge
+                        isDataFetched={isDataCompletelyFetched}
+                        aggregate={territoryAddressData.aggregate}
+                      />
+                      {selectedTerritoryCode}
+                    </>
+                  ) : (
+                    "Select Territory"
+                  )}
+                </Button>
+              )}
+            {!selectedTerritoryCode && (
+              <ComponentAuthorizer
+                requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
+                userPermission={userAccessLevel}
+              >
+                <Button
+                  className="m-1"
+                  size="sm"
+                  variant="outline-primary"
+                  onClick={() =>
+                    ModalManager.show(SuspenseComponent(NewTerritoryCode), {
+                      footerSaveAcl: userAccessLevel,
+                      congregation: code
+                    })
+                  }
+                >
+                  Create Territory
+                </Button>
+              </ComponentAuthorizer>
+            )}
+            {selectedTerritoryCode && (
+              <ComponentAuthorizer
+                requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
+                userPermission={userAccessLevel}
+              >
+                <DropdownButton
+                  className="dropdown-btn"
+                  variant="outline-primary"
+                  size="sm"
+                  title="Territory"
+                >
+                  <Dropdown.Item
                     onClick={() =>
                       ModalManager.show(SuspenseComponent(NewTerritoryCode), {
                         footerSaveAcl: userAccessLevel,
@@ -971,329 +992,237 @@ function Admin({ user }: adminProps) {
                       })
                     }
                   >
-                    Create Territory
-                  </Button>
-                </ComponentAuthorizer>
-              )}
-              {selectedTerritoryCode && (
-                <ComponentAuthorizer
-                  requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
-                  userPermission={userAccessLevel}
-                >
-                  <DropdownButton
-                    className="dropdown-btn"
-                    variant="outline-primary"
-                    size="sm"
-                    title="Territory"
-                  >
-                    <Dropdown.Item
-                      onClick={() =>
-                        ModalManager.show(SuspenseComponent(NewTerritoryCode), {
+                    Create New
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() =>
+                      ModalManager.show(
+                        SuspenseComponent(ChangeTerritoryCode),
+                        {
                           footerSaveAcl: userAccessLevel,
-                          congregation: code
-                        })
-                      }
-                    >
-                      Create New
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={() =>
-                        ModalManager.show(
-                          SuspenseComponent(ChangeTerritoryCode),
-                          {
-                            footerSaveAcl: userAccessLevel,
-                            congregation: code,
-                            territoryCode: selectedTerritoryCode
-                          }
-                        ).then((updatedCode) => {
-                          processSelectedTerritory(updatedCode as string);
-                          const updatedTerritories = new Map();
-                          for (const [key, value] of territories) {
-                            if (key === selectedTerritoryCode && value) {
-                              value.code = updatedCode as string;
-                              updatedTerritories.set(
-                                updatedCode as string,
-                                value
-                              );
-                            } else {
-                              updatedTerritories.set(key, value);
-                            }
-                          }
-                          setTerritories(updatedTerritories);
-                        })
-                      }
-                    >
-                      Change Code
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={() =>
-                        confirmAlert({
-                          customUI: ({ onClose }) => {
-                            return (
-                              <Container>
-                                <Card bg="warning" className="text-center">
-                                  <Card.Header>
-                                    Warning ⚠️
-                                    <HelpButton
-                                      link={WIKI_CATEGORIES.DELETE_TERRITORIES}
-                                      isWarningButton={true}
-                                    />
-                                  </Card.Header>
-                                  <Card.Body>
-                                    <Card.Title>Are You Very Sure ?</Card.Title>
-                                    <Card.Text>
-                                      This action will delete the territory,{" "}
-                                      {selectedTerritoryCode} -{" "}
-                                      {selectedTerritoryName} and all its
-                                      addresses.
-                                    </Card.Text>
-                                    <Button
-                                      className="m-1"
-                                      variant="primary"
-                                      onClick={() => {
-                                        deleteTerritory();
-                                        onClose();
-                                      }}
-                                    >
-                                      Yes, Delete It.
-                                    </Button>
-                                    <Button
-                                      className="no-confirm-btn"
-                                      variant="primary"
-                                      onClick={() => {
-                                        onClose();
-                                      }}
-                                    >
-                                      No
-                                    </Button>
-                                  </Card.Body>
-                                </Card>
-                              </Container>
+                          congregation: code,
+                          territoryCode: selectedTerritoryCode
+                        }
+                      ).then((updatedCode) => {
+                        processSelectedTerritory(updatedCode as string);
+                        const updatedTerritories = new Map();
+                        for (const [key, value] of territories) {
+                          if (key === selectedTerritoryCode && value) {
+                            value.code = updatedCode as string;
+                            updatedTerritories.set(
+                              updatedCode as string,
+                              value
                             );
+                          } else {
+                            updatedTerritories.set(key, value);
                           }
-                        })
-                      }
-                    >
-                      Delete Current
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={() =>
-                        ModalManager.show(
-                          SuspenseComponent(ChangeTerritoryName),
-                          {
-                            footerSaveAcl: userAccessLevel,
-                            congregation: code,
-                            territoryCode: selectedTerritoryCode,
-                            name: selectedTerritoryName
-                          }
-                        ).then((updatedName) => {
-                          setSelectedTerritoryName(updatedName as string);
-                          setTerritories(
-                            new Map<string, territoryDetails>(
-                              Array.from(territories).map(([key, value]) => {
-                                if (key === selectedTerritoryCode) {
-                                  value.name = updatedName as string;
-                                }
-                                return [key, value];
-                              })
-                            )
-                          );
-                        })
-                      }
-                    >
-                      Edit Current Name
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={() =>
-                        confirmAlert({
-                          customUI: ({ onClose }) => {
-                            return (
-                              <Container>
-                                <Card bg="warning" className="text-center">
-                                  <Card.Header>
-                                    Warning ⚠️
-                                    <HelpButton
-                                      link={WIKI_CATEGORIES.RESET_TERRITORIES}
-                                      isWarningButton={true}
-                                    />
-                                  </Card.Header>
-                                  <Card.Body>
-                                    <Card.Title>Are You Very Sure ?</Card.Title>
-                                    <Card.Text>
-                                      <p>
-                                        This action will reset the status of all
-                                        addresses in the territory,{" "}
-                                        {selectedTerritoryCode} -{" "}
-                                        {selectedTerritoryName}.
-                                      </p>
-                                      <p>
-                                        Certain statuses such as DNC and Invalid
-                                        will not be affected.
-                                      </p>
-                                    </Card.Text>
-                                    <Button
-                                      className="m-1"
-                                      variant="primary"
-                                      onClick={() => {
-                                        resetTerritory();
-                                        onClose();
-                                      }}
-                                    >
-                                      Yes, Reset them.
-                                    </Button>
-                                    <Button
-                                      className="no-confirm-btn"
-                                      variant="primary"
-                                      onClick={() => {
-                                        onClose();
-                                      }}
-                                    >
-                                      No
-                                    </Button>
-                                  </Card.Body>
-                                </Card>
-                              </Container>
-                            );
-                          }
-                        })
-                      }
-                    >
-                      Reset status
-                    </Dropdown.Item>
-                  </DropdownButton>
-                </ComponentAuthorizer>
-              )}
-              {selectedTerritoryCode && (
-                <ComponentAuthorizer
-                  requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
-                  userPermission={userAccessLevel}
-                >
-                  <DropdownButton
-                    className="dropdown-btn"
-                    variant="outline-primary"
-                    size="sm"
-                    title="New Address"
-                    align="end"
+                        }
+                        setTerritories(updatedTerritories);
+                      })
+                    }
                   >
-                    <Dropdown.Item
-                      onClick={() =>
-                        ModalManager.show(SuspenseComponent(NewPublicAddress), {
+                    Change Code
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() =>
+                      confirmAlert({
+                        customUI: ({ onClose }) => {
+                          return (
+                            <Container>
+                              <Card bg="warning" className="text-center">
+                                <Card.Header>
+                                  Warning ⚠️
+                                  <HelpButton
+                                    link={WIKI_CATEGORIES.DELETE_TERRITORIES}
+                                    isWarningButton={true}
+                                  />
+                                </Card.Header>
+                                <Card.Body>
+                                  <Card.Title>Are You Very Sure ?</Card.Title>
+                                  <Card.Text>
+                                    This action will delete the territory,{" "}
+                                    {selectedTerritoryCode} -{" "}
+                                    {selectedTerritoryName} and all its
+                                    addresses.
+                                  </Card.Text>
+                                  <Button
+                                    className="m-1"
+                                    variant="primary"
+                                    onClick={() => {
+                                      deleteTerritory();
+                                      onClose();
+                                    }}
+                                  >
+                                    Yes, Delete It.
+                                  </Button>
+                                  <Button
+                                    className="no-confirm-btn"
+                                    variant="primary"
+                                    onClick={() => {
+                                      onClose();
+                                    }}
+                                  >
+                                    No
+                                  </Button>
+                                </Card.Body>
+                              </Card>
+                            </Container>
+                          );
+                        }
+                      })
+                    }
+                  >
+                    Delete Current
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() =>
+                      ModalManager.show(
+                        SuspenseComponent(ChangeTerritoryName),
+                        {
                           footerSaveAcl: userAccessLevel,
                           congregation: code,
                           territoryCode: selectedTerritoryCode,
-                          defaultType: policy.defaultType,
-                          origin: policy.origin
-                        }).then(
-                          async () =>
-                            await refreshCongregationTerritory(
-                              selectedTerritoryCode || ""
-                            )
-                        )
-                      }
-                    >
-                      Public
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={() =>
-                        ModalManager.show(
-                          SuspenseComponent(NewPrivateAddress),
-                          {
-                            footerSaveAcl: userAccessLevel,
-                            congregation: code,
-                            territoryCode: selectedTerritoryCode,
-                            defaultType: policy.defaultType,
-                            origin: policy.origin
-                          }
-                        ).then(
-                          async () =>
-                            await refreshCongregationTerritory(
-                              selectedTerritoryCode || ""
-                            )
-                        )
-                      }
-                    >
-                      Private
-                    </Dropdown.Item>
-                  </DropdownButton>
-                </ComponentAuthorizer>
-              )}
+                          name: selectedTerritoryName
+                        }
+                      ).then((updatedName) => {
+                        setSelectedTerritoryName(updatedName as string);
+                        setTerritories(
+                          new Map<string, territoryDetails>(
+                            Array.from(territories).map(([key, value]) => {
+                              if (key === selectedTerritoryCode) {
+                                value.name = updatedName as string;
+                              }
+                              return [key, value];
+                            })
+                          )
+                        );
+                      })
+                    }
+                  >
+                    Edit Current Name
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() =>
+                      confirmAlert({
+                        customUI: ({ onClose }) => {
+                          return (
+                            <Container>
+                              <Card bg="warning" className="text-center">
+                                <Card.Header>
+                                  Warning ⚠️
+                                  <HelpButton
+                                    link={WIKI_CATEGORIES.RESET_TERRITORIES}
+                                    isWarningButton={true}
+                                  />
+                                </Card.Header>
+                                <Card.Body>
+                                  <Card.Title>Are You Very Sure ?</Card.Title>
+                                  <Card.Text>
+                                    <p>
+                                      This action will reset the status of all
+                                      addresses in the territory,{" "}
+                                      {selectedTerritoryCode} -{" "}
+                                      {selectedTerritoryName}.
+                                    </p>
+                                    <p>
+                                      Certain statuses such as DNC and Invalid
+                                      will not be affected.
+                                    </p>
+                                  </Card.Text>
+                                  <Button
+                                    className="m-1"
+                                    variant="primary"
+                                    onClick={() => {
+                                      resetTerritory();
+                                      onClose();
+                                    }}
+                                  >
+                                    Yes, Reset them.
+                                  </Button>
+                                  <Button
+                                    className="no-confirm-btn"
+                                    variant="primary"
+                                    onClick={() => {
+                                      onClose();
+                                    }}
+                                  >
+                                    No
+                                  </Button>
+                                </Card.Body>
+                              </Card>
+                            </Container>
+                          );
+                        }
+                      })
+                    }
+                  >
+                    Reset status
+                  </Dropdown.Item>
+                </DropdownButton>
+              </ComponentAuthorizer>
+            )}
+            {selectedTerritoryCode && (
               <ComponentAuthorizer
                 requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
                 userPermission={userAccessLevel}
               >
                 <DropdownButton
                   className="dropdown-btn"
-                  size="sm"
                   variant="outline-primary"
-                  title={
-                    <>
-                      {isShowingUserListing && (
-                        <>
-                          <Spinner
-                            as="span"
-                            animation="border"
-                            size="sm"
-                            aria-hidden="true"
-                          />{" "}
-                        </>
-                      )}{" "}
-                      Congregation
-                    </>
-                  }
-                  align={{ lg: "end" }}
+                  size="sm"
+                  title="New Address"
+                  align="end"
                 >
                   <Dropdown.Item
                     onClick={() =>
-                      ModalManager.show(
-                        SuspenseComponent(UpdateCongregationSettings),
-                        {
-                          currentName: name,
-                          currentCongregation: code,
-                          currentMaxTries:
-                            policy?.maxTries || DEFAULT_CONGREGATION_MAX_TRIES,
-                          currentDefaultExpiryHrs: defaultExpiryHours,
-                          currentIsMultipleSelection: policy?.isMultiselect
-                        }
+                      ModalManager.show(SuspenseComponent(NewPublicAddress), {
+                        footerSaveAcl: userAccessLevel,
+                        congregation: code,
+                        territoryCode: selectedTerritoryCode,
+                        defaultType: policy.defaultType,
+                        origin: policy.origin
+                      }).then(
+                        async () =>
+                          await refreshCongregationTerritory(
+                            selectedTerritoryCode || ""
+                          )
                       )
                     }
                   >
-                    Settings
+                    Public
                   </Dropdown.Item>
                   <Dropdown.Item
                     onClick={() =>
-                      ModalManager.show(
-                        SuspenseComponent(UpdateCongregationOptions),
-                        {
-                          currentCongregation: code
-                        }
+                      ModalManager.show(SuspenseComponent(NewPrivateAddress), {
+                        footerSaveAcl: userAccessLevel,
+                        congregation: code,
+                        territoryCode: selectedTerritoryCode,
+                        defaultType: policy.defaultType,
+                        origin: policy.origin
+                      }).then(
+                        async () =>
+                          await refreshCongregationTerritory(
+                            selectedTerritoryCode || ""
+                          )
                       )
                     }
                   >
-                    Household Options
-                  </Dropdown.Item>
-                  <Dropdown.Item onClick={async () => await getUsers()}>
-                    Manage Users
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={() => {
-                      ModalManager.show(SuspenseComponent(InviteUser), {
-                        email: user.email,
-                        congregation: code,
-                        footerSaveAcl: userAccessLevel
-                      });
-                    }}
-                  >
-                    Invite User
+                    Private
                   </Dropdown.Item>
                 </DropdownButton>
               </ComponentAuthorizer>
+            )}
+            <ComponentAuthorizer
+              requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
+              userPermission={userAccessLevel}
+            >
               <DropdownButton
                 className="dropdown-btn"
                 size="sm"
                 variant="outline-primary"
                 title={
                   <>
-                    {isAssignmentLoading && (
+                    {isShowingUserListing && (
                       <>
                         <Spinner
                           as="span"
@@ -1303,757 +1232,790 @@ function Admin({ user }: adminProps) {
                         />{" "}
                       </>
                     )}{" "}
-                    Account
+                    Congregation
                   </>
                 }
                 align={{ lg: "end" }}
               >
                 <Dropdown.Item
-                  onClick={() => {
-                    ModalManager.show(SuspenseComponent(GetProfile), {
-                      user: user
-                    });
-                  }}
-                >
-                  Profile
-                </Dropdown.Item>
-                <Dropdown.Item
-                  onClick={() => {
-                    setIsAssignmentLoading(true);
-                    pollingQueryFunction(() =>
-                      get(
-                        query(
-                          ref(database, `links/${code}`),
-                          orderByChild("userId"),
-                          equalTo(user.uid)
-                        )
-                      )
+                  onClick={() =>
+                    ModalManager.show(
+                      SuspenseComponent(UpdateCongregationSettings),
+                      {
+                        currentName: name,
+                        currentCongregation: code,
+                        currentMaxTries:
+                          policy?.maxTries || DEFAULT_CONGREGATION_MAX_TRIES,
+                        currentDefaultExpiryHrs: defaultExpiryHours,
+                        currentIsMultipleSelection: policy?.isMultiselect
+                      }
                     )
-                      .then((snapshot) => {
-                        if (!snapshot.exists()) {
-                          alert("No assignments found.");
-                          return;
-                        }
-                        const assignmentListing = snapshot.val();
-                        const linkListing = new Array<LinkSession>();
-                        for (const linkId in assignmentListing) {
-                          linkListing.push(
-                            new LinkSession(assignmentListing[linkId], linkId)
-                          );
-                        }
-                        ModalManager.show(SuspenseComponent(GetAssignments), {
-                          assignments: linkListing,
-                          congregation: code
-                        });
-                      })
-                      .finally(() => {
-                        setIsAssignmentLoading(false);
-                      });
-                  }}
+                  }
                 >
-                  Assignments
+                  Settings
                 </Dropdown.Item>
                 <Dropdown.Item
                   onClick={() =>
-                    ModalManager.show(SuspenseComponent(ChangePassword), {
-                      user: user,
-                      userAccessLevel: userAccessLevel
-                    })
+                    ModalManager.show(
+                      SuspenseComponent(UpdateCongregationOptions),
+                      {
+                        currentCongregation: code
+                      }
+                    )
                   }
                 >
-                  Change Password
+                  Household Options
                 </Dropdown.Item>
-                <Dropdown.Item onClick={logoutUser}>Logout</Dropdown.Item>
+                <Dropdown.Item onClick={async () => await getUsers()}>
+                  Manage Users
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => {
+                    ModalManager.show(SuspenseComponent(InviteUser), {
+                      email: user.email,
+                      congregation: code,
+                      footerSaveAcl: userAccessLevel
+                    });
+                  }}
+                >
+                  Invite User
+                </Dropdown.Item>
               </DropdownButton>
-            </Navbar.Collapse>
-          </Container>
-        </Navbar>
-        {!selectedTerritoryCode && <Welcome name={`${user.displayName}`} />}
-        <TerritoryHeader name={selectedTerritoryName} />
-        {/* There is no need to open all accordion for read-only users. */}
-        <Accordion
-          activeKey={isReadonly ? undefined : accordingKeys}
-          onSelect={(eventKeys) => {
-            if (Array.isArray(eventKeys)) {
-              setAccordionKeys(
-                eventKeys.map((key) => {
-                  return key.toString();
-                })
-              );
-            }
-          }}
-          alwaysOpen={!isReadonly}
-          flush
-        >
-          {sortedAddressList.map((currentAdd) => {
-            const currentPostalcode = currentAdd.code;
-            const addressElement = territoryAddressData.data.get(
-              currentAdd.code
-            );
-
-            if (!addressElement)
-              return <div key={`empty-div-${currentPostalcode}`}></div>;
-            const currentPostalname = addressElement.name;
-            const maxUnitNumberLength =
-              territoryAddressData.lengths.get(currentPostalcode);
-            const completedPercent =
-              territoryAddressData.percents.get(currentPostalcode);
-            const addressLinkId = nanoid();
-            const assigneeCount = addressElement.assigneeDetailsList.length;
-            const personalCount = addressElement.personalDetailsList.length;
-            return (
-              <Accordion.Item
-                key={`accordion-${currentPostalcode}`}
-                eventKey={currentPostalcode}
+            </ComponentAuthorizer>
+            <DropdownButton
+              className="dropdown-btn"
+              size="sm"
+              variant="outline-primary"
+              title={
+                <>
+                  {isAssignmentLoading && (
+                    <>
+                      <Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        aria-hidden="true"
+                      />{" "}
+                    </>
+                  )}{" "}
+                  Account
+                </>
+              }
+              align={{ lg: "end" }}
+            >
+              <Dropdown.Item
+                onClick={() => {
+                  ModalManager.show(SuspenseComponent(GetProfile), {
+                    user: user
+                  });
+                }}
               >
-                <Accordion.Header>
-                  <span className="fluid-bolding fluid-text">
-                    {currentPostalname}
-                  </span>
-                </Accordion.Header>
-                <Accordion.Body className="p-0">
-                  <ProgressBar
-                    style={{ borderRadius: 0 }}
-                    now={completedPercent.completedValue}
-                    label={completedPercent.completedDisplay}
-                  />
-                  <div key={`div-${currentPostalcode}`}>
-                    <Navbar
-                      bg="light"
-                      expand="lg"
-                      key={`navbar-${currentPostalcode}`}
-                    >
-                      <Container fluid className="justify-content-end">
-                        <ComponentAuthorizer
-                          requiredPermission={
-                            USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE
-                          }
-                          userPermission={userAccessLevel}
-                        >
-                          <ButtonGroup className="m-1">
-                            <Button
-                              key={`assigndrop-${currentPostalcode}`}
-                              size="sm"
-                              variant="outline-primary"
-                              onClick={() => {
-                                if (!navigator.share) {
-                                  alert(UNSUPPORTED_BROWSER_MSG);
-                                  return;
-                                }
-                                ModalManager.show(
-                                  SuspenseComponent(ConfirmSlipDetails),
-                                  {
-                                    addressName: currentPostalname,
-                                    userAccessLevel: userAccessLevel,
-                                    isPersonalSlip: true
-                                  }
-                                ).then((linkReturn) => {
-                                  const linkObject = linkReturn as Record<
-                                    string,
-                                    unknown
-                                  >;
-                                  handleSubmitPersonalSlip(
-                                    currentPostalcode,
-                                    currentPostalname,
-                                    addressLinkId,
-                                    linkObject.linkExpiryHrs as number,
-                                    linkObject.publisherName as string
-                                  );
-                                });
-                              }}
-                            >
-                              Personal
-                            </Button>
-                            {(isSettingPersonalLink &&
-                              selectedPostal === currentPostalcode && (
-                                <Button size="sm" variant="outline-primary">
-                                  <Spinner
-                                    as="span"
-                                    animation="border"
-                                    size="sm"
-                                    aria-hidden="true"
-                                  />{" "}
-                                </Button>
-                              )) ||
-                              (personalCount > 0 && (
-                                <Button
-                                  size="sm"
-                                  variant="outline-primary"
-                                  onClick={() =>
-                                    ModalManager.show(
-                                      SuspenseComponent(GetAssignments),
-                                      {
-                                        assignments:
-                                          addressElement.personalDetailsList,
-                                        assignmentType: LINK_TYPES.PERSONAL,
-                                        assignmentTerritory: currentPostalname,
-                                        congregation: code
-                                      }
-                                    )
-                                  }
-                                >
-                                  <Badge bg="danger" className="me-1">
-                                    {personalCount}
-                                  </Badge>
-                                </Button>
-                              ))}
-                          </ButtonGroup>
-                        </ComponentAuthorizer>
-                        <ComponentAuthorizer
-                          requiredPermission={USER_ACCESS_LEVELS.CONDUCTOR.CODE}
-                          userPermission={userAccessLevel}
-                        >
-                          <ButtonGroup className="m-1">
-                            <Button
-                              size="sm"
-                              variant="outline-primary"
-                              onClick={() => {
-                                if (!navigator.share) {
-                                  alert(UNSUPPORTED_BROWSER_MSG);
-                                  return;
-                                }
-                                ModalManager.show(
-                                  SuspenseComponent(ConfirmSlipDetails),
-                                  {
-                                    addressName: currentPostalname,
-                                    userAccessLevel: userAccessLevel,
-                                    isPersonalSlip: false
-                                  }
-                                ).then((linkReturn) => {
-                                  const linkObject = linkReturn as Record<
-                                    string,
-                                    unknown
-                                  >;
-                                  shareTimedLink(
-                                    LINK_TYPES.ASSIGNMENT,
-                                    currentPostalcode,
-                                    currentPostalname,
-                                    addressLinkId,
-                                    `Units for ${currentPostalname}`,
-                                    assignmentMessage(currentPostalname),
-                                    `${code}/${addressLinkId}`,
-                                    defaultExpiryHours,
-                                    linkObject.publisherName as string
-                                  );
-                                });
-                              }}
-                            >
-                              Assign
-                            </Button>
-                            {(isSettingAssignLink &&
-                              selectedPostal === currentPostalcode && (
-                                <Button size="sm" variant="outline-primary">
-                                  <Spinner
-                                    as="span"
-                                    animation="border"
-                                    size="sm"
-                                    aria-hidden="true"
-                                  />{" "}
-                                </Button>
-                              )) ||
-                              (assigneeCount > 0 && (
-                                <Button
-                                  size="sm"
-                                  variant="outline-primary"
-                                  onClick={() =>
-                                    ModalManager.show(
-                                      SuspenseComponent(GetAssignments),
-                                      {
-                                        assignments:
-                                          addressElement.assigneeDetailsList,
-                                        assignmentType: LINK_TYPES.ASSIGNMENT,
-                                        assignmentTerritory: currentPostalname,
-                                        congregation: code
-                                      }
-                                    )
-                                  }
-                                >
-                                  <Badge bg="danger" className="me-1">
-                                    {assigneeCount}
-                                  </Badge>
-                                </Button>
-                              ))}
-                          </ButtonGroup>
-                        </ComponentAuthorizer>
-                        <Button
-                          size="sm"
-                          variant="outline-primary"
-                          className="m-1"
-                          onClick={async () => {
-                            setIsSettingViewLink(true);
-                            try {
-                              const territoryWindow = window.open("");
-                              if (territoryWindow) {
-                                territoryWindow.document.body.innerHTML =
-                                  TERRITORY_VIEW_WINDOW_WELCOME_TEXT;
-                              }
-                              await setTimedLink(
-                                LINK_TYPES.VIEW,
-                                currentPostalcode,
-                                currentPostalname,
-                                addressLinkId,
-                                defaultExpiryHours,
-                                user.displayName || ""
-                              );
-                              if (territoryWindow) {
-                                territoryWindow.location.href = `${code}/${addressLinkId}`;
-                              }
-                            } catch (error) {
-                              errorHandler(error, rollbar);
-                            } finally {
-                              setIsSettingViewLink(false);
-                            }
-                          }}
-                        >
-                          {isSettingViewLink && (
-                            <>
-                              <Spinner
-                                as="span"
-                                animation="border"
-                                size="sm"
-                                aria-hidden="true"
-                              />{" "}
-                            </>
-                          )}
-                          View
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline-primary"
-                          className="m-1"
-                          onClick={() =>
-                            window.open(
-                              GetDirection(addressElement.coordinates),
-                              "_blank"
-                            )
-                          }
-                        >
-                          Direction
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline-primary"
-                          className="m-1"
-                          onClick={() =>
-                            ModalManager.show(
-                              SuspenseComponent(UpdateAddressFeedback),
-                              {
-                                footerSaveAcl: userAccessLevel,
-                                name: currentPostalname,
-                                congregation: code,
-                                postalCode: currentPostalcode,
-                                currentFeedback: addressElement.feedback,
-                                currentName: user.displayName,
-                                helpLink:
-                                  WIKI_CATEGORIES.CONDUCTOR_ADDRESS_FEEDBACK
-                              }
-                            )
-                          }
-                        >
-                          <span
-                            className={
-                              addressElement.feedback ? "blinking" : ""
-                            }
-                          >
-                            Feedback
-                          </span>
-                        </Button>
-                        <InstructionsButton
-                          instructions={addressElement.instructions}
-                          handleSave={() =>
-                            ModalManager.show(
-                              SuspenseComponent(UpdateAddressInstructions),
-                              {
-                                congregation: code,
-                                postalCode: currentPostalcode,
-                                userAccessLevel: userAccessLevel,
-                                addressName: currentPostalname,
-                                instructions: addressElement.instructions,
-                                userName: user.displayName
-                              }
-                            )
-                          }
-                          userAcl={userAccessLevel}
-                        />
-                        <ComponentAuthorizer
-                          requiredPermission={
-                            USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE
-                          }
-                          userPermission={userAccessLevel}
-                        >
-                          <DropdownButton
-                            className="dropdown-btn"
-                            align="end"
-                            variant="outline-primary"
+                Profile
+              </Dropdown.Item>
+              <Dropdown.Item
+                onClick={() => {
+                  setIsAssignmentLoading(true);
+                  pollingQueryFunction(() =>
+                    get(
+                      query(
+                        ref(database, `links/${code}`),
+                        orderByChild("userId"),
+                        equalTo(user.uid)
+                      )
+                    )
+                  )
+                    .then((snapshot) => {
+                      if (!snapshot.exists()) {
+                        alert("No assignments found.");
+                        return;
+                      }
+                      const assignmentListing = snapshot.val();
+                      const linkListing = new Array<LinkSession>();
+                      for (const linkId in assignmentListing) {
+                        linkListing.push(
+                          new LinkSession(assignmentListing[linkId], linkId)
+                        );
+                      }
+                      ModalManager.show(SuspenseComponent(GetAssignments), {
+                        assignments: linkListing,
+                        congregation: code
+                      });
+                    })
+                    .finally(() => {
+                      setIsAssignmentLoading(false);
+                    });
+                }}
+              >
+                Assignments
+              </Dropdown.Item>
+              <Dropdown.Item
+                onClick={() =>
+                  ModalManager.show(SuspenseComponent(ChangePassword), {
+                    user: user,
+                    userAccessLevel: userAccessLevel
+                  })
+                }
+              >
+                Change Password
+              </Dropdown.Item>
+              <Dropdown.Item onClick={logoutUser}>Logout</Dropdown.Item>
+            </DropdownButton>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
+      {!selectedTerritoryCode && <Welcome name={`${user.displayName}`} />}
+      <TerritoryHeader name={selectedTerritoryName} />
+      {/* There is no need to open all accordion for read-only users. */}
+      <Accordion
+        activeKey={isReadonly ? undefined : accordingKeys}
+        onSelect={(eventKeys) => {
+          if (Array.isArray(eventKeys)) {
+            setAccordionKeys(
+              eventKeys.map((key) => {
+                return key.toString();
+              })
+            );
+          }
+        }}
+        alwaysOpen={!isReadonly}
+        flush
+      >
+        {sortedAddressList.map((currentAdd) => {
+          const currentPostalcode = currentAdd.code;
+          const addressElement = territoryAddressData.data.get(currentAdd.code);
+
+          if (!addressElement)
+            return <div key={`empty-div-${currentPostalcode}`}></div>;
+          const currentPostalname = addressElement.name;
+          const maxUnitNumberLength =
+            territoryAddressData.lengths.get(currentPostalcode);
+          const completedPercent =
+            territoryAddressData.percents.get(currentPostalcode);
+          const addressLinkId = nanoid();
+          const assigneeCount = addressElement.assigneeDetailsList.length;
+          const personalCount = addressElement.personalDetailsList.length;
+          return (
+            <Accordion.Item
+              key={`accordion-${currentPostalcode}`}
+              eventKey={currentPostalcode}
+            >
+              <Accordion.Header>
+                <span className="fluid-bolding fluid-text">
+                  {currentPostalname}
+                </span>
+              </Accordion.Header>
+              <Accordion.Body className="p-0">
+                <ProgressBar
+                  style={{ borderRadius: 0 }}
+                  now={completedPercent.completedValue}
+                  label={completedPercent.completedDisplay}
+                />
+                <div key={`div-${currentPostalcode}`}>
+                  <Navbar
+                    bg="light"
+                    expand="lg"
+                    key={`navbar-${currentPostalcode}`}
+                  >
+                    <Container fluid className="justify-content-end">
+                      <ComponentAuthorizer
+                        requiredPermission={
+                          USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE
+                        }
+                        userPermission={userAccessLevel}
+                      >
+                        <ButtonGroup className="m-1">
+                          <Button
+                            key={`assigndrop-${currentPostalcode}`}
                             size="sm"
-                            title="Address"
-                            drop={dropDirections[currentPostalcode]}
-                            onClick={(e) =>
-                              handleDropdownDirection(e, currentPostalcode)
-                            }
+                            variant="outline-primary"
+                            onClick={() => {
+                              if (!navigator.share) {
+                                alert(UNSUPPORTED_BROWSER_MSG);
+                                return;
+                              }
+                              ModalManager.show(
+                                SuspenseComponent(ConfirmSlipDetails),
+                                {
+                                  addressName: currentPostalname,
+                                  userAccessLevel: userAccessLevel,
+                                  isPersonalSlip: true
+                                }
+                              ).then((linkReturn) => {
+                                const linkObject = linkReturn as Record<
+                                  string,
+                                  unknown
+                                >;
+                                handleSubmitPersonalSlip(
+                                  currentPostalcode,
+                                  currentPostalname,
+                                  addressLinkId,
+                                  linkObject.linkExpiryHrs as number,
+                                  linkObject.publisherName as string
+                                );
+                              });
+                            }}
                           >
-                            <Dropdown.Item
-                              onClick={() =>
-                                ModalManager.show(
-                                  SuspenseComponent(ChangeAddressGeoLocation),
-                                  {
-                                    footerSaveAcl: userAccessLevel,
-                                    congregation: code,
-                                    postalCode: currentPostalcode,
-                                    coordinates: addressElement.coordinates,
-                                    name: currentPostalname,
-                                    origin: policy.origin
-                                  }
-                                ).then(
-                                  async () =>
-                                    await refreshCongregationTerritory(
-                                      selectedTerritoryCode || ""
-                                    )
-                                )
-                              }
-                            >
-                              Change Location
-                            </Dropdown.Item>
-                            <Dropdown.Item
-                              onClick={() =>
-                                ModalManager.show(
-                                  SuspenseComponent(ChangeAddressPostalCode),
-                                  {
-                                    footerSaveAcl: userAccessLevel,
-                                    congregation: code,
-                                    postalCode: currentPostalcode,
-                                    territoryCode: selectedTerritoryCode
-                                  }
-                                ).then(
-                                  async () =>
-                                    await refreshCongregationTerritory(
-                                      selectedTerritoryCode || ""
-                                    )
-                                )
-                              }
-                            >
-                              Change Map Number
-                            </Dropdown.Item>
-                            {/* {!policy.requiresPostcode() && (
-                              <Dropdown.Item
+                            Personal
+                          </Button>
+                          {(isSettingPersonalLink &&
+                            selectedPostal === currentPostalcode && (
+                              <Button size="sm" variant="outline-primary">
+                                <Spinner
+                                  as="span"
+                                  animation="border"
+                                  size="sm"
+                                  aria-hidden="true"
+                                />{" "}
+                              </Button>
+                            )) ||
+                            (personalCount > 0 && (
+                              <Button
+                                size="sm"
+                                variant="outline-primary"
                                 onClick={() =>
                                   ModalManager.show(
-                                    SuspenseComponent(ChangeAddressLocation),
+                                    SuspenseComponent(GetAssignments),
                                     {
-                                      congregation: code,
-                                      footerSaveAcl: userAccessLevel,
-                                      postalCode: currentPostalcode,
-                                      location: currentLocation
+                                      assignments:
+                                        addressElement.personalDetailsList,
+                                      assignmentType: LINK_TYPES.PERSONAL,
+                                      assignmentTerritory: currentPostalname,
+                                      congregation: code
                                     }
                                   )
                                 }
                               >
-                                Change Location
-                              </Dropdown.Item>
-                            )} */}
+                                <Badge bg="danger" className="me-1">
+                                  {personalCount}
+                                </Badge>
+                              </Button>
+                            ))}
+                        </ButtonGroup>
+                      </ComponentAuthorizer>
+                      <ComponentAuthorizer
+                        requiredPermission={USER_ACCESS_LEVELS.CONDUCTOR.CODE}
+                        userPermission={userAccessLevel}
+                      >
+                        <ButtonGroup className="m-1">
+                          <Button
+                            size="sm"
+                            variant="outline-primary"
+                            onClick={() => {
+                              if (!navigator.share) {
+                                alert(UNSUPPORTED_BROWSER_MSG);
+                                return;
+                              }
+                              ModalManager.show(
+                                SuspenseComponent(ConfirmSlipDetails),
+                                {
+                                  addressName: currentPostalname,
+                                  userAccessLevel: userAccessLevel,
+                                  isPersonalSlip: false
+                                }
+                              ).then((linkReturn) => {
+                                const linkObject = linkReturn as Record<
+                                  string,
+                                  unknown
+                                >;
+                                shareTimedLink(
+                                  LINK_TYPES.ASSIGNMENT,
+                                  currentPostalcode,
+                                  currentPostalname,
+                                  addressLinkId,
+                                  `Units for ${currentPostalname}`,
+                                  assignmentMessage(currentPostalname),
+                                  `${code}/${addressLinkId}`,
+                                  defaultExpiryHours,
+                                  linkObject.publisherName as string
+                                );
+                              });
+                            }}
+                          >
+                            Assign
+                          </Button>
+                          {(isSettingAssignLink &&
+                            selectedPostal === currentPostalcode && (
+                              <Button size="sm" variant="outline-primary">
+                                <Spinner
+                                  as="span"
+                                  animation="border"
+                                  size="sm"
+                                  aria-hidden="true"
+                                />{" "}
+                              </Button>
+                            )) ||
+                            (assigneeCount > 0 && (
+                              <Button
+                                size="sm"
+                                variant="outline-primary"
+                                onClick={() =>
+                                  ModalManager.show(
+                                    SuspenseComponent(GetAssignments),
+                                    {
+                                      assignments:
+                                        addressElement.assigneeDetailsList,
+                                      assignmentType: LINK_TYPES.ASSIGNMENT,
+                                      assignmentTerritory: currentPostalname,
+                                      congregation: code
+                                    }
+                                  )
+                                }
+                              >
+                                <Badge bg="danger" className="me-1">
+                                  {assigneeCount}
+                                </Badge>
+                              </Button>
+                            ))}
+                        </ButtonGroup>
+                      </ComponentAuthorizer>
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        className="m-1"
+                        onClick={async () => {
+                          setIsSettingViewLink(true);
+                          try {
+                            const territoryWindow = window.open("");
+                            if (territoryWindow) {
+                              territoryWindow.document.body.innerHTML =
+                                TERRITORY_VIEW_WINDOW_WELCOME_TEXT;
+                            }
+                            await setTimedLink(
+                              LINK_TYPES.VIEW,
+                              currentPostalcode,
+                              currentPostalname,
+                              addressLinkId,
+                              defaultExpiryHours,
+                              user.displayName || ""
+                            );
+                            if (territoryWindow) {
+                              territoryWindow.location.href = `${code}/${addressLinkId}`;
+                            }
+                          } catch (error) {
+                            errorHandler(error, rollbar);
+                          } finally {
+                            setIsSettingViewLink(false);
+                          }
+                        }}
+                      >
+                        {isSettingViewLink && (
+                          <>
+                            <Spinner
+                              as="span"
+                              animation="border"
+                              size="sm"
+                              aria-hidden="true"
+                            />{" "}
+                          </>
+                        )}
+                        View
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        className="m-1"
+                        onClick={() =>
+                          window.open(
+                            GetDirection(addressElement.coordinates),
+                            "_blank"
+                          )
+                        }
+                      >
+                        Direction
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        className="m-1"
+                        onClick={() =>
+                          ModalManager.show(
+                            SuspenseComponent(UpdateAddressFeedback),
+                            {
+                              footerSaveAcl: userAccessLevel,
+                              name: currentPostalname,
+                              congregation: code,
+                              postalCode: currentPostalcode,
+                              currentFeedback: addressElement.feedback,
+                              currentName: user.displayName,
+                              helpLink:
+                                WIKI_CATEGORIES.CONDUCTOR_ADDRESS_FEEDBACK
+                            }
+                          )
+                        }
+                      >
+                        <span
+                          className={addressElement.feedback ? "blinking" : ""}
+                        >
+                          Feedback
+                        </span>
+                      </Button>
+                      <InstructionsButton
+                        instructions={addressElement.instructions}
+                        handleSave={() =>
+                          ModalManager.show(
+                            SuspenseComponent(UpdateAddressInstructions),
+                            {
+                              congregation: code,
+                              postalCode: currentPostalcode,
+                              userAccessLevel: userAccessLevel,
+                              addressName: currentPostalname,
+                              instructions: addressElement.instructions,
+                              userName: user.displayName
+                            }
+                          )
+                        }
+                        userAcl={userAccessLevel}
+                      />
+                      <ComponentAuthorizer
+                        requiredPermission={
+                          USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE
+                        }
+                        userPermission={userAccessLevel}
+                      >
+                        <DropdownButton
+                          className="dropdown-btn"
+                          align="end"
+                          variant="outline-primary"
+                          size="sm"
+                          title="Address"
+                          drop={dropDirections[currentPostalcode]}
+                          onClick={(e) =>
+                            handleDropdownDirection(e, currentPostalcode)
+                          }
+                        >
+                          <Dropdown.Item
+                            onClick={() =>
+                              ModalManager.show(
+                                SuspenseComponent(ChangeAddressGeoLocation),
+                                {
+                                  footerSaveAcl: userAccessLevel,
+                                  congregation: code,
+                                  postalCode: currentPostalcode,
+                                  coordinates: addressElement.coordinates,
+                                  name: currentPostalname,
+                                  origin: policy.origin
+                                }
+                              ).then(
+                                async () =>
+                                  await refreshCongregationTerritory(
+                                    selectedTerritoryCode || ""
+                                  )
+                              )
+                            }
+                          >
+                            Change Location
+                          </Dropdown.Item>
+                          <Dropdown.Item
+                            onClick={() =>
+                              ModalManager.show(
+                                SuspenseComponent(ChangeAddressPostalCode),
+                                {
+                                  footerSaveAcl: userAccessLevel,
+                                  congregation: code,
+                                  postalCode: currentPostalcode,
+                                  territoryCode: selectedTerritoryCode
+                                }
+                              ).then(
+                                async () =>
+                                  await refreshCongregationTerritory(
+                                    selectedTerritoryCode || ""
+                                  )
+                              )
+                            }
+                          >
+                            Change Map Number
+                          </Dropdown.Item>
+                          <Dropdown.Item
+                            onClick={() => {
+                              setValues({
+                                ...values,
+                                postal: currentPostalcode
+                              });
+                              toggleAddressTerritoryListing();
+                            }}
+                          >
+                            Change Territory
+                          </Dropdown.Item>
+                          <Dropdown.Item
+                            onClick={() =>
+                              ModalManager.show(
+                                SuspenseComponent(ChangeAddressName),
+                                {
+                                  congregation: code,
+                                  footerSaveAcl: userAccessLevel,
+                                  postal: currentPostalcode,
+                                  name: currentPostalname
+                                }
+                              )
+                            }
+                          >
+                            Rename
+                          </Dropdown.Item>
+                          <Dropdown.Item
+                            onClick={() =>
+                              ModalManager.show(SuspenseComponent(NewUnit), {
+                                footerSaveAcl: userAccessLevel,
+                                postalCode: currentPostalcode,
+                                addressData: addressElement,
+                                defaultType: policy.defaultType,
+                                congregation: code
+                              })
+                            }
+                          >
+                            Add{" "}
+                            {addressElement.type === TERRITORY_TYPES.PRIVATE
+                              ? "Property"
+                              : "Unit"}{" "}
+                            No.
+                          </Dropdown.Item>
+                          {(!addressElement.type ||
+                            addressElement.type === TERRITORY_TYPES.PUBLIC) && (
                             <Dropdown.Item
                               onClick={() => {
-                                setValues({
-                                  ...values,
-                                  postal: currentPostalcode
-                                });
-                                toggleAddressTerritoryListing();
+                                addFloorToBlock(currentPostalcode);
                               }}
                             >
-                              Change Territory
+                              Add Higher Floor
                             </Dropdown.Item>
+                          )}
+                          {(!addressElement.type ||
+                            addressElement.type === TERRITORY_TYPES.PUBLIC) && (
                             <Dropdown.Item
-                              onClick={() =>
-                                ModalManager.show(
-                                  SuspenseComponent(ChangeAddressName),
-                                  {
-                                    congregation: code,
-                                    footerSaveAcl: userAccessLevel,
-                                    postal: currentPostalcode,
-                                    name: currentPostalname
-                                  }
-                                )
-                              }
+                              onClick={() => {
+                                addFloorToBlock(currentPostalcode, true);
+                              }}
                             >
-                              Rename
+                              Add Lower Floor
                             </Dropdown.Item>
-                            <Dropdown.Item
-                              onClick={() =>
-                                ModalManager.show(SuspenseComponent(NewUnit), {
-                                  footerSaveAcl: userAccessLevel,
-                                  postalCode: currentPostalcode,
-                                  addressData: addressElement,
-                                  defaultType: policy.defaultType,
-                                  congregation: code
-                                })
-                              }
-                            >
-                              Add{" "}
-                              {addressElement.type === TERRITORY_TYPES.PRIVATE
-                                ? "Property"
-                                : "Unit"}{" "}
-                              No.
-                            </Dropdown.Item>
-                            {(!addressElement.type ||
-                              addressElement.type ===
-                                TERRITORY_TYPES.PUBLIC) && (
-                              <Dropdown.Item
-                                onClick={() => {
-                                  addFloorToBlock(currentPostalcode);
-                                }}
-                              >
-                                Add Higher Floor
-                              </Dropdown.Item>
-                            )}
-                            {(!addressElement.type ||
-                              addressElement.type ===
-                                TERRITORY_TYPES.PUBLIC) && (
-                              <Dropdown.Item
-                                onClick={() => {
-                                  addFloorToBlock(currentPostalcode, true);
-                                }}
-                              >
-                                Add Lower Floor
-                              </Dropdown.Item>
-                            )}
-                            <Dropdown.Item
-                              onClick={() =>
-                                confirmAlert({
-                                  customUI: ({ onClose }) => {
-                                    return (
-                                      <Container>
-                                        <Card
-                                          bg="warning"
-                                          className="text-center"
-                                        >
-                                          <Card.Header>
-                                            Warning ⚠️
-                                            <HelpButton
-                                              link={
-                                                WIKI_CATEGORIES.RESET_ADDRESS
-                                              }
-                                              isWarningButton={true}
-                                            />
-                                          </Card.Header>
-                                          <Card.Body>
-                                            <Card.Title>
-                                              Are You Very Sure ?
-                                            </Card.Title>
-                                            <Card.Text>
-                                              <p>
-                                                This action will reset all
-                                                property status of{" "}
-                                                {currentPostalname}.
-                                              </p>
-                                              <p>
-                                                Certain statuses such as DNC and
-                                                Invalid will not be affected.
-                                              </p>
-                                            </Card.Text>
-                                            <Button
-                                              className="m-1"
-                                              variant="primary"
-                                              onClick={() => {
-                                                resetBlock(currentPostalcode);
-                                                onClose();
-                                              }}
-                                            >
-                                              Yes, Reset It.
-                                            </Button>
-                                            <Button
-                                              className="no-confirm-btn"
-                                              variant="primary"
-                                              onClick={() => {
-                                                onClose();
-                                              }}
-                                            >
-                                              No
-                                            </Button>
-                                          </Card.Body>
-                                        </Card>
-                                      </Container>
-                                    );
-                                  }
-                                })
-                              }
-                            >
-                              Reset Status
-                            </Dropdown.Item>
-                            <Dropdown.Item
-                              onClick={() =>
-                                confirmAlert({
-                                  customUI: ({ onClose }) => {
-                                    return (
-                                      <Container>
-                                        <Card
-                                          bg="warning"
-                                          className="text-center"
-                                        >
-                                          <Card.Header>
-                                            Warning ⚠️
-                                            <HelpButton
-                                              link={
-                                                WIKI_CATEGORIES.DELETE_ADDRESS
-                                              }
-                                              isWarningButton={true}
-                                            />
-                                          </Card.Header>
-                                          <Card.Body>
-                                            <Card.Title>
-                                              Are You Very Sure ?
-                                            </Card.Title>
-                                            <Card.Text>
-                                              The action will completely delete,{" "}
+                          )}
+                          <Dropdown.Item
+                            onClick={() =>
+                              confirmAlert({
+                                customUI: ({ onClose }) => {
+                                  return (
+                                    <Container>
+                                      <Card
+                                        bg="warning"
+                                        className="text-center"
+                                      >
+                                        <Card.Header>
+                                          Warning ⚠️
+                                          <HelpButton
+                                            link={WIKI_CATEGORIES.RESET_ADDRESS}
+                                            isWarningButton={true}
+                                          />
+                                        </Card.Header>
+                                        <Card.Body>
+                                          <Card.Title>
+                                            Are You Very Sure ?
+                                          </Card.Title>
+                                          <Card.Text>
+                                            <p>
+                                              This action will reset all
+                                              property status of{" "}
                                               {currentPostalname}.
-                                            </Card.Text>
-                                            <Button
-                                              className="m-1"
-                                              variant="primary"
-                                              onClick={() => {
-                                                deleteBlock(
-                                                  currentPostalcode,
-                                                  currentPostalname,
-                                                  true
-                                                );
-                                                onClose();
-                                              }}
-                                            >
-                                              Yes, Delete It.
-                                            </Button>
-                                            <Button
-                                              className="no-confirm-btn"
-                                              variant="primary"
-                                              onClick={() => {
-                                                onClose();
-                                              }}
-                                            >
-                                              No
-                                            </Button>
-                                          </Card.Body>
-                                        </Card>
-                                      </Container>
-                                    );
-                                  }
-                                })
-                              }
-                            >
-                              Delete
-                            </Dropdown.Item>
-                          </DropdownButton>
-                        </ComponentAuthorizer>
-                      </Container>
-                    </Navbar>
-                    <AdminTable
-                      floors={addressElement.floors}
-                      maxUnitNumberLength={maxUnitNumberLength}
-                      policy={policy}
-                      completedPercent={completedPercent}
-                      postalCode={currentPostalcode}
-                      territoryType={addressElement.type}
-                      userAccessLevel={userAccessLevel}
-                      handleUnitStatusUpdate={(event) => {
-                        const { floor, unitno } = event.currentTarget.dataset;
-                        handleUnitUpdate(
-                          currentPostalcode,
-                          floor || "",
-                          addressElement.floors,
-                          unitno || "",
-                          maxUnitNumberLength,
-                          currentPostalname,
-                          addressElement,
-                          options
-                        );
-                      }}
-                      adminUnitHeaderStyle={`${
-                        isAdmin ? "admin-unit-header " : ""
-                      }`}
-                      handleUnitNoUpdate={(event) => {
-                        const { sequence, unitno, length } =
-                          event.currentTarget.dataset;
-                        if (!isAdmin) return;
-                        ModalManager.show(SuspenseComponent(UpdateUnit), {
-                          postalCode: currentPostalcode,
-                          unitNo: unitno || "",
-                          unitLength: Number(length),
-                          unitSequence:
-                            sequence === undefined
-                              ? undefined
-                              : Number(sequence),
-                          unitDisplay: ZeroPad(
-                            unitno || "",
-                            maxUnitNumberLength
-                          ),
-                          addressData: addressElement,
-                          congregation: code
-                        });
-                      }}
-                      handleFloorDelete={(event) => {
-                        const { floor } = event.currentTarget.dataset;
-                        const hasOnlyOneFloor =
-                          addressElement.floors.length === 1;
-                        if (hasOnlyOneFloor) {
-                          alert(`Territory requires at least 1 floor.`);
-                          return;
+                                            </p>
+                                            <p>
+                                              Certain statuses such as DNC and
+                                              Invalid will not be affected.
+                                            </p>
+                                          </Card.Text>
+                                          <Button
+                                            className="m-1"
+                                            variant="primary"
+                                            onClick={() => {
+                                              resetBlock(currentPostalcode);
+                                              onClose();
+                                            }}
+                                          >
+                                            Yes, Reset It.
+                                          </Button>
+                                          <Button
+                                            className="no-confirm-btn"
+                                            variant="primary"
+                                            onClick={() => {
+                                              onClose();
+                                            }}
+                                          >
+                                            No
+                                          </Button>
+                                        </Card.Body>
+                                      </Card>
+                                    </Container>
+                                  );
+                                }
+                              })
+                            }
+                          >
+                            Reset Status
+                          </Dropdown.Item>
+                          <Dropdown.Item
+                            onClick={() =>
+                              confirmAlert({
+                                customUI: ({ onClose }) => {
+                                  return (
+                                    <Container>
+                                      <Card
+                                        bg="warning"
+                                        className="text-center"
+                                      >
+                                        <Card.Header>
+                                          Warning ⚠️
+                                          <HelpButton
+                                            link={
+                                              WIKI_CATEGORIES.DELETE_ADDRESS
+                                            }
+                                            isWarningButton={true}
+                                          />
+                                        </Card.Header>
+                                        <Card.Body>
+                                          <Card.Title>
+                                            Are You Very Sure ?
+                                          </Card.Title>
+                                          <Card.Text>
+                                            The action will completely delete,{" "}
+                                            {currentPostalname}.
+                                          </Card.Text>
+                                          <Button
+                                            className="m-1"
+                                            variant="primary"
+                                            onClick={() => {
+                                              deleteBlock(
+                                                currentPostalcode,
+                                                currentPostalname,
+                                                true
+                                              );
+                                              onClose();
+                                            }}
+                                          >
+                                            Yes, Delete It.
+                                          </Button>
+                                          <Button
+                                            className="no-confirm-btn"
+                                            variant="primary"
+                                            onClick={() => {
+                                              onClose();
+                                            }}
+                                          >
+                                            No
+                                          </Button>
+                                        </Card.Body>
+                                      </Card>
+                                    </Container>
+                                  );
+                                }
+                              })
+                            }
+                          >
+                            Delete
+                          </Dropdown.Item>
+                        </DropdownButton>
+                      </ComponentAuthorizer>
+                    </Container>
+                  </Navbar>
+                  <AdminTable
+                    floors={addressElement.floors}
+                    maxUnitNumberLength={maxUnitNumberLength}
+                    policy={policy}
+                    completedPercent={completedPercent}
+                    postalCode={currentPostalcode}
+                    territoryType={addressElement.type}
+                    userAccessLevel={userAccessLevel}
+                    handleUnitStatusUpdate={(event) => {
+                      const { floor, unitno } = event.currentTarget.dataset;
+                      handleUnitUpdate(
+                        currentPostalcode,
+                        floor || "",
+                        addressElement.floors,
+                        unitno || "",
+                        maxUnitNumberLength,
+                        currentPostalname,
+                        addressElement,
+                        options
+                      );
+                    }}
+                    adminUnitHeaderStyle={`${
+                      isAdmin ? "admin-unit-header " : ""
+                    }`}
+                    handleUnitNoUpdate={(event) => {
+                      const { sequence, unitno, length } =
+                        event.currentTarget.dataset;
+                      if (!isAdmin) return;
+                      ModalManager.show(SuspenseComponent(UpdateUnit), {
+                        postalCode: currentPostalcode,
+                        unitNo: unitno || "",
+                        unitLength: Number(length),
+                        unitSequence:
+                          sequence === undefined ? undefined : Number(sequence),
+                        unitDisplay: ZeroPad(unitno || "", maxUnitNumberLength),
+                        addressData: addressElement,
+                        congregation: code
+                      });
+                    }}
+                    handleFloorDelete={(event) => {
+                      const { floor } = event.currentTarget.dataset;
+                      const hasOnlyOneFloor =
+                        addressElement.floors.length === 1;
+                      if (hasOnlyOneFloor) {
+                        alert(`Territory requires at least 1 floor.`);
+                        return;
+                      }
+                      confirmAlert({
+                        customUI: ({ onClose }) => {
+                          return (
+                            <Container>
+                              <Card bg="warning" className="text-center">
+                                <Card.Header>
+                                  Warning ⚠️
+                                  <HelpButton
+                                    link={WIKI_CATEGORIES.DELETE_ADDRESS_FLOOR}
+                                    isWarningButton={true}
+                                  />
+                                </Card.Header>
+                                <Card.Body>
+                                  <Card.Title>Are You Very Sure ?</Card.Title>
+                                  <Card.Text>
+                                    This action will delete floor {`${floor}`}{" "}
+                                    of {currentPostalcode}.
+                                  </Card.Text>
+                                  <Button
+                                    className="m-1"
+                                    variant="primary"
+                                    onClick={() => {
+                                      deleteBlockFloor(
+                                        currentPostalcode,
+                                        floor as string
+                                      );
+                                      onClose();
+                                    }}
+                                  >
+                                    Yes, Delete It.
+                                  </Button>
+                                  <Button
+                                    className="no-confirm-btn"
+                                    variant="primary"
+                                    onClick={() => {
+                                      onClose();
+                                    }}
+                                  >
+                                    No
+                                  </Button>
+                                </Card.Body>
+                              </Card>
+                            </Container>
+                          );
                         }
-                        confirmAlert({
-                          customUI: ({ onClose }) => {
-                            return (
-                              <Container>
-                                <Card bg="warning" className="text-center">
-                                  <Card.Header>
-                                    Warning ⚠️
-                                    <HelpButton
-                                      link={
-                                        WIKI_CATEGORIES.DELETE_ADDRESS_FLOOR
-                                      }
-                                      isWarningButton={true}
-                                    />
-                                  </Card.Header>
-                                  <Card.Body>
-                                    <Card.Title>Are You Very Sure ?</Card.Title>
-                                    <Card.Text>
-                                      This action will delete floor {`${floor}`}{" "}
-                                      of {currentPostalcode}.
-                                    </Card.Text>
-                                    <Button
-                                      className="m-1"
-                                      variant="primary"
-                                      onClick={() => {
-                                        deleteBlockFloor(
-                                          currentPostalcode,
-                                          floor as string
-                                        );
-                                        onClose();
-                                      }}
-                                    >
-                                      Yes, Delete It.
-                                    </Button>
-                                    <Button
-                                      className="no-confirm-btn"
-                                      variant="primary"
-                                      onClick={() => {
-                                        onClose();
-                                      }}
-                                    >
-                                      No
-                                    </Button>
-                                  </Card.Body>
-                                </Card>
-                              </Container>
-                            );
-                          }
-                        });
-                      }}
-                    ></AdminTable>
-                  </div>
-                </Accordion.Body>
-              </Accordion.Item>
-            );
-          })}
-        </Accordion>
-        <BackToTopButton showButton={showBkTopButton} />
-      </>
-    </Fade>
+                      });
+                    }}
+                  ></AdminTable>
+                </div>
+              </Accordion.Body>
+            </Accordion.Item>
+          );
+        })}
+      </Accordion>
+      <BackToTopButton showButton={showBkTopButton} />
+    </>
   );
 }
 
