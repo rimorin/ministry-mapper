@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { ref, child, onValue } from "firebase/database";
 import { database } from "../../firebase";
-import { Container, Fade, Navbar, NavDropdown } from "react-bootstrap";
+import { Container, Navbar, NavDropdown } from "react-bootstrap";
 import {
   OptionProps,
   floorDetails,
@@ -17,7 +17,6 @@ import getCompletedPercent from "../../utils/helpers/getcompletedpercent";
 import getOptions from "../../utils/helpers/getcongoptions";
 import Legend from "../../components/navigation/legend";
 import EnvironmentIndicator from "../../components/navigation/environment";
-import NavBarBranding from "../../components/navigation/branding";
 import Loader from "../../components/statics/loader";
 import {
   DEFAULT_FLOOR_PADDING,
@@ -175,107 +174,129 @@ const Slip = ({
 
   const instructions = (values as valuesDetails).instructions;
   return (
-    <Fade appear={true} in={true}>
-      <>
-        <Legend showLegend={showLegend} hideFunction={toggleLegend} />
-        <EnvironmentIndicator
-          environment={import.meta.env.VITE_ROLLBAR_ENVIRONMENT}
-        />
-        <Navbar bg="light" expand="sm">
-          <Container fluid>
-            <NavBarBranding naming={postalName as string} />
-            <NavDropdown
-              title={
-                <InfoImg className={`${instructions ? "blinking" : ""}`} />
-              }
-              align={{ sm: "end" }}
-            >
-              {instructions && (
+    <>
+      <Legend showLegend={showLegend} hideFunction={toggleLegend} />
+      <EnvironmentIndicator
+        environment={import.meta.env.VITE_ROLLBAR_ENVIRONMENT}
+      />
+      <Navbar bg="light" expand="sm">
+        <Container fluid>
+          <Navbar.Brand
+            className="brand-wrap d-flex align-items-center"
+            style={{ width: "100%", marginRight: 0 }}
+          >
+            <div style={{ flex: 0, textAlign: "left", marginRight: 10 }}>
+              <img
+                alt=""
+                src="/favicon-32x32.png"
+                width="32"
+                height="32"
+                className="d-inline-block align-top"
+              />
+            </div>
+            <div style={{ flex: 1, textAlign: "left" }}>
+              <Navbar.Text className="fluid-bolding fluid-text">
+                {postalName}
+              </Navbar.Text>
+            </div>
+            <div style={{ flex: 0, textAlign: "right", marginLeft: 10 }}>
+              <NavDropdown
+                title={
+                  <InfoImg className={`${instructions ? "blinking" : ""}`} />
+                }
+                align="end"
+              >
+                {instructions && (
+                  <NavDropdown.Item
+                    onClick={() =>
+                      ModalManager.show(UpdateAddressInstructions, {
+                        congregation: congregationcode,
+                        postalCode: postalcode,
+                        userAccessLevel: USER_ACCESS_LEVELS.READ_ONLY.CODE,
+                        addressName: postalName as string,
+                        instructions: instructions,
+                        userName: ""
+                      })
+                    }
+                  >
+                    <span className="text-highlight">Instructions</span>
+                  </NavDropdown.Item>
+                )}
+                <NavDropdown.Item onClick={toggleLegend}>
+                  Legend
+                </NavDropdown.Item>
                 <NavDropdown.Item
                   onClick={() =>
-                    ModalManager.show(UpdateAddressInstructions, {
+                    window.open(GetDirection(coordinates), "_blank")
+                  }
+                >
+                  Direction
+                </NavDropdown.Item>
+                <NavDropdown.Item
+                  onClick={() =>
+                    ModalManager.show(UpdateAddressFeedback, {
+                      footerSaveAcl: USER_ACCESS_LEVELS.CONDUCTOR.CODE,
+                      name: postalcode,
                       congregation: congregationcode,
                       postalCode: postalcode,
-                      userAccessLevel: USER_ACCESS_LEVELS.READ_ONLY.CODE,
-                      addressName: postalName as string,
-                      instructions: instructions,
-                      userName: ""
+                      currentFeedback: (values as valuesDetails).feedback,
+                      currentName: pubName,
+                      helpLink: WIKI_CATEGORIES.PUBLISHER_ADDRESS_FEEDBACK
                     })
                   }
                 >
-                  <span className="text-highlight">Instructions</span>
+                  Feedback
                 </NavDropdown.Item>
-              )}
-              <NavDropdown.Item onClick={toggleLegend}>Legend</NavDropdown.Item>
-              <NavDropdown.Item
-                onClick={() => window.open(GetDirection(coordinates), "_blank")}
-              >
-                Direction
-              </NavDropdown.Item>
-              <NavDropdown.Item
-                onClick={() =>
-                  ModalManager.show(UpdateAddressFeedback, {
-                    footerSaveAcl: USER_ACCESS_LEVELS.CONDUCTOR.CODE,
-                    name: postalcode,
-                    congregation: congregationcode,
-                    postalCode: postalcode,
-                    currentFeedback: (values as valuesDetails).feedback,
-                    currentName: pubName,
-                    helpLink: WIKI_CATEGORIES.PUBLISHER_ADDRESS_FEEDBACK
-                  })
-                }
-              >
-                Feedback
-              </NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item className="fluid-bolding fluid-text" disabled>
-                <Countdown
-                  className="m-1"
-                  date={tokenEndtime}
-                  daysInHours={true}
-                  renderer={(props) => {
-                    const daysDisplay =
-                      props.days !== 0 ? <>{props.days}d </> : <></>;
-                    const hoursDisplay =
-                      props.hours !== 0 ? <>{props.hours}h </> : <></>;
-                    const minsDisplay =
-                      props.minutes !== 0 ? <>{props.minutes}m </> : <></>;
-                    return (
-                      <>
-                        ⏱️{" "}
-                        <span>
-                          {daysDisplay}
-                          {hoursDisplay}
-                          {minsDisplay}
-                          {props.formatted.seconds}s
-                        </span>
-                      </>
-                    );
-                  }}
-                />
-              </NavDropdown.Item>
-            </NavDropdown>
-          </Container>
-        </Navbar>
-        <PublisherTerritoryTable
-          postalCode={postalcode}
-          floors={floors}
-          maxUnitNumberLength={maxUnitNumberLength}
-          policy={policy}
-          completedPercent={completedPercent}
-          territoryType={territoryType}
-          handleUnitStatusUpdate={(event) => {
-            const { floor, unitno } = event.currentTarget.dataset;
-            handleUnitUpdate(
-              floor || "",
-              unitno || "",
-              maxUnitNumberLength,
-              options
-            );
-          }}
-        />
-      </>
-    </Fade>
+                <NavDropdown.Divider />
+                <NavDropdown.Item className="fluid-bolding fluid-text" disabled>
+                  <Countdown
+                    className="m-1"
+                    date={tokenEndtime}
+                    daysInHours={true}
+                    renderer={(props) => {
+                      const daysDisplay =
+                        props.days !== 0 ? <>{props.days}d </> : <></>;
+                      const hoursDisplay =
+                        props.hours !== 0 ? <>{props.hours}h </> : <></>;
+                      const minsDisplay =
+                        props.minutes !== 0 ? <>{props.minutes}m </> : <></>;
+                      return (
+                        <>
+                          ⏱️{" "}
+                          <span>
+                            {daysDisplay}
+                            {hoursDisplay}
+                            {minsDisplay}
+                            {props.formatted.seconds}s
+                          </span>
+                        </>
+                      );
+                    }}
+                  />
+                </NavDropdown.Item>
+              </NavDropdown>
+            </div>
+          </Navbar.Brand>
+        </Container>
+      </Navbar>
+      <PublisherTerritoryTable
+        postalCode={postalcode}
+        floors={floors}
+        maxUnitNumberLength={maxUnitNumberLength}
+        policy={policy}
+        completedPercent={completedPercent}
+        territoryType={territoryType}
+        handleUnitStatusUpdate={(event) => {
+          const { floor, unitno } = event.currentTarget.dataset;
+          handleUnitUpdate(
+            floor || "",
+            unitno || "",
+            maxUnitNumberLength,
+            options
+          );
+        }}
+      />
+    </>
   );
 };
 
