@@ -1,3 +1,11 @@
+## [1.28.1](https://github.com/rimorin/ministry-mapper/compare/v1.28.0...v1.28.1) (2024-05-17)
+
+
+### Bug Fixes
+
+* removed unnecessary fadings ([fde3982](https://github.com/rimorin/ministry-mapper/commit/fde39821e9e714d5b5bbbb1c6824f25eb82a31fa))
+* styling for pub slip navigation ([92c610e](https://github.com/rimorin/ministry-mapper/commit/92c610e5a4377432e37c1abd5a3f35431416f70e))
+
 # [1.28.0](https://github.com/rimorin/ministry-mapper/compare/v1.27.0...v1.28.0) (2024-05-17)
 
 
