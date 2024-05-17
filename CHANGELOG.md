@@ -1,3 +1,16 @@
+# [1.28.0](https://github.com/rimorin/ministry-mapper/compare/v1.27.0...v1.28.0) (2024-05-17)
+
+
+### Bug Fixes
+
+* styling for dropdown when its at the bottom ([08db644](https://github.com/rimorin/ministry-mapper/commit/08db64488ae48b35f636fdcc4cc790dbda678d04))
+* vite rollup settings for firebase ([673ee26](https://github.com/rimorin/ministry-mapper/commit/673ee2699864f15f0d0f7d130c70a53ba827d3df))
+
+
+### Features
+
+* implement google maps coordinates picker ([397e7b8](https://github.com/rimorin/ministry-mapper/commit/397e7b8ceb7ee5dc743e10703a0db53f4856fbd7))
+
 # [1.27.0](https://github.com/rimorin/ministry-mapper/compare/v1.26.3...v1.27.0) (2024-05-10)
 
 
