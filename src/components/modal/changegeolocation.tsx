@@ -8,7 +8,7 @@ import { DEFAULT_COORDINATES, WIKI_CATEGORIES } from "../../utils/constants";
 import pollingVoidFunction from "../../utils/helpers/pollingvoid";
 import errorHandler from "../../utils/helpers/errorhandler";
 import HelpButton from "../navigation/help";
-import { ChangeAddressCoordinatesModalProps } from "../../utils/interface";
+import { ConfigureAddressCoordinatesModalProps } from "../../utils/interface";
 import { AdvancedMarker, Map, MapMouseEvent } from "@vis.gl/react-google-maps";
 import { GmapAutocomplete } from "../utils/mapautocomplete";
 import { ControlPanel } from "../utils/mapinfopanel";
@@ -16,11 +16,12 @@ import { MapCurrentTarget } from "../utils/mapcurrenttarget";
 
 const ChangeAddressGeolocation = NiceModal.create(
   ({
-    postalCode,
-    congregation,
+    postalCode = "",
+    congregation = "",
     coordinates = DEFAULT_COORDINATES.Singapore,
-    origin
-  }: ChangeAddressCoordinatesModalProps) => {
+    origin,
+    isNew = false
+  }: ConfigureAddressCoordinatesModalProps) => {
     const [addressLocation, setAddressLocation] = useState(coordinates);
     const [currentLocation, setCurrentLocation] = useState(coordinates);
     const [isSaving, setIsSaving] = useState(false);
@@ -32,15 +33,18 @@ const ChangeAddressGeolocation = NiceModal.create(
       event.preventDefault();
       setIsSaving(true);
       try {
-        await pollingVoidFunction(() =>
-          set(
-            ref(
-              database,
-              `addresses/${congregation}/${postalCode}/coordinates`
-            ),
-            addressLocation
-          )
-        );
+        if (!isNew) {
+          await pollingVoidFunction(() =>
+            set(
+              ref(
+                database,
+                `addresses/${congregation}/${postalCode}/coordinates`
+              ),
+              addressLocation
+            )
+          );
+        }
+        modal.resolve(addressLocation);
         modal.hide();
       } catch (error) {
         errorHandler(error, rollbar);
@@ -63,14 +67,13 @@ const ChangeAddressGeolocation = NiceModal.create(
         onHide={() => modal.remove()}
       >
         <Modal.Header>
-          <Modal.Title>Change Location</Modal.Title>
+          <Modal.Title>{isNew ? "Select" : "Change"} Location</Modal.Title>
           <HelpButton link={WIKI_CATEGORIES.CHANGE_ADDRESS_NAME} />
         </Modal.Header>
         <Form onSubmit={handleUpdateGeoLocation}>
           <Modal.Body
             style={{
-              height: window.innerWidth < 768 ? "70vh" : "80vh",
-              width: "100%"
+              height: window.innerHeight < 700 ? "75dvh" : "80dvh"
             }}
           >
             <Map
@@ -155,7 +158,7 @@ const ChangeAddressGeolocation = NiceModal.create(
                   />{" "}
                 </>
               )}
-              Save
+              {isNew ? "Select" : "Save"}
             </Button>
           </Modal.Footer>
         </Form>

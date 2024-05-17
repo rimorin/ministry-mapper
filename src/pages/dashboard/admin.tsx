@@ -18,7 +18,15 @@ import {
 import "../../css/admin.css";
 import { signOut, User } from "firebase/auth";
 import { nanoid } from "nanoid";
-import { useEffect, useState, useCallback, useMemo, lazy, useRef } from "react";
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  lazy,
+  useRef,
+  MouseEvent
+} from "react";
 import {
   Accordion,
   Badge,
@@ -160,6 +168,9 @@ const ChangeAddressName = lazy(
   () => import("../../components/modal/changeaddname")
 );
 
+type DropDirection = "up" | "down";
+type DropDirections = { [key: string]: DropDirection };
+
 function Admin({ user }: adminProps) {
   const { code } = useParams() as { code: string };
   const [isSettingPersonalLink, setIsSettingPersonalLink] =
@@ -204,6 +215,23 @@ function Admin({ user }: adminProps) {
   const rollbar = useRollbar();
   const unsubscribers = useRef<Array<Unsubscribe>>([]);
   const currentTime = useRef<number>(new Date().getTime());
+
+  const [dropDirections, setDropDirections] = useState<DropDirections>({});
+
+  const handleDropdownDirection = (
+    event: MouseEvent<HTMLElement, globalThis.MouseEvent>,
+    dropdownId: string
+  ) => {
+    const clickPositionY = event.clientY;
+    const dropdownHeight = 300;
+    const windowInnerHeight = window.innerHeight;
+
+    let dropdownDirection: DropDirection = "down";
+    if (windowInnerHeight - clickPositionY < dropdownHeight) {
+      dropdownDirection = "up";
+    }
+    setDropDirections((prev) => ({ ...prev, [dropdownId]: dropdownDirection }));
+  };
 
   const refreshAddressState = () => {
     unsubscribers.current.forEach((unsubFunction) => {
@@ -1659,6 +1687,10 @@ function Admin({ user }: adminProps) {
                             variant="outline-primary"
                             size="sm"
                             title="Address"
+                            drop={dropDirections[currentPostalcode]}
+                            onClick={(e) =>
+                              handleDropdownDirection(e, currentPostalcode)
+                            }
                           >
                             <Dropdown.Item
                               onClick={() =>

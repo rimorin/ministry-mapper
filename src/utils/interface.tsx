@@ -384,13 +384,15 @@ export interface originInterface {
   origin: string;
 }
 
-export interface ChangeAddressCoordinatesModalProps
+export interface ConfigureAddressCoordinatesModalProps
   extends postalInterface,
     congregationInterface,
     footerInterface,
     coordinatesInterface,
     nameInterface,
-    originInterface {}
+    originInterface {
+  isNew: boolean;
+}
 
 export interface NewAddressCoordinatesModalProps
   extends coordinatesInterface,

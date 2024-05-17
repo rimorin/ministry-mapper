@@ -26,7 +26,7 @@ import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";
 import GenericTextAreaField from "../form/textarea";
 import HelpButton from "../navigation/help";
-import NewAddressGeolocation from "./newaddgeolocation";
+import ChangeAddressGeolocation from "./changegeolocation";
 
 import ModalManager from "@ebay/nice-modal-react";
 const NewPublicAddress = NiceModal.create(
@@ -135,7 +135,7 @@ const NewPublicAddress = NiceModal.create(
         <Form onSubmit={handleCreateTerritoryAddress}>
           <Modal.Body
             style={{
-              maxHeight: `calc(${window.innerHeight}px - 150px)`,
+              maxHeight: window.innerHeight < 700 ? "70dvh" : "80dvh",
               overflowY: "auto"
             }}
           >
@@ -171,9 +171,10 @@ const NewPublicAddress = NiceModal.create(
               name="location"
               placeholder="Click to select location"
               handleClick={() => {
-                ModalManager.show(NewAddressGeolocation, {
+                ModalManager.show(ChangeAddressGeolocation, {
                   coordinates: coordinates,
-                  origin: origin
+                  origin: origin,
+                  isNew: true
                 }).then((result) => {
                   const coordinates = result as { lat: number; lng: number };
                   if (coordinates) {
