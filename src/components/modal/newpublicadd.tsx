@@ -16,30 +16,37 @@ import isValidPostalSequence from "../../utils/helpers/checkvalidseq";
 import processPropertyNumber from "../../utils/helpers/processpropertyno";
 import pollingVoidFunction from "../../utils/helpers/pollingvoid";
 import errorHandler from "../../utils/helpers/errorhandler";
-import { NewPublicAddressModalProps, unitMaps } from "../../utils/interface";
+import {
+  NewPublicAddressModalProps,
+  latlongInterface,
+  unitMaps
+} from "../../utils/interface";
 import FloorField from "../form/floors";
 import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";
 import GenericTextAreaField from "../form/textarea";
 import HelpButton from "../navigation/help";
+import ChangeAddressGeolocation from "./changegeolocation";
 
+import ModalManager from "@ebay/nice-modal-react";
 const NewPublicAddress = NiceModal.create(
   ({
     footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
     congregation,
     territoryCode,
     defaultType,
-    requiresPostalCode
+    origin
   }: NewPublicAddressModalProps) => {
     const [postalCode, setPostalCode] = useState("");
     const [name, setName] = useState("");
     const [sequence, setSequence] = useState("");
     const [floors, setFloors] = useState(1);
     const [location, setLocation] = useState("");
+    const [coordinates, setCoordinates] = useState<latlongInterface>();
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();
     const rollbar = useRollbar();
-    const modalDescription = requiresPostalCode ? "Postal Code" : "Map Number";
+    const modalDescription = "Map Number";
 
     const handleCreateTerritoryAddress = async (
       event: FormEvent<HTMLElement>
@@ -106,7 +113,8 @@ const NewPublicAddress = NiceModal.create(
             feedback: "",
             units: floorDetails,
             type: TERRITORY_TYPES.PUBLIC,
-            location: location
+            location: location,
+            coordinates: coordinates
           })
         );
         alert(`Created ${modalDescription}, ${postalCode}.`);
@@ -125,14 +133,19 @@ const NewPublicAddress = NiceModal.create(
           <HelpButton link={WIKI_CATEGORIES.CREATE_PUBLIC_ADDRESS} />
         </Modal.Header>
         <Form onSubmit={handleCreateTerritoryAddress}>
-          <Modal.Body>
+          <Modal.Body
+            style={{
+              maxHeight: window.innerHeight < 700 ? "70dvh" : "80dvh",
+              overflowY: "auto"
+            }}
+          >
             <p>
               These are governmental owned residential properties that usually
               consist of rental flats.
             </p>
             <GenericInputField
               inputType="number"
-              label={requiresPostalCode ? "Postal Code" : "Map Number"}
+              label={"Map Number"}
               name="refNo"
               handleChange={(e: ChangeEvent<HTMLElement>) => {
                 const { value } = e.target as HTMLInputElement;
@@ -140,16 +153,7 @@ const NewPublicAddress = NiceModal.create(
               }}
               changeValue={postalCode}
               required={true}
-              placeholder={
-                requiresPostalCode
-                  ? "Block/Building postal code. Eg, 730801, 752367, etc"
-                  : undefined
-              }
-              information={
-                !requiresPostalCode
-                  ? "This is a unique identifier for the map, requiring a minimum of 6 unique digits."
-                  : undefined
-              }
+              information="This is a unique identifier for the map, requiring a minimum of 6 unique digits."
             />
             <GenericInputField
               label="Map Name"
@@ -162,19 +166,28 @@ const NewPublicAddress = NiceModal.create(
               required={true}
               information="Description of the map."
             />
-            {!requiresPostalCode && (
-              <GenericInputField
-                label="Map Location"
-                name="location"
-                handleChange={(e: ChangeEvent<HTMLElement>) => {
-                  const { value } = e.target as HTMLInputElement;
-                  setLocation(value);
-                }}
-                changeValue={location}
-                required={true}
-                information="Location of the map that will be used for Google Maps directions."
-              />
-            )}
+            <GenericInputField
+              label="Map Coordinates"
+              name="location"
+              placeholder="Click to select location"
+              handleClick={() => {
+                ModalManager.show(ChangeAddressGeolocation, {
+                  coordinates: coordinates,
+                  origin: origin,
+                  isNew: true
+                }).then((result) => {
+                  const coordinates = result as { lat: number; lng: number };
+                  if (coordinates) {
+                    setLocation(`${coordinates.lat}, ${coordinates.lng}`);
+                    setCoordinates(coordinates);
+                  }
+                });
+              }}
+              handleChange={() => {}}
+              changeValue={location}
+              required={true}
+              information="Latitude and Longitude of the map. This is used for direction purposes."
+            />
             <FloorField
               handleChange={(e: ChangeEvent<HTMLElement>) => {
                 const { value } = e.target as HTMLInputElement;

@@ -19,14 +19,17 @@ import {
   NOT_HOME_STATUS_CODES,
   WIKI_CATEGORIES,
   DEFAULT_MULTPLE_OPTION_DELIMITER,
-  DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
+  DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION,
+  DEFAULT_COORDINATES
 } from "../../utils/constants";
+import ModalManager from "@ebay/nice-modal-react";
 import pollingVoidFunction from "../../utils/helpers/pollingvoid";
 import errorHandler from "../../utils/helpers/errorhandler";
 import processPostalUnitNumber from "../../utils/helpers/processpostalno";
 import {
   SelectProps,
-  UpdateAddressStatusModalProps
+  UpdateAddressStatusModalProps,
+  latlongInterface
 } from "../../utils/interface";
 import DncDateField from "../form/dncdate";
 import ModalFooter from "../form/footer";
@@ -38,6 +41,7 @@ import ModalUnitTitle from "../form/title";
 import HHTypeField from "../form/household";
 import ComponentAuthorizer from "../navigation/authorizer";
 import HelpButton from "../navigation/help";
+import ChangeAddressGeolocation from "./changegeolocation";
 
 const UpdateUnitStatus = NiceModal.create(
   ({
@@ -70,13 +74,18 @@ const UpdateUnitStatus = NiceModal.create(
     const [hhDnctime, setHhDnctime] = useState<number | undefined>(
       unitDetails?.dnctime
     );
-    const [hhPropertyPostal, setHhPropertyPostal] = useState<
-      string | undefined
-    >(unitDetails?.propertyPostal);
     const [hhNhcount, setHhNhcount] = useState(unitDetails?.nhcount);
     const [hhNote, setHhNote] = useState(unitDetails?.note);
     const [unitSequence, setUnitSequence] = useState<undefined | number>(
       unitDetails?.sequence
+    );
+    const defaultCoordinates =
+      unitDetails?.coordinates ||
+      addressData?.coordinates ||
+      DEFAULT_COORDINATES.Singapore;
+    const [coordinates, setCoordinates] = useState(defaultCoordinates);
+    const [location, setLocation] = useState(
+      `${defaultCoordinates.lat}, ${defaultCoordinates.lng}`
     );
     const modal = useModal();
     const rollbar = useRollbar();
@@ -90,7 +99,7 @@ const UpdateUnitStatus = NiceModal.create(
         nhcount: string | undefined;
         dnctime: number | string;
         sequence?: number;
-        x_zip?: string;
+        coordinates?: latlongInterface;
       } = {
         type: hhType,
         note: hhNote,
@@ -105,8 +114,8 @@ const UpdateUnitStatus = NiceModal.create(
       if (administeringPrivate && unitSequence) {
         updateData.sequence = Number(unitSequence);
       }
-      if (administeringPrivate && hhPropertyPostal) {
-        updateData.x_zip = hhPropertyPostal;
+      if (administeringPrivate && coordinates) {
+        updateData.coordinates = coordinates;
       }
       setIsSaving(true);
       try {
@@ -130,7 +139,7 @@ const UpdateUnitStatus = NiceModal.create(
       <Modal {...bootstrapDialog(modal)}>
         <ModalUnitTitle
           unit={unitNoDisplay}
-          propertyPostal={unitDetails?.propertyPostal}
+          propertyPostal={postalCode}
           floor={floorDisplay as string}
           postal={requiresPostalCode ? postalCode : addressName}
           type={territoryType}
@@ -160,7 +169,8 @@ const UpdateUnitStatus = NiceModal.create(
                 <DncDateField
                   changeDate={hhDnctime}
                   handleDateChange={(date) => {
-                    setHhDnctime(date.getTime());
+                    const dateValue = date as Date;
+                    setHhDnctime(dateValue.getTime());
                   }}
                 />
               </div>
@@ -229,25 +239,35 @@ const UpdateUnitStatus = NiceModal.create(
                         : unitSequence.toString()
                     }
                   />
-                  {requiresPostalCode && (
-                    <GenericInputField
-                      inputType="string"
-                      label="Property Postal"
-                      name="propertyPostal"
-                      placeholder="Optional postal code for direction to this property"
-                      handleChange={(e: ChangeEvent<HTMLElement>) => {
-                        const { value } = e.target as HTMLInputElement;
-                        setHhPropertyPostal(value);
-                      }}
-                      changeValue={hhPropertyPostal}
-                    />
-                  )}
+                  <GenericInputField
+                    label="Map Coordinates"
+                    name="location"
+                    handleClick={() => {
+                      ModalManager.show(ChangeAddressGeolocation, {
+                        coordinates: coordinates,
+                        isNew: true
+                      }).then((result) => {
+                        const coordinates = result as {
+                          lat: number;
+                          lng: number;
+                        };
+                        if (coordinates) {
+                          setLocation(`${coordinates.lat}, ${coordinates.lng}`);
+                          setCoordinates(coordinates);
+                        }
+                      });
+                    }}
+                    handleChange={() => {}}
+                    changeValue={location}
+                    required={true}
+                    information="Latitude and Longitude of the map. You can optionally set the coordinates for this specific address."
+                  />
                 </>
               </ComponentAuthorizer>
             )}
           </Modal.Body>
           <ModalFooter
-            propertyPostal={unitDetails?.propertyPostal}
+            propertyCoordinates={coordinates}
             handleClick={() => modal.hide()}
             isSaving={isSaving}
             userAccessLevel={userAccessLevel}

@@ -5,6 +5,7 @@ import { BrowserRouter } from "react-router-dom";
 import { StrictMode } from "react";
 import { Provider } from "@rollbar/react";
 import NiceModal from "@ebay/nice-modal-react";
+import { APIProvider } from "@vis.gl/react-google-maps";
 const { VITE_ROLLBAR_ACCESS_TOKEN, VITE_ROLLBAR_ENVIRONMENT, VITE_VERSION } =
   import.meta.env;
 
@@ -27,11 +28,13 @@ const root = createRoot(document.getElementById("root") as HTMLElement);
 root.render(
   <StrictMode>
     <Provider config={rollbarConfig}>
-      <NiceModal.Provider>
-        <BrowserRouter>
-          <Main />
-        </BrowserRouter>
-      </NiceModal.Provider>
+      <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
+        <NiceModal.Provider>
+          <BrowserRouter>
+            <Main />
+          </BrowserRouter>
+        </NiceModal.Provider>
+      </APIProvider>
     </Provider>
   </StrictMode>
 );

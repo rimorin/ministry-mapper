@@ -7,6 +7,7 @@ import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";
 import HelpButton from "../navigation/help";
 import { ConfirmSlipDetailsModalProps } from "../../utils/interface";
+import { Value } from "react-calendar/dist/cjs/shared/types";
 
 const ConfirmSlipDetails = NiceModal.create(
   ({
@@ -31,9 +32,11 @@ const ConfirmSlipDetails = NiceModal.create(
     return (
       <Modal {...bootstrapDialog(modal)}>
         <Modal.Header>
-          <Modal.Title>{`Confirm ${
-            isPersonalSlip ? "personal" : ""
-          } slip details for ${addressName}`}</Modal.Title>
+          <Modal.Title>
+            {`Confirm ${
+              isPersonalSlip ? "personal" : ""
+            } slip details for ${addressName}`}
+          </Modal.Title>
           <HelpButton link={WIKI_CATEGORIES.CREATE_PERSONAL_SLIPS} />
         </Modal.Header>
         <Form onSubmit={handleSubmitPersonalSlip}>
@@ -42,9 +45,10 @@ const ConfirmSlipDetails = NiceModal.create(
               <Calendar
                 //Block selection for current day and days before.
                 minDate={new Date(Date.now() + 3600 * 1000 * 24)}
-                onChange={(selectedDate: Date) => {
+                onChange={(selectedDate: Value) => {
+                  const selectedDateValue = selectedDate as Date;
                   const expiryInHours = Math.floor(
-                    (selectedDate.getTime() - new Date().getTime()) /
+                    (selectedDateValue.getTime() - new Date().getTime()) /
                       (1000 * 60 * 60)
                   );
                   setLinkExpiryHrs(expiryInHours);

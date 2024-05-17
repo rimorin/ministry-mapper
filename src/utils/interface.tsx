@@ -1,5 +1,6 @@
 import { User } from "firebase/auth";
 import { LinkSession, Policy } from "./policies";
+import { Value } from "react-calendar/dist/cjs/shared/types";
 
 interface userInterface {
   user: User;
@@ -34,7 +35,7 @@ export interface unitDetails {
   nhcount: string;
   dnctime: number;
   sequence?: number;
-  propertyPostal?: string;
+  coordinates?: latlongInterface;
 }
 
 export interface nothomeProps {
@@ -88,10 +89,12 @@ export interface territoryDetails extends nameInterface {
   addresses: any;
 }
 
-export interface addressDetails extends nameInterface, postalInterface {
+export interface addressDetails
+  extends nameInterface,
+    postalInterface,
+    coordinatesInterface {
   assigneeDetailsList: Array<LinkSession>;
   personalDetailsList: Array<LinkSession>;
-  x_zip: string;
   floors: Array<floorDetails>;
   feedback: string;
   type: number;
@@ -101,12 +104,13 @@ export interface addressDetails extends nameInterface, postalInterface {
 
 export interface FormProps {
   handleChange?: (event: React.ChangeEvent<HTMLElement>) => void;
+  handleClick?: (event: React.MouseEvent<HTMLElement>) => void;
   handleGroupChange?: (
     value: string,
     event: React.ChangeEvent<HTMLElement>
   ) => void;
   handleChangeValues?: (values: string[]) => void;
-  handleDateChange?: (date: Date) => void;
+  handleDateChange?: (date: Value) => void;
   changeDate?: number;
   changeValue?: string;
   changeValues?: string[];
@@ -142,7 +146,7 @@ export interface FooterProps {
   disableSubmitBtn?: boolean;
   userAccessLevel?: number;
   type?: number;
-  propertyPostal?: string;
+  propertyCoordinates?: latlongInterface;
   requiredAcLForSave?: number;
   submitLabel?: string;
   handleClick?: (event: React.MouseEvent<HTMLElement>) => void;
@@ -367,6 +371,33 @@ export interface ChangeAddressLocationModalProps
   location: string | undefined;
 }
 
+export interface latlongInterface {
+  lat: number;
+  lng: number;
+}
+
+export interface coordinatesInterface {
+  coordinates: latlongInterface;
+}
+
+export interface originInterface {
+  origin: string;
+}
+
+export interface ConfigureAddressCoordinatesModalProps
+  extends postalInterface,
+    congregationInterface,
+    footerInterface,
+    coordinatesInterface,
+    nameInterface,
+    originInterface {
+  isNew: boolean;
+}
+
+export interface NewAddressCoordinatesModalProps
+  extends coordinatesInterface,
+    originInterface {}
+
 export interface ChangeTerritoryCodeModalProps
   extends congregationInterface,
     footerInterface {
@@ -403,10 +434,10 @@ export interface UpdateAddressInstructionsModalProps
 
 export interface NewPrivateAddressModalProps
   extends congregationInterface,
-    footerInterface {
+    footerInterface,
+    originInterface {
   territoryCode: string;
   defaultType: string;
-  requiresPostalCode: boolean;
 }
 
 export type NewPublicAddressModalProps = NewPrivateAddressModalProps;
@@ -444,7 +475,8 @@ export interface UpdateAddressFeedbackModalProps
 export interface UpdateAddressStatusModalProps
   extends postalInterface,
     congregationInterface,
-    floorInterface {
+    floorInterface,
+    originInterface {
   addressName: string | undefined;
   userAccessLevel: number | undefined;
   territoryType: number | undefined;
@@ -455,7 +487,6 @@ export interface UpdateAddressStatusModalProps
   options: Array<OptionProps>;
   defaultOption: string;
   isMultiselect: boolean;
-  origin: string;
 }
 
 export interface UpdateUnitModalProps

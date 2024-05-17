@@ -115,3 +115,13 @@
   cursor: pointer;
   margin: 0 0.25rem 0 0.25rem;
 }
+
+@keyframes spinLocator {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}

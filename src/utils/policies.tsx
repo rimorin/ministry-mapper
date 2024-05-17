@@ -54,11 +54,16 @@ export class Policy {
     const userClaims = userData.claims;
     // check for customised user max tries and countable types
     if (!userClaims) return;
-    if (userClaims.maxTries !== undefined) {
-      this.maxTries = userClaims.maxTries;
+    const policyCountableTypes = userClaims.countableTypes;
+    const policyMaxTries = userClaims.maxTries;
+    if (typeof policyMaxTries === "number" && policyMaxTries > 0) {
+      this.maxTries = policyMaxTries;
     }
-    if (userClaims.countableTypes !== undefined) {
-      this.countableTypes = userClaims.countableTypes;
+    if (
+      Array.isArray(policyCountableTypes) &&
+      policyCountableTypes.length > 0
+    ) {
+      this.countableTypes = policyCountableTypes;
     }
   }
   isCountable(unit: unitDetails): boolean {
@@ -87,9 +92,6 @@ export class Policy {
       this.isCountable(unit),
       progress
     );
-  }
-  requiresPostcode(): boolean {
-    return this.origin === DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION;
   }
 }
 
