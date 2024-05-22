@@ -62,7 +62,7 @@ const UpdateUnit = NiceModal.create(
     };
 
     return (
-      <Modal {...bootstrapDialog(modal)}>
+      <Modal {...bootstrapDialog(modal)} onHide={() => modal.remove()}>
         <Modal.Header>
           <Modal.Title>Unit {unitDisplay}</Modal.Title>
           <HelpButton link={WIKI_CATEGORIES.UPDATE_UNIT_NUMBER} />

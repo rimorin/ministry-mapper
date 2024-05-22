@@ -67,7 +67,7 @@ const UpdateCongregationSettings = NiceModal.create(
     };
 
     return (
-      <Modal {...bootstrapDialog(modal)}>
+      <Modal {...bootstrapDialog(modal)} onHide={() => modal.remove()}>
         <Form onSubmit={handleSubmitCongSettings}>
           <Modal.Header>
             <Modal.Title>Congregation Settings</Modal.Title>

@@ -64,13 +64,13 @@ const InviteUser = NiceModal.create(
         alert(`Granted ${roleDisplay} access to ${userEmail}.`);
         modal.hide();
       } catch (error) {
-        errorHandler(errorMessage((error as FirebaseError).code), rollbar);
+        errorHandler(errorMessage(error as FirebaseError), rollbar);
       } finally {
         setIsSaving(false);
       }
     };
     return (
-      <Modal {...bootstrapDialog(modal)}>
+      <Modal {...bootstrapDialog(modal)} onHide={() => modal.remove()}>
         <Modal.Header>
           <Modal.Title>Invite User</Modal.Title>
           <HelpButton link={WIKI_CATEGORIES.INVITE_USER} />
