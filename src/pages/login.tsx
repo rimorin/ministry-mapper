@@ -29,7 +29,7 @@ const Login = () => {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
       setValidated(false);
-      errorHandler(errorMessage((err as FirebaseError).code), rollbar);
+      errorHandler(errorMessage(err as FirebaseError), rollbar);
     } finally {
       setIsLogin(false);
     }
@@ -59,7 +59,7 @@ const Login = () => {
       rollbar.info(`User attempting to reset password! Email: ${value}`);
       alert(`Password reset email sent to ${value}.`);
     } catch (error) {
-      errorHandler(errorMessage((error as FirebaseError).code), rollbar);
+      errorHandler(errorMessage(error as FirebaseError), rollbar);
     } finally {
       setIsSending(false);
     }

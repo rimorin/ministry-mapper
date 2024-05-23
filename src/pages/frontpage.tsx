@@ -67,7 +67,7 @@ const FrontPage = () => {
       setIsCreate(false);
     } catch (err) {
       setValidated(false);
-      errorHandler(errorMessage((err as FirebaseError).code), rollbar);
+      errorHandler(errorMessage(err as FirebaseError), rollbar);
     } finally {
       setIsCreating(false);
     }

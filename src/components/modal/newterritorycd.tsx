@@ -55,7 +55,7 @@ const NewTerritoryCode = NiceModal.create(
       }
     };
     return (
-      <Modal {...bootstrapDialog(modal)}>
+      <Modal {...bootstrapDialog(modal)} onHide={() => modal.remove()}>
         <Modal.Header>
           <Modal.Title>Create New Territory</Modal.Title>
           <HelpButton link={WIKI_CATEGORIES.CREATE_TERRITORIES} />

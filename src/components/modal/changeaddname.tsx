@@ -42,7 +42,7 @@ const ChangeAddressName = NiceModal.create(
       }
     };
     return (
-      <Modal {...bootstrapDialog(modal)}>
+      <Modal {...bootstrapDialog(modal)} onHide={() => modal.remove()}>
         <Modal.Header>
           <Modal.Title>Change Address Name</Modal.Title>
           <HelpButton link={WIKI_CATEGORIES.CHANGE_ADDRESS_NAME} />

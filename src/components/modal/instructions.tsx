@@ -59,7 +59,7 @@ const UpdateAddressInstructions = NiceModal.create(
     };
 
     return (
-      <Modal {...bootstrapDialog(modal)}>
+      <Modal {...bootstrapDialog(modal)} onHide={() => modal.remove()}>
         <Modal.Header>
           <Modal.Title>{`Instructions on ${addressName}`}</Modal.Title>
           <HelpButton link={WIKI_CATEGORIES.UPDATE_INSTRUCTIONS} />

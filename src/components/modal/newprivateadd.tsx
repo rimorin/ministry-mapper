@@ -123,7 +123,7 @@ const NewPrivateAddress = NiceModal.create(
       }
     };
     return (
-      <Modal {...bootstrapDialog(modal)}>
+      <Modal {...bootstrapDialog(modal)} onHide={() => modal.remove()}>
         <Modal.Header>
           <Modal.Title>Create Private Address</Modal.Title>
           <HelpButton link={WIKI_CATEGORIES.CREATE_PRIVATE_ADDRESS} />

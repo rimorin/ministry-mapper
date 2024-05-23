@@ -38,7 +38,7 @@ const GetAssignments = NiceModal.create(
     const isAssignOrPersonalAssignments = assignmentType && assignmentTerritory;
 
     return (
-      <Modal {...bootstrapDialog(modal)}>
+      <Modal {...bootstrapDialog(modal)} onHide={() => modal.remove()}>
         <Modal.Header>
           <Modal.Title>
             {isAssignOrPersonalAssignments

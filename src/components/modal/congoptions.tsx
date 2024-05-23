@@ -214,7 +214,11 @@ const UpdateCongregationOptions = NiceModal.create(
     }, [currentCongregation]);
 
     return (
-      <Modal {...bootstrapDialog(modal)} dialogClassName="modal-lg">
+      <Modal
+        {...bootstrapDialog(modal)}
+        dialogClassName="modal-lg"
+        onHide={() => modal.remove()}
+      >
         <Form onSubmit={handleSubmitCongOptions}>
           <Modal.Header>
             <Modal.Title>Household Options</Modal.Title>

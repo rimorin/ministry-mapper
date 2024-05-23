@@ -30,7 +30,7 @@ const ConfirmSlipDetails = NiceModal.create(
     };
 
     return (
-      <Modal {...bootstrapDialog(modal)}>
+      <Modal {...bootstrapDialog(modal)} onHide={() => modal.remove()}>
         <Modal.Header>
           <Modal.Title>
             {`Confirm ${
