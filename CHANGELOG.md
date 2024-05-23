@@ -1,3 +1,10 @@
+## [1.28.2](https://github.com/rimorin/ministry-mapper/compare/v1.28.1...v1.28.2) (2024-05-23)
+
+
+### Performance Improvements
+
+* optimizations ([5a05006](https://github.com/rimorin/ministry-mapper/commit/5a0500603d9600b121d03857a8e84a5313be70c5))
+
 ## [1.28.1](https://github.com/rimorin/ministry-mapper/compare/v1.28.0...v1.28.1) (2024-05-17)
 
 
