@@ -1,4 +1,5 @@
-import { useState, useEffect, lazy } from "react";
+import { useState, useEffect, lazy, useCallback } from "react";
+import "react-calendar/dist/Calendar.css";
 import { database } from "../../firebase";
 import { useParams } from "react-router-dom";
 import { get, onChildRemoved, ref } from "firebase/database";
@@ -22,12 +23,14 @@ function Territory() {
     DEFAULT_CONGREGATION_MAX_TRIES
   );
   const [postalcode, setPostalcode] = useState<string>("");
+  const linkRef = ref(database, `links/${code}/${id}`);
+
+  const fetchLinkData = useCallback(() => {
+    return get(linkRef);
+  }, [id, code]);
 
   useEffect(() => {
-    const linkRef = ref(database, `links/${code}/${id}`);
-    pollingQueryFunction(() => {
-      return get(linkRef);
-    })
+    pollingQueryFunction(fetchLinkData)
       .then((linkSnapshot) => {
         if (!linkSnapshot.exists()) {
           return;

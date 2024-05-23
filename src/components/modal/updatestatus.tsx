@@ -136,7 +136,7 @@ const UpdateUnitStatus = NiceModal.create(
       }
     };
     return (
-      <Modal {...bootstrapDialog(modal)}>
+      <Modal {...bootstrapDialog(modal)} onHide={() => modal.remove()}>
         <ModalUnitTitle
           unit={unitNoDisplay}
           propertyPostal={postalCode}

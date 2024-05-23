@@ -1,4 +1,5 @@
 import { useState, useEffect, lazy } from "react";
+import "react-calendar/dist/Calendar.css";
 import { auth } from "../../firebase";
 import Loader from "../../components/statics/loader";
 import { sendEmailVerification, signOut, User } from "firebase/auth";

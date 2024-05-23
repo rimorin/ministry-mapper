@@ -55,7 +55,7 @@ const ChangeTerritoryCode = NiceModal.create(
       }
     };
     return (
-      <Modal {...bootstrapDialog(modal)}>
+      <Modal {...bootstrapDialog(modal)} onHide={() => modal.remove()}>
         <Modal.Header>
           <Modal.Title>Change Territory Code</Modal.Title>
           <HelpButton link={WIKI_CATEGORIES.CHANGE_TERRITORY_CODE} />

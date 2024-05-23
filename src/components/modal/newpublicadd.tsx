@@ -127,7 +127,7 @@ const NewPublicAddress = NiceModal.create(
       }
     };
     return (
-      <Modal {...bootstrapDialog(modal)}>
+      <Modal {...bootstrapDialog(modal)} onHide={() => modal.remove()}>
         <Modal.Header>
           <Modal.Title>Create Public Address</Modal.Title>
           <HelpButton link={WIKI_CATEGORIES.CREATE_PUBLIC_ADDRESS} />
