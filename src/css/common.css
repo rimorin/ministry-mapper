@@ -19,6 +19,11 @@
 
 .inline-cell {
   white-space: nowrap;
+  min-width: 4rem;
+}
+
+.inline-row {
+  height: 4rem;
 }
 
 .group-wrap {

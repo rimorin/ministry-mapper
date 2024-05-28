@@ -11,11 +11,29 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 90vh;
+  height: 85vh;
 }
 
 .card-main {
   border: 0 !important;
   align-items: center;
   width: 80%;
+}
+
+@media (max-width: 600px) {
+  .responsive-width {
+    width: 90%;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 1024px) {
+  .responsive-width {
+    width: 70%;
+  }
+}
+
+@media (min-width: 1025px) {
+  .responsive-width {
+    width: 50%;
+  }
 }

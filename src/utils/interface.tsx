@@ -81,6 +81,9 @@ export interface valuesDetails extends floorInterface, nameInterface {
   linkExpiryHrs?: number;
 }
 
+export type DropDirection = "up" | "down";
+export type DropDirections = { [key: string]: DropDirection };
+
 export type adminProps = userInterface;
 
 export interface territoryDetails extends nameInterface {
@@ -258,9 +261,7 @@ export interface SignInDifferentProps {
   handleClick?: (event: React.MouseEvent<HTMLElement>) => void;
 }
 
-export interface VerificationProps extends SignInDifferentProps {
-  handleResendMail?: (event: React.MouseEvent<HTMLElement>) => void;
-}
+export interface VerificationProps extends userInterface {}
 
 export interface HelpButtonProps {
   link: string;
@@ -272,6 +273,23 @@ export interface userDetails extends nameInterface {
   email: string;
   verified: boolean;
   role: number;
+}
+
+export type CongregationAccessObject = {
+  code: string;
+  name: string;
+  access: number;
+};
+
+export interface CongregationListingProps {
+  showListing: boolean;
+  hideFunction: () => void;
+  currentCongCode: string;
+  handleSelect?: (
+    eventKey: string | null,
+    e: React.SyntheticEvent<unknown>
+  ) => void;
+  congregations?: CongregationAccessObject[];
 }
 
 export interface UserListingProps {

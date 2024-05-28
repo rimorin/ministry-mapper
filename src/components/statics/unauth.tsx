@@ -15,7 +15,7 @@ const UnauthorizedPage = ({ handleClick, name }: SignInDifferentProps) => (
           401 Unauthorized Access 🔐
         </Card.Title>
         <Card.Text className="text-justify">
-          We are sorry {name}! You are not authorised to access this page.
+          We are sorry {name}! You are not authorised to access this system.
         </Card.Text>
       </Card.Body>
       <UseAnotherButton handleClick={handleClick} />

@@ -5,7 +5,7 @@ import { WelcomeProps } from "../../utils/interface";
 
 const Welcome = memo(({ name }: WelcomeProps) => {
   return (
-    <Container className="container-main" style={{ height: "80vh" }}>
+    <Container className="container-main">
       <Card className="card-main" style={{ width: "100%" }}>
         <Card.Img
           alt="Ministry Mapper main logo"
