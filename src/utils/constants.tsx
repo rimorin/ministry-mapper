@@ -89,7 +89,7 @@ const NOTIFICATION_TYPES = {
 };
 
 //eslint-disable-next-line
-const SPECIAL_CHARACTERS = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
+const SPECIAL_CHARACTERS = /[`!@#$%^&()_+\=\[\]{};':"\\|,.<>\/?~][^-*]/;
 const NUMERIC_CHARACTERS = /^-?\d+$/;
 // Hardcode for local SG postal standards
 const MINIMUM_POSTAL_LENGTH = 6;

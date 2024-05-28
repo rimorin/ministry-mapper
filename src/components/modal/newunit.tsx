@@ -31,9 +31,9 @@ const NewUnit = NiceModal.create(
       event.preventDefault();
       setIsSaving(true);
       try {
-        if (!/^[a-zA-Z0-9]+$/.test(unit)) {
+        if (!/^[a-zA-Z0-9\-*]+$/.test(unit)) {
           alert(
-            "The Unit/Property number should only include alphanumeric characters."
+            "The Unit/Property number should only include alphanumeric characters, dash or hyphen."
           );
           return;
         }
