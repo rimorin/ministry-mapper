@@ -1,3 +1,10 @@
+## [1.28.3](https://github.com/rimorin/ministry-mapper/compare/v1.28.2...v1.28.3) (2024-05-28)
+
+
+### Bug Fixes
+
+* allow hyphen and asterisk for private territories no ([2906592](https://github.com/rimorin/ministry-mapper/commit/290659236af545c67f56ab40d9f17c8128b95242))
+
 ## [1.28.2](https://github.com/rimorin/ministry-mapper/compare/v1.28.1...v1.28.2) (2024-05-23)
 
 
