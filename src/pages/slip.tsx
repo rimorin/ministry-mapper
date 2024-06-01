@@ -1,23 +1,22 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
-import { ref, child, onValue } from "firebase/database";
-import { database } from "../../firebase";
+import { ref, child, onValue, onChildRemoved, get } from "firebase/database";
+import { database } from "../firebase";
 import { Container, Navbar, NavDropdown } from "react-bootstrap";
 import {
   OptionProps,
   floorDetails,
   latlongInterface,
   valuesDetails
-} from "../../utils/interface";
-import PublisherTerritoryTable from "../../components/table/publisher";
-import { Policy } from "../../utils/policies";
-import ZeroPad from "../../utils/helpers/zeropad";
-import processAddressData from "../../utils/helpers/processadddata";
-import getMaxUnitLength from "../../utils/helpers/maxunitlength";
-import getCompletedPercent from "../../utils/helpers/getcompletedpercent";
-import getOptions from "../../utils/helpers/getcongoptions";
-import Legend from "../../components/navigation/legend";
-import EnvironmentIndicator from "../../components/navigation/environment";
-import Loader from "../../components/statics/loader";
+} from "../utils/interface";
+import PublisherTerritoryTable from "../components/table/publisher";
+import { LinkSession, Policy } from "../utils/policies";
+import ZeroPad from "../utils/helpers/zeropad";
+import processAddressData from "../utils/helpers/processadddata";
+import getMaxUnitLength from "../utils/helpers/maxunitlength";
+import getCompletedPercent from "../utils/helpers/getcompletedpercent";
+import getOptions from "../utils/helpers/getcongoptions";
+import Legend from "../components/navigation/legend";
+import Loader from "../components/statics/loader";
 import {
   DEFAULT_FLOOR_PADDING,
   RELOAD_INACTIVITY_DURATION,
@@ -27,25 +26,32 @@ import {
   WIKI_CATEGORIES,
   DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
   DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION,
-  DEFAULT_COORDINATES
-} from "../../utils/constants";
-import "../../css/slip.css";
+  DEFAULT_COORDINATES,
+  DEFAULT_CONGREGATION_MAX_TRIES
+} from "../utils/constants";
+import "../css/slip.css";
 import Countdown from "react-countdown";
-import InfoImg from "../../assets/information.svg?react";
+import InfoImg from "../assets/information.svg?react";
 import ModalManager from "@ebay/nice-modal-react";
-import UpdateAddressFeedback from "../../components/modal/updateaddfeedback";
-import UpdateAddressInstructions from "../../components/modal/instructions";
-import UpdateUnitStatus from "../../components/modal/updatestatus";
-import GetDirection from "../../utils/helpers/directiongenerator";
-import getOptionIsMultiSelect from "../../utils/helpers/getoptionmultiselect";
-import getCongregationOrigin from "../../utils/helpers/getcongorigin";
-const Slip = ({
-  tokenEndtime = 0,
-  postalcode = "",
-  congregationcode = "",
-  maxTries = 0,
-  pubName = ""
-}) => {
+import UpdateAddressFeedback from "../components/modal/updateaddfeedback";
+import UpdateAddressInstructions from "../components/modal/instructions";
+import UpdateUnitStatus from "../components/modal/updatestatus";
+import GetDirection from "../utils/helpers/directiongenerator";
+import getOptionIsMultiSelect from "../utils/helpers/getoptionmultiselect";
+import getCongregationOrigin from "../utils/helpers/getcongorigin";
+import { useParams } from "react-router-dom";
+import InvalidPage from "../components/statics/invalidpage";
+
+const Map = () => {
+  const { id, code } = useParams();
+  const [isLinkExpired, setIsLinkExpired] = useState<boolean>(true);
+  const [tokenEndTime, setTokenEndTime] = useState<number>(0);
+  const [publisherName, setPublisherName] = useState<string>("");
+  const [congregationMaxTries, setCongregationMaxTries] = useState<number>(
+    DEFAULT_CONGREGATION_MAX_TRIES
+  );
+  const [postalcode, setPostalcode] = useState<string>("");
+
   const [showLegend, setShowLegend] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [floors, setFloors] = useState<Array<floorDetails>>([]);
@@ -76,7 +82,7 @@ const Slip = ({
       // CONDUCTOR ACL because publishers should be able to update status
       userAccessLevel: USER_ACCESS_LEVELS.CONDUCTOR.CODE,
       territoryType: territoryType,
-      congregation: congregationcode,
+      congregation: code,
       postalCode: postalcode,
       unitNo: unit,
       unitNoDisplay: ZeroPad(unit, maxUnitNumber),
@@ -94,31 +100,63 @@ const Slip = ({
     setShowLegend(!showLegend);
   }, [showLegend]);
 
-  const refreshPage = () => {
-    const inactivityPeriod = new Date().getTime() - currentTime.current;
-    if (inactivityPeriod >= RELOAD_INACTIVITY_DURATION) {
-      window.location.reload();
-    } else {
-      setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-    }
-  };
+  useEffect(() => {
+    if (!code || !id) return;
+    const getLinkData = async () => {
+      const linkRef = ref(database, `links/${code}/${id}`);
+      const linkSnapshot = await get(linkRef);
+      if (!linkSnapshot.exists()) {
+        return;
+      }
+      const linkrec = new LinkSession(linkSnapshot.val());
+      setPublisherName(linkrec.publisherName);
+      setCongregationMaxTries(linkrec.maxTries);
+      setPostalcode(linkrec.postalCode);
+      const tokenEndtime = linkrec.tokenEndtime;
+      const currentTimestamp = new Date().getTime();
+      setTokenEndTime(tokenEndtime);
+      setIsLinkExpired(currentTimestamp > tokenEndtime);
+      onChildRemoved(linkRef, () => window.location.reload());
+    };
 
-  const setActivityTime = () => {
-    currentTime.current = new Date().getTime();
-  };
+    const refreshPage = () => {
+      const inactivityPeriod = new Date().getTime() - currentTime.current;
+      if (inactivityPeriod >= RELOAD_INACTIVITY_DURATION) {
+        window.location.reload();
+      } else {
+        setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
+      }
+    };
+    getLinkData();
+
+    const setActivityTime = () => {
+      currentTime.current = new Date().getTime();
+    };
+    document.body.addEventListener("mousemove", setActivityTime);
+    document.body.addEventListener("keypress", setActivityTime);
+    document.body.addEventListener("touchstart", setActivityTime);
+    const timeoutId = setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
+
+    return () => {
+      document.body.removeEventListener("mousemove", setActivityTime);
+      document.body.removeEventListener("keypress", setActivityTime);
+      document.body.removeEventListener("touchstart", setActivityTime);
+      clearTimeout(timeoutId);
+    };
+  }, [code, id]);
 
   useEffect(() => {
-    Promise.all([
-      getOptions(congregationcode),
-      getOptionIsMultiSelect(congregationcode),
-      getCongregationOrigin(congregationcode)
-    ]).then(([options, isMultiselect, origin]) => {
+    const getMapData = async () => {
+      if (!code || !postalcode) return;
+      const options = await getOptions(code);
+      const isMultiselect = await getOptionIsMultiSelect(code);
+      const origin = await getCongregationOrigin(code);
       setOptions(options);
       setPolicy(
         new Policy(
           undefined,
           options,
-          maxTries,
+          congregationMaxTries,
           isMultiselect.exists()
             ? isMultiselect.val()
             : DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
@@ -128,10 +166,11 @@ const Slip = ({
         )
       );
       onValue(
-        child(ref(database), `addresses/${congregationcode}/${postalcode}`),
+        child(ref(database), `addresses/${code}/${postalcode}`),
         (snapshot) => {
           if (snapshot.exists()) {
             const postalSnapshot = snapshot.val();
+            console.log(postalSnapshot);
             setValues((values) => ({
               ...values,
               feedback: postalSnapshot.feedback,
@@ -142,28 +181,22 @@ const Slip = ({
             setCoordinates(
               postalSnapshot.coordinates || DEFAULT_COORDINATES.Singapore
             );
-            processAddressData(
-              congregationcode,
-              postalcode,
-              postalSnapshot.units
-            )
+            processAddressData(code, postalcode, postalSnapshot.units)
               .then((data) => {
                 setFloors(data);
               })
               .finally(() => {
                 setIsLoading(false);
               });
+            console.log(`Data fetched for ${code} ${postalcode}`);
             document.title = postalSnapshot.name;
           }
         }
       );
-    });
+    };
 
-    document.body.addEventListener("mousemove", setActivityTime);
-    document.body.addEventListener("keypress", setActivityTime);
-    document.body.addEventListener("touchstart", setActivityTime);
-    setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-  }, [tokenEndtime, postalcode, congregationcode, maxTries]);
+    getMapData();
+  }, [postalcode, code]);
 
   const maxUnitNumberLength = useMemo(() => getMaxUnitLength(floors), [floors]);
   const completedPercent = useMemo(
@@ -171,14 +204,15 @@ const Slip = ({
     [policy, floors]
   );
   if (isLoading) return <Loader />;
+  if (isLinkExpired) {
+    document.title = "Ministry Mapper";
+    return <InvalidPage />;
+  }
 
   const instructions = (values as valuesDetails).instructions;
   return (
     <>
       <Legend showLegend={showLegend} hideFunction={toggleLegend} />
-      <EnvironmentIndicator
-        environment={import.meta.env.VITE_ROLLBAR_ENVIRONMENT}
-      />
       <Navbar bg="light" expand="sm">
         <Container fluid>
           <Navbar.Brand
@@ -210,7 +244,7 @@ const Slip = ({
                   <NavDropdown.Item
                     onClick={() =>
                       ModalManager.show(UpdateAddressInstructions, {
-                        congregation: congregationcode,
+                        congregation: code,
                         postalCode: postalcode,
                         userAccessLevel: USER_ACCESS_LEVELS.READ_ONLY.CODE,
                         addressName: postalName as string,
@@ -237,10 +271,10 @@ const Slip = ({
                     ModalManager.show(UpdateAddressFeedback, {
                       footerSaveAcl: USER_ACCESS_LEVELS.CONDUCTOR.CODE,
                       name: postalcode,
-                      congregation: congregationcode,
+                      congregation: code,
                       postalCode: postalcode,
                       currentFeedback: (values as valuesDetails).feedback,
-                      currentName: pubName,
+                      currentName: publisherName,
                       helpLink: WIKI_CATEGORIES.PUBLISHER_ADDRESS_FEEDBACK
                     })
                   }
@@ -251,7 +285,7 @@ const Slip = ({
                 <NavDropdown.Item className="fluid-bolding fluid-text" disabled>
                   <Countdown
                     className="m-1"
-                    date={tokenEndtime}
+                    date={tokenEndTime}
                     daysInHours={true}
                     renderer={(props) => {
                       const daysDisplay =
@@ -300,4 +334,4 @@ const Slip = ({
   );
 };
 
-export default Slip;
+export default Map;
