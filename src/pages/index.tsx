@@ -12,6 +12,7 @@ import StateMiddleware from "../components/middlewares/context";
 const Map = lazy(() => import("./slip"));
 const NotFoundPage = lazy(() => import("../components/statics/notfound"));
 const FrontPage = lazy(() => import("./frontpage"));
+const UserManagement = lazy(() => import("./usrmgmt"));
 function Main() {
   return (
     <StateMiddleware>
@@ -22,6 +23,7 @@ function Main() {
               <Route path="*" element={<NotFoundPage />} />
               <Route path="/" element={<FrontPage />} />
               <Route path={"/:code/:id"} element={<Map />} />
+              <Route path={"/usermgmt"} element={<UserManagement />} />
             </Routes>
           </Suspense>
         </MaintenanceMiddleware>
