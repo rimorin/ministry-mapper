@@ -28,6 +28,7 @@ const ForgotComponent = () => {
       return;
     }
     try {
+      setIsProcessing(true);
       await sendPasswordResetEmail(auth, loginEmail);
       rollbar.info(`User attempting to reset password! Email: ${loginEmail}`);
       alert(`Password reset email sent to ${loginEmail}.`);
