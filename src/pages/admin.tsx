@@ -9,13 +9,12 @@ import {
   push,
   get,
   query,
-  orderByValue,
   DataSnapshot,
   orderByChild,
   equalTo
 } from "firebase/database";
 import "../css/admin.css";
-import { signOut, User } from "firebase/auth";
+import { IdTokenResult, signOut } from "firebase/auth";
 import { nanoid } from "nanoid";
 import {
   useEffect,
@@ -66,8 +65,6 @@ import processAddressData from "../utils/helpers/processadddata";
 import processLinkDetails from "../utils/helpers/processlinkct";
 import errorHandler from "../utils/helpers/errorhandler";
 import ZeroPad from "../utils/helpers/zeropad";
-import addHours from "../utils/helpers/addhours";
-import triggerPostalCodeListeners from "../utils/helpers/postalcodelistener";
 import assignmentMessage from "../utils/helpers/assignmentmsg";
 import getMaxUnitLength from "../utils/helpers/maxunitlength";
 import getCompletedPercent from "../utils/helpers/getcompletedpercent";
@@ -113,6 +110,9 @@ import getOptionIsMultiSelect from "../utils/helpers/getoptionmultiselect";
 import getCongregationOrigin from "../utils/helpers/getcongorigin";
 import useLocalStorage from "../utils/helpers/storage";
 import CongListing from "../components/navigation/conglist";
+import getCongregationDetails from "../utils/helpers/getcongdetails";
+import setLink from "../utils/helpers/setlink";
+import getTerritoryData from "../utils/helpers/getterritorydetails";
 
 const UnauthorizedPage = SuspenseComponent(
   lazy(() => import("../components/statics/unauth"))
@@ -206,15 +206,16 @@ function Admin({ user }: adminProps) {
   const [options, setOptions] = useState<Array<OptionProps>>([]);
   const [isAssignmentLoading, setIsAssignmentLoading] =
     useState<boolean>(false);
-
   const [userCongregationAccesses, setUserCongregationAccesses] = useState<
     CongregationAccessObject[]
   >([]);
+  const [dropDirections, setDropDirections] = useState<DropDirections>({});
   const rollbar = useRollbar();
   const unsubscribers = useRef<Array<Unsubscribe>>([]);
+  const congregationAccess = useRef<Record<string, number>>({});
+  const loginUserClaims = useRef<IdTokenResult>();
   const currentTime = useRef<number>(new Date().getTime());
 
-  const [dropDirections, setDropDirections] = useState<DropDirections>({});
   const [congregationCode, setCongregationCode] = useLocalStorage(
     "congregationCode",
     ""
@@ -245,7 +246,7 @@ function Admin({ user }: adminProps) {
   const getUsers = useCallback(async () => {
     const getCongregationUsers = httpsCallable(
       functions,
-      "getCongregationUsers"
+      "getCongregationUsersV2"
     );
     try {
       setIsShowingUserListing(true);
@@ -284,27 +285,8 @@ function Admin({ user }: adminProps) {
 
   const processSelectedTerritory = async (selectedTerritoryCode: string) => {
     try {
-      const [territoryAddsResult, territoryNameResult] = await Promise.all([
-        pollingQueryFunction(() =>
-          get(
-            query(
-              ref(
-                database,
-                `congregations/${code}/territories/${selectedTerritoryCode}/addresses`
-              ),
-              orderByValue()
-            )
-          )
-        ),
-        pollingQueryFunction(() =>
-          get(
-            child(
-              ref(database),
-              `congregations/${code}/territories/${selectedTerritoryCode}/name`
-            )
-          )
-        )
-      ]);
+      const { territoryAddsResult, territoryNameResult } =
+        await getTerritoryData(code, selectedTerritoryCode);
 
       setSelectedTerritoryCode(selectedTerritoryCode);
       setSelectedTerritoryName(territoryNameResult.val());
@@ -608,30 +590,6 @@ function Admin({ user }: adminProps) {
     });
   };
 
-  const setTimedLink = (
-    linktype: number,
-    postalCode: string,
-    postalName: string,
-    addressLinkId: string,
-    hours: number,
-    publisherName = ""
-  ) => {
-    const link = new LinkSession();
-    link.tokenEndtime = addHours(hours);
-    link.postalCode = postalCode;
-    link.linkType = linktype;
-    link.maxTries = policy.maxTries;
-    // dont set user if its view type link. This will prevent this kind of links from appearing in assignments
-    if (linktype != LINK_TYPES.VIEW) link.userId = user.uid;
-    link.congregation = code;
-    link.name = postalName;
-    link.publisherName = publisherName;
-    return pollingVoidFunction(async () => {
-      await set(ref(database, `links/${code}/${addressLinkId}`), link);
-      await triggerPostalCodeListeners(code, link.postalCode);
-    });
-  };
-
   const handleSubmitPersonalSlip = async (
     postalCode: string,
     name: string,
@@ -681,12 +639,15 @@ function Admin({ user }: adminProps) {
       setSelectedPostal(postalcode);
       if (linktype === LINK_TYPES.ASSIGNMENT) setIsSettingAssignLink(true);
       if (linktype === LINK_TYPES.PERSONAL) setIsSettingPersonalLink(true);
-      await setTimedLink(
+      await setLink(
         linktype,
+        code,
+        user.uid,
         postalcode,
         postalname,
         linkId,
         hours,
+        policy.maxTries,
         publisherName
       );
       const absoluteUrl = new URL(url, window.location.href);
@@ -733,13 +694,8 @@ function Admin({ user }: adminProps) {
       console.error("Error processing congregation territories: ", error);
     }
   };
-  const getUserAccessLevel = async (
-    user: User,
-    congregationCode: string | undefined
-  ) => {
-    if (!congregationCode) return;
-    const tokenData = await user.getIdTokenResult(true);
-    return tokenData.claims[congregationCode] as string;
+  const getUserAccessLevel = async (congregationCode: string) => {
+    return congregationAccess.current[congregationCode];
   };
 
   const handleTerritorySelect = useCallback(
@@ -844,6 +800,39 @@ function Admin({ user }: adminProps) {
     [showCongregationListing]
   );
 
+  const getAssignments = useCallback(async (code: string, uid: string) => {
+    setIsAssignmentLoading(true);
+    try {
+      const snapshot = await pollingQueryFunction(() =>
+        get(
+          query(
+            ref(database, `links/${code}`),
+            orderByChild("userId"),
+            equalTo(uid)
+          )
+        )
+      );
+
+      if (!snapshot.exists()) {
+        alert("No assignments found.");
+        return;
+      }
+
+      const assignmentListing = snapshot.val();
+      const linkListing = new Array<LinkSession>();
+      for (const linkId in assignmentListing) {
+        linkListing.push(new LinkSession(assignmentListing[linkId], linkId));
+      }
+
+      ModalManager.show(SuspenseComponent(GetAssignments), {
+        assignments: linkListing,
+        congregation: code
+      });
+    } finally {
+      setIsAssignmentLoading(false);
+    }
+  }, []);
+
   const refreshPage = () => {
     const inactivityPeriod = new Date().getTime() - currentTime.current;
     if (inactivityPeriod >= RELOAD_INACTIVITY_DURATION) {
@@ -859,27 +848,33 @@ function Admin({ user }: adminProps) {
 
   useEffect(() => {
     const fetchData = async () => {
-      const userAccessLevel = await user.getIdTokenResult(true);
-
-      if (!userAccessLevel) {
+      const userData = await user.getIdTokenResult(true);
+      loginUserClaims.current = userData;
+      const userClaims = userData.claims;
+      const congData = userClaims["congregations"] as Record<string, number>;
+      if (!congData) {
+        setIsLoading(false);
         setIsUnauthorised(true);
         errorHandler(`Unauthorised access by ${user.email}`, rollbar, false);
         return;
       }
+      congregationAccess.current = congData;
+      const congregationAccessesPromises = Object.entries(congData).map(
+        async ([key, access]) => {
+          const congName = await pollingQueryFunction(() =>
+            get(child(ref(database), `congregations/${key}/name`))
+          );
 
-      const userClaims = userAccessLevel.claims;
-      const congregationAccesses: CongregationAccessObject[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      for (const key in userClaims["congregations"] as any) {
-        const congName = await pollingQueryFunction(() =>
-          get(child(ref(database), `congregations/${key}/name`))
-        );
-        congregationAccesses.push({
-          code: key,
-          access: Number(userClaims[key]),
-          name: congName.exists() ? congName.val() : ""
-        });
-      }
+          return {
+            code: key,
+            access: Number(access),
+            name: congName.exists() ? congName.val() : ""
+          };
+        }
+      );
+
+      const congregationAccesses: CongregationAccessObject[] =
+        await Promise.all(congregationAccessesPromises);
       setUserCongregationAccesses(congregationAccesses);
       const initialSelectedCode =
         congregationCode || congregationAccesses[0].code;
@@ -911,59 +906,58 @@ function Admin({ user }: adminProps) {
   useEffect(() => {
     if (!code) return;
     refreshAddressState();
+
     Promise.all([
-      getUserAccessLevel(user, code),
+      getUserAccessLevel(code),
       checkCongregationExpireHours(code),
       checkCongregationMaxTries(code),
       getOptions(code),
       getOptionIsMultiSelect(code),
-      pollingQueryFunction(() =>
-        get(child(ref(database), `congregations/${code}`))
-      ),
+      getCongregationDetails(code),
       getCongregationOrigin(code)
-    ]).then(
-      async ([
-        userAccessLevel,
-        expireHours,
-        maxTries,
-        options,
-        optionIsMultiselect,
-        congregationDetails,
-        origin
-      ]) => {
-        if (!userAccessLevel) {
-          setIsUnauthorised(true);
-          errorHandler(
-            `Unauthorised access to ${code} by ${user.email}`,
-            rollbar,
-            false
+    ])
+      .then(
+        ([
+          userAccessLevel,
+          expireHours,
+          maxTries,
+          options,
+          optionIsMultiselect,
+          congregationDetails,
+          origin
+        ]) => {
+          setUserAccessLevel(Number(userAccessLevel));
+          setDefaultExpiryHours(
+            expireHours.exists()
+              ? expireHours.val()
+              : DEFAULT_SELF_DESTRUCT_HOURS
           );
+          setOptions(options);
+          setPolicy(
+            new Policy(
+              loginUserClaims.current,
+              options,
+              maxTries.exists()
+                ? maxTries.val()
+                : DEFAULT_CONGREGATION_MAX_TRIES,
+              optionIsMultiselect.exists()
+                ? optionIsMultiselect.val()
+                : DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
+              origin.exists()
+                ? origin.val()
+                : DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
+            )
+          );
+          processCongregationTerritories(
+            congregationDetails.exists() ? congregationDetails : undefined
+          );
+          setIsLoading(false);
         }
-        setUserAccessLevel(Number(userAccessLevel));
-        setDefaultExpiryHours(
-          expireHours.exists() ? expireHours.val() : DEFAULT_SELF_DESTRUCT_HOURS
-        );
-        setOptions(options);
-        setPolicy(
-          new Policy(
-            await user.getIdTokenResult(true),
-            options,
-            maxTries.exists() ? maxTries.val() : DEFAULT_CONGREGATION_MAX_TRIES,
-            optionIsMultiselect.exists()
-              ? optionIsMultiselect.val()
-              : DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
-
-            origin.exists()
-              ? origin.val()
-              : DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
-          )
-        );
-        processCongregationTerritories(
-          congregationDetails.exists() ? congregationDetails : undefined
-        );
-        setIsLoading(false);
-      }
-    );
+      )
+      .catch((error) => {
+        // Handle the error here
+        console.error(error);
+      });
   }, [code]);
 
   const territoryAddressData = useMemo(() => {
@@ -1436,40 +1430,7 @@ function Admin({ user }: adminProps) {
               >
                 Profile
               </Dropdown.Item>
-              <Dropdown.Item
-                onClick={() => {
-                  setIsAssignmentLoading(true);
-                  pollingQueryFunction(() =>
-                    get(
-                      query(
-                        ref(database, `links/${code}`),
-                        orderByChild("userId"),
-                        equalTo(user.uid)
-                      )
-                    )
-                  )
-                    .then((snapshot) => {
-                      if (!snapshot.exists()) {
-                        alert("No assignments found.");
-                        return;
-                      }
-                      const assignmentListing = snapshot.val();
-                      const linkListing = new Array<LinkSession>();
-                      for (const linkId in assignmentListing) {
-                        linkListing.push(
-                          new LinkSession(assignmentListing[linkId], linkId)
-                        );
-                      }
-                      ModalManager.show(SuspenseComponent(GetAssignments), {
-                        assignments: linkListing,
-                        congregation: code
-                      });
-                    })
-                    .finally(() => {
-                      setIsAssignmentLoading(false);
-                    });
-                }}
-              >
+              <Dropdown.Item onClick={() => getAssignments(code, user.uid)}>
                 Assignments
               </Dropdown.Item>
               <Dropdown.Item
@@ -1711,12 +1672,15 @@ function Admin({ user }: adminProps) {
                                 TERRITORY_VIEW_WINDOW_WELCOME_TEXT;
                             }
                             const addressLinkId = nanoid();
-                            await setTimedLink(
+                            await setLink(
                               LINK_TYPES.VIEW,
+                              code,
+                              user.uid,
                               currentPostalcode,
                               currentPostalname,
                               addressLinkId,
                               defaultExpiryHours,
+                              policy.maxTries,
                               user.displayName || ""
                             );
                             if (territoryWindow) {
