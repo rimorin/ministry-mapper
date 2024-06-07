@@ -11,7 +11,7 @@ import {
   Button
 } from "react-bootstrap";
 import { confirmAlert } from "react-confirm-alert";
-import { database } from "../../firebase";
+import { ai, database } from "../../firebase";
 import {
   USER_ACCESS_LEVELS,
   STATUS_CODES,
@@ -20,7 +20,8 @@ import {
   WIKI_CATEGORIES,
   DEFAULT_MULTPLE_OPTION_DELIMITER,
   DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION,
-  DEFAULT_COORDINATES
+  DEFAULT_COORDINATES,
+  AI_SETTINGS
 } from "../../utils/constants";
 import ModalManager from "@ebay/nice-modal-react";
 import pollingVoidFunction from "../../utils/helpers/pollingvoid";
@@ -42,6 +43,7 @@ import HHTypeField from "../form/household";
 import ComponentAuthorizer from "../navigation/authorizer";
 import HelpButton from "../navigation/help";
 import ChangeAddressGeolocation from "./changegeolocation";
+import { getGenerativeModel } from "firebase/vertexai-preview";
 
 const UpdateUnitStatus = NiceModal.create(
   ({
@@ -90,6 +92,26 @@ const UpdateUnitStatus = NiceModal.create(
     const modal = useModal();
     const rollbar = useRollbar();
 
+    const checkIfNotesAreSensitive = async (note: string) => {
+      // Return early if note is not provided or matches unitDetails.note
+      if (!note || note === unitDetails?.note) {
+        return false;
+      }
+      try {
+        const modal = getGenerativeModel(ai, AI_SETTINGS);
+        const result = await modal.generateContent(note);
+        const text = result.response.text();
+        const json = JSON.parse(text);
+        if (json.containsPersonalInfo) {
+          alert(json.reason);
+        }
+        return json.containsPersonalInfo;
+      } catch (error) {
+        errorHandler(error, rollbar, true);
+        return false;
+      }
+    };
+
     const handleSubmitClick = async (event: FormEvent<HTMLElement>) => {
       event.preventDefault();
       const updateData: {
@@ -117,8 +139,11 @@ const UpdateUnitStatus = NiceModal.create(
       if (administeringPrivate && coordinates) {
         updateData.coordinates = coordinates;
       }
-      setIsSaving(true);
       try {
+        setIsSaving(true);
+        if (await checkIfNotesAreSensitive(updateData.note as string)) {
+          return;
+        }
         await pollingVoidFunction(() =>
           update(
             ref(
@@ -130,7 +155,7 @@ const UpdateUnitStatus = NiceModal.create(
         );
         modal.hide();
       } catch (error) {
-        errorHandler(error, rollbar);
+        errorHandler(error, rollbar, true);
       } finally {
         setIsSaving(false);
       }

@@ -8,6 +8,7 @@ import {
 } from "firebase/app-check";
 import { getFunctions } from "firebase/functions";
 import { DEFAULT_FB_CLOUD_FUNCTIONS_REGION } from "./utils/constants";
+import { getVertexAI } from "firebase/vertexai-preview";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -45,15 +46,6 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
-const auth = initializeAuth(app, {
-  persistence: browserLocalPersistence
-  // No popupRedirectResolver defined
-});
-const functions = getFunctions(
-  app,
-  VITE_FIREBASE_FUNCTIONS_REGION || DEFAULT_FB_CLOUD_FUNCTIONS_REGION
-);
 
 if (VITE_FIREBASE_RECAPTCHA_ENTERPRISE_SITE_KEY !== undefined) {
   initializeAppCheck(app, {
@@ -64,4 +56,15 @@ if (VITE_FIREBASE_RECAPTCHA_ENTERPRISE_SITE_KEY !== undefined) {
   });
 }
 
-export { database, auth, functions };
+const database = getDatabase(app);
+const auth = initializeAuth(app, {
+  persistence: browserLocalPersistence
+  // No popupRedirectResolver defined
+});
+const functions = getFunctions(
+  app,
+  VITE_FIREBASE_FUNCTIONS_REGION || DEFAULT_FB_CLOUD_FUNCTIONS_REGION
+);
+const ai = getVertexAI(app);
+
+export { database, auth, functions, ai };

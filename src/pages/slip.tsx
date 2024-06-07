@@ -193,7 +193,6 @@ const Map = () => {
         (snapshot) => {
           if (snapshot.exists()) {
             const postalSnapshot = snapshot.val();
-            console.log(postalSnapshot);
             setValues((values) => ({
               ...values,
               feedback: postalSnapshot.feedback,
@@ -211,7 +210,6 @@ const Map = () => {
               .finally(() => {
                 setIsLoading(false);
               });
-            console.log(`Data fetched for ${code} ${postalcode}`);
             document.title = postalSnapshot.name;
           }
         }
