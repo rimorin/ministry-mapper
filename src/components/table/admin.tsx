@@ -46,7 +46,7 @@ const AdminTable = ({
       className="sticky-table"
     >
       <thead>
-        <tr>
+        <tr className="inline-row">
           <th scope="col" className="text-center align-middle sticky-left-cell">
             lvl/unit
           </th>
@@ -71,9 +71,9 @@ const AdminTable = ({
       <tbody key={`tbody-${postalCode}`}>
         {floors &&
           floors.map((floorElement, floorIndex) => (
-            <tr key={`row-${floorIndex}`}>
+            <tr key={`row-${floorIndex}`} className="inline-row">
               <th
-                className="text-center inline-cell sticky-left-cell"
+                className="text-center align-middle inline-cell sticky-left-cell"
                 key={`floor-${floorIndex}`}
                 scope="row"
               >
@@ -95,8 +95,7 @@ const AdminTable = ({
               </th>
               {floorElement.units.map((detailsElement, index) => (
                 <td
-                  align="center"
-                  className={`inline-cell ${policy?.getUnitColor(
+                  className={`text-center align-middle inline-cell ${policy?.getUnitColor(
                     detailsElement,
                     completedPercent.completedValue
                   )}`}

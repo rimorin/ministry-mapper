@@ -4,27 +4,31 @@ import { Routes, Route } from "react-router-dom";
 import "../App.scss";
 import "../css/main.css";
 import "../css/common.css";
+import "react-calendar/dist/Calendar.css";
 import Loader from "../components/statics/loader";
 import MaintenanceMiddleware from "../components/middlewares/maintenance";
 import MainMiddleware from "../components/middlewares/main";
+import StateMiddleware from "../components/middlewares/context";
+const Map = lazy(() => import("./slip"));
 const NotFoundPage = lazy(() => import("../components/statics/notfound"));
 const FrontPage = lazy(() => import("./frontpage"));
-const Territory = lazy(() => import("./territory/index"));
-const Dashboard = lazy(() => import("./dashboard/index"));
+const UserManagement = lazy(() => import("./usrmgmt"));
 function Main() {
   return (
-    <MainMiddleware>
-      <MaintenanceMiddleware>
-        <Suspense fallback={<Loader />}>
-          <Routes>
-            <Route path="*" element={<NotFoundPage />} />
-            <Route path="/" element={<FrontPage />} />
-            <Route path={"/:code"} element={<Dashboard />} />
-            <Route path={"/:code/:id"} element={<Territory />} />
-          </Routes>
-        </Suspense>
-      </MaintenanceMiddleware>
-    </MainMiddleware>
+    <StateMiddleware>
+      <MainMiddleware>
+        <MaintenanceMiddleware>
+          <Suspense fallback={<Loader />}>
+            <Routes>
+              <Route path="*" element={<NotFoundPage />} />
+              <Route path="/" element={<FrontPage />} />
+              <Route path={"/:code/:id"} element={<Map />} />
+              <Route path={"/usermgmt"} element={<UserManagement />} />
+            </Routes>
+          </Suspense>
+        </MaintenanceMiddleware>
+      </MainMiddleware>
+    </StateMiddleware>
   );
 }
 

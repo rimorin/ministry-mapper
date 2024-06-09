@@ -9,14 +9,12 @@ import {
   push,
   get,
   query,
-  orderByValue,
-  off,
   DataSnapshot,
   orderByChild,
   equalTo
 } from "firebase/database";
-import "../../css/admin.css";
-import { signOut, User } from "firebase/auth";
+import "../css/admin.css";
+import { IdTokenResult, signOut } from "firebase/auth";
 import { nanoid } from "nanoid";
 import {
   useEffect,
@@ -40,7 +38,7 @@ import {
   Spinner,
   ButtonGroup
 } from "react-bootstrap";
-import { database, auth, functions } from "../../firebase";
+import { database, auth, functions } from "../firebase";
 import { httpsCallable } from "firebase/functions";
 import {
   valuesDetails,
@@ -50,42 +48,41 @@ import {
   adminProps,
   unitMaps,
   userDetails,
-  OptionProps
-} from "../../utils/interface";
+  OptionProps,
+  CongregationAccessObject,
+  DropDirections,
+  DropDirection
+} from "../utils/interface";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
-import { useParams } from "react-router-dom";
-import InstructionsButton from "../../components/form/instructions";
+import InstructionsButton from "../components/form/instructions";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { useRollbar } from "@rollbar/react";
-import { LinkSession, Policy } from "../../utils/policies";
-import AdminTable from "../../components/table/admin";
-import pollingQueryFunction from "../../utils/helpers/pollingquery";
-import processAddressData from "../../utils/helpers/processadddata";
-import processLinkDetails from "../../utils/helpers/processlinkct";
-import errorHandler from "../../utils/helpers/errorhandler";
-import ZeroPad from "../../utils/helpers/zeropad";
-import addHours from "../../utils/helpers/addhours";
-import triggerPostalCodeListeners from "../../utils/helpers/postalcodelistener";
-import assignmentMessage from "../../utils/helpers/assignmentmsg";
-import getMaxUnitLength from "../../utils/helpers/maxunitlength";
-import getCompletedPercent from "../../utils/helpers/getcompletedpercent";
-import checkCongregationExpireHours from "../../utils/helpers/checkcongexp";
-import SetPollerInterval from "../../utils/helpers/pollinginterval";
-import pollingVoidFunction from "../../utils/helpers/pollingvoid";
-import processCompletedPercentage from "../../utils/helpers/processcompletedpercent";
-import checkCongregationMaxTries from "../../utils/helpers/checkmaxtries";
-import EnvironmentIndicator from "../../components/navigation/environment";
-import TerritoryListing from "../../components/navigation/territorylist";
-import UserListing from "../../components/navigation/userlist";
-import NavBarBranding from "../../components/navigation/branding";
-import AggregationBadge from "../../components/navigation/aggrbadge";
-import ComponentAuthorizer from "../../components/navigation/authorizer";
-import TerritoryHeader from "../../components/navigation/territoryheader";
-import BackToTopButton from "../../components/navigation/backtotop";
-import HelpButton from "../../components/navigation/help";
-import Loader from "../../components/statics/loader";
-import Welcome from "../../components/statics/welcome";
+import { LinkSession, Policy } from "../utils/policies";
+import AdminTable from "../components/table/admin";
+import pollingQueryFunction from "../utils/helpers/pollingquery";
+import processAddressData from "../utils/helpers/processadddata";
+import processLinkDetails from "../utils/helpers/processlinkct";
+import errorHandler from "../utils/helpers/errorhandler";
+import ZeroPad from "../utils/helpers/zeropad";
+import assignmentMessage from "../utils/helpers/assignmentmsg";
+import getMaxUnitLength from "../utils/helpers/maxunitlength";
+import getCompletedPercent from "../utils/helpers/getcompletedpercent";
+import checkCongregationExpireHours from "../utils/helpers/checkcongexp";
+import SetPollerInterval from "../utils/helpers/pollinginterval";
+import pollingVoidFunction from "../utils/helpers/pollingvoid";
+import processCompletedPercentage from "../utils/helpers/processcompletedpercent";
+import checkCongregationMaxTries from "../utils/helpers/checkmaxtries";
+import TerritoryListing from "../components/navigation/territorylist";
+import UserListing from "../components/navigation/userlist";
+import NavBarBranding from "../components/navigation/branding";
+import AggregationBadge from "../components/navigation/aggrbadge";
+import ComponentAuthorizer from "../components/navigation/authorizer";
+import TerritoryHeader from "../components/navigation/territoryheader";
+import BackToTopButton from "../components/navigation/backtotop";
+import HelpButton from "../components/navigation/help";
+import Loader from "../components/statics/loader";
+import Welcome from "../components/statics/welcome";
 import {
   STATUS_CODES,
   NOT_HOME_STATUS_CODES,
@@ -104,74 +101,70 @@ import {
   DEFAULT_CONGREGATION_MAX_TRIES,
   DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
   DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
-} from "../../utils/constants";
+} from "../utils/constants";
 import ModalManager from "@ebay/nice-modal-react";
-import SuspenseComponent from "../../components/utils/suspense";
-import getOptions from "../../utils/helpers/getcongoptions";
-import GetDirection from "../../utils/helpers/directiongenerator";
-import getOptionIsMultiSelect from "../../utils/helpers/getoptionmultiselect";
-import getCongregationOrigin from "../../utils/helpers/getcongorigin";
+import SuspenseComponent from "../components/utils/suspense";
+import getOptions from "../utils/helpers/getcongoptions";
+import GetDirection from "../utils/helpers/directiongenerator";
+import getOptionIsMultiSelect from "../utils/helpers/getoptionmultiselect";
+import getCongregationOrigin from "../utils/helpers/getcongorigin";
+import useLocalStorage from "../utils/helpers/storage";
+import CongListing from "../components/navigation/conglist";
+import getCongregationDetails from "../utils/helpers/getcongdetails";
+import setLink from "../utils/helpers/setlink";
+import getTerritoryData from "../utils/helpers/getterritorydetails";
 
 const UnauthorizedPage = SuspenseComponent(
-  lazy(() => import("../../components/statics/unauth"))
+  lazy(() => import("../components/statics/unauth"))
 );
-const UpdateUser = lazy(() => import("../../components/modal/updateuser"));
-const UpdateUnitStatus = lazy(
-  () => import("../../components/modal/updatestatus")
-);
-const UpdateUnit = lazy(() => import("../../components/modal/updateunit"));
+const UpdateUser = lazy(() => import("../components/modal/updateuser"));
+const UpdateUnitStatus = lazy(() => import("../components/modal/updatestatus"));
+const UpdateUnit = lazy(() => import("../components/modal/updateunit"));
 const ConfirmSlipDetails = lazy(
-  () => import("../../components/modal/slipdetails")
+  () => import("../components/modal/slipdetails")
 );
 const UpdateCongregationSettings = lazy(
-  () => import("../../components/modal/congsettings")
+  () => import("../components/modal/congsettings")
 );
 const UpdateCongregationOptions = lazy(
-  () => import("../../components/modal/congoptions")
+  () => import("../components/modal/congoptions")
 );
 const UpdateAddressInstructions = lazy(
-  () => import("../../components/modal/instructions")
+  () => import("../components/modal/instructions")
 );
 const UpdateAddressFeedback = lazy(
-  () => import("../../components/modal/updateaddfeedback")
+  () => import("../components/modal/updateaddfeedback")
 );
-const NewUnit = lazy(() => import("../../components/modal/newunit"));
+const NewUnit = lazy(() => import("../components/modal/newunit"));
 const NewTerritoryCode = lazy(
-  () => import("../../components/modal/newterritorycd")
+  () => import("../components/modal/newterritorycd")
 );
-const NewPublicAddress = lazy(
-  () => import("../../components/modal/newpublicadd")
-);
+const NewPublicAddress = lazy(() => import("../components/modal/newpublicadd"));
 const NewPrivateAddress = lazy(
-  () => import("../../components/modal/newprivateadd")
+  () => import("../components/modal/newprivateadd")
 );
-const InviteUser = lazy(() => import("../../components/modal/inviteuser"));
-const GetProfile = lazy(() => import("../../components/modal/profile"));
-const GetAssignments = lazy(() => import("../../components/modal/assignments"));
+const InviteUser = lazy(() => import("../components/modal/inviteuser"));
+const GetProfile = lazy(() => import("../components/modal/profile"));
+const GetAssignments = lazy(() => import("../components/modal/assignments"));
 const ChangeTerritoryName = lazy(
-  () => import("../../components/modal/changeterritoryname")
+  () => import("../components/modal/changeterritoryname")
 );
 const ChangeTerritoryCode = lazy(
-  () => import("../../components/modal/changeterritorycd")
+  () => import("../components/modal/changeterritorycd")
 );
-const ChangePassword = lazy(
-  () => import("../../components/modal/changepassword")
-);
+const ChangePassword = lazy(() => import("../components/modal/changepassword"));
 const ChangeAddressPostalCode = lazy(
-  () => import("../../components/modal/changepostalcd")
+  () => import("../components/modal/changepostalcd")
 );
 const ChangeAddressGeoLocation = lazy(
-  () => import("../../components/modal/changegeolocation")
+  () => import("../components/modal/changegeolocation")
 );
 const ChangeAddressName = lazy(
-  () => import("../../components/modal/changeaddname")
+  () => import("../components/modal/changeaddname")
 );
 
-type DropDirection = "up" | "down";
-type DropDirections = { [key: string]: DropDirection };
-
 function Admin({ user }: adminProps) {
-  const { code } = useParams() as { code: string };
+  const [code, setCode] = useState<string>("");
   const [isSettingPersonalLink, setIsSettingPersonalLink] =
     useState<boolean>(false);
   const [isSettingAssignLink, setIsSettingAssignLink] =
@@ -184,6 +177,8 @@ function Admin({ user }: adminProps) {
   const [showTerritoryListing, setShowTerritoryListing] =
     useState<boolean>(false);
   const [showUserListing, setShowUserListing] = useState<boolean>(false);
+  const [showCongregationListing, setShowCongregationListing] =
+    useState<boolean>(false);
   const [isShowingUserListing, setIsShowingUserListing] =
     useState<boolean>(false);
   const [congUsers, setCongUsers] = useState(new Map<string, userDetails>());
@@ -211,11 +206,20 @@ function Admin({ user }: adminProps) {
   const [options, setOptions] = useState<Array<OptionProps>>([]);
   const [isAssignmentLoading, setIsAssignmentLoading] =
     useState<boolean>(false);
+  const [userCongregationAccesses, setUserCongregationAccesses] = useState<
+    CongregationAccessObject[]
+  >([]);
+  const [dropDirections, setDropDirections] = useState<DropDirections>({});
   const rollbar = useRollbar();
   const unsubscribers = useRef<Array<Unsubscribe>>([]);
+  const congregationAccess = useRef<Record<string, number>>({});
+  const loginUserClaims = useRef<IdTokenResult>();
   const currentTime = useRef<number>(new Date().getTime());
 
-  const [dropDirections, setDropDirections] = useState<DropDirections>({});
+  const [congregationCode, setCongregationCode] = useLocalStorage(
+    "congregationCode",
+    ""
+  );
 
   const handleDropdownDirection = (
     event: MouseEvent<HTMLElement, globalThis.MouseEvent>,
@@ -239,10 +243,10 @@ function Admin({ user }: adminProps) {
     setAddressData(new Map<string, addressDetails>());
   };
 
-  const getUsers = async () => {
+  const getUsers = useCallback(async () => {
     const getCongregationUsers = httpsCallable(
       functions,
-      "getCongregationUsers"
+      "getCongregationUsersV2"
     );
     try {
       setIsShowingUserListing(true);
@@ -272,45 +276,37 @@ function Admin({ user }: adminProps) {
     } finally {
       setIsShowingUserListing(false);
     }
-  };
+  }, [code]);
 
-  const clearAdminState = () => {
+  const logoutUser = useCallback(async () => {
     refreshAddressState();
-    const congregationReference = child(ref(database), `congregations/${code}`);
-    off(congregationReference);
-  };
-
-  const logoutUser = async () => {
-    clearAdminState();
     await signOut(auth);
-  };
+  }, []);
 
   const processSelectedTerritory = async (selectedTerritoryCode: string) => {
-    const territoryAddsResult = await pollingQueryFunction(() =>
-      get(
-        query(
-          ref(
-            database,
-            `congregations/${code}/territories/${selectedTerritoryCode}/addresses`
-          ),
-          orderByValue()
-        )
-      )
-    );
+    try {
+      const { territoryAddsResult, territoryNameResult } =
+        await getTerritoryData(code, selectedTerritoryCode);
 
-    const territoryNameResult = await pollingQueryFunction(() =>
-      get(
-        child(
-          ref(database),
-          `congregations/${code}/territories/${selectedTerritoryCode}/name`
-        )
-      )
-    );
-    setSelectedTerritoryCode(selectedTerritoryCode);
-    setSelectedTerritoryName(territoryNameResult.val());
-    // detach unsubscribers listeners first then clear them.
-    refreshAddressState();
-    unsubscribers.current = [] as Array<Unsubscribe>;
+      setSelectedTerritoryCode(selectedTerritoryCode);
+      setSelectedTerritoryName(territoryNameResult.val());
+
+      refreshAddressState();
+      unsubscribers.current = [] as Array<Unsubscribe>;
+
+      const detailsListing = getDetailsListing(territoryAddsResult);
+      setSortedAddressList(detailsListing);
+
+      const pollerId = SetPollerInterval();
+
+      await processDetailsListing(detailsListing, pollerId);
+    } catch (error) {
+      console.error("Error processing selected territory: ", error);
+      errorHandler(error, rollbar);
+    }
+  };
+
+  const getDetailsListing = (territoryAddsResult: DataSnapshot) => {
     const detailsListing = [] as Array<territoryDetails>;
     territoryAddsResult.forEach((addElement: DataSnapshot) => {
       detailsListing.push({
@@ -320,8 +316,13 @@ function Admin({ user }: adminProps) {
       });
       return false;
     });
-    setSortedAddressList(detailsListing);
-    const pollerId = SetPollerInterval();
+    return detailsListing;
+  };
+
+  const processDetailsListing = async (
+    detailsListing: Array<territoryDetails>,
+    pollerId: NodeJS.Timeout
+  ) => {
     for (const details of detailsListing) {
       const postalCode = details.code;
       setAccordionKeys((existingKeys) => [...existingKeys, postalCode]);
@@ -331,25 +332,11 @@ function Admin({ user }: adminProps) {
           async (snapshot) => {
             clearInterval(pollerId);
             if (snapshot.exists()) {
-              const postalSnapshot = snapshot.val();
-              const floorData = await processAddressData(
+              const addressData = await getAddressData(
                 code,
                 postalCode,
-                postalSnapshot.units
+                snapshot.val()
               );
-              const linkDetails = await processLinkDetails(code, postalCode);
-              const addressData = {
-                assigneeDetailsList: linkDetails.assigneeDetailsList,
-                personalDetailsList: linkDetails.personalDetailsList,
-                name: postalSnapshot.name,
-                postalCode: postalCode,
-                floors: floorData,
-                feedback: postalSnapshot.feedback,
-                type: postalSnapshot.type,
-                instructions: postalSnapshot.instructions,
-                location: postalSnapshot.location,
-                coordinates: postalSnapshot.coordinates
-              };
               setAddressData(
                 (existingAddresses) =>
                   new Map<string, addressDetails>(
@@ -363,28 +350,62 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  const deleteBlockFloor = async (postalcode: string, floor: string) => {
-    try {
-      await pollingVoidFunction(() =>
-        remove(ref(database, `addresses/${code}/${postalcode}/units/${floor}`))
-      );
-    } catch (error) {
-      errorHandler(error, rollbar);
-    }
-  };
-
-  const getTerritoryAddress = async (territoryCode: string) => {
-    return await pollingQueryFunction(() =>
-      get(
-        ref(
-          database,
-          `congregations/${code}/territories/${territoryCode}/addresses`
-        )
-      )
+  const getAddressData = async (
+    code: string,
+    postalCode: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    postalSnapshot: any
+  ) => {
+    const floorData = await processAddressData(
+      code,
+      postalCode,
+      postalSnapshot.units
     );
+    const linkDetails = await processLinkDetails(code, postalCode);
+    return {
+      assigneeDetailsList: linkDetails.assigneeDetailsList,
+      personalDetailsList: linkDetails.personalDetailsList,
+      name: postalSnapshot.name,
+      postalCode: postalCode,
+      floors: floorData,
+      feedback: postalSnapshot.feedback,
+      type: postalSnapshot.type,
+      instructions: postalSnapshot.instructions,
+      location: postalSnapshot.location,
+      coordinates: postalSnapshot.coordinates
+    };
   };
 
-  const deleteTerritory = async () => {
+  const deleteBlockFloor = useCallback(
+    async (postalcode: string, floor: string) => {
+      try {
+        await pollingVoidFunction(() =>
+          remove(
+            ref(database, `addresses/${code}/${postalcode}/units/${floor}`)
+          )
+        );
+      } catch (error) {
+        errorHandler(error, rollbar);
+      }
+    },
+    [code]
+  );
+
+  const getTerritoryAddress = useCallback(
+    async (territoryCode: string) => {
+      return await pollingQueryFunction(() =>
+        get(
+          ref(
+            database,
+            `congregations/${code}/territories/${territoryCode}/addresses`
+          )
+        )
+      );
+    },
+    [code]
+  );
+
+  const deleteTerritory = useCallback(async () => {
     if (!selectedTerritoryCode) return;
     try {
       const addressesSnapshot = await getTerritoryAddress(
@@ -411,85 +432,87 @@ function Admin({ user }: adminProps) {
     } catch (error) {
       errorHandler(error, rollbar);
     }
-  };
+  }, [selectedTerritoryCode, code]);
 
-  const deleteTerritoryAddress = async (
-    territoryCode: string,
-    postalCode: string
-  ) => {
-    const addressesSnapshot = await getTerritoryAddress(territoryCode);
-    if (addressesSnapshot.exists()) {
-      const addressData = addressesSnapshot.val();
-      for (const addkey in addressData) {
-        const currentPostalcode = addressData[addkey];
-        if (currentPostalcode === postalCode) {
-          await pollingVoidFunction(() =>
-            remove(
-              ref(
-                database,
-                `congregations/${code}/territories/${selectedTerritoryCode}/addresses/${addkey}`
+  const deleteTerritoryAddress = useCallback(
+    async (territoryCode: string, postalCode: string) => {
+      const addressesSnapshot = await getTerritoryAddress(territoryCode);
+      if (addressesSnapshot.exists()) {
+        const addressData = addressesSnapshot.val();
+        for (const addkey in addressData) {
+          const currentPostalcode = addressData[addkey];
+          if (currentPostalcode === postalCode) {
+            await pollingVoidFunction(() =>
+              remove(
+                ref(
+                  database,
+                  `congregations/${code}/territories/${selectedTerritoryCode}/addresses/${addkey}`
+                )
               )
-            )
-          );
-          break;
+            );
+            break;
+          }
         }
       }
-    }
-  };
+    },
+    [code, selectedTerritoryCode]
+  );
 
-  const deleteBlock = async (
-    postalCode: string,
-    name: string,
-    showAlert: boolean
-  ) => {
-    if (!selectedTerritoryCode) return;
-    try {
-      await remove(ref(database, `addresses/${code}/${postalCode}`));
-      await deleteTerritoryAddress(selectedTerritoryCode, postalCode);
-      if (showAlert) alert(`Deleted address, ${name}.`);
-      await refreshCongregationTerritory(selectedTerritoryCode);
-    } catch (error) {
-      errorHandler(error, rollbar);
-    }
-  };
-
-  const addFloorToBlock = async (postalcode: string, lowerFloor = false) => {
-    const blockAddresses = addressData.get(postalcode);
-    if (!blockAddresses) return;
-    const unitUpdates: unitMaps = {};
-    let floorIndex = 0;
-    if (lowerFloor) {
-      floorIndex = blockAddresses.floors.length - 1;
-    }
-    const blockFloorDetails = blockAddresses.floors[floorIndex];
-    const currentFloor = Number(blockFloorDetails.floor);
-    let newFloor = currentFloor + 1;
-    if (lowerFloor) {
-      if (currentFloor === 1) {
-        alert("Unable to add further lower floor.");
-        return;
+  const deleteBlock = useCallback(
+    async (postalCode: string, name: string, showAlert: boolean) => {
+      if (!selectedTerritoryCode) return;
+      try {
+        await remove(ref(database, `addresses/${code}/${postalCode}`));
+        await deleteTerritoryAddress(selectedTerritoryCode, postalCode);
+        if (showAlert) alert(`Deleted address, ${name}.`);
+        await refreshCongregationTerritory(selectedTerritoryCode);
+      } catch (error) {
+        errorHandler(error, rollbar);
       }
-      newFloor = currentFloor - 1;
-    }
-    blockFloorDetails.units.forEach((element) => {
-      unitUpdates[
-        `addresses/${code}/${postalcode}/units/${newFloor}/${element.number}`
-      ] = {
-        status: STATUS_CODES.DEFAULT,
-        type: policy.defaultType,
-        note: "",
-        nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
-        sequence: element.sequence ? element.sequence : 0
-      };
-    });
-    try {
-      await pollingVoidFunction(() => update(ref(database), unitUpdates));
-    } catch (error) {
-      errorHandler(error, rollbar);
-    }
-  };
+    },
+    [selectedTerritoryCode, code]
+  );
 
-  const resetTerritory = async () => {
+  const addFloorToBlock = useCallback(
+    async (postalcode: string, lowerFloor = false) => {
+      const blockAddresses = addressData.get(postalcode);
+      if (!blockAddresses) return;
+      const unitUpdates: unitMaps = {};
+      let floorIndex = 0;
+      if (lowerFloor) {
+        floorIndex = blockAddresses.floors.length - 1;
+      }
+      const blockFloorDetails = blockAddresses.floors[floorIndex];
+      const currentFloor = Number(blockFloorDetails.floor);
+      let newFloor = currentFloor + 1;
+      if (lowerFloor) {
+        if (currentFloor === 1) {
+          alert("Unable to add further lower floor.");
+          return;
+        }
+        newFloor = currentFloor - 1;
+      }
+      blockFloorDetails.units.forEach((element) => {
+        unitUpdates[
+          `addresses/${code}/${postalcode}/units/${newFloor}/${element.number}`
+        ] = {
+          status: STATUS_CODES.DEFAULT,
+          type: policy.defaultType,
+          note: "",
+          nhcount: NOT_HOME_STATUS_CODES.DEFAULT,
+          sequence: element.sequence ? element.sequence : 0
+        };
+      });
+      try {
+        await pollingVoidFunction(() => update(ref(database), unitUpdates));
+      } catch (error) {
+        errorHandler(error, rollbar);
+      }
+    },
+    [code]
+  );
+
+  const resetTerritory = useCallback(async () => {
     if (!selectedTerritoryCode) return;
     try {
       const addressesSnapshot = await getTerritoryAddress(
@@ -506,33 +529,35 @@ function Admin({ user }: adminProps) {
     } catch (error) {
       errorHandler(error, rollbar);
     }
-  };
+  }, [selectedTerritoryCode]);
 
-  const resetBlock = async (postalcode: string) => {
-    const blockAddresses = addressData.get(postalcode);
-    if (!blockAddresses) return;
-    const unitUpdates: unitMaps = {};
-    for (const index in blockAddresses.floors) {
-      const floorDetails = blockAddresses.floors[index];
-      floorDetails.units.forEach((element) => {
-        const unitPath = `addresses/${code}/${postalcode}/units/${floorDetails.floor}/${element.number}`;
-        let currentStatus = element.status;
-        if (MUTABLE_CODES.includes(currentStatus)) {
-          currentStatus = STATUS_CODES.DEFAULT;
-        }
-        unitUpdates[`${unitPath}/type`] = element.type;
-        unitUpdates[`${unitPath}/note`] = element.note;
-        unitUpdates[`${unitPath}/status`] = currentStatus;
-        unitUpdates[`${unitPath}/nhcount`] = NOT_HOME_STATUS_CODES.DEFAULT;
-        unitUpdates[`${unitPath}/dnctime`] = element.dnctime;
-      });
-    }
-    try {
-      await pollingVoidFunction(() => update(ref(database), unitUpdates));
-    } catch (error) {
-      errorHandler(error, rollbar);
-    }
-  };
+  const resetBlock = useCallback(
+    async (postalcode: string) => {
+      const blockAddresses = addressData.get(postalcode);
+      if (!blockAddresses) return;
+      const unitUpdates: unitMaps = {};
+      for (const floorDetails of blockAddresses.floors) {
+        floorDetails.units.forEach((element) => {
+          const unitPath = `addresses/${code}/${postalcode}/units/${floorDetails.floor}/${element.number}`;
+          const updatedStatus = MUTABLE_CODES.includes(element.status)
+            ? STATUS_CODES.DEFAULT
+            : element.status;
+          unitUpdates[`${unitPath}/type`] = element.type;
+          unitUpdates[`${unitPath}/note`] = element.note;
+          unitUpdates[`${unitPath}/status`] = updatedStatus;
+          unitUpdates[`${unitPath}/nhcount`] = NOT_HOME_STATUS_CODES.DEFAULT;
+          unitUpdates[`${unitPath}/dnctime`] = element.dnctime;
+        });
+      }
+      try {
+        await pollingVoidFunction(() => update(ref(database), unitUpdates));
+      } catch (error) {
+        console.error("Error updating units in resetBlock: ", error);
+        errorHandler(error, rollbar);
+      }
+    },
+    [code]
+  );
 
   const handleUnitUpdate = (
     postal: string,
@@ -565,39 +590,15 @@ function Admin({ user }: adminProps) {
     });
   };
 
-  const setTimedLink = (
-    linktype: number,
-    postalCode: string,
-    postalName: string,
-    addressLinkId: string,
-    hours: number,
-    publisherName = ""
-  ) => {
-    const link = new LinkSession();
-    link.tokenEndtime = addHours(hours);
-    link.postalCode = postalCode;
-    link.linkType = linktype;
-    link.maxTries = policy.maxTries;
-    // dont set user if its view type link. This will prevent this kind of links from appearing in assignments
-    if (linktype != LINK_TYPES.VIEW) link.userId = user.uid;
-    link.congregation = code;
-    link.name = postalName;
-    link.publisherName = publisherName;
-    return pollingVoidFunction(async () => {
-      await set(ref(database, `links/${code}/${addressLinkId}`), link);
-      await triggerPostalCodeListeners(code, link.postalCode);
-    });
-  };
-
   const handleSubmitPersonalSlip = async (
     postalCode: string,
     name: string,
-    linkid: string,
     linkExpiryHrs: number,
     publisherName: string
   ) => {
-    if (!postalCode || !name || !linkid) return;
+    if (!postalCode || !name) return;
     try {
+      const linkid = nanoid();
       shareTimedLink(
         LINK_TYPES.PERSONAL,
         postalCode,
@@ -638,12 +639,15 @@ function Admin({ user }: adminProps) {
       setSelectedPostal(postalcode);
       if (linktype === LINK_TYPES.ASSIGNMENT) setIsSettingAssignLink(true);
       if (linktype === LINK_TYPES.PERSONAL) setIsSettingPersonalLink(true);
-      await setTimedLink(
+      await setLink(
         linktype,
+        code,
+        user.uid,
         postalcode,
         postalname,
         linkId,
         hours,
+        policy.maxTries,
         publisherName
       );
       const absoluteUrl = new URL(url, window.location.href);
@@ -667,33 +671,31 @@ function Admin({ user }: adminProps) {
   const processCongregationTerritories = (
     snapshot: DataSnapshot | undefined
   ) => {
-    if (!snapshot) return;
-    const data = snapshot.val();
-    if (!data) return;
-    document.title = data["name"] as string;
-    const congregationTerritories = data["territories"];
-    const territoryList = new Map<string, territoryDetails>();
-    for (const territory in congregationTerritories) {
-      const name = congregationTerritories[territory]["name"];
-      const addresses = congregationTerritories[territory]["addresses"];
-      territoryList.set(territory, {
-        code: territory,
-        name: name,
-        addresses: addresses
-      });
+    try {
+      if (!snapshot) return;
+      const data = snapshot.val();
+      if (!data) return;
+      document.title = data["name"] as string;
+      const congregationTerritories = data["territories"];
+      const territoryList = new Map<string, territoryDetails>();
+      for (const territory in congregationTerritories) {
+        const name = congregationTerritories[territory]["name"];
+        const addresses = congregationTerritories[territory]["addresses"];
+        territoryList.set(territory, {
+          code: territory,
+          name: name,
+          addresses: addresses
+        });
+      }
+      setTerritories(territoryList);
+      setName(data["name"] as string);
+      return territoryList;
+    } catch (error) {
+      console.error("Error processing congregation territories: ", error);
     }
-    setTerritories(territoryList);
-    setName(data["name"] as string);
-    return territoryList;
   };
-
-  const getUserAccessLevel = async (
-    user: User,
-    congregationCode: string | undefined
-  ) => {
-    if (!congregationCode) return;
-    const tokenData = await user.getIdTokenResult(true);
-    return tokenData.claims[congregationCode] as string;
+  const getUserAccessLevel = async (congregationCode: string) => {
+    return congregationAccess.current[congregationCode];
   };
 
   const handleTerritorySelect = useCallback(
@@ -710,33 +712,40 @@ function Admin({ user }: adminProps) {
     setShowTerritoryListing(!showTerritoryListing);
   }, [showTerritoryListing]);
 
-  const handleUserSelect = (userKey: string | null) => {
-    if (!userKey) return;
-    const details = congUsers.get(userKey);
-    if (!details) return;
-    ModalManager.show(SuspenseComponent(UpdateUser), {
-      uid: userKey,
-      congregation: code,
-      footerSaveAcl: userAccessLevel,
-      name: details.name,
-      role: details.role
-    }).then((updatedRole) => {
-      setCongUsers((existingUsers) => {
-        if (updatedRole === USER_ACCESS_LEVELS.NO_ACCESS.CODE) {
-          existingUsers.delete(userKey);
-          return new Map<string, userDetails>(existingUsers);
-        }
-        details.role = updatedRole as number;
-        return new Map<string, userDetails>(
-          existingUsers.set(userKey, details)
-        );
+  const handleUserSelect = useCallback(
+    (userKey: string | null) => {
+      if (!userKey) return;
+      const details = congUsers.get(userKey);
+      if (!details) return;
+      ModalManager.show(SuspenseComponent(UpdateUser), {
+        uid: userKey,
+        congregation: code,
+        footerSaveAcl: userAccessLevel,
+        name: details.name,
+        role: details.role
+      }).then((updatedRole) => {
+        setCongUsers((existingUsers) => {
+          if (updatedRole === USER_ACCESS_LEVELS.NO_ACCESS.CODE) {
+            existingUsers.delete(userKey);
+            return new Map<string, userDetails>(existingUsers);
+          }
+          details.role = updatedRole as number;
+          return new Map<string, userDetails>(
+            existingUsers.set(userKey, details)
+          );
+        });
       });
-    });
-  };
+    },
+    [congUsers, code, userAccessLevel]
+  );
 
   const toggleUserListing = useCallback(() => {
     setShowUserListing(!showUserListing);
   }, [showUserListing]);
+
+  const toggleCongregationListing = useCallback(() => {
+    setShowCongregationListing(!showCongregationListing);
+  }, [showCongregationListing]);
 
   const handleAddressTerritorySelect = useCallback(
     async (newTerritoryCode: string | null) => {
@@ -776,39 +785,53 @@ function Admin({ user }: adminProps) {
     [territories]
   );
 
-  const getTerritoryAddressData = (
-    addresses: Map<string, addressDetails>,
-    policy: Policy
-  ) => {
-    const unitLengths = new Map();
-    const completedPercents = new Map();
-    let totalPercent = 0;
+  const handleCongregationSelect = useCallback(
+    async (newCongCode: string | null) => {
+      setCongregationCode(newCongCode as string);
+      setCode(newCongCode as string);
+      refreshAddressState();
+      setName("");
+      setSelectedPostal("");
+      setSelectedTerritoryCode("");
+      setSelectedTerritoryName("");
+      toggleCongregationListing();
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [showCongregationListing]
+  );
 
-    addresses.forEach((address) => {
-      const postalCode = address.postalCode;
-      const maxUnitNumberLength = getMaxUnitLength(address.floors);
-      const completedPercent = getCompletedPercent(policy, address.floors);
-      unitLengths.set(postalCode, maxUnitNumberLength);
-      completedPercents.set(postalCode, completedPercent);
-      totalPercent += completedPercent.completedValue;
-    });
+  const getAssignments = useCallback(async (code: string, uid: string) => {
+    setIsAssignmentLoading(true);
+    try {
+      const snapshot = await pollingQueryFunction(() =>
+        get(
+          query(
+            ref(database, `links/${code}`),
+            orderByChild("userId"),
+            equalTo(uid)
+          )
+        )
+      );
 
-    const { completedValue } = processCompletedPercentage(
-      totalPercent,
-      100 * addresses.size
-    );
+      if (!snapshot.exists()) {
+        alert("No assignments found.");
+        return;
+      }
 
-    return {
-      aggregate: completedValue,
-      lengths: unitLengths,
-      percents: completedPercents,
-      data: addresses
-    };
-  };
+      const assignmentListing = snapshot.val();
+      const linkListing = new Array<LinkSession>();
+      for (const linkId in assignmentListing) {
+        linkListing.push(new LinkSession(assignmentListing[linkId], linkId));
+      }
 
-  const setActivityTime = () => {
-    currentTime.current = new Date().getTime();
-  };
+      ModalManager.show(SuspenseComponent(GetAssignments), {
+        assignments: linkListing,
+        congregation: code
+      });
+    } finally {
+      setIsAssignmentLoading(false);
+    }
+  }, []);
 
   const refreshPage = () => {
     const inactivityPeriod = new Date().getTime() - currentTime.current;
@@ -819,89 +842,163 @@ function Admin({ user }: adminProps) {
     }
   };
 
-  useEffect(() => {
-    Promise.all([
-      getUserAccessLevel(user, code),
-      checkCongregationExpireHours(code),
-      checkCongregationMaxTries(code),
-      getOptions(code),
-      getOptionIsMultiSelect(code),
-      pollingQueryFunction(() =>
-        get(child(ref(database), `congregations/${code}`))
-      ),
-      getCongregationOrigin(code)
-    ]).then(
-      async ([
-        userAccessLevel,
-        expireHours,
-        maxTries,
-        options,
-        optionIsMultiselect,
-        congregationDetails,
-        origin
-      ]) => {
-        if (!userAccessLevel) {
-          setIsUnauthorised(true);
-          errorHandler(
-            `Unauthorised access to ${code} by ${user.email}`,
-            rollbar,
-            false
-          );
-        }
-        setUserAccessLevel(Number(userAccessLevel));
-        setDefaultExpiryHours(
-          expireHours.exists() ? expireHours.val() : DEFAULT_SELF_DESTRUCT_HOURS
-        );
-        setOptions(options);
-        setPolicy(
-          new Policy(
-            await user.getIdTokenResult(true),
-            options,
-            maxTries.exists() ? maxTries.val() : DEFAULT_CONGREGATION_MAX_TRIES,
-            optionIsMultiselect.exists()
-              ? optionIsMultiselect.val()
-              : DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
+  const setActivityTime = () => {
+    currentTime.current = new Date().getTime();
+  };
 
-            origin.exists()
-              ? origin.val()
-              : DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
-          )
-        );
-        processCongregationTerritories(
-          congregationDetails.exists() ? congregationDetails : undefined
-        );
+  useEffect(() => {
+    const fetchData = async () => {
+      const userData = await user.getIdTokenResult(true);
+      loginUserClaims.current = userData;
+      const userClaims = userData.claims;
+      const congData = userClaims["congregations"] as Record<string, number>;
+      if (!congData) {
         setIsLoading(false);
+        setIsUnauthorised(true);
+        errorHandler(`Unauthorised access by ${user.email}`, rollbar, false);
+        return;
       }
-    );
+      congregationAccess.current = congData;
+      const congregationAccessesPromises = Object.entries(congData).map(
+        async ([key, access]) => {
+          const congName = await pollingQueryFunction(() =>
+            get(child(ref(database), `congregations/${key}/name`))
+          );
+
+          return {
+            code: key,
+            access: Number(access),
+            name: congName.exists() ? congName.val() : ""
+          };
+        }
+      );
+
+      const congregationAccesses: CongregationAccessObject[] =
+        await Promise.all(congregationAccessesPromises);
+      setUserCongregationAccesses(congregationAccesses);
+      const initialSelectedCode =
+        congregationCode || congregationAccesses[0].code;
+      setCode(initialSelectedCode);
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBkTopButton(window.scrollY > PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY);
+    };
 
     document.body.addEventListener("mousemove", setActivityTime);
     document.body.addEventListener("keypress", setActivityTime);
     document.body.addEventListener("touchstart", setActivityTime);
-    window.addEventListener("scroll", () => {
-      setShowBkTopButton(window.scrollY > PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY);
-    });
-    setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-  }, [user, code]);
+    window.addEventListener("scroll", handleScroll);
+    const timeoutId = setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
+    return () => {
+      document.body.removeEventListener("mousemove", setActivityTime);
+      document.body.removeEventListener("keypress", setActivityTime);
+      document.body.removeEventListener("touchstart", setActivityTime);
+      window.removeEventListener("scroll", handleScroll);
+      clearTimeout(timeoutId);
+    };
+  }, []);
 
-  const territoryAddressData = useMemo(
-    () => getTerritoryAddressData(addressData, policy as Policy),
-    [addressData, policy]
-  );
+  useEffect(() => {
+    if (!code) return;
+    refreshAddressState();
+
+    Promise.all([
+      getUserAccessLevel(code),
+      checkCongregationExpireHours(code),
+      checkCongregationMaxTries(code),
+      getOptions(code),
+      getOptionIsMultiSelect(code),
+      getCongregationDetails(code),
+      getCongregationOrigin(code)
+    ])
+      .then(
+        ([
+          userAccessLevel,
+          expireHours,
+          maxTries,
+          options,
+          optionIsMultiselect,
+          congregationDetails,
+          origin
+        ]) => {
+          setUserAccessLevel(Number(userAccessLevel));
+          setDefaultExpiryHours(
+            expireHours.exists()
+              ? expireHours.val()
+              : DEFAULT_SELF_DESTRUCT_HOURS
+          );
+          setOptions(options);
+          setPolicy(
+            new Policy(
+              loginUserClaims.current,
+              options,
+              maxTries.exists()
+                ? maxTries.val()
+                : DEFAULT_CONGREGATION_MAX_TRIES,
+              optionIsMultiselect.exists()
+                ? optionIsMultiselect.val()
+                : DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
+              origin.exists()
+                ? origin.val()
+                : DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
+            )
+          );
+          processCongregationTerritories(
+            congregationDetails.exists() ? congregationDetails : undefined
+          );
+          setIsLoading(false);
+        }
+      )
+      .catch((error) => {
+        // Handle the error here
+        console.error(error);
+      });
+  }, [code]);
+
+  const territoryAddressData = useMemo(() => {
+    const addressDataMap = new Map();
+    let totalPercent = 0;
+
+    addressData.forEach((address) => {
+      const postalCode = address.postalCode;
+      const maxUnitNumberLength = getMaxUnitLength(address.floors);
+      const completedPercent = getCompletedPercent(policy, address.floors);
+      addressDataMap.set(postalCode, {
+        length: maxUnitNumberLength,
+        percent: completedPercent
+      });
+      totalPercent += completedPercent.completedValue;
+    });
+
+    const { completedValue } = processCompletedPercentage(
+      totalPercent,
+      100 * addressData.size
+    );
+
+    return {
+      total: completedValue,
+      aggregates: addressDataMap,
+      data: addressData
+    };
+  }, [addressData, policy]);
 
   if (isLoading) return <Loader />;
   if (isUnauthorised)
     return (
       <UnauthorizedPage handleClick={logoutUser} name={`${user.displayName}`} />
     );
+
   const isDataCompletelyFetched = addressData.size === sortedAddressList.length;
   const isAdmin = userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE;
   const isReadonly = userAccessLevel === USER_ACCESS_LEVELS.READ_ONLY.CODE;
 
   return (
     <>
-      <EnvironmentIndicator
-        environment={import.meta.env.VITE_ROLLBAR_ENVIRONMENT}
-      />
       <TerritoryListing
         showListing={showTerritoryListing}
         territories={congregationTerritoryList}
@@ -924,14 +1021,35 @@ function Admin({ user }: adminProps) {
         hideFunction={toggleUserListing}
         handleSelect={handleUserSelect}
       />
+      <CongListing
+        showListing={showCongregationListing}
+        congregations={userCongregationAccesses}
+        currentCongCode={code}
+        hideFunction={toggleCongregationListing}
+        handleSelect={handleCongregationSelect}
+      />
       <Navbar bg="light" variant="light" expand="lg">
         <Container fluid>
-          <NavBarBranding naming={name} />
+          {name ? (
+            <NavBarBranding naming={name} />
+          ) : (
+            <Spinner animation="border" as="span" size="sm" variant="primary" />
+          )}
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse
             id="basic-navbar-nav"
             className="justify-content-end mt-1"
           >
+            {userCongregationAccesses.length > 1 && (
+              <Button
+                className="m-1"
+                size="sm"
+                variant="outline-primary"
+                onClick={toggleCongregationListing}
+              >
+                Select Congregation
+              </Button>
+            )}
             {congregationTerritoryList &&
               congregationTerritoryList.length > 0 && (
                 <Button
@@ -944,7 +1062,7 @@ function Admin({ user }: adminProps) {
                     <>
                       <AggregationBadge
                         isDataFetched={isDataCompletelyFetched}
-                        aggregate={territoryAddressData.aggregate}
+                        aggregate={territoryAddressData.total}
                       />
                       {selectedTerritoryCode}
                     </>
@@ -1312,40 +1430,7 @@ function Admin({ user }: adminProps) {
               >
                 Profile
               </Dropdown.Item>
-              <Dropdown.Item
-                onClick={() => {
-                  setIsAssignmentLoading(true);
-                  pollingQueryFunction(() =>
-                    get(
-                      query(
-                        ref(database, `links/${code}`),
-                        orderByChild("userId"),
-                        equalTo(user.uid)
-                      )
-                    )
-                  )
-                    .then((snapshot) => {
-                      if (!snapshot.exists()) {
-                        alert("No assignments found.");
-                        return;
-                      }
-                      const assignmentListing = snapshot.val();
-                      const linkListing = new Array<LinkSession>();
-                      for (const linkId in assignmentListing) {
-                        linkListing.push(
-                          new LinkSession(assignmentListing[linkId], linkId)
-                        );
-                      }
-                      ModalManager.show(SuspenseComponent(GetAssignments), {
-                        assignments: linkListing,
-                        congregation: code
-                      });
-                    })
-                    .finally(() => {
-                      setIsAssignmentLoading(false);
-                    });
-                }}
-              >
+              <Dropdown.Item onClick={() => getAssignments(code, user.uid)}>
                 Assignments
               </Dropdown.Item>
               <Dropdown.Item
@@ -1386,12 +1471,18 @@ function Admin({ user }: adminProps) {
 
           if (!addressElement)
             return <div key={`empty-div-${currentPostalcode}`}></div>;
+
           const currentPostalname = addressElement.name;
-          const maxUnitNumberLength =
-            territoryAddressData.lengths.get(currentPostalcode);
-          const completedPercent =
-            territoryAddressData.percents.get(currentPostalcode);
-          const addressLinkId = nanoid();
+          const aggregate =
+            territoryAddressData.aggregates.get(currentPostalcode);
+
+          if (!aggregate)
+            throw new Error(
+              `No aggregate found for postal code ${currentPostalcode}`
+            );
+
+          const maxUnitNumberLength = aggregate.length;
+          const completedPercent = aggregate.percent;
           const assigneeCount = addressElement.assigneeDetailsList.length;
           const personalCount = addressElement.personalDetailsList.length;
           return (
@@ -1448,7 +1539,6 @@ function Admin({ user }: adminProps) {
                                 handleSubmitPersonalSlip(
                                   currentPostalcode,
                                   currentPostalname,
-                                  addressLinkId,
                                   linkObject.linkExpiryHrs as number,
                                   linkObject.publisherName as string
                                 );
@@ -1517,6 +1607,7 @@ function Admin({ user }: adminProps) {
                                   string,
                                   unknown
                                 >;
+                                const addressLinkId = nanoid();
                                 shareTimedLink(
                                   LINK_TYPES.ASSIGNMENT,
                                   currentPostalcode,
@@ -1580,12 +1671,16 @@ function Admin({ user }: adminProps) {
                               territoryWindow.document.body.innerHTML =
                                 TERRITORY_VIEW_WINDOW_WELCOME_TEXT;
                             }
-                            await setTimedLink(
+                            const addressLinkId = nanoid();
+                            await setLink(
                               LINK_TYPES.VIEW,
+                              code,
+                              user.uid,
                               currentPostalcode,
                               currentPostalname,
                               addressLinkId,
                               defaultExpiryHours,
+                              policy.maxTries,
                               user.displayName || ""
                             );
                             if (territoryWindow) {

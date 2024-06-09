@@ -23,7 +23,7 @@ const PublicTerritoryTable = ({
       <tbody>
         {floors &&
           floors.map((item, index) => (
-            <tr key={`row-${index}`}>
+            <tr key={`row-${index}`} className="inline-row">
               <FloorHeader index={index} floor={item.floor} />
               {item.units.map((element) => (
                 <td

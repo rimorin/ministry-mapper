@@ -45,12 +45,12 @@ const InviteUser = NiceModal.create(
           );
           return;
         }
-        const userRoles = userData.customClaims;
+        const userRoles = userData.customClaims?.["congregations"];
         if (userRoles && userRoles[congregation]) {
           alert("This user is already part of the congregation.");
           return;
         }
-        const updateUserAccess = httpsCallable(functions, "updateUserAccess");
+        const updateUserAccess = httpsCallable(functions, "updateUserAccessV2");
         await updateUserAccess({
           uid: userId,
           congregation: congregation,
