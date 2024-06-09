@@ -1,3 +1,16 @@
+# [1.29.0](https://github.com/rimorin/ministry-mapper/compare/v1.28.3...v1.29.0) (2024-06-09)
+
+
+### Bug Fixes
+
+* add spinner for forgot password processing ([c4306c0](https://github.com/rimorin/ministry-mapper/commit/c4306c05030dc12b9c312230153660716e1735d1))
+
+
+### Features
+
+* implement inhouse verification and reset procedures ([7300c57](https://github.com/rimorin/ministry-mapper/commit/7300c5793f2b24cf857e9aaebbb806de85b86f83))
+* implement single source login path ([ab746ca](https://github.com/rimorin/ministry-mapper/commit/ab746ca14264f67ea6f91ca1f02c869b33bf3696))
+
 ## [1.28.3](https://github.com/rimorin/ministry-mapper/compare/v1.28.2...v1.28.3) (2024-05-28)
 
 
