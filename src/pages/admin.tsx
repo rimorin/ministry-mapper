@@ -100,7 +100,8 @@ import {
   WIKI_CATEGORIES,
   DEFAULT_CONGREGATION_MAX_TRIES,
   DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
-  DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
+  DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION,
+  CLOUD_FUNCTIONS_CALLS
 } from "../utils/constants";
 import ModalManager from "@ebay/nice-modal-react";
 import SuspenseComponent from "../components/utils/suspense";
@@ -246,7 +247,7 @@ function Admin({ user }: adminProps) {
   const getUsers = useCallback(async () => {
     const getCongregationUsers = httpsCallable(
       functions,
-      "getCongregationUsersV2"
+      CLOUD_FUNCTIONS_CALLS.GET_CONGREGATION_USERS
     );
     try {
       setIsShowingUserListing(true);
