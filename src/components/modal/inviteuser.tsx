@@ -5,7 +5,11 @@ import { httpsCallable } from "firebase/functions";
 import { useState, FormEvent } from "react";
 import { Modal, Form } from "react-bootstrap";
 import { functions } from "../../firebase";
-import { USER_ACCESS_LEVELS, WIKI_CATEGORIES } from "../../utils/constants";
+import {
+  CLOUD_FUNCTIONS_CALLS,
+  USER_ACCESS_LEVELS,
+  WIKI_CATEGORIES
+} from "../../utils/constants";
 import errorHandler from "../../utils/helpers/errorhandler";
 import errorMessage from "../../utils/helpers/errormsg";
 import { UserModalProps } from "../../utils/interface";
@@ -34,7 +38,10 @@ const InviteUser = NiceModal.create(
           alert("Please do not invite yourself.");
           return;
         }
-        const getUserByEmail = httpsCallable(functions, "getUserByEmail");
+        const getUserByEmail = httpsCallable(
+          functions,
+          CLOUD_FUNCTIONS_CALLS.GET_USER_BY_EMAIL
+        );
         const user = await getUserByEmail({ email: userEmail });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const userData = user.data as any;
@@ -50,7 +57,10 @@ const InviteUser = NiceModal.create(
           alert("This user is already part of the congregation.");
           return;
         }
-        const updateUserAccess = httpsCallable(functions, "updateUserAccessV2");
+        const updateUserAccess = httpsCallable(
+          functions,
+          CLOUD_FUNCTIONS_CALLS.UPDATE_USER_ACCESS
+        );
         await updateUserAccess({
           uid: userId,
           congregation: congregation,
