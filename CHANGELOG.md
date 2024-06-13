@@ -1,3 +1,11 @@
+## [1.29.2](https://github.com/rimorin/ministry-mapper/compare/v1.29.1...v1.29.2) (2024-06-13)
+
+
+### Bug Fixes
+
+* missing dep in useCallback ([65a90f7](https://github.com/rimorin/ministry-mapper/commit/65a90f7545d3dc24ae9bdb7085610a919a9b9b49))
+* reset territory and address logic ([796584f](https://github.com/rimorin/ministry-mapper/commit/796584fa9a752e6e4f3d0afe9cfcb6740bf7a4ae))
+
 ## [1.29.1](https://github.com/rimorin/ministry-mapper/compare/v1.29.0...v1.29.1) (2024-06-10)
 
 
