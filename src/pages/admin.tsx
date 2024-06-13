@@ -510,7 +510,7 @@ function Admin({ user }: adminProps) {
         errorHandler(error, rollbar);
       }
     },
-    [code]
+    [code, addressData]
   );
 
   const resetTerritory = useCallback(async () => {
@@ -557,7 +557,7 @@ function Admin({ user }: adminProps) {
         errorHandler(error, rollbar);
       }
     },
-    [code]
+    [code, addressData]
   );
 
   const handleUnitUpdate = (
@@ -773,8 +773,7 @@ function Admin({ user }: adminProps) {
         `Changed territory of ${selectedPostalcode} from ${selectedTerritoryCode} to ${newTerritoryCode}.`
       );
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [showChangeAddressTerritory]
+    [showChangeAddressTerritory, selectedTerritoryCode, values]
   );
 
   const toggleAddressTerritoryListing = useCallback(() => {
