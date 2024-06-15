@@ -100,7 +100,8 @@ import {
   WIKI_CATEGORIES,
   DEFAULT_CONGREGATION_MAX_TRIES,
   DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
-  DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
+  DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION,
+  CLOUD_FUNCTIONS_CALLS
 } from "../utils/constants";
 import ModalManager from "@ebay/nice-modal-react";
 import SuspenseComponent from "../components/utils/suspense";
@@ -246,7 +247,7 @@ function Admin({ user }: adminProps) {
   const getUsers = useCallback(async () => {
     const getCongregationUsers = httpsCallable(
       functions,
-      "getCongregationUsersV2"
+      CLOUD_FUNCTIONS_CALLS.GET_CONGREGATION_USERS
     );
     try {
       setIsShowingUserListing(true);
@@ -405,6 +406,15 @@ function Admin({ user }: adminProps) {
     [code]
   );
 
+  const getAddressDetails = useCallback(
+    async (postalcode: string) => {
+      return await pollingQueryFunction(() =>
+        get(ref(database, `addresses/${code}/${postalcode}`))
+      );
+    },
+    [code]
+  );
+
   const deleteTerritory = useCallback(async () => {
     if (!selectedTerritoryCode) return;
     try {
@@ -509,7 +519,7 @@ function Admin({ user }: adminProps) {
         errorHandler(error, rollbar);
       }
     },
-    [code]
+    [code, addressData]
   );
 
   const resetTerritory = useCallback(async () => {
@@ -533,21 +543,28 @@ function Admin({ user }: adminProps) {
 
   const resetBlock = useCallback(
     async (postalcode: string) => {
-      const blockAddresses = addressData.get(postalcode);
-      if (!blockAddresses) return;
+      const addDetails = await getAddressDetails(postalcode);
+      if (!addDetails.exists()) return;
+      const mapAddresses: {
+        units: {
+          [key: string]: {
+            [key: string]: {
+              status: string;
+            };
+          };
+        };
+      } = addDetails.val();
       const unitUpdates: unitMaps = {};
-      for (const floorDetails of blockAddresses.floors) {
-        floorDetails.units.forEach((element) => {
-          const unitPath = `addresses/${code}/${postalcode}/units/${floorDetails.floor}/${element.number}`;
-          const updatedStatus = MUTABLE_CODES.includes(element.status)
+      for (const [floor, floorDetails] of Object.entries(mapAddresses.units)) {
+        for (const [unit, unitDetails] of Object.entries(floorDetails)) {
+          const unitPath = `addresses/${code}/${postalcode}/units/${floor}/${unit}`;
+          unitUpdates[`${unitPath}/status`] = MUTABLE_CODES.includes(
+            unitDetails.status
+          )
             ? STATUS_CODES.DEFAULT
-            : element.status;
-          unitUpdates[`${unitPath}/type`] = element.type;
-          unitUpdates[`${unitPath}/note`] = element.note;
-          unitUpdates[`${unitPath}/status`] = updatedStatus;
+            : unitDetails.status;
           unitUpdates[`${unitPath}/nhcount`] = NOT_HOME_STATUS_CODES.DEFAULT;
-          unitUpdates[`${unitPath}/dnctime`] = element.dnctime;
-        });
+        }
       }
       try {
         await pollingVoidFunction(() => update(ref(database), unitUpdates));
@@ -772,8 +789,7 @@ function Admin({ user }: adminProps) {
         `Changed territory of ${selectedPostalcode} from ${selectedTerritoryCode} to ${newTerritoryCode}.`
       );
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [showChangeAddressTerritory]
+    [showChangeAddressTerritory, selectedTerritoryCode, values]
   );
 
   const toggleAddressTerritoryListing = useCallback(() => {

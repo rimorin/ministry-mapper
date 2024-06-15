@@ -4,7 +4,11 @@ import { httpsCallable } from "firebase/functions";
 import { useState, FormEvent } from "react";
 import { Modal, Form } from "react-bootstrap";
 import { functions } from "../../firebase";
-import { USER_ACCESS_LEVELS, WIKI_CATEGORIES } from "../../utils/constants";
+import {
+  CLOUD_FUNCTIONS_CALLS,
+  USER_ACCESS_LEVELS,
+  WIKI_CATEGORIES
+} from "../../utils/constants";
 import errorHandler from "../../utils/helpers/errorhandler";
 import { UserModalProps } from "../../utils/interface";
 import ModalFooter from "../form/footer";
@@ -28,7 +32,10 @@ const UpdateUser = NiceModal.create(
       event.preventDefault();
       setIsSaving(true);
       try {
-        const updateUserAccess = httpsCallable(functions, "updateUserAccess");
+        const updateUserAccess = httpsCallable(
+          functions,
+          CLOUD_FUNCTIONS_CALLS.UPDATE_USER_ACCESS
+        );
         await updateUserAccess({
           uid: uid,
           congregation: congregation,

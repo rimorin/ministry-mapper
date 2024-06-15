@@ -1,3 +1,112 @@
+## [1.29.2](https://github.com/rimorin/ministry-mapper/compare/v1.29.1...v1.29.2) (2024-06-13)
+
+
+### Bug Fixes
+
+* missing dep in useCallback ([65a90f7](https://github.com/rimorin/ministry-mapper/commit/65a90f7545d3dc24ae9bdb7085610a919a9b9b49))
+* reset territory and address logic ([796584f](https://github.com/rimorin/ministry-mapper/commit/796584fa9a752e6e4f3d0afe9cfcb6740bf7a4ae))
+
+## [1.29.1](https://github.com/rimorin/ministry-mapper/compare/v1.29.0...v1.29.1) (2024-06-10)
+
+
+### Bug Fixes
+
+* sync up http callable for update usr access ([314faef](https://github.com/rimorin/ministry-mapper/commit/314faefbbb472f4641b82d429aacfe592a039abd))
+
+# [1.29.0](https://github.com/rimorin/ministry-mapper/compare/v1.28.3...v1.29.0) (2024-06-09)
+
+
+### Bug Fixes
+
+* add spinner for forgot password processing ([c4306c0](https://github.com/rimorin/ministry-mapper/commit/c4306c05030dc12b9c312230153660716e1735d1))
+
+
+### Features
+
+* implement inhouse verification and reset procedures ([7300c57](https://github.com/rimorin/ministry-mapper/commit/7300c5793f2b24cf857e9aaebbb806de85b86f83))
+* implement single source login path ([ab746ca](https://github.com/rimorin/ministry-mapper/commit/ab746ca14264f67ea6f91ca1f02c869b33bf3696))
+
+## [1.28.3](https://github.com/rimorin/ministry-mapper/compare/v1.28.2...v1.28.3) (2024-05-28)
+
+
+### Bug Fixes
+
+* allow hyphen and asterisk for private territories no ([2906592](https://github.com/rimorin/ministry-mapper/commit/290659236af545c67f56ab40d9f17c8128b95242))
+
+## [1.28.2](https://github.com/rimorin/ministry-mapper/compare/v1.28.1...v1.28.2) (2024-05-23)
+
+
+### Performance Improvements
+
+* optimizations ([5a05006](https://github.com/rimorin/ministry-mapper/commit/5a0500603d9600b121d03857a8e84a5313be70c5))
+
+## [1.28.1](https://github.com/rimorin/ministry-mapper/compare/v1.28.0...v1.28.1) (2024-05-17)
+
+
+### Bug Fixes
+
+* removed unnecessary fadings ([fde3982](https://github.com/rimorin/ministry-mapper/commit/fde39821e9e714d5b5bbbb1c6824f25eb82a31fa))
+* styling for pub slip navigation ([92c610e](https://github.com/rimorin/ministry-mapper/commit/92c610e5a4377432e37c1abd5a3f35431416f70e))
+
+# [1.28.0](https://github.com/rimorin/ministry-mapper/compare/v1.27.0...v1.28.0) (2024-05-17)
+
+
+### Bug Fixes
+
+* styling for dropdown when its at the bottom ([08db644](https://github.com/rimorin/ministry-mapper/commit/08db64488ae48b35f636fdcc4cc790dbda678d04))
+* vite rollup settings for firebase ([673ee26](https://github.com/rimorin/ministry-mapper/commit/673ee2699864f15f0d0f7d130c70a53ba827d3df))
+
+
+### Features
+
+* implement google maps coordinates picker ([397e7b8](https://github.com/rimorin/ministry-mapper/commit/397e7b8ceb7ee5dc743e10703a0db53f4856fbd7))
+
+# [1.27.0](https://github.com/rimorin/ministry-mapper/compare/v1.26.3...v1.27.0) (2024-05-10)
+
+
+### Bug Fixes
+
+* field naming of public/private mapping ([d390cd0](https://github.com/rimorin/ministry-mapper/commit/d390cd00a890b3ee0573af61e110c7dd7927f9ad))
+
+
+### Features
+
+* implement location field for non postal congs ([dec25db](https://github.com/rimorin/ministry-mapper/commit/dec25db6ef6ac175dccb994ca83d9784eb98a566))
+
+## [1.26.3](https://github.com/rimorin/ministry-mapper/compare/v1.26.2...v1.26.3) (2024-05-03)
+
+
+### Bug Fixes
+
+* update territory listing when its updated ([287a055](https://github.com/rimorin/ministry-mapper/commit/287a055188a7be38a1ce0a38a7b94a9c494fde17))
+
+## [1.26.2](https://github.com/rimorin/ministry-mapper/compare/v1.26.1...v1.26.2) (2024-04-30)
+
+
+### Bug Fixes
+
+* alert when unit/propert no is invalid ([d724230](https://github.com/rimorin/ministry-mapper/commit/d724230b9240ef2d314d9b283b50ab1ccccd8fd9))
+
+## [1.26.1](https://github.com/rimorin/ministry-mapper/compare/v1.26.0...v1.26.1) (2024-04-04)
+
+
+### Bug Fixes
+
+* invalid change postal description for non-postal congs ([879c7d7](https://github.com/rimorin/ministry-mapper/commit/879c7d78a23c2acf5de5adf7d828f7549bbb104c))
+
+# [1.26.0](https://github.com/rimorin/ministry-mapper/compare/v1.25.6...v1.26.0) (2024-04-04)
+
+
+### Bug Fixes
+
+* library cleanup ([a6806a7](https://github.com/rimorin/ministry-mapper/commit/a6806a72af8fdacd154660fc17e1329d643a85d9))
+* library update ([5933cb6](https://github.com/rimorin/ministry-mapper/commit/5933cb67ec9c6ec4c6532e9bbb8c431096a434b1))
+
+
+### Features
+
+* congregation origin and map number implementation ([ab0e048](https://github.com/rimorin/ministry-mapper/commit/ab0e048ce0cd87ebff735d10ef55bbed80ae8e7b))
+
 ## [1.25.6](https://github.com/rimorin/ministry-mapper/compare/v1.25.5...v1.25.6) (2024-03-03)
 
 
