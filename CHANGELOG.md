@@ -1,3 +1,10 @@
+## [1.29.3](https://github.com/rimorin/ministry-mapper/compare/v1.29.2...v1.29.3) (2024-06-19)
+
+
+### Bug Fixes
+
+* loading logic for expired links ([2aaccab](https://github.com/rimorin/ministry-mapper/commit/2aaccaba622ca016180093b488c006ddb89c700b))
+
 ## [1.29.2](https://github.com/rimorin/ministry-mapper/compare/v1.29.1...v1.29.2) (2024-06-13)
 
 
