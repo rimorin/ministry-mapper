@@ -106,6 +106,7 @@ const Map = () => {
       const linkRef = ref(database, `links/${code}/${id}`);
       const linkSnapshot = await get(linkRef);
       if (!linkSnapshot.exists()) {
+        setIsLoading(false);
         return;
       }
       const linkrec = new LinkSession(linkSnapshot.val());
@@ -115,7 +116,12 @@ const Map = () => {
       const tokenEndtime = linkrec.tokenEndtime;
       const currentTimestamp = new Date().getTime();
       setTokenEndTime(tokenEndtime);
-      setIsLinkExpired(currentTimestamp > tokenEndtime);
+      const isLinkExpired = currentTimestamp > tokenEndtime;
+      setIsLinkExpired(isLinkExpired);
+      if (isLinkExpired) {
+        setIsLoading(false);
+        return;
+      }
       onChildRemoved(linkRef, () => window.location.reload());
     };
 
