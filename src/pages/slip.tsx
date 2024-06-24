@@ -27,7 +27,8 @@ import {
   DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
   DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION,
   DEFAULT_COORDINATES,
-  DEFAULT_CONGREGATION_MAX_TRIES
+  DEFAULT_CONGREGATION_MAX_TRIES,
+  LINK_TYPES
 } from "../utils/constants";
 import "../css/slip.css";
 import Countdown from "react-countdown";
@@ -41,6 +42,7 @@ import getOptionIsMultiSelect from "../utils/helpers/getoptionmultiselect";
 import getCongregationOrigin from "../utils/helpers/getcongorigin";
 import { useParams } from "react-router-dom";
 import InvalidPage from "../components/statics/invalidpage";
+import { useRollbar } from "@rollbar/react";
 
 const Map = () => {
   const { id, code } = useParams();
@@ -66,6 +68,7 @@ const Map = () => {
     TERRITORY_TYPES.PUBLIC
   );
   const currentTime = useRef<number>(new Date().getTime());
+  const rollbar = useRollbar();
 
   const handleUnitUpdate = (
     floor: string,
@@ -123,6 +126,20 @@ const Map = () => {
         return;
       }
       onChildRemoved(linkRef, () => window.location.reload());
+      if (linkrec.linkType !== LINK_TYPES.VIEW) {
+        rollbar.configure({
+          payload: {
+            link: {
+              id: id,
+              publisher: linkrec.publisherName,
+              congregation: code,
+              map: linkrec.postalCode,
+              maxTries: linkrec.maxTries,
+              tokenEndtime: new Date(tokenEndtime).toLocaleDateString()
+            }
+          }
+        });
+      }
     };
 
     const refreshPage = () => {
