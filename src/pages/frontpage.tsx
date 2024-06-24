@@ -25,9 +25,23 @@ const FrontPage = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    auth.onAuthStateChanged((user) => {
+    auth.onAuthStateChanged(async (user) => {
       setLoginUser(user);
       setIsLoading(false);
+      if (user) {
+        const claims = await user.getIdTokenResult();
+        rollbar.configure({
+          payload: {
+            person: {
+              id: user.uid,
+              name: user.displayName,
+              email: user.email as string,
+              verified: user.emailVerified,
+              claims: claims
+            }
+          }
+        });
+      }
     });
   }, []);
 

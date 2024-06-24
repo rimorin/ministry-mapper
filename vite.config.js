@@ -9,17 +9,28 @@ export default defineConfig(() => {
   return {
     build: {
       outDir: "build",
+      sourcemap: true,
       rollupOptions: {
         output: {
           manualChunks: {
             react: ["react", "react-dom", "react-router", "react-router-dom"],
             rollbar: ["rollbar"],
-            fbApp: ["firebase/app"],
-            fbAuth: ["firebase/auth"],
-            fbCheck: ["firebase/app-check"],
-            fbDb: ["firebase/database"],
-            fbFunctions: ["firebase/functions"]
+            firebase: [
+              "firebase/app",
+              "firebase/auth",
+              "firebase/database",
+              "firebase/functions",
+              "firebase/app-check"
+            ],
+            gmaps: ["@vis.gl/react-google-maps"]
           }
+        },
+        onwarn(warning, defaultHandler) {
+          if (warning.code === "SOURCEMAP_ERROR") {
+            return;
+          }
+
+          defaultHandler(warning);
         }
       }
     },
