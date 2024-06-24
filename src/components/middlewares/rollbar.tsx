@@ -12,13 +12,15 @@ const DEFEAULT_ROLLBAR_ENVIRONMENT = "staging";
 
 const rollbarConfig = {
   accessToken: VITE_ROLLBAR_ACCESS_TOKEN,
-  payload: {
-    environment: VITE_ROLLBAR_ENVIRONMENT || DEFEAULT_ROLLBAR_ENVIRONMENT,
-    client: {
-      javascript: {
-        source_map_enabled: true,
-        code_version: VITE_VERSION
-      }
+  autoInstrument: true,
+  captureUncaught: true,
+  captureUnhandledRejections: true,
+  code_version: VITE_VERSION,
+  environment: VITE_ROLLBAR_ENVIRONMENT || DEFEAULT_ROLLBAR_ENVIRONMENT,
+  client: {
+    javascript: {
+      source_map_enabled: true,
+      code_version: VITE_VERSION
     }
   }
 };
