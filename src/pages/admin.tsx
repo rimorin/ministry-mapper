@@ -868,7 +868,7 @@ function Admin({ user }: adminProps) {
       loginUserClaims.current = userData;
       const userClaims = userData.claims;
       const congData = userClaims["congregations"] as Record<string, number>;
-      if (!congData) {
+      if (!congData || Object.keys(congData).length === 0) {
         setIsLoading(false);
         setIsUnauthorised(true);
         errorHandler(`Unauthorised access by ${user.email}`, rollbar, false);
