@@ -1,3 +1,10 @@
+## [1.29.4](https://github.com/rimorin/ministry-mapper/compare/v1.29.3...v1.29.4) (2024-06-24)
+
+
+### Bug Fixes
+
+* user with no access condition check ([d306810](https://github.com/rimorin/ministry-mapper/commit/d306810346f723afa8743404a67c01363712ec02))
+
 ## [1.29.3](https://github.com/rimorin/ministry-mapper/compare/v1.29.2...v1.29.3) (2024-06-19)
 
 
