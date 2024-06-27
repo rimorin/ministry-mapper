@@ -155,7 +155,7 @@ const UpdateUnitStatus = NiceModal.create(
         );
         modal.hide();
       } catch (error) {
-        errorHandler(error, rollbar, true);
+        errorHandler(error, rollbar);
       } finally {
         setIsSaving(false);
       }
