@@ -1,3 +1,10 @@
+# [1.30.0](https://github.com/rimorin/ministry-mapper/compare/v1.29.4...v1.30.0) (2024-06-28)
+
+
+### Features
+
+* gemini ai checker for notes ([4bd2d02](https://github.com/rimorin/ministry-mapper/commit/4bd2d029918fb5d0a30a3c8f851c1c961f9a387a))
+
 ## [1.29.4](https://github.com/rimorin/ministry-mapper/compare/v1.29.3...v1.29.4) (2024-06-24)
 
 
