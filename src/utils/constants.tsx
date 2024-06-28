@@ -1,3 +1,8 @@
+import {
+  HarmBlockThreshold,
+  HarmCategory,
+  SafetySetting
+} from "firebase/vertexai-preview";
 import { RuleNames } from "react-password-checklist";
 
 //STILL_NOT_HOME not longer in use.
@@ -160,6 +165,39 @@ const CLOUD_FUNCTIONS_CALLS = {
   GET_USER_BY_EMAIL: "getUserByEmail"
 };
 
+const AI_MODEL = "gemini-1.5-flash";
+const NOTE_AI_PROMPT = `Determine if a given note contains any personal information. 
+Return the results as a JSON string without comments. 
+The JSON should have a boolean key named containsPersonalInfo indicating whether personal information was found, and a reason key explaining the findings. 
+If personal information is found, set containsPersonalInfo to true and provide a brief reason and ask the user to adjust their note. 
+If no such information is found, set containsPersonalInfo to false without any reason.`;
+const safetySettings = [
+  {
+    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_UNSPECIFIED,
+    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH
+  }
+] as SafetySetting[];
+const AI_SETTINGS = {
+  model: AI_MODEL,
+  systemInstruction: NOTE_AI_PROMPT,
+  safetySettings: safetySettings
+};
 export {
   UNSUPPORTED_BROWSER_MSG,
   STATUS_CODES,
@@ -197,5 +235,6 @@ export {
   DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
   DEFAULT_MULTPLE_OPTION_DELIMITER,
   DEFAULT_COORDINATES,
-  CLOUD_FUNCTIONS_CALLS
+  CLOUD_FUNCTIONS_CALLS,
+  AI_SETTINGS
 };

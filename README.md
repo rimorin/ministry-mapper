@@ -2,29 +2,51 @@
 
 A web application for the field ministry.
 
-## Why
+**Important Notice**: Ministry Mapper incorporates the capability to track residential addresses, a feature that may raise concerns under strict data privacy regulations in certain jurisdictions. We urge users to conduct a comprehensive review of their local data protection laws and ensure adherence to all applicable guidelines before implementing Ministry Mapper. This proactive approach will safeguard your ministry activities against potential legal challenges.
 
-Pain points of traditional printed territory slips
+## Why Ministry Mapper Stands Out
 
-- Use of paper that will be discarded once territory is completed. 🗑️ (Total paper used per service yr = 4 pieces (average paper use per territory) X no. of territories in the congregation)
-- Preparation of printed territory slips (Designing, Printing & Cutting). ✂️ 🖨️ 💦
-- Territory servants have to eyeball all returned slips for new updates. 📝 👀
-- Risk of slips going missing. No one knows where is it 🤷‍♂️
-- Risk of slips being returned in bad & unreadable conditions.
-- High dependence on the conductor to show up for the ministry. No show ➡️ No slips ➡️ No HH ministry.
+Facing the Challenges of Traditional Printed Territory Management:
 
-Advantages of Ministry Mapper
+- **Environmental Concerns**: The conventional approach relies heavily on paper, leading to significant environmental waste. Imagine the impact: each congregation uses approximately four sheets of paper per territory, a number that quickly adds up with each territory managed throughout the year.
+- **Operational Burdens**: Designing, printing, and preparing territory slips is not only resource-intensive but also time-consuming, diverting valuable time from ministry work.
+- **Update Inefficiencies**: The manual process of updating returned slips is prone to errors and can be incredibly tedious, often resulting in outdated or inaccurate territory records.
+- **Risk of Loss or Damage**: Paper slips are susceptible to being lost or returned in a state that renders them unusable, creating gaps in territory coverage and hindering ministry efforts.
+- **Dependence on Availability**: The effectiveness of the traditional system hinges on the physical presence of the territory conductor. Their absence can lead to disruptions in ministry activities.
 
-- Digital Technology. Slips are stored online rather than on paper. No more use of papers 🌳 and undesirable handwritings 🖊️. Nether will they go missing or be damaged for some reason.
-- Near-zero management effort. Significant reduction of workload on the territory servants as records stored in the cloud. No more updating, printing & cutting on the servants part.
-- Real-time collaboration. Territory records are displayed in real-time (Similar to live traffic/booking apps). This enables territory to be covered efficiently and effectively. For example, a slip can be covered by different publishers (letter writers and HH preachers together) in real-time as overlapping never (or almost never) occurs.
-- High Availability. Slips are managed and distributed digitally. Zero to little disruption of the HH ministry as a result of sickness, travel delay or any unforeseen occurrences that may befall the conductor.
+### The Ministry Mapper Advantage
 
-Disadvantages of Ministry Mapper
+- **Eco-Friendly Efficiency**: Transitioning to Ministry Mapper eliminates the need for paper, significantly reducing your environmental footprint while addressing common issues such as legibility and damage to physical slips.
 
-- Initial migration work of the territory data. Territory servants will have to take some time to enter their entire territory details into the system.
-- Internet dependency. Requires publishers to use their internet capable phones/tablets to use. System may not be applicable for countries where internet access is not readily available.
-- Slight learning curve. Elderly and non tech-savvy publishers may have to overcome the challenge of transiting from paper/pen to the use of a computing device to update territory records.
+- **Simplified Territory Management**: Our cloud-based platform dramatically lightens the load for territory servants. With digital records, the cumbersome tasks of manual updates, printing, and cutting become things of the past.
+
+- **Real-Time Collaboration**: Ministry Mapper introduces a dynamic, real-time update system, enhancing collaboration among publishers. This ensures that territory coverage is both efficient and effective, with minimal overlap between publishers engaging in different forms of ministry.
+
+- **Uninterrupted Ministry Work**: The digital distribution and management of territories mean that ministry activities can proceed smoothly, without interruption, even in the face of unexpected challenges affecting the territory conductor.
+
+### Embracing Ministry Mapper: What to Expect
+
+Adopting Ministry Mapper is a forward-thinking move, but it's important to consider:
+
+- **Initial Setup**: Transitioning your territory details to a digital format is a one-time effort that requires dedication. We provide resources and support to facilitate a smooth transition.
+
+- **Internet Dependency**: The functionality of Ministry Mapper is reliant on internet connectivity. In areas where internet access is limited or unreliable, this could pose a challenge. Planning and preparation can help mitigate these issues.
+
+- **Ease of Adoption**: Moving from paper to digital is a significant change, especially for those less accustomed to technology. We're committed to providing comprehensive support and training to ensure a seamless transition for all users, empowering every member of your congregation to confidently utilize Ministry Mapper.
+
+**Important Note**: The information provided below may not be accurate due to the constant development and updates to Ministry Mapper. We strive to keep our documentation up-to-date, but given the rapid pace of change, some details may have evolved. Always refer to the latest version of our documentation or contact me for the most current information.
+
+### Technical Overview
+
+Ministry Mapper is a web application built using ReactJs, Typescript, and Firebase. It leverages Firebase Real-time Database for data storage and synchronization, Firebase Authentication for user management, and Firebase Functions for backend job scheduling. The application is hosted on a cloud CDN provider, ensuring fast and reliable access for users worldwide.
+
+To enhance the security framework of Ministry Mapper, the application integrates Firebase App Check, a pivotal feature engineered to shield against malicious or unauthorized traffic. This mechanism meticulously authenticates each request, ensuring a fortified barrier that upholds the app's operational integrity. Complementing this, Ministry Mapper employs meticulously designed security rules within the Firebase Real-time Database. These rules are strategically formulated to guarantee that database interactions—whether reading, writing, or updating—are exclusively performed by authenticated users who possess the requisite permissions. This dual-layered approach not only secures data transactions but also reinforces the overall security posture of Ministry Mapper, safeguarding user data and maintaining trust.
+
+To ensure the highest level of operational reliability, Ministry Mapper leverages Rollbar for comprehensive error tracking and monitoring. This integration not only enhances the user experience by minimizing disruptions but also provides valuable insights for continuous improvement and swift issue resolution.
+
+For territory management, Ministry Mapper utilizes Google Maps API to display territories and facilitate efficient navigation. This feature enhances the user experience by providing a visual representation of territories and enabling users to easily locate and access specific areas.
+
+In addition to these core technologies, Ministry Mapper integrates with MailerSend for email delivery services, enabling seamless communication with users and ensuring that important notifications and updates reach the intended recipients promptly.
 
 ### Usage
 
@@ -70,6 +92,13 @@ Configuration is done using a seperate [administration module](https://github.co
      - VITE_FIREBASE_SENDER_ID=sender_id_from_firebase_account
      - VITE_FIREBASE_APP_ID=app_id_from_firebase_account
      - VITE_FIREBASE_APPCHECK_DEBUG_TOKEN=token generated from appcheck
+     - VITE_GOOGLE_MAPS_API_KEY=api_key_from_google_maps
+     - VITE_FIREBASE_RECAPTCHA_ENTERPRISE_SITE_KEY=site_key_from_recaptcha
+     - VITE_PRIVACY_URL=privacy_policy_url
+     - VITE_TERMS_URL=terms_of_service_url
+     - VITE_ABOUT_URL=about_url
+     - VITE_ROLLBAR_ACCESS_TOKEN=access_token_from_rollbar
+     - VITE_ROLLBAR_ENVIRONMENT=local
   2. Restart shell and run `npm start`
 - Production deployment
   1. Run `npm run build`
@@ -82,17 +111,11 @@ Configuration is done using a seperate [administration module](https://github.co
      - VITE_FIREBASE_BUCKET=bucket_from_firebase_account
      - VITE_FIREBASE_SENDER_ID=sender_id_from_firebase_account
      - VITE_FIREBASE_APP_ID=app_id_from_firebase_account
-     - VITE_SENTRY_LOGGING_DSN=DSN from Sentry account
-
-### Technologies Used
-
-1. Bootstrap - CSS Framework
-2. Vite - Build tool
-3. ReactJs - Javascript UI Framework
-4. Typescript - Javascript typed implementation library
-5. Rollbar - App error tracking and monitoring
-6. Firebase Real-time database - Cloud based database with real time synchronization across all clients.
-7. Firebase Authentication - Cloud based authentication service.
-8. Firebase Appcheck - Protects your app from abuse by attesting that incoming traffic and blocking traffic without valid credentials.
-9. Firebase Functions - Cloud based backend job scheduler
-10. MailerSend - Email delivery service
+     - VITE_FIREBASE_APPCHECK_DEBUG_TOKEN=token generated from appcheck
+     - VITE_GOOGLE_MAPS_API_KEY=api_key_from_google_maps
+     - VITE_FIREBASE_RECAPTCHA_ENTERPRISE_SITE_KEY=site_key_from_recaptcha
+     - VITE_PRIVACY_URL=privacy_policy_url
+     - VITE_TERMS_URL=terms_of_service_url
+     - VITE_ABOUT_URL=about_url
+     - VITE_ROLLBAR_ACCESS_TOKEN=access_token_from_rollbar
+     - VITE_ROLLBAR_ENVIRONMENT=production
