@@ -20,28 +20,25 @@ const Legend = memo(({ showLegend, hideFunction }: LegendProps) => {
           <tbody>
             <tr>
               <td className="text-center align-middle">✅</td>
-              <td>Spoke to householder or Wrote Letter.</td>
+              <td>Contacted successfully.</td>
             </tr>
             <tr>
               <td className="text-center align-middle">🚫</td>
-              <td>Do not call or write letter.</td>
+              <td>Do not contact.</td>
             </tr>
             <tr>
               <td className="text-center align-middle">
                 <NotHomeIcon />
               </td>
-              <td>
-                Householder is not at home. Option to write a letter after a few
-                tries.
-              </td>
+              <td>Not at home.</td>
             </tr>
             <tr>
               <td className="text-center align-middle">✖️</td>
-              <td>Unit doesn&#39;t exist for some reason.</td>
+              <td>Address does not exist.</td>
             </tr>
             <tr>
               <td className="text-center align-middle">🗒️</td>
-              <td>Optional information about the unit. Avoid personal data.</td>
+              <td>Additional home info.</td>
             </tr>
           </tbody>
         </Table>

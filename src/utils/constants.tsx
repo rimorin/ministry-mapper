@@ -166,11 +166,12 @@ const CLOUD_FUNCTIONS_CALLS = {
 };
 
 const AI_MODEL = "gemini-1.5-flash";
-const NOTE_AI_PROMPT = `Determine if a given note contains any personal information. 
-Return the results as a JSON string without comments. 
-The JSON should have a boolean key named containsPersonalInfo indicating whether personal information was found, and a reason key explaining the findings. 
-If personal information is found, set containsPersonalInfo to true and provide a brief reason and ask the user to adjust their note. 
-If no such information is found, set containsPersonalInfo to false without any reason.`;
+const NOTE_AI_PROMPT = `Determine if a given note contains any personal information and return the results in a strict JSON format. 
+The response should strictly adhere to JSON syntax rules: no comments, use double quotes for keys and string values, and ensure proper use of commas and colons. 
+The JSON object must contain a boolean key "containsPersonalInfo" indicating whether personal information was found. 
+It should also include a "reason" key with a string value explaining the findings. 
+If personal information is found, "containsPersonalInfo" should be set to true, and the "reason" should provide a brief explanation and request the user to adjust their note. 
+If no personal information is found, "containsPersonalInfo" should be set to false, and the "reason" key can be omitted or set to an empty string.`;
 const safetySettings = [
   {
     category: HarmCategory.HARM_CATEGORY_HARASSMENT,
