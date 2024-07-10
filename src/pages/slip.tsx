@@ -1,7 +1,7 @@
-import { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef, lazy } from "react";
 import { ref, child, onValue, onChildRemoved, get } from "firebase/database";
 import { database } from "../firebase";
-import { Container, Navbar, NavDropdown } from "react-bootstrap";
+import { Container, Nav, Navbar } from "react-bootstrap";
 import {
   OptionProps,
   floorDetails,
@@ -31,18 +31,29 @@ import {
   LINK_TYPES
 } from "../utils/constants";
 import "../css/slip.css";
-import Countdown from "react-countdown";
 import InfoImg from "../assets/information.svg?react";
+import FeedbackImg from "../assets/feedback.svg?react";
+import MapLocationImg from "../assets/maplocation.svg?react";
+import InstructionImg from "../assets/instruction.svg?react";
+import TimeImg from "../assets/time.svg?react";
 import ModalManager from "@ebay/nice-modal-react";
-import UpdateAddressFeedback from "../components/modal/updateaddfeedback";
-import UpdateAddressInstructions from "../components/modal/instructions";
-import UpdateUnitStatus from "../components/modal/updatestatus";
 import GetDirection from "../utils/helpers/directiongenerator";
 import getOptionIsMultiSelect from "../utils/helpers/getoptionmultiselect";
 import getCongregationOrigin from "../utils/helpers/getcongorigin";
 import { useParams } from "react-router-dom";
 import InvalidPage from "../components/statics/invalidpage";
 import { useRollbar } from "@rollbar/react";
+import SuspenseComponent from "../components/utils/suspense";
+
+const UpdateUnitStatus = lazy(() => import("../components/modal/updatestatus"));
+
+const UpdateAddressFeedback = lazy(
+  () => import("../components/modal/updateaddfeedback")
+);
+const UpdateAddressInstructions = lazy(
+  () => import("../components/modal/instructions")
+);
+const ShowExpiry = lazy(() => import("../components/modal/slipexpiry"));
 
 const Map = () => {
   const { id, code } = useParams();
@@ -79,7 +90,7 @@ const Map = () => {
     const floorUnits = floors.find((e) => e.floor === floor);
     const unitDetails = floorUnits?.units.find((e) => e.number === unit);
 
-    ModalManager.show(UpdateUnitStatus, {
+    ModalManager.show(SuspenseComponent(UpdateUnitStatus), {
       options: options,
       addressName: postalName,
       // CONDUCTOR ACL because publishers should be able to update status
@@ -255,81 +266,7 @@ const Map = () => {
               </Navbar.Text>
             </div>
             <div style={{ flex: 0, textAlign: "right", marginLeft: 10 }}>
-              <NavDropdown
-                title={
-                  <InfoImg className={`${instructions ? "blinking" : ""}`} />
-                }
-                align="end"
-              >
-                {instructions && (
-                  <NavDropdown.Item
-                    onClick={() =>
-                      ModalManager.show(UpdateAddressInstructions, {
-                        congregation: code,
-                        postalCode: postalcode,
-                        userAccessLevel: USER_ACCESS_LEVELS.READ_ONLY.CODE,
-                        addressName: postalName as string,
-                        instructions: instructions,
-                        userName: ""
-                      })
-                    }
-                  >
-                    <span className="text-highlight">Instructions</span>
-                  </NavDropdown.Item>
-                )}
-                <NavDropdown.Item onClick={toggleLegend}>
-                  Legend
-                </NavDropdown.Item>
-                <NavDropdown.Item
-                  onClick={() =>
-                    window.open(GetDirection(coordinates), "_blank")
-                  }
-                >
-                  Direction
-                </NavDropdown.Item>
-                <NavDropdown.Item
-                  onClick={() =>
-                    ModalManager.show(UpdateAddressFeedback, {
-                      footerSaveAcl: USER_ACCESS_LEVELS.CONDUCTOR.CODE,
-                      name: postalcode,
-                      congregation: code,
-                      postalCode: postalcode,
-                      currentFeedback: (values as valuesDetails).feedback,
-                      currentName: publisherName,
-                      helpLink: WIKI_CATEGORIES.PUBLISHER_ADDRESS_FEEDBACK
-                    })
-                  }
-                >
-                  Feedback
-                </NavDropdown.Item>
-                <NavDropdown.Divider />
-                <NavDropdown.Item className="fluid-bolding fluid-text" disabled>
-                  <Countdown
-                    className="m-1"
-                    date={tokenEndTime}
-                    daysInHours={true}
-                    renderer={(props) => {
-                      const daysDisplay =
-                        props.days !== 0 ? <>{props.days}d </> : <></>;
-                      const hoursDisplay =
-                        props.hours !== 0 ? <>{props.hours}h </> : <></>;
-                      const minsDisplay =
-                        props.minutes !== 0 ? <>{props.minutes}m </> : <></>;
-                      return (
-                        <>
-                          ⏱️{" "}
-                          <span>
-                            {daysDisplay}
-                            {hoursDisplay}
-                            {minsDisplay}
-                            {props.formatted.seconds}s
-                          </span>
-                        </>
-                      );
-                    }}
-                  />
-                </NavDropdown.Item>
-              </NavDropdown>
+              <InfoImg onClick={toggleLegend} />
             </div>
           </Navbar.Brand>
         </Container>
@@ -351,6 +288,66 @@ const Map = () => {
           );
         }}
       />
+      <Navbar bg="light">
+        <Nav className="w-100 justify-content-between mx-4">
+          <Nav.Item
+            className="text-center nav-item-hover"
+            onClick={() =>
+              ModalManager.show(SuspenseComponent(UpdateAddressFeedback), {
+                footerSaveAcl: USER_ACCESS_LEVELS.CONDUCTOR.CODE,
+                name: postalcode,
+                congregation: code,
+                postalCode: postalcode,
+                currentFeedback: (values as valuesDetails).feedback,
+                currentName: publisherName,
+                helpLink: WIKI_CATEGORIES.PUBLISHER_ADDRESS_FEEDBACK
+              })
+            }
+          >
+            <FeedbackImg />
+            <div className="small">Feedback</div>
+          </Nav.Item>
+          {instructions && (
+            <Nav.Item
+              className="text-center nav-item-hover"
+              onClick={() =>
+                ModalManager.show(
+                  SuspenseComponent(UpdateAddressInstructions),
+                  {
+                    congregation: code,
+                    postalCode: postalcode,
+                    userAccessLevel: USER_ACCESS_LEVELS.READ_ONLY.CODE,
+                    addressName: postalName as string,
+                    instructions: instructions,
+                    userName: ""
+                  }
+                )
+              }
+            >
+              <InstructionImg />
+              <div className="small">Instructions</div>
+            </Nav.Item>
+          )}
+          <Nav.Item
+            className="text-center nav-item-hover"
+            onClick={() => window.open(GetDirection(coordinates), "_blank")}
+          >
+            <MapLocationImg />
+            <div className="small">Directions</div>
+          </Nav.Item>
+          <Nav.Item
+            className="text-center nav-item-hover"
+            onClick={() =>
+              ModalManager.show(SuspenseComponent(ShowExpiry), {
+                endtime: tokenEndTime
+              })
+            }
+          >
+            <TimeImg />
+            <div>Expiry</div>
+          </Nav.Item>
+        </Nav>
+      </Navbar>
     </>
   );
 };
