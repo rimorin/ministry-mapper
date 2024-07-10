@@ -37,6 +37,15 @@ import MapLocationImg from "../assets/maplocation.svg?react";
 import InstructionImg from "../assets/instruction.svg?react";
 import TimeImg from "../assets/time.svg?react";
 import ModalManager from "@ebay/nice-modal-react";
+import GetDirection from "../utils/helpers/directiongenerator";
+import getOptionIsMultiSelect from "../utils/helpers/getoptionmultiselect";
+import getCongregationOrigin from "../utils/helpers/getcongorigin";
+import { useParams } from "react-router-dom";
+import InvalidPage from "../components/statics/invalidpage";
+import { useRollbar } from "@rollbar/react";
+import SuspenseComponent from "../components/utils/suspense";
+
+const UpdateUnitStatus = lazy(() => import("../components/modal/updatestatus"));
 
 const UpdateAddressFeedback = lazy(
   () => import("../components/modal/updateaddfeedback")
@@ -45,14 +54,6 @@ const UpdateAddressInstructions = lazy(
   () => import("../components/modal/instructions")
 );
 const ShowExpiry = lazy(() => import("../components/modal/slipexpiry"));
-import UpdateUnitStatus from "../components/modal/updatestatus";
-import GetDirection from "../utils/helpers/directiongenerator";
-import getOptionIsMultiSelect from "../utils/helpers/getoptionmultiselect";
-import getCongregationOrigin from "../utils/helpers/getcongorigin";
-import { useParams } from "react-router-dom";
-import InvalidPage from "../components/statics/invalidpage";
-import { useRollbar } from "@rollbar/react";
-import SuspenseComponent from "../components/utils/suspense";
 
 const Map = () => {
   const { id, code } = useParams();
@@ -89,7 +90,7 @@ const Map = () => {
     const floorUnits = floors.find((e) => e.floor === floor);
     const unitDetails = floorUnits?.units.find((e) => e.number === unit);
 
-    ModalManager.show(UpdateUnitStatus, {
+    ModalManager.show(SuspenseComponent(UpdateUnitStatus), {
       options: options,
       addressName: postalName,
       // CONDUCTOR ACL because publishers should be able to update status
