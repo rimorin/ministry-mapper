@@ -1,3 +1,10 @@
+## [1.30.1](https://github.com/rimorin/ministry-mapper/compare/v1.30.0...v1.30.1) (2024-07-10)
+
+
+### Bug Fixes
+
+* improve gemini prompt to ensure proper return syntax ([0ecda35](https://github.com/rimorin/ministry-mapper/commit/0ecda353441491e39bfebbb38a9ca111111b3bbd))
+
 # [1.30.0](https://github.com/rimorin/ministry-mapper/compare/v1.29.4...v1.30.0) (2024-06-28)
 
 
