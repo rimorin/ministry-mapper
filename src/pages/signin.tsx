@@ -44,28 +44,6 @@ const LoginComponent = () => {
     loginInWithEmailAndPassword(loginEmail, loginPassword);
   };
 
-  // const handleForgotPassword = async () => {
-  //   try {
-  //     setValidated(true);
-  //     if (loginEmail === "") {
-  //       formRef.current?.focus();
-  //       return;
-  //     }
-  //     //
-  //     // setIsSending(true);
-  //     // const { value } = event.currentTarget.email;
-  //     await sendPasswordResetEmail(auth, loginEmail);
-  //     toggleForgotPassword();
-  //     rollbar.info(`User attempting to reset password! Email: ${loginEmail}`);
-  //     alert(`Password reset email sent to ${loginEmail}.`);
-  //   } catch (error) {
-  //     errorHandler(errorMessage(error as FirebaseError), rollbar);
-  //   } finally {
-  //     // setIsSending(false);
-  //   }
-  // };
-
-  // const toggleForgotPassword = () => setIsForgotPassword(!isForgotPassword);
   return (
     <>
       <Form
