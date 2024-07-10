@@ -1,4 +1,13 @@
 .sticky-body {
-  max-height: 75vh;
+  max-height: 75dvh;
   overflow-y: auto;
+}
+
+.nav-item-hover {
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.nav-item-hover:hover {
+  background-color: #f0f0f0;
 }

@@ -516,3 +516,5 @@ export interface UpdateUnitModalProps
   unitDisplay: string;
   addressData: addressDetails;
 }
+
+export interface ShowExpiryModalProps extends ExpiryButtonProp {}
