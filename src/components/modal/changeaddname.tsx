@@ -11,6 +11,7 @@ import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";
 import HelpButton from "../navigation/help";
 import { ChangeAddressNameModalProps } from "../../utils/interface";
+import { usePostHog } from "posthog-js/react";
 
 const ChangeAddressName = NiceModal.create(
   ({
@@ -23,6 +24,7 @@ const ChangeAddressName = NiceModal.create(
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();
     const rollbar = useRollbar();
+    const posthog = usePostHog();
 
     const handleUpdateBlockName = async (event: FormEvent<HTMLElement>) => {
       event.preventDefault();
@@ -34,6 +36,10 @@ const ChangeAddressName = NiceModal.create(
             addressName
           )
         );
+        posthog?.capture("change_address_name", {
+          mapId: postal,
+          name: addressName
+        });
         modal.hide();
       } catch (error) {
         errorHandler(error, rollbar);

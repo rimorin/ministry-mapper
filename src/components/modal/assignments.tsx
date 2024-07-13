@@ -16,6 +16,7 @@ import HelpButton from "../navigation/help";
 import { database } from "../../firebase";
 import { useEffect, useState } from "react";
 import { AssignmentModalProps } from "../../utils/interface";
+import { usePostHog } from "posthog-js/react";
 
 const GetAssignments = NiceModal.create(
   ({
@@ -25,6 +26,7 @@ const GetAssignments = NiceModal.create(
     congregation
   }: AssignmentModalProps) => {
     const modal = useModal();
+    const posthog = usePostHog();
 
     const [currentAssignments, setCurrentAssignments] =
       useState<LinkSession[]>(assignments);
@@ -33,6 +35,10 @@ const GetAssignments = NiceModal.create(
       if (currentAssignments.length === 0) {
         modal.hide();
       }
+      posthog?.capture("get_assignments", {
+        assignmentType,
+        assignmentTerritory
+      });
     }, [currentAssignments]);
 
     const isAssignOrPersonalAssignments = assignmentType && assignmentTerritory;
@@ -105,6 +111,9 @@ const GetAssignments = NiceModal.create(
                       await pollingVoidFunction(() =>
                         remove(ref(database, `links/${congregation}/${linkid}`))
                       );
+                      posthog?.capture("delete_assignment", {
+                        linkid
+                      });
                       await triggerPostalCodeListeners(
                         congregation,
                         postal as string

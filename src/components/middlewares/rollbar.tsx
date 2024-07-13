@@ -5,7 +5,7 @@ interface RollbarProviderProps {
   children: ReactNode;
 }
 
-const { VITE_ROLLBAR_ACCESS_TOKEN, VITE_ROLLBAR_ENVIRONMENT, VITE_VERSION } =
+const { VITE_ROLLBAR_ACCESS_TOKEN, VITE_SYSTEM_ENVIRONMENT, VITE_VERSION } =
   import.meta.env;
 
 const DEFEAULT_ROLLBAR_ENVIRONMENT = "staging";
@@ -16,7 +16,7 @@ const rollbarConfig = {
   captureUncaught: true,
   captureUnhandledRejections: true,
   code_version: VITE_VERSION,
-  environment: VITE_ROLLBAR_ENVIRONMENT || DEFEAULT_ROLLBAR_ENVIRONMENT,
+  environment: VITE_SYSTEM_ENVIRONMENT || DEFEAULT_ROLLBAR_ENVIRONMENT,
   client: {
     javascript: {
       source_map_enabled: true,

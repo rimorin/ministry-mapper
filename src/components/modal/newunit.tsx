@@ -13,6 +13,7 @@ import { NewUnitModalProps } from "../../utils/interface";
 import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";
 import HelpButton from "../navigation/help";
+import { usePostHog } from "posthog-js/react";
 
 const NewUnit = NiceModal.create(
   ({
@@ -26,6 +27,7 @@ const NewUnit = NiceModal.create(
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();
     const rollbar = useRollbar();
+    const posthog = usePostHog();
 
     const handleCreateNewUnit = async (event: FormEvent<HTMLElement>) => {
       event.preventDefault();
@@ -45,6 +47,10 @@ const NewUnit = NiceModal.create(
           false,
           defaultType
         );
+        posthog?.capture("create_map_unit", {
+          unit,
+          mapId: postalCode
+        });
         modal.hide();
       } catch (error) {
         errorHandler(error, rollbar);

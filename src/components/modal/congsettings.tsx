@@ -17,6 +17,7 @@ import HelpButton from "../navigation/help";
 import { database } from "../../firebase";
 import ModalFooter from "../form/footer";
 import { UpdateCongregationSettingsModalProps } from "../../utils/interface";
+import { usePostHog } from "posthog-js/react";
 
 const UpdateCongregationSettings = NiceModal.create(
   ({
@@ -28,6 +29,7 @@ const UpdateCongregationSettings = NiceModal.create(
   }: UpdateCongregationSettingsModalProps) => {
     const modal = useModal();
     const rollbar = useRollbar();
+    const posthog = usePostHog();
     const [maxTries, setMaxTries] = useState(currentMaxTries);
     const [defaultExpiryHrs, setDefaultExpiryHrs] = useState(
       currentDefaultExpiryHrs
@@ -57,6 +59,12 @@ const UpdateCongregationSettings = NiceModal.create(
             }
           )
         );
+        posthog?.capture("update_congregation_settings", {
+          name: name,
+          expiryHours: defaultExpiryHrs,
+          maxTries: maxTries,
+          isMultipleSelection: isMultipleSelection
+        });
         alert("Congregation settings updated.");
         window.location.reload();
       } catch (error) {

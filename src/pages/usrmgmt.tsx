@@ -20,6 +20,7 @@ import NavBarBranding from "../components/navigation/branding";
 import { PASSWORD_POLICY, MINIMUM_PASSWORD_LENGTH } from "../utils/constants";
 import PasswordChecklist from "react-password-checklist";
 import { FirebaseError } from "firebase/app";
+import { usePostHog } from "posthog-js/react";
 
 const MODE_RESET_PASSWORD = "resetPassword";
 const MODE_VERIFY_EMAIL = "verifyEmail";
@@ -34,6 +35,7 @@ const UserManagementComponent = () => {
   const [isLoginPasswordOk, setIsLoginPasswordOk] = useState(false);
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
+  const posthog = usePostHog();
 
   const mode = searchParams.get("mode") || "";
   const oobCode = searchParams.get("oobCode") || "";
@@ -46,6 +48,7 @@ const UserManagementComponent = () => {
       setIsResetting(true);
       await verifyPasswordResetCode(auth, actionCode);
       await confirmPasswordReset(auth, actionCode, loginPassword);
+      posthog?.capture("password_reset");
       setMessage("Your password has been successfully reset.");
     } catch (error) {
       setMessage((error as FirebaseError).message);
@@ -61,6 +64,7 @@ const UserManagementComponent = () => {
     try {
       setIsProcessing(true);
       await applyActionCode(auth, actionCode);
+      posthog?.capture("email_verification");
       setMessage("Your email address has been verified.");
     } catch (error) {
       setMessage((error as FirebaseError).message);

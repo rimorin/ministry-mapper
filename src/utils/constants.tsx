@@ -15,6 +15,14 @@ const STATUS_CODES = {
   INVALID: "5"
 };
 
+const PH_STATUS_KEYS = {
+  [STATUS_CODES.NOT_HOME]: "address_not_home",
+  [STATUS_CODES.DO_NOT_CALL]: "address_do_not_call",
+  [STATUS_CODES.DONE]: "address_done",
+  [STATUS_CODES.INVALID]: "address_invalid",
+  [STATUS_CODES.DEFAULT]: "address_not_done"
+};
+
 const NOT_HOME_STATUS_CODES = {
   DEFAULT: "1",
   SECOND_TRY: "2",
@@ -292,5 +300,6 @@ export {
   DEFAULT_MULTPLE_OPTION_DELIMITER,
   DEFAULT_COORDINATES,
   CLOUD_FUNCTIONS_CALLS,
-  AI_SETTINGS
+  AI_SETTINGS,
+  PH_STATUS_KEYS
 };

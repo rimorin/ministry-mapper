@@ -13,6 +13,8 @@ import errorHandler from "../utils/helpers/errorhandler";
 import errorMessage from "../utils/helpers/errormsg";
 import { PASSWORD_POLICY, MINIMUM_PASSWORD_LENGTH } from "../utils/constants";
 import { StateContext } from "../components/utils/context";
+import { usePostHog } from "posthog-js/react";
+const { VITE_PRIVACY_URL, VITE_TERMS_URL } = import.meta.env;
 
 const SignupComponent = () => {
   const [validated, setValidated] = useState(false);
@@ -23,10 +25,11 @@ const SignupComponent = () => {
   const [name, setName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const rollbar = useRollbar();
+  const posthog = usePostHog();
 
   const { setFrontPageMode } = useContext(StateContext);
-  const privacyUrl = import.meta.env.VITE_PRIVACY_URL;
-  const termsUrl = import.meta.env.VITE_TERMS_URL;
+  const privacyUrl = VITE_PRIVACY_URL;
+  const termsUrl = VITE_TERMS_URL;
 
   const handleCreateSubmit = async (
     event: React.FormEvent<HTMLFormElement>
@@ -47,6 +50,10 @@ const SignupComponent = () => {
       );
       await updateProfile(credentials.user, {
         displayName: name
+      });
+      posthog?.capture("signup", {
+        email: loginEmail,
+        name
       });
       rollbar.info(`New User Created! Email: ${loginEmail}, Name: ${name}`);
       await sendEmailVerification(credentials.user);

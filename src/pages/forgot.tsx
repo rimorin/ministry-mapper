@@ -7,6 +7,7 @@ import { useRollbar } from "@rollbar/react";
 import errorHandler from "../utils/helpers/errorhandler";
 import errorMessage from "../utils/helpers/errormsg";
 import { StateContext } from "../components/utils/context";
+import { usePostHog } from "posthog-js/react";
 
 const ForgotComponent = () => {
   const [loginEmail, setLoginEmail] = useState("");
@@ -14,6 +15,7 @@ const ForgotComponent = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const rollbar = useRollbar();
   const formRef = useRef<HTMLInputElement>(null);
+  const posthog = usePostHog();
 
   const { setFrontPageMode } = useContext(StateContext);
 
@@ -30,6 +32,9 @@ const ForgotComponent = () => {
     try {
       setIsProcessing(true);
       await sendPasswordResetEmail(auth, loginEmail);
+      posthog?.capture("password_reset", {
+        email: loginEmail
+      });
       rollbar.info(`User attempting to reset password! Email: ${loginEmail}`);
       alert(`Password reset email sent to ${loginEmail}.`);
     } catch (error) {

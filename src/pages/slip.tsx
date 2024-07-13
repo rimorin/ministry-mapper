@@ -27,8 +27,7 @@ import {
   DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
   DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION,
   DEFAULT_COORDINATES,
-  DEFAULT_CONGREGATION_MAX_TRIES,
-  LINK_TYPES
+  DEFAULT_CONGREGATION_MAX_TRIES
 } from "../utils/constants";
 import "../css/slip.css";
 import InfoImg from "../assets/information.svg?react";
@@ -44,6 +43,7 @@ import { useParams } from "react-router-dom";
 import InvalidPage from "../components/statics/invalidpage";
 import { useRollbar } from "@rollbar/react";
 import SuspenseComponent from "../components/utils/suspense";
+import { usePostHog } from "posthog-js/react";
 
 const UpdateUnitStatus = lazy(() => import("../components/modal/updatestatus"));
 
@@ -80,6 +80,7 @@ const Map = () => {
   );
   const currentTime = useRef<number>(new Date().getTime());
   const rollbar = useRollbar();
+  const posthog = usePostHog();
 
   const handleUnitUpdate = (
     floor: string,
@@ -106,7 +107,8 @@ const Map = () => {
       addressData: undefined,
       defaultOption: policy.defaultType,
       isMultiselect: policy.isMultiselect,
-      origin: policy.origin
+      origin: policy.origin,
+      publisherName: publisherName
     });
   };
 
@@ -124,33 +126,36 @@ const Map = () => {
         return;
       }
       const linkrec = new LinkSession(linkSnapshot.val());
+      const tokenEndtime = linkrec.tokenEndtime;
+
       setPublisherName(linkrec.publisherName);
       setCongregationMaxTries(linkrec.maxTries);
       setPostalcode(linkrec.postalCode);
-      const tokenEndtime = linkrec.tokenEndtime;
       const currentTimestamp = new Date().getTime();
       setTokenEndTime(tokenEndtime);
       const isLinkExpired = currentTimestamp > tokenEndtime;
       setIsLinkExpired(isLinkExpired);
+      rollbar.configure({
+        payload: {
+          link: {
+            id: id,
+            publisher: linkrec.publisherName,
+            congregation: code,
+            map: linkrec.postalCode,
+            maxTries: linkrec.maxTries,
+            tokenEndtime: new Date(tokenEndtime).toLocaleDateString()
+          }
+        }
+      });
+      posthog?.identify(code);
       if (isLinkExpired) {
         setIsLoading(false);
+        posthog?.capture("expired_link", {
+          mapId: linkrec.postalCode
+        });
         return;
       }
       onChildRemoved(linkRef, () => window.location.reload());
-      if (linkrec.linkType !== LINK_TYPES.VIEW) {
-        rollbar.configure({
-          payload: {
-            link: {
-              id: id,
-              publisher: linkrec.publisherName,
-              congregation: code,
-              map: linkrec.postalCode,
-              maxTries: linkrec.maxTries,
-              tokenEndtime: new Date(tokenEndtime).toLocaleDateString()
-            }
-          }
-        });
-      }
     };
 
     const refreshPage = () => {
@@ -238,6 +243,9 @@ const Map = () => {
   if (isLoading) return <Loader />;
   if (isLinkExpired) {
     document.title = "Ministry Mapper";
+    posthog?.capture("expired_link", {
+      mapId: postalcode
+    });
     return <InvalidPage />;
   }
 
@@ -266,7 +274,14 @@ const Map = () => {
               </Navbar.Text>
             </div>
             <div style={{ flex: 0, textAlign: "right", marginLeft: 10 }}>
-              <InfoImg onClick={toggleLegend} />
+              <InfoImg
+                onClick={() => {
+                  posthog?.capture("info_button_clicked", {
+                    mapId: postalcode
+                  });
+                  toggleLegend();
+                }}
+              />
             </div>
           </Navbar.Brand>
         </Container>
@@ -310,7 +325,10 @@ const Map = () => {
           {instructions && (
             <Nav.Item
               className="text-center nav-item-hover"
-              onClick={() =>
+              onClick={() => {
+                posthog?.capture("instructions_button_clicked", {
+                  mapId: postalcode
+                });
                 ModalManager.show(
                   SuspenseComponent(UpdateAddressInstructions),
                   {
@@ -321,8 +339,8 @@ const Map = () => {
                     instructions: instructions,
                     userName: ""
                   }
-                )
-              }
+                );
+              }}
             >
               <InstructionImg />
               <div className="small">Instructions</div>
@@ -330,18 +348,26 @@ const Map = () => {
           )}
           <Nav.Item
             className="text-center nav-item-hover"
-            onClick={() => window.open(GetDirection(coordinates), "_blank")}
+            onClick={() => {
+              posthog?.capture("directions_button_clicked", {
+                mapId: postalcode
+              });
+              window.open(GetDirection(coordinates), "_blank");
+            }}
           >
             <MapLocationImg />
             <div className="small">Directions</div>
           </Nav.Item>
           <Nav.Item
             className="text-center nav-item-hover"
-            onClick={() =>
+            onClick={() => {
+              posthog?.capture("expiry_button_clicked", {
+                mapId: postalcode
+              });
               ModalManager.show(SuspenseComponent(ShowExpiry), {
                 endtime: tokenEndTime
-              })
-            }
+              });
+            }}
           >
             <TimeImg />
             <div>Expiry</div>
