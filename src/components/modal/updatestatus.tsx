@@ -104,10 +104,7 @@ const UpdateUnitStatus = NiceModal.create(
         const json = JSON.parse(text);
         if (json.containsPersonalInfo) {
           rollbar.warn(
-            "Note submission rejected due to detection of personal information. Reason: " +
-              json.reason +
-              ". Note content: " +
-              note
+            `Sensitive note detected for ${congregation}/${postalCode}/${floor}/${unitNo} with text: ${note}`
           );
           alert(json.reason);
         }
