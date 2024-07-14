@@ -168,52 +168,59 @@ const CLOUD_FUNCTIONS_CALLS = {
 const AI_MODEL = "gemini-1.5-flash";
 const NOTE_AI_PROMPT = `
 <OBJECTIVE_AND_PERSONA>
-You are a developer tasked with creating a feature that analyzes notes for personal information.
+You are a developer tasked with refining a feature that analyzes notes to ensure they contain only household address information, exclude personal information about individuals, and accommodate permissible business details like company names.
 </OBJECTIVE_AND_PERSONA>
 
 <INSTRUCTIONS>
-To complete the task, you need to follow these steps:
-1. Analyze the content of a note.
-2. Determine if it contains any personal information such as names, phone numbers, emails, health conditions, or other uniquely identifying details.
-3. Return the analysis results in a strict JSON format.
+To enhance this feature, proceed as follows:
+1. Analyze the content of a note to identify household address information.
+2. Check for any personal information such as names, phone numbers, emails, health conditions, family situations, or other uniquely identifying details of individuals.
+3. Identify and allow business-related details such as company names, provided they do not contain personal information.
+4. Return the analysis results in a strict JSON format. If personal information about individuals is found, provide a single actionable recommendation to ensure the note adheres to the criteria. If the note passes the criteria, indicate so without a recommendation.
 </INSTRUCTIONS>
-
-------------- Optional Components ------------
 
 <CONSTRAINTS>
 Dos and don'ts for the following aspects:
 1. Dos:
-   - Ensure the response strictly adheres to JSON syntax rules.
-   - Use double quotes for keys and string values.
-   - Ensure proper use of commas and colons.
+  - Strictly adhere to JSON syntax rules.
+  - Use double quotes for keys and string values.
+  - Ensure proper use of commas and colons.
+  - Include permissible business details like company names when relevant.
 2. Don'ts:
-   - Do not include comments in the JSON response.
+  - Avoid including comments in the JSON response.
+  - Exclude personal information about individuals unless it is integral to the business details.
 </CONSTRAINTS>
 
 <CONTEXT>
-The provided context is a feature within an application that requires the analysis of notes to ensure they do not contain sensitive personal information before being processed or shared.
+This feature is essential for an application that processes notes related to household addresses, ensuring they are free from sensitive personal information about individuals before any processing or sharing, while accommodating relevant business details.
 </CONTEXT>
 
 <OUTPUT_FORMAT>
 The output format must be:
-1. A JSON object containing a boolean key "containsPersonalInfo" indicating whether personal information was found.
-2. The JSON object should also include a "reason" key with a string value explaining the findings.
+1. A JSON object with a boolean key "containsPersonalInfo" indicating whether personal information about individuals was found.
+2. A "recommendation" key with a single string value providing an actionable recommendation if personal information is found. If the note passes the criteria, the "recommendation" key should be omitted.
 </OUTPUT_FORMAT>
 
 <FEW_SHOT_EXAMPLES>
-Here we provide some examples:
-1. Example #1
-Input: "John Doe's phone number is 555-1234."
-Thoughts: The note contains a name and a phone number, which are considered personal information.
-Output: {"containsPersonalInfo": true, "reason": "The note contains a name and a phone number."}
-2. Example #2
-Input: "Reminder to buy milk."
-Thoughts: The note does not contain any personal information.
-Output: {"containsPersonalInfo": false}
+Examples include:
+1. Input: "The Smith residence is located at 123 Maple Street, Anytown, AT 12345. John's phone number is 555-1234."
+  Output: {"containsPersonalInfo": true, "recommendation": "Kindly focus on the address details and consider removing personal names and contact information."}
+2. Input: "Reminder: Send mail to 456 Oak Avenue, Anytown, AT 67890."
+  Output: {"containsPersonalInfo": false}
+3. Input: "Meeting at 789 Pine Road, Anytown, AT 10112 on Thursday. Jane Doe will attend."
+  Output: {"containsPersonalInfo": true, "recommendation": "Please ensure the note contains only address information by removing individual names."}
+4. Input: "Property at 321 Birch Street, Anytown, AT 20224 needs inspection for renovation. Contact XYZ Renovations."
+  Output: {"containsPersonalInfo": false}
+5. Input: "The Johnson family at 654 Elm Street, Anytown, AT 30336 has requested a valuation. Contact: johnson.family@email.com"
+  Output: {"containsPersonalInfo": true, "recommendation": "Could you please remove family names and email addresses, leaving just the address details and any relevant business information?"}
+6. Input: "John Lobb. Coping with health issues."
+  Output: {"containsPersonalInfo": true, "recommendation": "Let's focus on household address information and kindly exclude any personal health details."}
+7. Input: "Acme Corp at 123 Industrial Way, Anytown, AT 45678 is expanding its warehouse."
+  Output: {"containsPersonalInfo": false}
 </FEW_SHOT_EXAMPLES>
 
 <RECAP>
-Re-emphasize the key aspects of the prompt, especially the constraints, output format, etc. Ensure the response is in strict JSON format, adheres to JSON syntax rules, and accurately reflects whether personal information is present in the note.
+Emphasize the importance of ensuring notes contain only household address information, are free from personal information about individuals, and accommodate relevant business details. The response must be in strict JSON format and adhere to JSON syntax rules.
 </RECAP>
 `;
 const safetySettings = [

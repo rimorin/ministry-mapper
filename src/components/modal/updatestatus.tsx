@@ -8,7 +8,8 @@ import {
   Collapse,
   Container,
   Card,
-  Button
+  Button,
+  Spinner
 } from "react-bootstrap";
 import { confirmAlert } from "react-confirm-alert";
 import { ai, database } from "../../firebase";
@@ -81,6 +82,7 @@ const UpdateUnitStatus = NiceModal.create(
     const [unitSequence, setUnitSequence] = useState<undefined | number>(
       unitDetails?.sequence
     );
+    const [checkingNotes, setCheckingNotes] = useState(false);
     const defaultCoordinates =
       unitDetails?.coordinates ||
       addressData?.coordinates ||
@@ -97,6 +99,7 @@ const UpdateUnitStatus = NiceModal.create(
       if (!note || note === unitDetails?.note) {
         return false;
       }
+      setCheckingNotes(true);
       try {
         const modal = getGenerativeModel(ai, AI_SETTINGS);
         const result = await modal.generateContent(note);
@@ -106,12 +109,14 @@ const UpdateUnitStatus = NiceModal.create(
           rollbar.warn(
             `Sensitive note detected for ${congregation}/${postalCode}/${floor}/${unitNo} with text: ${note}`
           );
-          alert(json.reason);
+          alert(json.recommendation);
         }
         return json.containsPersonalInfo;
       } catch (error) {
         errorHandler(error, rollbar, true);
         return false;
+      } finally {
+        setCheckingNotes(false);
       }
     };
 
@@ -234,16 +239,27 @@ const UpdateUnitStatus = NiceModal.create(
               }))}
               isMultiselect={isMultiselect}
             />
-            <GenericTextAreaField
-              label="Notes"
-              name="note"
-              placeholder="Optional non-personal information. Eg, Renovation, Foreclosed, Friends, etc."
-              handleChange={(e: ChangeEvent<HTMLElement>) => {
-                const { value } = e.target as HTMLInputElement;
-                setHhNote(value);
+            <div
+              style={{
+                position: "relative"
               }}
-              changeValue={hhNote}
-            />
+            >
+              {checkingNotes && (
+                <div className="note-overlay">
+                  <Spinner animation="grow" size="sm" variant="primary" />
+                </div>
+              )}
+              <GenericTextAreaField
+                label="Notes"
+                name="note"
+                placeholder="Optional non-personal information. Eg, Renovation, Foreclosed, Friends, etc."
+                handleChange={(e: ChangeEvent<HTMLElement>) => {
+                  const { value } = e.target as HTMLInputElement;
+                  setHhNote(value);
+                }}
+                changeValue={hhNote}
+              />
+            </div>
             {territoryType === TERRITORY_TYPES.PRIVATE && (
               <ComponentAuthorizer
                 requiredPermission={USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE}
