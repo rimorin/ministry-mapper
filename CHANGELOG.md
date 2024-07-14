@@ -1,3 +1,10 @@
+## [1.30.2](https://github.com/rimorin/ministry-mapper/compare/v1.30.1...v1.30.2) (2024-07-14)
+
+
+### Bug Fixes
+
+* adjust AI temp and mime response type ([e66240e](https://github.com/rimorin/ministry-mapper/commit/e66240ec49550f1399273e43c034359928906565))
+
 ## [1.30.1](https://github.com/rimorin/ministry-mapper/compare/v1.30.0...v1.30.1) (2024-07-10)
 
 
