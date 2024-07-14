@@ -1,3 +1,24 @@
+## [1.30.2](https://github.com/rimorin/ministry-mapper/compare/v1.30.1...v1.30.2) (2024-07-14)
+
+
+### Bug Fixes
+
+* adjust AI temp and mime response type ([e66240e](https://github.com/rimorin/ministry-mapper/commit/e66240ec49550f1399273e43c034359928906565))
+
+## [1.30.1](https://github.com/rimorin/ministry-mapper/compare/v1.30.0...v1.30.1) (2024-07-10)
+
+
+### Bug Fixes
+
+* improve gemini prompt to ensure proper return syntax ([0ecda35](https://github.com/rimorin/ministry-mapper/commit/0ecda353441491e39bfebbb38a9ca111111b3bbd))
+
+# [1.30.0](https://github.com/rimorin/ministry-mapper/compare/v1.29.4...v1.30.0) (2024-06-28)
+
+
+### Features
+
+* gemini ai checker for notes ([4bd2d02](https://github.com/rimorin/ministry-mapper/commit/4bd2d029918fb5d0a30a3c8f851c1c961f9a387a))
+
 ## [1.29.4](https://github.com/rimorin/ministry-mapper/compare/v1.29.3...v1.29.4) (2024-06-24)
 
 

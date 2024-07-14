@@ -166,12 +166,56 @@ const CLOUD_FUNCTIONS_CALLS = {
 };
 
 const AI_MODEL = "gemini-1.5-flash";
-const NOTE_AI_PROMPT = `Determine if a given note contains any personal information and return the results in a strict JSON format. 
-The response should strictly adhere to JSON syntax rules: no comments, use double quotes for keys and string values, and ensure proper use of commas and colons. 
-The JSON object must contain a boolean key "containsPersonalInfo" indicating whether personal information was found. 
-It should also include a "reason" key with a string value explaining the findings. 
-If personal information is found, "containsPersonalInfo" should be set to true, and the "reason" should provide a brief explanation and request the user to adjust their note. 
-If no personal information is found, "containsPersonalInfo" should be set to false, and the "reason" key can be omitted or set to an empty string.`;
+const NOTE_AI_PROMPT = `
+<OBJECTIVE_AND_PERSONA>
+You are a developer tasked with creating a feature that analyzes notes for personal information.
+</OBJECTIVE_AND_PERSONA>
+
+<INSTRUCTIONS>
+To complete the task, you need to follow these steps:
+1. Analyze the content of a note.
+2. Determine if it contains any personal information such as names, phone numbers, emails, health conditions, or other uniquely identifying details.
+3. Return the analysis results in a strict JSON format.
+</INSTRUCTIONS>
+
+------------- Optional Components ------------
+
+<CONSTRAINTS>
+Dos and don'ts for the following aspects:
+1. Dos:
+   - Ensure the response strictly adheres to JSON syntax rules.
+   - Use double quotes for keys and string values.
+   - Ensure proper use of commas and colons.
+2. Don'ts:
+   - Do not include comments in the JSON response.
+</CONSTRAINTS>
+
+<CONTEXT>
+The provided context is a feature within an application that requires the analysis of notes to ensure they do not contain sensitive personal information before being processed or shared.
+</CONTEXT>
+
+<OUTPUT_FORMAT>
+The output format must be:
+1. A JSON object containing a boolean key "containsPersonalInfo" indicating whether personal information was found.
+2. The JSON object should also include a "reason" key with a string value explaining the findings.
+</OUTPUT_FORMAT>
+
+<FEW_SHOT_EXAMPLES>
+Here we provide some examples:
+1. Example #1
+Input: "John Doe's phone number is 555-1234."
+Thoughts: The note contains a name and a phone number, which are considered personal information.
+Output: {"containsPersonalInfo": true, "reason": "The note contains a name and a phone number."}
+2. Example #2
+Input: "Reminder to buy milk."
+Thoughts: The note does not contain any personal information.
+Output: {"containsPersonalInfo": false}
+</FEW_SHOT_EXAMPLES>
+
+<RECAP>
+Re-emphasize the key aspects of the prompt, especially the constraints, output format, etc. Ensure the response is in strict JSON format, adheres to JSON syntax rules, and accurately reflects whether personal information is present in the note.
+</RECAP>
+`;
 const safetySettings = [
   {
     category: HarmCategory.HARM_CATEGORY_HARASSMENT,
@@ -197,7 +241,11 @@ const safetySettings = [
 const AI_SETTINGS = {
   model: AI_MODEL,
   systemInstruction: NOTE_AI_PROMPT,
-  safetySettings: safetySettings
+  safetySettings: safetySettings,
+  generationConfig: {
+    responseMimeType: "application/json",
+    temperature: 0.2
+  }
 };
 export {
   UNSUPPORTED_BROWSER_MSG,
