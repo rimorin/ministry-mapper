@@ -1,3 +1,10 @@
+## [1.30.3](https://github.com/rimorin/ministry-mapper/compare/v1.30.2...v1.30.3) (2024-07-15)
+
+
+### Performance Improvements
+
+* prompt optimizations and prompt indicator ([57d7271](https://github.com/rimorin/ministry-mapper/commit/57d727137cc9cafdf7252555ebc8ac1ebf8d47ef))
+
 ## [1.30.2](https://github.com/rimorin/ministry-mapper/compare/v1.30.1...v1.30.2) (2024-07-14)
 
 
