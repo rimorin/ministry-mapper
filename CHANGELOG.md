@@ -1,3 +1,10 @@
+# [1.31.0](https://github.com/rimorin/ministry-mapper/compare/v1.30.3...v1.31.0) (2024-07-23)
+
+
+### Features
+
+* posthog analytics events ([42e18e9](https://github.com/rimorin/ministry-mapper/commit/42e18e955526704f6b1f4230f4f1ea7b2d1b6034))
+
 ## [1.30.3](https://github.com/rimorin/ministry-mapper/compare/v1.30.2...v1.30.3) (2024-07-15)
 
 
