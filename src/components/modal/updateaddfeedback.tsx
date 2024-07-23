@@ -12,6 +12,7 @@ import ModalFooter from "../form/footer";
 import GenericTextAreaField from "../form/textarea";
 import HelpButton from "../navigation/help";
 import { UpdateAddressFeedbackModalProps } from "../../utils/interface";
+import { usePostHog } from "posthog-js/react";
 
 const UpdateAddressFeedback = NiceModal.create(
   ({
@@ -27,6 +28,7 @@ const UpdateAddressFeedback = NiceModal.create(
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();
     const rollbar = useRollbar();
+    const posthog = usePostHog();
 
     const handleSubmitFeedback = async (event: FormEvent<HTMLElement>) => {
       event.preventDefault();
@@ -44,6 +46,10 @@ const UpdateAddressFeedback = NiceModal.create(
           postalCode,
           currentName
         );
+        posthog?.capture("update_address_feedback", {
+          mapId: postalCode,
+          feedback
+        });
         modal.hide();
       } catch (error) {
         errorHandler(error, rollbar);

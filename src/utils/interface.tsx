@@ -505,6 +505,7 @@ export interface UpdateAddressStatusModalProps
   options: Array<OptionProps>;
   defaultOption: string;
   isMultiselect: boolean;
+  publisherName: string;
 }
 
 export interface UpdateUnitModalProps

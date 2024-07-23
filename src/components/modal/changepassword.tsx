@@ -17,6 +17,7 @@ import errorMessage from "../../utils/helpers/errormsg";
 import ModalFooter from "../form/footer";
 import PasswordChecklist from "react-password-checklist";
 import { ChangePasswordModalProps } from "../../utils/interface";
+import { usePostHog } from "posthog-js/react";
 
 const ChangePassword = NiceModal.create(
   ({ user, userAccessLevel }: ChangePasswordModalProps) => {
@@ -27,6 +28,7 @@ const ChangePassword = NiceModal.create(
     const [confirmPassword, setConfirmPassword] = useState("");
     const [isChangePasswordOk, setIsChangePasswordOk] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const posthog = usePostHog();
 
     const handleChangePassword = async (
       event: React.FormEvent<HTMLFormElement>
@@ -40,6 +42,7 @@ const ChangePassword = NiceModal.create(
           EmailAuthProvider.credential(user.email || "", existingPassword)
         );
         await updatePassword(user, password);
+        posthog?.capture("change_password", { email: user.email });
         alert("Password updated.");
         modal.hide();
       } catch (error) {

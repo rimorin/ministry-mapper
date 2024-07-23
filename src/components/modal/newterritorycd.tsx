@@ -13,6 +13,7 @@ import GenericInputField from "../form/input";
 import HelpButton from "../navigation/help";
 import IsValidTerritoryCode from "../../utils/helpers/checkterritorycd";
 import { NewTerritoryCodeModalProps } from "../../utils/interface";
+import { usePostHog } from "posthog-js/react";
 
 const NewTerritoryCode = NiceModal.create(
   ({
@@ -24,6 +25,7 @@ const NewTerritoryCode = NiceModal.create(
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();
     const rollbar = useRollbar();
+    const posthog = usePostHog();
 
     const handleCreateTerritory = async (event: FormEvent<HTMLElement>) => {
       event.preventDefault();
@@ -46,6 +48,10 @@ const NewTerritoryCode = NiceModal.create(
             name: name
           })
         );
+        posthog?.capture("create_territory", {
+          territoryCode: code,
+          name
+        });
         alert(`Created territory, ${name}.`);
         window.location.reload();
       } catch (error) {

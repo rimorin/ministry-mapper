@@ -16,6 +16,7 @@ import ModalFooter from "../form/footer";
 import GenericTextAreaField from "../form/textarea";
 import HelpButton from "../navigation/help";
 import { UpdateAddressInstructionsModalProps } from "../../utils/interface";
+import { usePostHog } from "posthog-js/react";
 
 const UpdateAddressInstructions = NiceModal.create(
   ({
@@ -31,6 +32,7 @@ const UpdateAddressInstructions = NiceModal.create(
     const [addressInstructions, setAddressInstructions] =
       useState(instructions);
     const [isSaving, setIsSaving] = useState(false);
+    const posthog = usePostHog();
 
     const handleSubmitInstructions = async (event: FormEvent<HTMLElement>) => {
       event.preventDefault();
@@ -50,6 +52,10 @@ const UpdateAddressInstructions = NiceModal.create(
           postalCode,
           userName
         );
+        posthog?.capture("update_address_instructions", {
+          mapId: postalCode,
+          instructions: addressInstructions
+        });
         modal.hide();
       } catch (error) {
         errorHandler(error, rollbar);

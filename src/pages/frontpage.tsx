@@ -12,9 +12,10 @@ import { useRollbar } from "@rollbar/react";
 import VerificationPage from "../components/navigation/verification";
 import Admin from "./admin";
 import Loader from "../components/statics/loader";
+import { usePostHog } from "posthog-js/react";
+const { VITE_ABOUT_URL } = import.meta.env;
 
-const AboutURL = (import.meta.env.VITE_ABOUT_URL ||
-  MINISTRY_MAPPER_WIKI_PAGE) as string;
+const AboutURL = (VITE_ABOUT_URL || MINISTRY_MAPPER_WIKI_PAGE) as string;
 
 const FrontPage = () => {
   const context = useContext(StateContext);
@@ -22,6 +23,7 @@ const FrontPage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { frontPageMode } = context;
   const rollbar = useRollbar();
+  const posthog = usePostHog();
 
   useEffect(() => {
     setIsLoading(true);
@@ -30,6 +32,7 @@ const FrontPage = () => {
       setIsLoading(false);
       if (user) {
         const claims = await user.getIdTokenResult();
+        const congregationAcl = claims.claims["congregations"] || {};
         rollbar.configure({
           payload: {
             person: {
@@ -37,7 +40,7 @@ const FrontPage = () => {
               name: user.displayName,
               email: user.email as string,
               verified: user.emailVerified,
-              claims: claims
+              claims: congregationAcl
             }
           }
         });
@@ -81,7 +84,10 @@ const FrontPage = () => {
                 className="m-1"
                 size="sm"
                 variant="outline-primary"
-                onClick={() => window.open(AboutURL)}
+                onClick={() => {
+                  posthog?.capture("about_button_clicked");
+                  window.open(AboutURL);
+                }}
               >
                 About
               </Button>

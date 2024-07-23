@@ -2,6 +2,7 @@ import { FC, ReactNode } from "react";
 import { Container } from "react-bootstrap";
 import VersionDisplay from "../navigation/versiondisplay";
 import EnvironmentIndicator from "../navigation/environment";
+const { VITE_SYSTEM_ENVIRONMENT } = import.meta.env;
 interface MainMiddlewareProps {
   children: ReactNode;
 }
@@ -15,9 +16,7 @@ const MainMiddleware: FC<MainMiddlewareProps> = ({ children }) => {
         minHeight: "95vh"
       }}
     >
-      <EnvironmentIndicator
-        environment={import.meta.env.VITE_ROLLBAR_ENVIRONMENT}
-      />
+      <EnvironmentIndicator environment={VITE_SYSTEM_ENVIRONMENT} />
       {children}
       <VersionDisplay />
     </Container>

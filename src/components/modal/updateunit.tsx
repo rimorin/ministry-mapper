@@ -13,6 +13,7 @@ import { UpdateUnitModalProps, unitMaps } from "../../utils/interface";
 import GenericInputField from "../form/input";
 import ModalSubmitButton from "../form/submit";
 import HelpButton from "../navigation/help";
+import { usePostHog } from "posthog-js/react";
 
 const UpdateUnit = NiceModal.create(
   ({
@@ -28,6 +29,7 @@ const UpdateUnit = NiceModal.create(
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();
     const rollbar = useRollbar();
+    const posthog = usePostHog();
 
     const processPostalUnitSequence = async (
       postalCode: string,
@@ -48,6 +50,11 @@ const UpdateUnit = NiceModal.create(
       setIsSaving(true);
       try {
         await pollingVoidFunction(() => update(ref(database), unitUpdates));
+        posthog?.capture("update_unit_sequence", {
+          mapId: postalCode,
+          unitNumber,
+          sequence
+        });
         modal.hide();
       } catch (error) {
         errorHandler(error, rollbar);

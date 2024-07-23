@@ -12,6 +12,7 @@ import GenericInputField from "../form/input";
 import HelpButton from "../navigation/help";
 import IsValidTerritoryCode from "../../utils/helpers/checkterritorycd";
 import { ChangeTerritoryCodeModalProps } from "../../utils/interface";
+import { usePostHog } from "posthog-js/react";
 
 const ChangeTerritoryCode = NiceModal.create(
   ({
@@ -23,6 +24,7 @@ const ChangeTerritoryCode = NiceModal.create(
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();
     const rollbar = useRollbar();
+    const posthog = usePostHog();
 
     const handleUpdateTerritoryCode = async (event: FormEvent<HTMLElement>) => {
       event.preventDefault();
@@ -46,6 +48,10 @@ const ChangeTerritoryCode = NiceModal.create(
           set(newCodeRef, oldTerritoryData.val())
         );
         await pollingVoidFunction(() => remove(oldCodeRef));
+        posthog?.capture("change_territory_code", {
+          oldTerritoryCode: territoryCode,
+          newTerritoryCode
+        });
         modal.resolve(newTerritoryCode);
         modal.hide();
       } catch (error) {
