@@ -14,7 +14,7 @@
     "@vis.gl/react-google-maps": "^1.1.0",
     "bootstrap": "^5.3.3",
     "eslint": "^8.57.0",
-    "firebase": "^10.12.2",
+    "firebase": "^10.12.4",
     "nanoid": "^5.0.7",
     "posthog-js": "^1.149.0",
     "react": "^18.3.1",
