@@ -22,7 +22,8 @@ export default defineConfig(() => {
               "firebase/functions",
               "firebase/app-check"
             ],
-            gmaps: ["@vis.gl/react-google-maps"]
+            gmaps: ["@vis.gl/react-google-maps"],
+            posthog: ["posthog-js"]
           }
         },
         onwarn(warning, defaultHandler) {
