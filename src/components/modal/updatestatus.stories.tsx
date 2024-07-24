@@ -75,6 +75,7 @@ export const Default: Story = {
       <NiceModal.Provider>
         <UpdateUnitStatus
           id="1"
+          publisherName="test"
           defaultVisible
           congregation="test"
           origin="test"

@@ -29,6 +29,7 @@ import HelpButton from "../navigation/help";
 import ChangeAddressGeolocation from "./changegeolocation";
 
 import ModalManager from "@ebay/nice-modal-react";
+import { usePostHog } from "posthog-js/react";
 const NewPublicAddress = NiceModal.create(
   ({
     footerSaveAcl = USER_ACCESS_LEVELS.READ_ONLY.CODE,
@@ -47,6 +48,7 @@ const NewPublicAddress = NiceModal.create(
     const modal = useModal();
     const rollbar = useRollbar();
     const modalDescription = "Map Number";
+    const posthog = usePostHog();
 
     const handleCreateTerritoryAddress = async (
       event: FormEvent<HTMLElement>
@@ -117,6 +119,12 @@ const NewPublicAddress = NiceModal.create(
             coordinates: coordinates
           })
         );
+        posthog?.capture("create_public_address", {
+          mapId: postalCode,
+          name: name,
+          location: location,
+          coordinates: coordinates
+        });
         alert(`Created ${modalDescription}, ${postalCode}.`);
         modal.resolve();
         modal.hide();

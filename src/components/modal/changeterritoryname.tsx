@@ -11,6 +11,7 @@ import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";
 import HelpButton from "../navigation/help";
 import { ChangeTerritoryNameModalProps } from "../../utils/interface";
+import { usePostHog } from "posthog-js/react";
 
 const ChangeTerritoryName = NiceModal.create(
   ({
@@ -23,6 +24,7 @@ const ChangeTerritoryName = NiceModal.create(
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();
     const rollbar = useRollbar();
+    const posthog = usePostHog();
 
     const handleUpdateTerritoryName = async (event: FormEvent<HTMLElement>) => {
       event.preventDefault();
@@ -37,6 +39,10 @@ const ChangeTerritoryName = NiceModal.create(
             territoryName
           )
         );
+        posthog?.capture("change_territory_name", {
+          territoryCode,
+          name: territoryName
+        });
         modal.resolve(territoryName);
         modal.hide();
       } catch (error) {

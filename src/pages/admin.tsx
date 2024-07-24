@@ -91,8 +91,6 @@ import {
   DEFAULT_SELF_DESTRUCT_HOURS,
   LINK_TYPES,
   UNSUPPORTED_BROWSER_MSG,
-  RELOAD_INACTIVITY_DURATION,
-  RELOAD_CHECK_INTERVAL_MS,
   USER_ACCESS_LEVELS,
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY,
@@ -114,6 +112,7 @@ import CongListing from "../components/navigation/conglist";
 import getCongregationDetails from "../utils/helpers/getcongdetails";
 import setLink from "../utils/helpers/setlink";
 import getTerritoryData from "../utils/helpers/getterritorydetails";
+import { usePostHog } from "posthog-js/react";
 
 const UnauthorizedPage = SuspenseComponent(
   lazy(() => import("../components/statics/unauth"))
@@ -215,12 +214,13 @@ function Admin({ user }: adminProps) {
   const unsubscribers = useRef<Array<Unsubscribe>>([]);
   const congregationAccess = useRef<Record<string, number>>({});
   const loginUserClaims = useRef<IdTokenResult>();
-  const currentTime = useRef<number>(new Date().getTime());
 
   const [congregationCode, setCongregationCode] = useLocalStorage(
     "congregationCode",
     ""
   );
+
+  const posthog = usePostHog();
 
   const handleDropdownDirection = (
     event: MouseEvent<HTMLElement, globalThis.MouseEvent>,
@@ -281,6 +281,7 @@ function Admin({ user }: adminProps) {
 
   const logoutUser = useCallback(async () => {
     refreshAddressState();
+    posthog?.capture("logout", { email: user.email });
     await signOut(auth);
   }, []);
 
@@ -385,6 +386,10 @@ function Admin({ user }: adminProps) {
             ref(database, `addresses/${code}/${postalcode}/units/${floor}`)
           )
         );
+        posthog?.capture("delete_floor", {
+          mapId: postalcode,
+          floor: floor
+        });
       } catch (error) {
         errorHandler(error, rollbar);
       }
@@ -437,6 +442,9 @@ function Admin({ user }: adminProps) {
           )
         )
       );
+      posthog?.capture("delete_territory", {
+        territory: selectedTerritoryCode
+      });
       alert(`Deleted territory, ${selectedTerritoryCode}.`);
       window.location.reload();
     } catch (error) {
@@ -460,6 +468,10 @@ function Admin({ user }: adminProps) {
                 )
               )
             );
+            posthog?.capture("delete_address", {
+              mapId: postalCode,
+              territory: territoryCode
+            });
             break;
           }
         }
@@ -474,6 +486,9 @@ function Admin({ user }: adminProps) {
       try {
         await remove(ref(database, `addresses/${code}/${postalCode}`));
         await deleteTerritoryAddress(selectedTerritoryCode, postalCode);
+        posthog?.capture("delete_block", {
+          mapId: postalCode
+        });
         if (showAlert) alert(`Deleted address, ${name}.`);
         await refreshCongregationTerritory(selectedTerritoryCode);
       } catch (error) {
@@ -515,6 +530,9 @@ function Admin({ user }: adminProps) {
       });
       try {
         await pollingVoidFunction(() => update(ref(database), unitUpdates));
+        posthog?.capture(`${lowerFloor ? "add_lower" : "add_upper"}_floor`, {
+          mapId: postalcode
+        });
       } catch (error) {
         errorHandler(error, rollbar);
       }
@@ -535,6 +553,9 @@ function Admin({ user }: adminProps) {
           await resetBlock(postalcode);
         }
       }
+      posthog?.capture("reset_territory", {
+        territory: selectedTerritoryCode
+      });
       alert(`Reset status of territory, ${selectedTerritoryCode}.`);
     } catch (error) {
       errorHandler(error, rollbar);
@@ -568,6 +589,9 @@ function Admin({ user }: adminProps) {
       }
       try {
         await pollingVoidFunction(() => update(ref(database), unitUpdates));
+        posthog?.capture("reset_block", {
+          mapId: postalcode
+        });
       } catch (error) {
         console.error("Error updating units in resetBlock: ", error);
         errorHandler(error, rollbar);
@@ -603,7 +627,8 @@ function Admin({ user }: adminProps) {
       unitDetails: unitDetails,
       addressData: addressData,
       isMultiselect: policy.isMultiselect,
-      origin: policy.origin
+      origin: policy.origin,
+      publisherName: user.displayName
     });
   };
 
@@ -667,6 +692,12 @@ function Admin({ user }: adminProps) {
         policy.maxTries,
         publisherName
       );
+      posthog?.capture("assign_link", {
+        mapId: postalcode,
+        linkId: linkId,
+        type: linktype,
+        publisherName
+      });
       const absoluteUrl = new URL(url, window.location.href);
       await navigator.share({
         title: title,
@@ -803,8 +834,9 @@ function Admin({ user }: adminProps) {
 
   const handleCongregationSelect = useCallback(
     async (newCongCode: string | null) => {
-      setCongregationCode(newCongCode as string);
-      setCode(newCongCode as string);
+      const congregationCode = newCongCode as string;
+      setCongregationCode(congregationCode);
+      setCode(congregationCode);
       refreshAddressState();
       setName("");
       setSelectedPostal("");
@@ -849,19 +881,6 @@ function Admin({ user }: adminProps) {
     }
   }, []);
 
-  const refreshPage = () => {
-    const inactivityPeriod = new Date().getTime() - currentTime.current;
-    if (inactivityPeriod >= RELOAD_INACTIVITY_DURATION) {
-      window.location.reload();
-    } else {
-      setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-    }
-  };
-
-  const setActivityTime = () => {
-    currentTime.current = new Date().getTime();
-  };
-
   useEffect(() => {
     const fetchData = async () => {
       const userData = await user.getIdTokenResult(true);
@@ -905,18 +924,8 @@ function Admin({ user }: adminProps) {
       setShowBkTopButton(window.scrollY > PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY);
     };
 
-    document.body.addEventListener("mousemove", setActivityTime);
-    document.body.addEventListener("keypress", setActivityTime);
-    document.body.addEventListener("touchstart", setActivityTime);
     window.addEventListener("scroll", handleScroll);
-    const timeoutId = setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-    return () => {
-      document.body.removeEventListener("mousemove", setActivityTime);
-      document.body.removeEventListener("keypress", setActivityTime);
-      document.body.removeEventListener("touchstart", setActivityTime);
-      window.removeEventListener("scroll", handleScroll);
-      clearTimeout(timeoutId);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
@@ -964,6 +973,12 @@ function Admin({ user }: adminProps) {
                 : DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
             )
           );
+
+          posthog?.identify(code, {
+            name: congregationDetails.exists()
+              ? congregationDetails.val()["name"]
+              : ""
+          });
           processCongregationTerritories(
             congregationDetails.exists() ? congregationDetails : undefined
           );
@@ -1004,10 +1019,12 @@ function Admin({ user }: adminProps) {
   }, [addressData, policy]);
 
   if (isLoading) return <Loader />;
-  if (isUnauthorised)
+  if (isUnauthorised) {
+    posthog?.capture("unauthorised_access", { email: user.email });
     return (
       <UnauthorizedPage handleClick={logoutUser} name={`${user.displayName}`} />
     );
+  }
 
   const isDataCompletelyFetched = addressData.size === sortedAddressList.length;
   const isAdmin = userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE;
@@ -1183,6 +1200,10 @@ function Admin({ user }: adminProps) {
                                     className="m-1"
                                     variant="primary"
                                     onClick={() => {
+                                      posthog.capture("delete_territory", {
+                                        congregation: code,
+                                        territory: selectedTerritoryCode
+                                      });
                                       deleteTerritory();
                                       onClose();
                                     }}
@@ -1699,6 +1720,9 @@ function Admin({ user }: adminProps) {
                               policy.maxTries,
                               user.displayName || ""
                             );
+                            posthog?.capture("view_map", {
+                              mapId: currentPostalcode
+                            });
                             if (territoryWindow) {
                               territoryWindow.location.href = `${code}/${addressLinkId}`;
                             }
@@ -1725,12 +1749,15 @@ function Admin({ user }: adminProps) {
                         size="sm"
                         variant="outline-primary"
                         className="m-1"
-                        onClick={() =>
+                        onClick={() => {
+                          posthog?.capture("open_map", {
+                            mapId: currentPostalcode
+                          });
                           window.open(
                             GetDirection(addressElement.coordinates),
                             "_blank"
-                          )
-                        }
+                          );
+                        }}
                       >
                         Direction
                       </Button>

@@ -22,7 +22,8 @@ import {
   DEFAULT_MULTPLE_OPTION_DELIMITER,
   DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION,
   DEFAULT_COORDINATES,
-  AI_SETTINGS
+  AI_SETTINGS,
+  PH_STATUS_KEYS
 } from "../../utils/constants";
 import ModalManager from "@ebay/nice-modal-react";
 import pollingVoidFunction from "../../utils/helpers/pollingvoid";
@@ -45,6 +46,7 @@ import ComponentAuthorizer from "../navigation/authorizer";
 import HelpButton from "../navigation/help";
 import ChangeAddressGeolocation from "./changegeolocation";
 import { getGenerativeModel } from "firebase/vertexai-preview";
+import { usePostHog } from "posthog-js/react";
 
 const UpdateUnitStatus = NiceModal.create(
   ({
@@ -62,7 +64,8 @@ const UpdateUnitStatus = NiceModal.create(
     options,
     defaultOption,
     isMultiselect,
-    origin
+    origin,
+    publisherName
   }: UpdateAddressStatusModalProps) => {
     const requiresPostalCode =
       origin === DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION;
@@ -93,6 +96,7 @@ const UpdateUnitStatus = NiceModal.create(
     );
     const modal = useModal();
     const rollbar = useRollbar();
+    const posthog = usePostHog();
 
     const checkIfNotesAreSensitive = async (note: string) => {
       // Return early if note is not provided or matches unitDetails.note
@@ -106,8 +110,13 @@ const UpdateUnitStatus = NiceModal.create(
         const text = result.response.text();
         const json = JSON.parse(text);
         if (json.containsPersonalInfo) {
+          posthog?.capture("sensitive_note_submission", {
+            note: note,
+            reason: json.reason,
+            publisherName
+          });
           rollbar.warn(
-            `Sensitive note detected for ${congregation}/${postalCode}/${floor}/${unitNo} with text: ${note}`
+            `Note submission rejected: ${json.reason}. Note content: ${note}`
           );
           alert(json.recommendation);
         }
@@ -161,6 +170,13 @@ const UpdateUnitStatus = NiceModal.create(
             updateData
           )
         );
+        const statusType = updateData.status as string;
+        const captureKey = PH_STATUS_KEYS[statusType] || PH_STATUS_KEYS.DEFAULT;
+        posthog?.capture(captureKey, {
+          mapId: postalCode,
+          publisherName,
+          ...updateData
+        });
         modal.hide();
       } catch (error) {
         errorHandler(error, rollbar);

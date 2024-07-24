@@ -12,6 +12,7 @@ import GenericInputField from "../form/input";
 import HelpButton from "../navigation/help";
 import { database } from "../../firebase";
 import { ChangeAddressPostalCodeModalProps } from "../../utils/interface";
+import { usePostHog } from "posthog-js/react";
 
 const ChangeAddressPostalCode = NiceModal.create(
   ({
@@ -28,6 +29,7 @@ const ChangeAddressPostalCode = NiceModal.create(
     const modalDescription = requiresPostalCode
       ? "Address Postal Code"
       : "Map Number";
+    const posthog = usePostHog();
 
     const getTerritoryAddress = async (territoryCode: string) => {
       return await pollingQueryFunction(() =>
@@ -111,6 +113,10 @@ const ChangeAddressPostalCode = NiceModal.create(
         await pollingVoidFunction(() =>
           deleteBlock(congregation, postalCode, "", false)
         );
+        posthog?.capture("change_address_map_id", {
+          mapId: postalCode,
+          newMapId: newPostalCode
+        });
         modal.resolve();
         modal.hide();
       } catch (error) {

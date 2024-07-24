@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback, useRef, lazy } from "react";
+import { useEffect, useState, useMemo, useCallback, lazy } from "react";
 import { ref, child, onValue, onChildRemoved, get } from "firebase/database";
 import { database } from "../firebase";
 import { Container, Nav, Navbar } from "react-bootstrap";
@@ -19,16 +19,13 @@ import Legend from "../components/navigation/legend";
 import Loader from "../components/statics/loader";
 import {
   DEFAULT_FLOOR_PADDING,
-  RELOAD_INACTIVITY_DURATION,
-  RELOAD_CHECK_INTERVAL_MS,
   TERRITORY_TYPES,
   USER_ACCESS_LEVELS,
   WIKI_CATEGORIES,
   DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
   DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION,
   DEFAULT_COORDINATES,
-  DEFAULT_CONGREGATION_MAX_TRIES,
-  LINK_TYPES
+  DEFAULT_CONGREGATION_MAX_TRIES
 } from "../utils/constants";
 import "../css/slip.css";
 import InfoImg from "../assets/information.svg?react";
@@ -44,6 +41,7 @@ import { useParams } from "react-router-dom";
 import InvalidPage from "../components/statics/invalidpage";
 import { useRollbar } from "@rollbar/react";
 import SuspenseComponent from "../components/utils/suspense";
+import { usePostHog } from "posthog-js/react";
 
 const UpdateUnitStatus = lazy(() => import("../components/modal/updatestatus"));
 
@@ -78,8 +76,8 @@ const Map = () => {
   const [territoryType, setTerritoryType] = useState<number>(
     TERRITORY_TYPES.PUBLIC
   );
-  const currentTime = useRef<number>(new Date().getTime());
   const rollbar = useRollbar();
+  const posthog = usePostHog();
 
   const handleUnitUpdate = (
     floor: string,
@@ -106,7 +104,8 @@ const Map = () => {
       addressData: undefined,
       defaultOption: policy.defaultType,
       isMultiselect: policy.isMultiselect,
-      origin: policy.origin
+      origin: policy.origin,
+      publisherName: publisherName
     });
   };
 
@@ -116,6 +115,7 @@ const Map = () => {
 
   useEffect(() => {
     if (!code || !id) return;
+    posthog?.identify(code);
     const getLinkData = async () => {
       const linkRef = ref(database, `links/${code}/${id}`);
       const linkSnapshot = await get(linkRef);
@@ -124,59 +124,37 @@ const Map = () => {
         return;
       }
       const linkrec = new LinkSession(linkSnapshot.val());
+      const tokenEndtime = linkrec.tokenEndtime;
+
       setPublisherName(linkrec.publisherName);
       setCongregationMaxTries(linkrec.maxTries);
       setPostalcode(linkrec.postalCode);
-      const tokenEndtime = linkrec.tokenEndtime;
       const currentTimestamp = new Date().getTime();
       setTokenEndTime(tokenEndtime);
       const isLinkExpired = currentTimestamp > tokenEndtime;
       setIsLinkExpired(isLinkExpired);
+      rollbar.configure({
+        payload: {
+          link: {
+            id: id,
+            publisher: linkrec.publisherName,
+            congregation: code,
+            map: linkrec.postalCode,
+            maxTries: linkrec.maxTries,
+            tokenEndtime: new Date(tokenEndtime).toLocaleDateString()
+          }
+        }
+      });
       if (isLinkExpired) {
         setIsLoading(false);
+        posthog?.capture("expired_link", {
+          mapId: linkrec.postalCode
+        });
         return;
       }
       onChildRemoved(linkRef, () => window.location.reload());
-      if (linkrec.linkType !== LINK_TYPES.VIEW) {
-        rollbar.configure({
-          payload: {
-            link: {
-              id: id,
-              publisher: linkrec.publisherName,
-              congregation: code,
-              map: linkrec.postalCode,
-              maxTries: linkrec.maxTries,
-              tokenEndtime: new Date(tokenEndtime).toLocaleDateString()
-            }
-          }
-        });
-      }
-    };
-
-    const refreshPage = () => {
-      const inactivityPeriod = new Date().getTime() - currentTime.current;
-      if (inactivityPeriod >= RELOAD_INACTIVITY_DURATION) {
-        window.location.reload();
-      } else {
-        setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-      }
     };
     getLinkData();
-
-    const setActivityTime = () => {
-      currentTime.current = new Date().getTime();
-    };
-    document.body.addEventListener("mousemove", setActivityTime);
-    document.body.addEventListener("keypress", setActivityTime);
-    document.body.addEventListener("touchstart", setActivityTime);
-    const timeoutId = setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-
-    return () => {
-      document.body.removeEventListener("mousemove", setActivityTime);
-      document.body.removeEventListener("keypress", setActivityTime);
-      document.body.removeEventListener("touchstart", setActivityTime);
-      clearTimeout(timeoutId);
-    };
   }, [code, id]);
 
   useEffect(() => {
@@ -238,6 +216,9 @@ const Map = () => {
   if (isLoading) return <Loader />;
   if (isLinkExpired) {
     document.title = "Ministry Mapper";
+    posthog?.capture("expired_link", {
+      mapId: postalcode
+    });
     return <InvalidPage />;
   }
 
@@ -266,7 +247,14 @@ const Map = () => {
               </Navbar.Text>
             </div>
             <div style={{ flex: 0, textAlign: "right", marginLeft: 10 }}>
-              <InfoImg onClick={toggleLegend} />
+              <InfoImg
+                onClick={() => {
+                  posthog?.capture("info_button_clicked", {
+                    mapId: postalcode
+                  });
+                  toggleLegend();
+                }}
+              />
             </div>
           </Navbar.Brand>
         </Container>
@@ -310,7 +298,10 @@ const Map = () => {
           {instructions && (
             <Nav.Item
               className="text-center nav-item-hover"
-              onClick={() =>
+              onClick={() => {
+                posthog?.capture("instructions_button_clicked", {
+                  mapId: postalcode
+                });
                 ModalManager.show(
                   SuspenseComponent(UpdateAddressInstructions),
                   {
@@ -321,8 +312,8 @@ const Map = () => {
                     instructions: instructions,
                     userName: ""
                   }
-                )
-              }
+                );
+              }}
             >
               <InstructionImg />
               <div className="small">Instructions</div>
@@ -330,18 +321,26 @@ const Map = () => {
           )}
           <Nav.Item
             className="text-center nav-item-hover"
-            onClick={() => window.open(GetDirection(coordinates), "_blank")}
+            onClick={() => {
+              posthog?.capture("directions_button_clicked", {
+                mapId: postalcode
+              });
+              window.open(GetDirection(coordinates), "_blank");
+            }}
           >
             <MapLocationImg />
             <div className="small">Directions</div>
           </Nav.Item>
           <Nav.Item
             className="text-center nav-item-hover"
-            onClick={() =>
+            onClick={() => {
+              posthog?.capture("expiry_button_clicked", {
+                mapId: postalcode
+              });
               ModalManager.show(SuspenseComponent(ShowExpiry), {
                 endtime: tokenEndTime
-              })
-            }
+              });
+            }}
           >
             <TimeImg />
             <div>Expiry</div>

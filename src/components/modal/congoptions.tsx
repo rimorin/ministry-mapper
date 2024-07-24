@@ -40,6 +40,7 @@ import GenericInputField from "../form/input";
 import ModalSubmitButton from "../form/submit";
 import { confirmAlert } from "react-confirm-alert";
 import { flushSync } from "react-dom";
+import { usePostHog } from "posthog-js/react";
 
 const UpdateCongregationOptions = NiceModal.create(
   ({ currentCongregation }: UpdateCongregationOptionsModalProps) => {
@@ -48,6 +49,7 @@ const UpdateCongregationOptions = NiceModal.create(
     const [isSaving, setIsSaving] = useState<boolean>(false);
     const [deletedOptions, setDeletedOptions] = useState<Array<string>>([]);
     const [options, setOptions] = useState<Array<HHOptionProps>>([]);
+    const posthog = usePostHog();
     const handleSubmitCongOptions = async (
       event: FormEvent<HTMLFormElement>
     ) => {
@@ -147,6 +149,9 @@ const UpdateCongregationOptions = NiceModal.create(
             optionsList
           )
         );
+        posthog?.capture("update_congregation_options", {
+          options: optionsList
+        });
         alert("Congregation household options updated.");
         window.location.reload();
       } catch (error) {

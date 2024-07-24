@@ -17,6 +17,7 @@ import ModalFooter from "../form/footer";
 import GenericInputField from "../form/input";
 import UserRoleField from "../form/role";
 import HelpButton from "../navigation/help";
+import { usePostHog } from "posthog-js/react";
 
 const InviteUser = NiceModal.create(
   ({
@@ -29,6 +30,7 @@ const InviteUser = NiceModal.create(
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();
     const rollbar = useRollbar();
+    const posthog = usePostHog();
 
     const handleUserDetails = async (event: FormEvent<HTMLElement>) => {
       event.preventDefault();
@@ -71,6 +73,10 @@ const InviteUser = NiceModal.create(
           roleDisplay = USER_ACCESS_LEVELS.CONDUCTOR.DISPLAY;
         if (userRole === USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE)
           roleDisplay = USER_ACCESS_LEVELS.TERRITORY_SERVANT.DISPLAY;
+        posthog?.capture("invite_user", {
+          email: userEmail,
+          role: userRole
+        });
         alert(`Granted ${roleDisplay} access to ${userEmail}.`);
         modal.hide();
       } catch (error) {

@@ -9,12 +9,14 @@ import errorHandler from "../../utils/helpers/errorhandler";
 import errorMessage from "../../utils/helpers/errormsg";
 import ModalFooter from "../form/footer";
 import { UpdateProfileModalProps } from "../../utils/interface";
+import { usePostHog } from "posthog-js/react";
 
 const GetProfile = NiceModal.create(({ user }: UpdateProfileModalProps) => {
   const modal = useModal();
   const rollbar = useRollbar();
   const [isSaving, setIsSaving] = useState(false);
   const [username, setUsername] = useState(user.displayName || "");
+  const posthog = usePostHog();
 
   const UpdateProfile = async (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
@@ -22,6 +24,11 @@ const GetProfile = NiceModal.create(({ user }: UpdateProfileModalProps) => {
     try {
       await updateProfile(user, {
         displayName: username
+      });
+      posthog?.capture("update_profile", {
+        uid: user.uid,
+        email: user.email,
+        name: username
       });
       alert("Profile updated.");
       modal.hide();

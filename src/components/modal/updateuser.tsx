@@ -14,6 +14,7 @@ import { UserModalProps } from "../../utils/interface";
 import ModalFooter from "../form/footer";
 import UserRoleField from "../form/role";
 import HelpButton from "../navigation/help";
+import { usePostHog } from "posthog-js/react";
 
 const UpdateUser = NiceModal.create(
   ({
@@ -27,6 +28,7 @@ const UpdateUser = NiceModal.create(
     const [isSaving, setIsSaving] = useState(false);
     const modal = useModal();
     const rollbar = useRollbar();
+    const posthog = usePostHog();
 
     const handleUserDetails = async (event: FormEvent<HTMLElement>) => {
       event.preventDefault();
@@ -39,6 +41,10 @@ const UpdateUser = NiceModal.create(
         await updateUserAccess({
           uid: uid,
           congregation: congregation,
+          role: userRole
+        });
+        posthog?.capture("update_user_role", {
+          uid: uid,
           role: userRole
         });
         modal.resolve(userRole);

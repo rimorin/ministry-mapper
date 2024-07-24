@@ -13,6 +13,7 @@ import { AdvancedMarker, Map, MapMouseEvent } from "@vis.gl/react-google-maps";
 import { GmapAutocomplete } from "../utils/mapautocomplete";
 import { ControlPanel } from "../utils/mapinfopanel";
 import { MapCurrentTarget } from "../utils/mapcurrenttarget";
+import { usePostHog } from "posthog-js/react";
 
 const ChangeAddressGeolocation = NiceModal.create(
   ({
@@ -28,6 +29,7 @@ const ChangeAddressGeolocation = NiceModal.create(
     const [isLocating, setIsLocating] = useState(false);
     const modal = useModal();
     const rollbar = useRollbar();
+    const posthog = usePostHog();
 
     const handleUpdateGeoLocation = async (event: FormEvent<HTMLElement>) => {
       event.preventDefault();
@@ -43,6 +45,10 @@ const ChangeAddressGeolocation = NiceModal.create(
               addressLocation
             )
           );
+          posthog?.capture("change_address_geolocation", {
+            mapId: postalCode,
+            coordinates: addressLocation
+          });
         }
         modal.resolve(addressLocation);
         modal.hide();

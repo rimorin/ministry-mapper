@@ -98,7 +98,7 @@ Configuration is done using a seperate [administration module](https://github.co
      - VITE_TERMS_URL=terms_of_service_url
      - VITE_ABOUT_URL=about_url
      - VITE_ROLLBAR_ACCESS_TOKEN=access_token_from_rollbar
-     - VITE_ROLLBAR_ENVIRONMENT=local
+     - VITE_SYSTEM_ENVIRONMENT=local
   2. Restart shell and run `npm start`
 - Production deployment
   1. Run `npm run build`
@@ -118,4 +118,4 @@ Configuration is done using a seperate [administration module](https://github.co
      - VITE_TERMS_URL=terms_of_service_url
      - VITE_ABOUT_URL=about_url
      - VITE_ROLLBAR_ACCESS_TOKEN=access_token_from_rollbar
-     - VITE_ROLLBAR_ENVIRONMENT=production
+     - VITE_SYSTEM_ENVIRONMENT=production

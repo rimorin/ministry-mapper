@@ -7,6 +7,7 @@ import { useRollbar } from "@rollbar/react";
 import errorHandler from "../utils/helpers/errorhandler";
 import errorMessage from "../utils/helpers/errormsg";
 import { StateContext } from "../components/utils/context";
+import { usePostHog } from "posthog-js/react";
 
 const LoginComponent = () => {
   const [loginEmail, setLoginEmail] = useState("");
@@ -15,6 +16,7 @@ const LoginComponent = () => {
   const [isLogin, setIsLogin] = useState(false);
   const rollbar = useRollbar();
   const formRef = useRef<HTMLInputElement>(null);
+  const posthog = usePostHog();
 
   const { setFrontPageMode } = useContext(StateContext);
 
@@ -25,6 +27,9 @@ const LoginComponent = () => {
     try {
       setIsLogin(true);
       await signInWithEmailAndPassword(auth, email, password);
+      posthog?.capture("login", {
+        email
+      });
     } catch (err) {
       setValidated(false);
       errorHandler(errorMessage(err as FirebaseError), rollbar);
