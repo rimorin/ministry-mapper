@@ -91,8 +91,6 @@ import {
   DEFAULT_SELF_DESTRUCT_HOURS,
   LINK_TYPES,
   UNSUPPORTED_BROWSER_MSG,
-  RELOAD_INACTIVITY_DURATION,
-  RELOAD_CHECK_INTERVAL_MS,
   USER_ACCESS_LEVELS,
   TERRITORY_VIEW_WINDOW_WELCOME_TEXT,
   PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY,
@@ -216,7 +214,6 @@ function Admin({ user }: adminProps) {
   const unsubscribers = useRef<Array<Unsubscribe>>([]);
   const congregationAccess = useRef<Record<string, number>>({});
   const loginUserClaims = useRef<IdTokenResult>();
-  const currentTime = useRef<number>(new Date().getTime());
 
   const [congregationCode, setCongregationCode] = useLocalStorage(
     "congregationCode",
@@ -884,19 +881,6 @@ function Admin({ user }: adminProps) {
     }
   }, []);
 
-  const refreshPage = () => {
-    const inactivityPeriod = new Date().getTime() - currentTime.current;
-    if (inactivityPeriod >= RELOAD_INACTIVITY_DURATION) {
-      window.location.reload();
-    } else {
-      setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-    }
-  };
-
-  const setActivityTime = () => {
-    currentTime.current = new Date().getTime();
-  };
-
   useEffect(() => {
     const fetchData = async () => {
       const userData = await user.getIdTokenResult(true);
@@ -940,18 +924,8 @@ function Admin({ user }: adminProps) {
       setShowBkTopButton(window.scrollY > PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY);
     };
 
-    document.body.addEventListener("mousemove", setActivityTime);
-    document.body.addEventListener("keypress", setActivityTime);
-    document.body.addEventListener("touchstart", setActivityTime);
     window.addEventListener("scroll", handleScroll);
-    const timeoutId = setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-    return () => {
-      document.body.removeEventListener("mousemove", setActivityTime);
-      document.body.removeEventListener("keypress", setActivityTime);
-      document.body.removeEventListener("touchstart", setActivityTime);
-      window.removeEventListener("scroll", handleScroll);
-      clearTimeout(timeoutId);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {

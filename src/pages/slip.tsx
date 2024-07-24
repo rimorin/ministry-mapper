@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback, useRef, lazy } from "react";
+import { useEffect, useState, useMemo, useCallback, lazy } from "react";
 import { ref, child, onValue, onChildRemoved, get } from "firebase/database";
 import { database } from "../firebase";
 import { Container, Nav, Navbar } from "react-bootstrap";
@@ -19,8 +19,6 @@ import Legend from "../components/navigation/legend";
 import Loader from "../components/statics/loader";
 import {
   DEFAULT_FLOOR_PADDING,
-  RELOAD_INACTIVITY_DURATION,
-  RELOAD_CHECK_INTERVAL_MS,
   TERRITORY_TYPES,
   USER_ACCESS_LEVELS,
   WIKI_CATEGORIES,
@@ -78,7 +76,6 @@ const Map = () => {
   const [territoryType, setTerritoryType] = useState<number>(
     TERRITORY_TYPES.PUBLIC
   );
-  const currentTime = useRef<number>(new Date().getTime());
   const rollbar = useRollbar();
   const posthog = usePostHog();
 
@@ -157,31 +154,7 @@ const Map = () => {
       }
       onChildRemoved(linkRef, () => window.location.reload());
     };
-
-    const refreshPage = () => {
-      const inactivityPeriod = new Date().getTime() - currentTime.current;
-      if (inactivityPeriod >= RELOAD_INACTIVITY_DURATION) {
-        window.location.reload();
-      } else {
-        setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-      }
-    };
     getLinkData();
-
-    const setActivityTime = () => {
-      currentTime.current = new Date().getTime();
-    };
-    document.body.addEventListener("mousemove", setActivityTime);
-    document.body.addEventListener("keypress", setActivityTime);
-    document.body.addEventListener("touchstart", setActivityTime);
-    const timeoutId = setTimeout(refreshPage, RELOAD_CHECK_INTERVAL_MS);
-
-    return () => {
-      document.body.removeEventListener("mousemove", setActivityTime);
-      document.body.removeEventListener("keypress", setActivityTime);
-      document.body.removeEventListener("touchstart", setActivityTime);
-      clearTimeout(timeoutId);
-    };
   }, [code, id]);
 
   useEffect(() => {
