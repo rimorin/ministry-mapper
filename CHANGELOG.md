@@ -1,3 +1,11 @@
+## [1.31.1](https://github.com/rimorin/ministry-mapper/compare/v1.31.0...v1.31.1) (2024-07-24)
+
+
+### Performance Improvements
+
+* optimize packages ([f42b2ea](https://github.com/rimorin/ministry-mapper/commit/f42b2ea5af422c7db84d7e65c37e443ac6d57534))
+* optimize posthog keys ([0e062a5](https://github.com/rimorin/ministry-mapper/commit/0e062a560dbe4304f4c3299d123ac15c92954096))
+
 # [1.31.0](https://github.com/rimorin/ministry-mapper/compare/v1.30.3...v1.31.0) (2024-07-23)
 
 
