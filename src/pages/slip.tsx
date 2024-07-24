@@ -118,6 +118,7 @@ const Map = () => {
 
   useEffect(() => {
     if (!code || !id) return;
+    posthog?.identify(code);
     const getLinkData = async () => {
       const linkRef = ref(database, `links/${code}/${id}`);
       const linkSnapshot = await get(linkRef);
@@ -147,7 +148,6 @@ const Map = () => {
           }
         }
       });
-      posthog?.identify(code);
       if (isLinkExpired) {
         setIsLoading(false);
         posthog?.capture("expired_link", {

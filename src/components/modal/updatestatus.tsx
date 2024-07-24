@@ -174,8 +174,8 @@ const UpdateUnitStatus = NiceModal.create(
         const captureKey = PH_STATUS_KEYS[statusType] || PH_STATUS_KEYS.DEFAULT;
         posthog?.capture(captureKey, {
           mapId: postalCode,
-          updateData,
-          publisherName
+          publisherName,
+          ...updateData
         });
         modal.hide();
       } catch (error) {
