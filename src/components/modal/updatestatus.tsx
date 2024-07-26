@@ -170,13 +170,17 @@ const UpdateUnitStatus = NiceModal.create(
             updateData
           )
         );
-        const statusType = updateData.status as string;
-        const captureKey = PH_STATUS_KEYS[statusType] || PH_STATUS_KEYS.DEFAULT;
-        posthog?.capture(captureKey, {
-          mapId: postalCode,
-          publisherName,
-          ...updateData
-        });
+        const updatedStatusType = updateData.status as string;
+        if (updatedStatusType !== status) {
+          posthog?.capture(
+            PH_STATUS_KEYS[updatedStatusType] || PH_STATUS_KEYS.DEFAULT,
+            {
+              mapId: postalCode,
+              publisherName,
+              ...updateData
+            }
+          );
+        }
         modal.hide();
       } catch (error) {
         errorHandler(error, rollbar);
