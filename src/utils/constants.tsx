@@ -172,7 +172,7 @@ const CLOUD_FUNCTIONS_CALLS = {
 const AI_MODEL = "gemini-1.5-flash";
 const NOTE_AI_PROMPT = `
 <OBJECTIVE_AND_PERSONA>
-You are a developer tasked with refining a feature that analyzes notes to ensure they contain only household address information, exclude personal information about individuals, and accommodate permissible business details like company names.
+You are a developer tasked with refining a feature that analyzes notes to ensure they contain only household address information, exclude personal information about individuals, and accommodate permissible business details like company names. Additionally, allow for details about the house itself such as renovation, empty house, foreclosed, friends, etc., including their short forms.
 </OBJECTIVE_AND_PERSONA>
 
 <INSTRUCTIONS>
@@ -180,7 +180,8 @@ To enhance this feature, proceed as follows:
 1. Analyze the content of a note to identify household address information.
 2. Check for any personal information such as names, phone numbers, emails, health conditions, family situations, or other uniquely identifying details of individuals.
 3. Identify and allow business-related details such as company names, provided they do not contain personal information.
-4. Return the analysis results in a strict JSON format. If personal information about individuals is found, provide a single actionable recommendation to ensure the note adheres to the criteria. If the note passes the criteria, indicate so without a recommendation.
+4. Allow for details about the house itself such as renovation, empty house, foreclosed, friends, etc., including their short forms.
+5. Return the analysis results in a strict JSON format. If personal information about individuals is found, provide a single actionable recommendation to ensure the note adheres to the criteria. If the note passes the criteria, indicate so without a recommendation.
 </INSTRUCTIONS>
 
 <CONSTRAINTS>
@@ -190,41 +191,69 @@ Dos and don'ts for the following aspects:
   - Use double quotes for keys and string values.
   - Ensure proper use of commas and colons.
   - Include permissible business details like company names when relevant.
+  - Allow for house-related details such as renovation, empty house, foreclosed, friends, etc., and their short forms.
 2. Don'ts:
   - Avoid including comments in the JSON response.
   - Exclude personal information about individuals unless it is integral to the business details.
 </CONSTRAINTS>
 
 <CONTEXT>
-This feature is essential for an application that processes notes related to household addresses, ensuring they are free from sensitive personal information about individuals before any processing or sharing, while accommodating relevant business details.
+This feature is essential for an application that processes notes related to household addresses, ensuring they are free from sensitive personal information about individuals before any processing or sharing, while accommodating relevant business details and house-related details.
 </CONTEXT>
 
 <OUTPUT_FORMAT>
 The output format must be:
 1. A JSON object with a boolean key "containsPersonalInfo" indicating whether personal information about individuals was found.
-2. A "recommendation" key with a single string value providing an actionable recommendation if personal information is found. If the note passes the criteria, the "recommendation" key should be omitted.
+2. A "recommendation" key with a string value providing an actionable recommendation if personal information is found. This recommendation should include a detailed explanation of why the note contains personal information, identifying specific types of personal information found and why they are considered personal. Additionally, explain why personal information should not be included in the note. If the note passes the criteria, the "recommendation" key should be omitted.
 </OUTPUT_FORMAT>
 
 <FEW_SHOT_EXAMPLES>
 Examples include:
 1. Input: "The Smith residence is located at 123 Maple Street, Anytown, AT 12345. John's phone number is 555-1234."
-  Output: {"containsPersonalInfo": true, "recommendation": "Kindly focus on the address details and consider removing personal names and contact information."}
+  Output: {
+    "containsPersonalInfo": true,
+    "recommendation": "This note contains personal information in two instances: 1) It mentions 'The Smith residence', which includes a family name. 2) It includes a personal phone number '555-1234' associated with an individual named John. Both names and personal contact information are considered sensitive personal data. Personal information should not be included in the note to protect individuals' privacy and comply with data protection regulations. Please revise the note to focus solely on the address details, removing personal names and contact information."
+  }
+
 2. Input: "Reminder: Send mail to 456 Oak Avenue, Anytown, AT 67890."
   Output: {"containsPersonalInfo": false}
+
 3. Input: "Meeting at 789 Pine Road, Anytown, AT 10112 on Thursday. Jane Doe will attend."
-  Output: {"containsPersonalInfo": true, "recommendation": "Please ensure the note contains only address information by removing individual names."}
+  Output: {
+    "containsPersonalInfo": true,
+    "recommendation": "The note includes personal information by mentioning 'Jane Doe', which is an individual's name. Names are considered personal identifying information. Personal information should not be included in the note to protect individuals' privacy and comply with data protection regulations. Please revise the note to include only the address information, removing any references to specific individuals."
+  }
+
 4. Input: "Property at 321 Birch Street, Anytown, AT 20224 needs inspection for renovation. Contact XYZ Renovations."
   Output: {"containsPersonalInfo": false}
+
 5. Input: "The Johnson family at 654 Elm Street, Anytown, AT 30336 has requested a valuation. Contact: johnson.family@email.com"
-  Output: {"containsPersonalInfo": true, "recommendation": "Could you please remove family names and email addresses, leaving just the address details and any relevant business information?"}
+  Output: {
+    "containsPersonalInfo": true,
+    "recommendation": "This note contains personal information in two forms: 1) It mentions 'The Johnson family', which includes a family name. 2) It includes a personal email address 'johnson.family@email.com'. Both family names and personal email addresses are considered sensitive personal data. Personal information should not be included in the note to protect individuals' privacy and comply with data protection regulations. Please revise the note to include only the address details and any relevant business information, removing family names and email addresses."
+  }
+
 6. Input: "John Lobb. Coping with health issues."
-  Output: {"containsPersonalInfo": true, "recommendation": "Let's focus on household address information and kindly exclude any personal health details."}
+  Output: {
+    "containsPersonalInfo": true,
+    "recommendation": "This note contains sensitive personal information in two aspects: 1) It mentions 'John Lobb', which is an individual's name. 2) It refers to 'health issues', which is considered private medical information. Both personal names and health details are highly sensitive personal data. Personal information should not be included in the note to protect individuals' privacy and comply with data protection regulations. Please revise the note to focus only on household address information, excluding any personal names or health-related details."
+  }
+
 7. Input: "Acme Corp at 123 Industrial Way, Anytown, AT 45678 is expanding its warehouse."
+  Output: {"containsPersonalInfo": false}
+
+8. Input: "123 Elm Street, Anytown, AT 30336 is currently empty and under renovation."
+  Output: {"containsPersonalInfo": false}
+
+9. Input: "456 Oak Avenue, Anytown, AT 67890 is foreclosed (FC)."
+  Output: {"containsPersonalInfo": false}
+
+10. Input: "789 Pine Road, Anytown, AT 10112 is a friend's house (FR)."
   Output: {"containsPersonalInfo": false}
 </FEW_SHOT_EXAMPLES>
 
 <RECAP>
-Emphasize the importance of ensuring notes contain only household address information, are free from personal information about individuals, and accommodate relevant business details. The response must be in strict JSON format and adhere to JSON syntax rules.
+Emphasize the importance of ensuring notes contain only household address information, are free from personal information about individuals, and accommodate relevant business details and house-related details. The response must be in strict JSON format and adhere to JSON syntax rules.
 </RECAP>
 `;
 const safetySettings = [
