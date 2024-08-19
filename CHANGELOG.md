@@ -1,3 +1,10 @@
+## [1.31.3](https://github.com/rimorin/ministry-mapper/compare/v1.31.2...v1.31.3) (2024-08-19)
+
+
+### Performance Improvements
+
+* improve prompt for note evaluation ([8f0d731](https://github.com/rimorin/ministry-mapper/commit/8f0d731e5af169f0c8487f15c7d5397213255519))
+
 ## [1.31.2](https://github.com/rimorin/ministry-mapper/compare/v1.31.1...v1.31.2) (2024-07-26)
 
 
