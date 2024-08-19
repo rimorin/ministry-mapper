@@ -1,3 +1,10 @@
+## [1.31.2](https://github.com/rimorin/ministry-mapper/compare/v1.31.1...v1.31.2) (2024-07-26)
+
+
+### Bug Fixes
+
+* capture update event when there is a change in status ([659bda8](https://github.com/rimorin/ministry-mapper/commit/659bda8ad830cd4539593235445bc94d38b18e5c))
+
 ## [1.31.1](https://github.com/rimorin/ministry-mapper/compare/v1.31.0...v1.31.1) (2024-07-24)
 
 
