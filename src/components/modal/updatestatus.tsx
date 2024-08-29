@@ -47,6 +47,7 @@ import HelpButton from "../navigation/help";
 import ChangeAddressGeolocation from "./changegeolocation";
 import { getGenerativeModel } from "firebase/vertexai-preview";
 import { usePostHog } from "posthog-js/react";
+import updateAddressDelta from "../../utils/helpers/updateaddressdelta";
 
 const UpdateUnitStatus = NiceModal.create(
   ({
@@ -172,6 +173,7 @@ const UpdateUnitStatus = NiceModal.create(
         );
         const updatedStatusType = updateData.status as string;
         if (updatedStatusType !== status) {
+          await updateAddressDelta(congregation, postalCode);
           posthog?.capture(
             PH_STATUS_KEYS[updatedStatusType] || PH_STATUS_KEYS.DEFAULT,
             {

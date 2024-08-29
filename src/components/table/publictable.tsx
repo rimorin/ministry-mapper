@@ -7,7 +7,7 @@ const PublicTerritoryTable = ({
   postalCode,
   floors,
   maxUnitNumberLength,
-  completedPercent,
+  aggregates,
   policy: hhPolicy,
   handleUnitStatusUpdate
 }: territoryTableProps) => (
@@ -29,7 +29,7 @@ const PublicTerritoryTable = ({
                 <td
                   className={`text-center align-middle inline-cell ${hhPolicy?.getUnitColor(
                     element,
-                    completedPercent.completedValue
+                    aggregates.value
                   )}`}
                   onClick={handleUnitStatusUpdate}
                   data-floor={item.floor}

@@ -6,29 +6,38 @@ const getTerritoryData = async (
   code: string,
   selectedTerritoryCode: string
 ) => {
-  const [territoryAddsResult, territoryNameResult] = await Promise.all([
-    pollingQueryFunction(() =>
-      get(
-        query(
-          ref(
-            database,
-            `congregations/${code}/territories/${selectedTerritoryCode}/addresses`
-          ),
-          orderByValue()
+  const [territoryAddsResult, territoryNameResult, territoryAggregates] =
+    await Promise.all([
+      pollingQueryFunction(() =>
+        get(
+          query(
+            ref(
+              database,
+              `congregations/${code}/territories/${selectedTerritoryCode}/addresses`
+            ),
+            orderByValue()
+          )
+        )
+      ),
+      pollingQueryFunction(() =>
+        get(
+          child(
+            ref(database),
+            `congregations/${code}/territories/${selectedTerritoryCode}/name`
+          )
+        )
+      ),
+      pollingQueryFunction(() =>
+        get(
+          child(
+            ref(database),
+            `congregations/${code}/territories/${selectedTerritoryCode}/aggregates`
+          )
         )
       )
-    ),
-    pollingQueryFunction(() =>
-      get(
-        child(
-          ref(database),
-          `congregations/${code}/territories/${selectedTerritoryCode}/name`
-        )
-      )
-    )
-  ]);
+    ]);
 
-  return { territoryAddsResult, territoryNameResult };
+  return { territoryAddsResult, territoryNameResult, territoryAggregates };
 };
 
 export default getTerritoryData;

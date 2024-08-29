@@ -3,6 +3,7 @@ import { ref, child, onValue, onChildRemoved, get } from "firebase/database";
 import { database } from "../firebase";
 import { Container, Nav, Navbar } from "react-bootstrap";
 import {
+  AggregatesProps,
   OptionProps,
   floorDetails,
   latlongInterface,
@@ -13,7 +14,6 @@ import { LinkSession, Policy } from "../utils/policies";
 import ZeroPad from "../utils/helpers/zeropad";
 import processAddressData from "../utils/helpers/processadddata";
 import getMaxUnitLength from "../utils/helpers/maxunitlength";
-import getCompletedPercent from "../utils/helpers/getcompletedpercent";
 import getOptions from "../utils/helpers/getcongoptions";
 import Legend from "../components/navigation/legend";
 import Loader from "../components/statics/loader";
@@ -76,6 +76,10 @@ const Map = () => {
   const [territoryType, setTerritoryType] = useState<number>(
     TERRITORY_TYPES.PUBLIC
   );
+  const [aggregate, setAggregate] = useState<AggregatesProps>({
+    value: 0,
+    display: ""
+  });
   const rollbar = useRollbar();
   const posthog = usePostHog();
 
@@ -192,6 +196,7 @@ const Map = () => {
             setCoordinates(
               postalSnapshot.coordinates || DEFAULT_COORDINATES.Singapore
             );
+            setAggregate(postalSnapshot.aggregates);
             processAddressData(code, postalcode, postalSnapshot.units)
               .then((data) => {
                 setFloors(data);
@@ -209,10 +214,6 @@ const Map = () => {
   }, [postalcode, code]);
 
   const maxUnitNumberLength = useMemo(() => getMaxUnitLength(floors), [floors]);
-  const completedPercent = useMemo(
-    () => getCompletedPercent(policy as Policy, floors),
-    [policy, floors]
-  );
   if (isLoading) return <Loader />;
   if (isLinkExpired) {
     document.title = "Ministry Mapper";
@@ -264,7 +265,7 @@ const Map = () => {
         floors={floors}
         maxUnitNumberLength={maxUnitNumberLength}
         policy={policy}
-        completedPercent={completedPercent}
+        aggregates={aggregate}
         territoryType={territoryType}
         handleUnitStatusUpdate={(event) => {
           const { floor, unitno } = event.currentTarget.dataset;

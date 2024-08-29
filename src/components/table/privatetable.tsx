@@ -5,7 +5,7 @@ import UnitStatus from "./unit";
 const PrivateTerritoryTable = ({
   isAdmin,
   houses,
-  completedPercent,
+  aggregates,
   policy: hhpolicy,
   handleHouseUpdate
 }: territoryLandedProps) => (
@@ -39,7 +39,7 @@ const PrivateTerritoryTable = ({
                 <div
                   className={`landed-unit fluid-bolding fluid-text ${hhpolicy?.getUnitColor(
                     element,
-                    completedPercent.completedValue
+                    aggregates.value
                   )}`}
                   style={{ padding: "0.3rem 0" }}
                 >

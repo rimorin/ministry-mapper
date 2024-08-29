@@ -3,6 +3,7 @@ import { database } from "../../firebase";
 import { STATUS_CODES, NOT_HOME_STATUS_CODES } from "../constants";
 import { addressDetails, unitMaps } from "../interface";
 import pollingVoidFunction from "./pollingvoid";
+import updateAddressDelta from "./updateaddressdelta";
 
 const processPostalUnitNumber = async (
   congregationCode: string,
@@ -47,6 +48,7 @@ const processPostalUnitNumber = async (
     });
   }
   await pollingVoidFunction(() => update(ref(database), unitUpdates));
+  await updateAddressDelta(congregationCode, postalCode);
 };
 
 export default processPostalUnitNumber;
