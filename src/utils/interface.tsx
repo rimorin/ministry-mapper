@@ -88,6 +88,7 @@ export type adminProps = userInterface;
 
 export interface territoryDetails extends nameInterface {
   code: string;
+  aggregates: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   addresses: any;
 }
@@ -103,6 +104,8 @@ export interface addressDetails
   type: number;
   instructions: string;
   location?: string;
+  aggregates: AggregatesProps;
+  maxUnitLength: number;
 }
 
 export interface FormProps {
@@ -201,9 +204,9 @@ export interface AuthorizerProp {
   children: React.ReactElement;
 }
 
-export interface aggregateProp {
+export interface aggregateBadgeProp {
   aggregate?: number;
-  isDataFetched?: boolean;
+  width?: string;
 }
 
 export interface ExpiryButtonProp {
@@ -231,10 +234,7 @@ export interface territoryTableProps extends postalInterface {
   floors: floorDetails[];
   maxUnitNumberLength: number;
   policy: Policy | undefined;
-  completedPercent: {
-    completedValue: number;
-    completedDisplay: string;
-  };
+  aggregates: AggregatesProps;
   adminUnitHeaderStyle?: string;
   userAccessLevel?: number;
   territoryType?: number;
@@ -247,10 +247,7 @@ export interface territoryLandedProps extends postalInterface {
   isAdmin: boolean;
   houses: floorDetails;
   policy: Policy | undefined;
-  completedPercent: {
-    completedValue: number;
-    completedDisplay: string;
-  };
+  aggregates: AggregatesProps;
   adminUnitHeaderStyle?: string;
   userAccessLevel?: number;
   handleHouseUpdate: (event: React.MouseEvent<HTMLElement>) => void;
@@ -519,3 +516,8 @@ export interface UpdateUnitModalProps
 }
 
 export interface ShowExpiryModalProps extends ExpiryButtonProp {}
+
+export interface AggregatesProps {
+  value: number;
+  display: string;
+}

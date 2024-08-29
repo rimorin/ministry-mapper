@@ -15,7 +15,7 @@ const AdminTable = ({
   postalCode,
   floors,
   maxUnitNumberLength,
-  completedPercent,
+  aggregates,
   policy,
   adminUnitHeaderStyle,
   handleUnitNoUpdate,
@@ -30,7 +30,7 @@ const AdminTable = ({
         isAdmin={true}
         postalCode={postalCode}
         houses={floors[0]}
-        completedPercent={completedPercent}
+        aggregates={aggregates}
         handleHouseUpdate={handleUnitStatusUpdate}
         policy={policy}
       />
@@ -97,7 +97,7 @@ const AdminTable = ({
                 <td
                   className={`text-center align-middle inline-cell ${policy?.getUnitColor(
                     detailsElement,
-                    completedPercent.completedValue
+                    aggregates.value
                   )}`}
                   onClick={handleUnitStatusUpdate}
                   key={`${index}-${detailsElement.number}`}

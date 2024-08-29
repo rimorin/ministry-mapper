@@ -67,11 +67,9 @@ import errorHandler from "../utils/helpers/errorhandler";
 import ZeroPad from "../utils/helpers/zeropad";
 import assignmentMessage from "../utils/helpers/assignmentmsg";
 import getMaxUnitLength from "../utils/helpers/maxunitlength";
-import getCompletedPercent from "../utils/helpers/getcompletedpercent";
 import checkCongregationExpireHours from "../utils/helpers/checkcongexp";
 import SetPollerInterval from "../utils/helpers/pollinginterval";
 import pollingVoidFunction from "../utils/helpers/pollingvoid";
-import processCompletedPercentage from "../utils/helpers/processcompletedpercent";
 import checkCongregationMaxTries from "../utils/helpers/checkmaxtries";
 import TerritoryListing from "../components/navigation/territorylist";
 import UserListing from "../components/navigation/userlist";
@@ -113,6 +111,7 @@ import getCongregationDetails from "../utils/helpers/getcongdetails";
 import setLink from "../utils/helpers/setlink";
 import getTerritoryData from "../utils/helpers/getterritorydetails";
 import { usePostHog } from "posthog-js/react";
+import updateAddressDelta from "../utils/helpers/updateaddressdelta";
 
 const UnauthorizedPage = SuspenseComponent(
   lazy(() => import("../components/statics/unauth"))
@@ -189,11 +188,11 @@ function Admin({ user }: adminProps) {
   const [territories, setTerritories] = useState(
     new Map<string, territoryDetails>()
   );
-  const [sortedAddressList, setSortedAddressList] = useState<
-    Array<territoryDetails>
-  >([]);
+  const [sortedAddressList, setSortedAddressList] = useState<Array<string>>([]);
   const [selectedTerritoryCode, setSelectedTerritoryCode] = useState<string>();
   const [selectedTerritoryName, setSelectedTerritoryName] = useState<string>();
+  const [selectedTerritoryAggregates, setSelectedTerritoryAggregates] =
+    useState<number>(0);
   const [addressData, setAddressData] = useState(
     new Map<string, addressDetails>()
   );
@@ -247,7 +246,7 @@ function Admin({ user }: adminProps) {
   const getUsers = useCallback(async () => {
     const getCongregationUsers = httpsCallable(
       functions,
-      CLOUD_FUNCTIONS_CALLS.GET_CONGREGATION_USERS
+      `${import.meta.env.VITE_SYSTEM_ENVIRONMENT}-${CLOUD_FUNCTIONS_CALLS.GET_CONGREGATION_USERS}`
     );
     try {
       setIsShowingUserListing(true);
@@ -287,11 +286,13 @@ function Admin({ user }: adminProps) {
 
   const processSelectedTerritory = async (selectedTerritoryCode: string) => {
     try {
-      const { territoryAddsResult, territoryNameResult } =
+      const { territoryAddsResult, territoryNameResult, territoryAggregates } =
         await getTerritoryData(code, selectedTerritoryCode);
-
       setSelectedTerritoryCode(selectedTerritoryCode);
       setSelectedTerritoryName(territoryNameResult.val());
+      setSelectedTerritoryAggregates(
+        territoryAggregates.exists() ? territoryAggregates.val().value : 0
+      );
 
       refreshAddressState();
       unsubscribers.current = [] as Array<Unsubscribe>;
@@ -301,7 +302,7 @@ function Admin({ user }: adminProps) {
 
       const pollerId = SetPollerInterval();
 
-      await processDetailsListing(detailsListing, pollerId);
+      await processAddressListing(detailsListing, pollerId);
     } catch (error) {
       console.error("Error processing selected territory: ", error);
       errorHandler(error, rollbar);
@@ -309,40 +310,34 @@ function Admin({ user }: adminProps) {
   };
 
   const getDetailsListing = (territoryAddsResult: DataSnapshot) => {
-    const detailsListing = [] as Array<territoryDetails>;
+    const detailsListing = [] as Array<string>;
     territoryAddsResult.forEach((addElement: DataSnapshot) => {
-      detailsListing.push({
-        code: addElement.val(),
-        name: "",
-        addresses: ""
-      });
-      return false;
+      detailsListing.push(addElement.val());
     });
     return detailsListing;
   };
 
-  const processDetailsListing = async (
-    detailsListing: Array<territoryDetails>,
+  const processAddressListing = async (
+    addressCodeListing: Array<string>,
     pollerId: NodeJS.Timeout
   ) => {
-    for (const details of detailsListing) {
-      const postalCode = details.code;
-      setAccordionKeys((existingKeys) => [...existingKeys, postalCode]);
+    for (const addressCode of addressCodeListing) {
+      setAccordionKeys((existingKeys) => [...existingKeys, addressCode]);
       unsubscribers.current.push(
         onValue(
-          child(ref(database), `addresses/${code}/${postalCode}`),
+          child(ref(database), `addresses/${code}/${addressCode}`),
           async (snapshot) => {
             clearInterval(pollerId);
             if (snapshot.exists()) {
               const addressData = await getAddressData(
                 code,
-                postalCode,
+                addressCode,
                 snapshot.val()
               );
               setAddressData(
                 (existingAddresses) =>
                   new Map<string, addressDetails>(
-                    existingAddresses.set(postalCode, addressData)
+                    existingAddresses.set(addressCode, addressData)
                   )
               );
             }
@@ -374,7 +369,9 @@ function Admin({ user }: adminProps) {
       type: postalSnapshot.type,
       instructions: postalSnapshot.instructions,
       location: postalSnapshot.location,
-      coordinates: postalSnapshot.coordinates
+      coordinates: postalSnapshot.coordinates,
+      aggregates: postalSnapshot.aggregates,
+      maxUnitLength: getMaxUnitLength(floorData)
     };
   };
 
@@ -530,6 +527,7 @@ function Admin({ user }: adminProps) {
       });
       try {
         await pollingVoidFunction(() => update(ref(database), unitUpdates));
+        await updateAddressDelta(code, postalcode);
         posthog?.capture(`${lowerFloor ? "add_lower" : "add_upper"}_floor`, {
           mapId: postalcode
         });
@@ -589,6 +587,7 @@ function Admin({ user }: adminProps) {
       }
       try {
         await pollingVoidFunction(() => update(ref(database), unitUpdates));
+        await updateAddressDelta(code, postalcode);
         posthog?.capture("reset_block", {
           mapId: postalcode
         });
@@ -729,10 +728,13 @@ function Admin({ user }: adminProps) {
       for (const territory in congregationTerritories) {
         const name = congregationTerritories[territory]["name"];
         const addresses = congregationTerritories[territory]["addresses"];
+        const aggregates =
+          congregationTerritories[territory]["aggregates"]?.value || 0;
         territoryList.set(territory, {
           code: territory,
           name: name,
-          addresses: addresses
+          addresses: addresses,
+          aggregates: aggregates
         });
       }
       setTerritories(territoryList);
@@ -991,33 +993,6 @@ function Admin({ user }: adminProps) {
       });
   }, [code]);
 
-  const territoryAddressData = useMemo(() => {
-    const addressDataMap = new Map();
-    let totalPercent = 0;
-
-    addressData.forEach((address) => {
-      const postalCode = address.postalCode;
-      const maxUnitNumberLength = getMaxUnitLength(address.floors);
-      const completedPercent = getCompletedPercent(policy, address.floors);
-      addressDataMap.set(postalCode, {
-        length: maxUnitNumberLength,
-        percent: completedPercent
-      });
-      totalPercent += completedPercent.completedValue;
-    });
-
-    const { completedValue } = processCompletedPercentage(
-      totalPercent,
-      100 * addressData.size
-    );
-
-    return {
-      total: completedValue,
-      aggregates: addressDataMap,
-      data: addressData
-    };
-  }, [addressData, policy]);
-
   if (isLoading) return <Loader />;
   if (isUnauthorised) {
     posthog?.capture("unauthorised_access", { email: user.email });
@@ -1026,7 +1001,6 @@ function Admin({ user }: adminProps) {
     );
   }
 
-  const isDataCompletelyFetched = addressData.size === sortedAddressList.length;
   const isAdmin = userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE;
   const isReadonly = userAccessLevel === USER_ACCESS_LEVELS.READ_ONLY.CODE;
 
@@ -1094,8 +1068,7 @@ function Admin({ user }: adminProps) {
                   {selectedTerritoryCode ? (
                     <>
                       <AggregationBadge
-                        isDataFetched={isDataCompletelyFetched}
-                        aggregate={territoryAddressData.total}
+                        aggregate={selectedTerritoryAggregates}
                       />
                       {selectedTerritoryCode}
                     </>
@@ -1502,26 +1475,16 @@ function Admin({ user }: adminProps) {
         alwaysOpen={!isReadonly}
         flush
       >
-        {sortedAddressList.map((currentAdd) => {
-          const currentPostalcode = currentAdd.code;
-          const addressElement = territoryAddressData.data.get(currentAdd.code);
-
+        {sortedAddressList.map((currentPostalcode) => {
+          const addressElement = addressData.get(currentPostalcode);
           if (!addressElement)
             return <div key={`empty-div-${currentPostalcode}`}></div>;
-
           const currentPostalname = addressElement.name;
-          const aggregate =
-            territoryAddressData.aggregates.get(currentPostalcode);
-
-          if (!aggregate)
-            throw new Error(
-              `No aggregate found for postal code ${currentPostalcode}`
-            );
-
-          const maxUnitNumberLength = aggregate.length;
-          const completedPercent = aggregate.percent;
+          const completeValue = addressElement.aggregates.value;
+          const completedPercent = addressElement.aggregates.display;
           const assigneeCount = addressElement.assigneeDetailsList.length;
           const personalCount = addressElement.personalDetailsList.length;
+          const maxUnitNumberLength = addressElement.maxUnitLength;
           return (
             <Accordion.Item
               key={`accordion-${currentPostalcode}`}
@@ -1535,8 +1498,8 @@ function Admin({ user }: adminProps) {
               <Accordion.Body className="p-0">
                 <ProgressBar
                   style={{ borderRadius: 0 }}
-                  now={completedPercent.completedValue}
-                  label={completedPercent.completedDisplay}
+                  now={completeValue}
+                  label={completedPercent}
                 />
                 <div key={`div-${currentPostalcode}`}>
                   <Navbar
@@ -2055,7 +2018,7 @@ function Admin({ user }: adminProps) {
                     floors={addressElement.floors}
                     maxUnitNumberLength={maxUnitNumberLength}
                     policy={policy}
-                    completedPercent={completedPercent}
+                    aggregates={addressElement.aggregates}
                     postalCode={currentPostalcode}
                     territoryType={addressElement.type}
                     userAccessLevel={userAccessLevel}
