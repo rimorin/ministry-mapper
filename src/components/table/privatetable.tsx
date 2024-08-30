@@ -1,11 +1,12 @@
 import { Row, Col, Card } from "react-bootstrap";
 import { territoryLandedProps } from "../../utils/interface";
 import UnitStatus from "./unit";
+import { DEFAULT_AGGREGATES } from "../../utils/constants";
 
 const PrivateTerritoryTable = ({
   isAdmin,
   houses,
-  completedPercent,
+  aggregates,
   policy: hhpolicy,
   handleHouseUpdate
 }: territoryLandedProps) => (
@@ -39,7 +40,7 @@ const PrivateTerritoryTable = ({
                 <div
                   className={`landed-unit fluid-bolding fluid-text ${hhpolicy?.getUnitColor(
                     element,
-                    completedPercent.completedValue
+                    aggregates?.value || DEFAULT_AGGREGATES.value
                   )}`}
                   style={{ padding: "0.3rem 0" }}
                 >

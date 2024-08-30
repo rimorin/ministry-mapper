@@ -1,9 +1,9 @@
 import { memo } from "react";
-import { Badge, Spinner } from "react-bootstrap";
-import { aggregateProp } from "../../utils/interface";
+import { Badge } from "react-bootstrap";
+import { aggregateBadgeProp } from "../../utils/interface";
 
 const AggregationBadge = memo(
-  ({ aggregate = 0, isDataFetched }: aggregateProp) => {
+  ({ aggregate = 0, width = "2.5rem" }: aggregateBadgeProp) => {
     let badgeStyle = "";
     let statusColor = "success";
     if (aggregate > 70 && aggregate <= 90) {
@@ -12,14 +12,15 @@ const AggregationBadge = memo(
     }
     if (aggregate > 90) statusColor = "danger";
     return (
-      <span style={{ marginRight: "0.25rem" }}>
-        {isDataFetched ? (
-          <Badge pill bg={statusColor} className={badgeStyle}>
-            {aggregate}%
-          </Badge>
-        ) : (
-          <Spinner as="span" animation="border" size="sm" aria-hidden="true" />
-        )}
+      <span style={{ margin: "0 0.25rem" }}>
+        <Badge
+          pill
+          bg={statusColor}
+          className={badgeStyle}
+          style={{ width: width }}
+        >
+          {aggregate}%
+        </Badge>
       </span>
     );
   }

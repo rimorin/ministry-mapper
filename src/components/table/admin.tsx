@@ -3,7 +3,8 @@ import {
   TERRITORY_TYPES,
   USER_ACCESS_LEVELS,
   DEFAULT_FLOOR_PADDING,
-  DEFAULT_UNIT_DNC_MS_TIME
+  DEFAULT_UNIT_DNC_MS_TIME,
+  DEFAULT_AGGREGATES
 } from "../../utils/constants";
 import ZeroPad from "../../utils/helpers/zeropad";
 import { territoryTableProps } from "../../utils/interface";
@@ -15,7 +16,7 @@ const AdminTable = ({
   postalCode,
   floors,
   maxUnitNumberLength,
-  completedPercent,
+  aggregates,
   policy,
   adminUnitHeaderStyle,
   handleUnitNoUpdate,
@@ -30,7 +31,7 @@ const AdminTable = ({
         isAdmin={true}
         postalCode={postalCode}
         houses={floors[0]}
-        completedPercent={completedPercent}
+        aggregates={aggregates}
         handleHouseUpdate={handleUnitStatusUpdate}
         policy={policy}
       />
@@ -97,7 +98,7 @@ const AdminTable = ({
                 <td
                   className={`text-center align-middle inline-cell ${policy?.getUnitColor(
                     detailsElement,
-                    completedPercent.completedValue
+                    aggregates?.value || DEFAULT_AGGREGATES.value
                   )}`}
                   onClick={handleUnitStatusUpdate}
                   key={`${index}-${detailsElement.number}`}

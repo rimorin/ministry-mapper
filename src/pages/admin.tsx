@@ -67,12 +67,8 @@ import errorHandler from "../utils/helpers/errorhandler";
 import ZeroPad from "../utils/helpers/zeropad";
 import assignmentMessage from "../utils/helpers/assignmentmsg";
 import getMaxUnitLength from "../utils/helpers/maxunitlength";
-import getCompletedPercent from "../utils/helpers/getcompletedpercent";
-import checkCongregationExpireHours from "../utils/helpers/checkcongexp";
 import SetPollerInterval from "../utils/helpers/pollinginterval";
 import pollingVoidFunction from "../utils/helpers/pollingvoid";
-import processCompletedPercentage from "../utils/helpers/processcompletedpercent";
-import checkCongregationMaxTries from "../utils/helpers/checkmaxtries";
 import TerritoryListing from "../components/navigation/territorylist";
 import UserListing from "../components/navigation/userlist";
 import NavBarBranding from "../components/navigation/branding";
@@ -99,20 +95,19 @@ import {
   DEFAULT_CONGREGATION_MAX_TRIES,
   DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
   DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION,
-  CLOUD_FUNCTIONS_CALLS
+  CLOUD_FUNCTIONS_CALLS,
+  DEFAULT_AGGREGATES
 } from "../utils/constants";
 import ModalManager from "@ebay/nice-modal-react";
 import SuspenseComponent from "../components/utils/suspense";
-import getOptions from "../utils/helpers/getcongoptions";
+import { processOptions } from "../utils/helpers/getcongoptions";
 import GetDirection from "../utils/helpers/directiongenerator";
-import getOptionIsMultiSelect from "../utils/helpers/getoptionmultiselect";
-import getCongregationOrigin from "../utils/helpers/getcongorigin";
 import useLocalStorage from "../utils/helpers/storage";
 import CongListing from "../components/navigation/conglist";
-import getCongregationDetails from "../utils/helpers/getcongdetails";
 import setLink from "../utils/helpers/setlink";
 import getTerritoryData from "../utils/helpers/getterritorydetails";
 import { usePostHog } from "posthog-js/react";
+import updateAddressDelta from "../utils/helpers/updateaddressdelta";
 
 const UnauthorizedPage = SuspenseComponent(
   lazy(() => import("../components/statics/unauth"))
@@ -189,9 +184,7 @@ function Admin({ user }: adminProps) {
   const [territories, setTerritories] = useState(
     new Map<string, territoryDetails>()
   );
-  const [sortedAddressList, setSortedAddressList] = useState<
-    Array<territoryDetails>
-  >([]);
+  const [sortedAddressList, setSortedAddressList] = useState<Array<string>>([]);
   const [selectedTerritoryCode, setSelectedTerritoryCode] = useState<string>();
   const [selectedTerritoryName, setSelectedTerritoryName] = useState<string>();
   const [addressData, setAddressData] = useState(
@@ -247,7 +240,7 @@ function Admin({ user }: adminProps) {
   const getUsers = useCallback(async () => {
     const getCongregationUsers = httpsCallable(
       functions,
-      CLOUD_FUNCTIONS_CALLS.GET_CONGREGATION_USERS
+      `${import.meta.env.VITE_SYSTEM_ENVIRONMENT}-${CLOUD_FUNCTIONS_CALLS.GET_CONGREGATION_USERS}`
     );
     try {
       setIsShowingUserListing(true);
@@ -287,21 +280,22 @@ function Admin({ user }: adminProps) {
 
   const processSelectedTerritory = async (selectedTerritoryCode: string) => {
     try {
-      const { territoryAddsResult, territoryNameResult } =
-        await getTerritoryData(code, selectedTerritoryCode);
-
+      const territoryAddsResult = await getTerritoryData(
+        code,
+        selectedTerritoryCode
+      );
       setSelectedTerritoryCode(selectedTerritoryCode);
-      setSelectedTerritoryName(territoryNameResult.val());
-
+      setSelectedTerritoryName(territories.get(selectedTerritoryCode)?.name);
       refreshAddressState();
       unsubscribers.current = [] as Array<Unsubscribe>;
 
+      if (!territoryAddsResult) return;
       const detailsListing = getDetailsListing(territoryAddsResult);
       setSortedAddressList(detailsListing);
 
       const pollerId = SetPollerInterval();
 
-      await processDetailsListing(detailsListing, pollerId);
+      await processAddressListing(detailsListing, pollerId);
     } catch (error) {
       console.error("Error processing selected territory: ", error);
       errorHandler(error, rollbar);
@@ -309,40 +303,34 @@ function Admin({ user }: adminProps) {
   };
 
   const getDetailsListing = (territoryAddsResult: DataSnapshot) => {
-    const detailsListing = [] as Array<territoryDetails>;
+    const detailsListing = [] as Array<string>;
     territoryAddsResult.forEach((addElement: DataSnapshot) => {
-      detailsListing.push({
-        code: addElement.val(),
-        name: "",
-        addresses: ""
-      });
-      return false;
+      detailsListing.push(addElement.val());
     });
     return detailsListing;
   };
 
-  const processDetailsListing = async (
-    detailsListing: Array<territoryDetails>,
+  const processAddressListing = async (
+    addressCodeListing: Array<string>,
     pollerId: NodeJS.Timeout
   ) => {
-    for (const details of detailsListing) {
-      const postalCode = details.code;
-      setAccordionKeys((existingKeys) => [...existingKeys, postalCode]);
+    for (const addressCode of addressCodeListing) {
+      setAccordionKeys((existingKeys) => [...existingKeys, addressCode]);
       unsubscribers.current.push(
         onValue(
-          child(ref(database), `addresses/${code}/${postalCode}`),
+          child(ref(database), `addresses/${code}/${addressCode}`),
           async (snapshot) => {
             clearInterval(pollerId);
             if (snapshot.exists()) {
               const addressData = await getAddressData(
                 code,
-                postalCode,
+                addressCode,
                 snapshot.val()
               );
               setAddressData(
                 (existingAddresses) =>
                   new Map<string, addressDetails>(
-                    existingAddresses.set(postalCode, addressData)
+                    existingAddresses.set(addressCode, addressData)
                   )
               );
             }
@@ -374,7 +362,9 @@ function Admin({ user }: adminProps) {
       type: postalSnapshot.type,
       instructions: postalSnapshot.instructions,
       location: postalSnapshot.location,
-      coordinates: postalSnapshot.coordinates
+      coordinates: postalSnapshot.coordinates,
+      aggregates: postalSnapshot.aggregates,
+      maxUnitLength: getMaxUnitLength(floorData)
     };
   };
 
@@ -530,6 +520,7 @@ function Admin({ user }: adminProps) {
       });
       try {
         await pollingVoidFunction(() => update(ref(database), unitUpdates));
+        await updateAddressDelta(code, postalcode);
         posthog?.capture(`${lowerFloor ? "add_lower" : "add_upper"}_floor`, {
           mapId: postalcode
         });
@@ -589,6 +580,7 @@ function Admin({ user }: adminProps) {
       }
       try {
         await pollingVoidFunction(() => update(ref(database), unitUpdates));
+        await updateAddressDelta(code, postalcode);
         posthog?.capture("reset_block", {
           mapId: postalcode
         });
@@ -717,33 +709,28 @@ function Admin({ user }: adminProps) {
   };
 
   const processCongregationTerritories = (
-    snapshot: DataSnapshot | undefined
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    congregationTerritories: any
   ) => {
+    const territoryList = new Map<string, territoryDetails>();
     try {
-      if (!snapshot) return;
-      const data = snapshot.val();
-      if (!data) return;
-      document.title = data["name"] as string;
-      const congregationTerritories = data["territories"];
-      const territoryList = new Map<string, territoryDetails>();
+      if (!congregationTerritories) return territoryList;
       for (const territory in congregationTerritories) {
         const name = congregationTerritories[territory]["name"];
         const addresses = congregationTerritories[territory]["addresses"];
+        const aggregates =
+          congregationTerritories[territory]["aggregates"]?.value || 0;
         territoryList.set(territory, {
           code: territory,
           name: name,
-          addresses: addresses
+          addresses: addresses,
+          aggregates: aggregates
         });
       }
-      setTerritories(territoryList);
-      setName(data["name"] as string);
-      return territoryList;
     } catch (error) {
       console.error("Error processing congregation territories: ", error);
     }
-  };
-  const getUserAccessLevel = async (congregationCode: string) => {
-    return congregationAccess.current[congregationCode];
+    return territoryList;
   };
 
   const handleTerritorySelect = useCallback(
@@ -932,91 +919,66 @@ function Admin({ user }: adminProps) {
     if (!code) return;
     refreshAddressState();
 
-    Promise.all([
-      getUserAccessLevel(code),
-      checkCongregationExpireHours(code),
-      checkCongregationMaxTries(code),
-      getOptions(code),
-      getOptionIsMultiSelect(code),
-      getCongregationDetails(code),
-      getCongregationOrigin(code)
-    ])
-      .then(
-        ([
-          userAccessLevel,
-          expireHours,
-          maxTries,
-          options,
-          optionIsMultiselect,
-          congregationDetails,
-          origin
-        ]) => {
-          setUserAccessLevel(Number(userAccessLevel));
-          setDefaultExpiryHours(
-            expireHours.exists()
-              ? expireHours.val()
-              : DEFAULT_SELF_DESTRUCT_HOURS
+    setUserAccessLevel(congregationAccess.current[code]);
+    const congregationUnsub = onValue(
+      child(ref(database), `congregations/${code}`),
+      (snapshot) => {
+        try {
+          if (!snapshot.exists()) {
+            setIsUnauthorised(true);
+            errorHandler(
+              `Unauthorised access by ${user.email}`,
+              rollbar,
+              false
+            );
+            return;
+          }
+          const congregationDetails = snapshot.val();
+          const congName = congregationDetails["name"] as string;
+          const expireHours =
+            congregationDetails["expireHours"] || DEFAULT_SELF_DESTRUCT_HOURS;
+          const maxTries =
+            congregationDetails["maxTries"] || DEFAULT_CONGREGATION_MAX_TRIES;
+          const options = processOptions(
+            congregationDetails["options"]["list"]
           );
+          const optionIsMultiselect =
+            congregationDetails["options"]["isMultiselect"] ||
+            DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE;
+          const origin =
+            congregationDetails["origin"] ||
+            DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION;
+          const congregationTerritories = processCongregationTerritories(
+            congregationDetails["territories"]
+          );
+
+          document.title = congName;
+          setName(congName);
+          setDefaultExpiryHours(expireHours);
           setOptions(options);
           setPolicy(
             new Policy(
               loginUserClaims.current,
               options,
-              maxTries.exists()
-                ? maxTries.val()
-                : DEFAULT_CONGREGATION_MAX_TRIES,
-              optionIsMultiselect.exists()
-                ? optionIsMultiselect.val()
-                : DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
-              origin.exists()
-                ? origin.val()
-                : DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
+              maxTries,
+              optionIsMultiselect,
+              origin
             )
           );
-
+          setTerritories(congregationTerritories);
           posthog?.identify(code, {
-            name: congregationDetails.exists()
-              ? congregationDetails.val()["name"]
-              : ""
+            name: congName
           });
-          processCongregationTerritories(
-            congregationDetails.exists() ? congregationDetails : undefined
-          );
+        } catch (error) {
+          errorHandler(error, rollbar);
+        } finally {
           setIsLoading(false);
         }
-      )
-      .catch((error) => {
-        // Handle the error here
-        console.error(error);
-      });
-  }, [code]);
-
-  const territoryAddressData = useMemo(() => {
-    const addressDataMap = new Map();
-    let totalPercent = 0;
-
-    addressData.forEach((address) => {
-      const postalCode = address.postalCode;
-      const maxUnitNumberLength = getMaxUnitLength(address.floors);
-      const completedPercent = getCompletedPercent(policy, address.floors);
-      addressDataMap.set(postalCode, {
-        length: maxUnitNumberLength,
-        percent: completedPercent
-      });
-      totalPercent += completedPercent.completedValue;
-    });
-
-    const { completedValue } = processCompletedPercentage(
-      totalPercent,
-      100 * addressData.size
+      }
     );
 
-    return {
-      total: completedValue,
-      aggregates: addressDataMap,
-      data: addressData
-    };
-  }, [addressData, policy]);
+    return () => congregationUnsub();
+  }, [code]);
 
   if (isLoading) return <Loader />;
   if (isUnauthorised) {
@@ -1026,7 +988,6 @@ function Admin({ user }: adminProps) {
     );
   }
 
-  const isDataCompletelyFetched = addressData.size === sortedAddressList.length;
   const isAdmin = userAccessLevel === USER_ACCESS_LEVELS.TERRITORY_SERVANT.CODE;
   const isReadonly = userAccessLevel === USER_ACCESS_LEVELS.READ_ONLY.CODE;
 
@@ -1094,8 +1055,10 @@ function Admin({ user }: adminProps) {
                   {selectedTerritoryCode ? (
                     <>
                       <AggregationBadge
-                        isDataFetched={isDataCompletelyFetched}
-                        aggregate={territoryAddressData.total}
+                        aggregate={
+                          territories.get(selectedTerritoryCode)?.aggregates ||
+                          0
+                        }
                       />
                       {selectedTerritoryCode}
                     </>
@@ -1502,26 +1465,18 @@ function Admin({ user }: adminProps) {
         alwaysOpen={!isReadonly}
         flush
       >
-        {sortedAddressList.map((currentAdd) => {
-          const currentPostalcode = currentAdd.code;
-          const addressElement = territoryAddressData.data.get(currentAdd.code);
-
+        {sortedAddressList.map((currentPostalcode) => {
+          const addressElement = addressData.get(currentPostalcode);
           if (!addressElement)
             return <div key={`empty-div-${currentPostalcode}`}></div>;
-
           const currentPostalname = addressElement.name;
-          const aggregate =
-            territoryAddressData.aggregates.get(currentPostalcode);
-
-          if (!aggregate)
-            throw new Error(
-              `No aggregate found for postal code ${currentPostalcode}`
-            );
-
-          const maxUnitNumberLength = aggregate.length;
-          const completedPercent = aggregate.percent;
+          const completeValue =
+            addressElement.aggregates?.value || DEFAULT_AGGREGATES.value;
+          const completedPercent =
+            addressElement.aggregates?.display || DEFAULT_AGGREGATES.display;
           const assigneeCount = addressElement.assigneeDetailsList.length;
           const personalCount = addressElement.personalDetailsList.length;
+          const maxUnitNumberLength = addressElement.maxUnitLength;
           return (
             <Accordion.Item
               key={`accordion-${currentPostalcode}`}
@@ -1535,8 +1490,8 @@ function Admin({ user }: adminProps) {
               <Accordion.Body className="p-0">
                 <ProgressBar
                   style={{ borderRadius: 0 }}
-                  now={completedPercent.completedValue}
-                  label={completedPercent.completedDisplay}
+                  now={completeValue}
+                  label={completedPercent}
                 />
                 <div key={`div-${currentPostalcode}`}>
                   <Navbar
@@ -2055,7 +2010,7 @@ function Admin({ user }: adminProps) {
                     floors={addressElement.floors}
                     maxUnitNumberLength={maxUnitNumberLength}
                     policy={policy}
-                    completedPercent={completedPercent}
+                    aggregates={addressElement.aggregates}
                     postalCode={currentPostalcode}
                     territoryType={addressElement.type}
                     userAccessLevel={userAccessLevel}

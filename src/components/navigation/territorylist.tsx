@@ -2,6 +2,7 @@ import { memo } from "react";
 import { Offcanvas, ListGroup } from "react-bootstrap";
 import { TERRITORY_SELECTOR_VIEWPORT_HEIGHT } from "../../utils/constants";
 import { TerritoryListingProps } from "../../utils/interface";
+import AggregationBadge from "./aggrbadge";
 
 const TerritoryListing = memo(
   ({
@@ -36,8 +37,15 @@ const TerritoryListing = memo(
                   key={`list-group-item-${element.code}`}
                   eventKey={element.code}
                   active={selectedTerritory === element.code}
+                  className="d-flex justify-content-between align-items-start"
                 >
-                  {element.code} - {element.name}
+                  <>
+                    {element.code} - {element.name}
+                  </>
+                  <AggregationBadge
+                    aggregate={element.aggregates}
+                    width="3rem"
+                  />
                 </ListGroup.Item>
               ))}
           </ListGroup>

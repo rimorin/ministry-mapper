@@ -1,15 +1,12 @@
 import { floorDetails } from "../interface";
 
 const getMaxUnitLength = (floors: floorDetails[]) => {
-  let maxUnitNumberLength = 1;
-  if (floors.length === 0) return maxUnitNumberLength;
-  floors[0].units.forEach((element) => {
+  if (floors.length === 0 || floors[0].units.length === 0) return 1;
+
+  return floors[0].units.reduce((maxLength, element) => {
     const lengthOfUnitNumber = element.number.length;
-    if (maxUnitNumberLength < lengthOfUnitNumber) {
-      maxUnitNumberLength = lengthOfUnitNumber;
-    }
-  });
-  return maxUnitNumberLength;
+    return Math.max(maxLength, lengthOfUnitNumber);
+  }, 1);
 };
 
 export default getMaxUnitLength;

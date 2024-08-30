@@ -36,7 +36,7 @@ const UpdateUser = NiceModal.create(
       try {
         const updateUserAccess = httpsCallable(
           functions,
-          CLOUD_FUNCTIONS_CALLS.UPDATE_USER_ACCESS
+          `${import.meta.env.VITE_SYSTEM_ENVIRONMENT}-${CLOUD_FUNCTIONS_CALLS.UPDATE_USER_ACCESS}`
         );
         await updateUserAccess({
           uid: uid,

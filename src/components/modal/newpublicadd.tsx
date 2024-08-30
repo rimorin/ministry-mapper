@@ -9,7 +9,8 @@ import {
   TERRITORY_TYPES,
   STATUS_CODES,
   NOT_HOME_STATUS_CODES,
-  WIKI_CATEGORIES
+  WIKI_CATEGORIES,
+  DEFAULT_AGGREGATES
 } from "../../utils/constants";
 import isValidPostal from "../../utils/helpers/checkvalidpostal";
 import isValidPostalSequence from "../../utils/helpers/checkvalidseq";
@@ -116,7 +117,9 @@ const NewPublicAddress = NiceModal.create(
             units: floorDetails,
             type: TERRITORY_TYPES.PUBLIC,
             location: location,
-            coordinates: coordinates
+            coordinates: coordinates,
+            aggregates: DEFAULT_AGGREGATES,
+            delta: 0
           })
         );
         posthog?.capture("create_public_address", {

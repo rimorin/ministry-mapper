@@ -3,11 +3,12 @@ import { territoryTableProps } from "../../utils/interface";
 import TableHeader from "./header";
 import FloorHeader from "./floor";
 import UnitStatus from "./unit";
+import { DEFAULT_AGGREGATES } from "../../utils/constants";
 const PublicTerritoryTable = ({
   postalCode,
   floors,
   maxUnitNumberLength,
-  completedPercent,
+  aggregates,
   policy: hhPolicy,
   handleUnitStatusUpdate
 }: territoryTableProps) => (
@@ -29,7 +30,7 @@ const PublicTerritoryTable = ({
                 <td
                   className={`text-center align-middle inline-cell ${hhPolicy?.getUnitColor(
                     element,
-                    completedPercent.completedValue
+                    aggregates?.value || DEFAULT_AGGREGATES.value
                   )}`}
                   onClick={handleUnitStatusUpdate}
                   data-floor={item.floor}

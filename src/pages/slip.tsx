@@ -3,6 +3,7 @@ import { ref, child, onValue, onChildRemoved, get } from "firebase/database";
 import { database } from "../firebase";
 import { Container, Nav, Navbar } from "react-bootstrap";
 import {
+  AggregatesProps,
   OptionProps,
   floorDetails,
   latlongInterface,
@@ -13,8 +14,6 @@ import { LinkSession, Policy } from "../utils/policies";
 import ZeroPad from "../utils/helpers/zeropad";
 import processAddressData from "../utils/helpers/processadddata";
 import getMaxUnitLength from "../utils/helpers/maxunitlength";
-import getCompletedPercent from "../utils/helpers/getcompletedpercent";
-import getOptions from "../utils/helpers/getcongoptions";
 import Legend from "../components/navigation/legend";
 import Loader from "../components/statics/loader";
 import {
@@ -35,13 +34,13 @@ import InstructionImg from "../assets/instruction.svg?react";
 import TimeImg from "../assets/time.svg?react";
 import ModalManager from "@ebay/nice-modal-react";
 import GetDirection from "../utils/helpers/directiongenerator";
-import getOptionIsMultiSelect from "../utils/helpers/getoptionmultiselect";
-import getCongregationOrigin from "../utils/helpers/getcongorigin";
 import { useParams } from "react-router-dom";
 import InvalidPage from "../components/statics/invalidpage";
 import { useRollbar } from "@rollbar/react";
 import SuspenseComponent from "../components/utils/suspense";
 import { usePostHog } from "posthog-js/react";
+import { processOptions } from "../utils/helpers/getcongoptions";
+import getCongregationDetails from "../utils/helpers/getcongdetails";
 
 const UpdateUnitStatus = lazy(() => import("../components/modal/updatestatus"));
 
@@ -58,9 +57,6 @@ const Map = () => {
   const [isLinkExpired, setIsLinkExpired] = useState<boolean>(true);
   const [tokenEndTime, setTokenEndTime] = useState<number>(0);
   const [publisherName, setPublisherName] = useState<string>("");
-  const [congregationMaxTries, setCongregationMaxTries] = useState<number>(
-    DEFAULT_CONGREGATION_MAX_TRIES
-  );
   const [postalcode, setPostalcode] = useState<string>("");
 
   const [showLegend, setShowLegend] = useState<boolean>(false);
@@ -76,6 +72,10 @@ const Map = () => {
   const [territoryType, setTerritoryType] = useState<number>(
     TERRITORY_TYPES.PUBLIC
   );
+  const [aggregate, setAggregate] = useState<AggregatesProps>({
+    value: 0,
+    display: ""
+  });
   const rollbar = useRollbar();
   const posthog = usePostHog();
 
@@ -127,7 +127,6 @@ const Map = () => {
       const tokenEndtime = linkrec.tokenEndtime;
 
       setPublisherName(linkrec.publisherName);
-      setCongregationMaxTries(linkrec.maxTries);
       setPostalcode(linkrec.postalCode);
       const currentTimestamp = new Date().getTime();
       setTokenEndTime(tokenEndtime);
@@ -160,27 +159,37 @@ const Map = () => {
   useEffect(() => {
     const getMapData = async () => {
       if (!code || !postalcode) return;
-      const options = await getOptions(code);
-      const isMultiselect = await getOptionIsMultiSelect(code);
-      const origin = await getCongregationOrigin(code);
+      const congregationDetails = await getCongregationDetails(code);
+      if (!congregationDetails.exists()) {
+        setIsLoading(false);
+        return;
+      }
+      const congregationData = congregationDetails.val();
+      const options = processOptions(congregationData.options?.list);
+      const isMultiselect =
+        congregationData.options?.isMultiSelect ||
+        DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE;
+      const origin =
+        congregationData.origin || DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION;
+      const congregationMaxTries =
+        congregationData.maxTries || DEFAULT_CONGREGATION_MAX_TRIES;
       setOptions(options);
       setPolicy(
         new Policy(
           undefined,
           options,
           congregationMaxTries,
-          isMultiselect.exists()
-            ? isMultiselect.val()
-            : DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
-          origin.exists()
-            ? origin.val()
-            : DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
+          isMultiselect,
+          origin
         )
       );
       onValue(
         child(ref(database), `addresses/${code}/${postalcode}`),
-        (snapshot) => {
-          if (snapshot.exists()) {
+        async (snapshot) => {
+          try {
+            if (!snapshot.exists()) {
+              return;
+            }
             const postalSnapshot = snapshot.val();
             setValues((values) => ({
               ...values,
@@ -192,14 +201,16 @@ const Map = () => {
             setCoordinates(
               postalSnapshot.coordinates || DEFAULT_COORDINATES.Singapore
             );
-            processAddressData(code, postalcode, postalSnapshot.units)
-              .then((data) => {
-                setFloors(data);
-              })
-              .finally(() => {
-                setIsLoading(false);
-              });
+            setAggregate(postalSnapshot.aggregates);
+            const data = await processAddressData(
+              code,
+              postalcode,
+              postalSnapshot.units
+            );
+            setFloors(data);
             document.title = postalSnapshot.name;
+          } finally {
+            setIsLoading(false);
           }
         }
       );
@@ -209,10 +220,6 @@ const Map = () => {
   }, [postalcode, code]);
 
   const maxUnitNumberLength = useMemo(() => getMaxUnitLength(floors), [floors]);
-  const completedPercent = useMemo(
-    () => getCompletedPercent(policy as Policy, floors),
-    [policy, floors]
-  );
   if (isLoading) return <Loader />;
   if (isLinkExpired) {
     document.title = "Ministry Mapper";
@@ -264,7 +271,7 @@ const Map = () => {
         floors={floors}
         maxUnitNumberLength={maxUnitNumberLength}
         policy={policy}
-        completedPercent={completedPercent}
+        aggregates={aggregate}
         territoryType={territoryType}
         handleUnitStatusUpdate={(event) => {
           const { floor, unitno } = event.currentTarget.dataset;

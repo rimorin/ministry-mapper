@@ -7,7 +7,7 @@ const PublisherTerritoryTable = ({
   postalCode,
   floors,
   maxUnitNumberLength,
-  completedPercent,
+  aggregates,
   policy: policy,
   territoryType,
   handleUnitStatusUpdate
@@ -19,7 +19,7 @@ const PublisherTerritoryTable = ({
         postalCode={postalCode}
         houses={floors[0]}
         policy={policy}
-        completedPercent={completedPercent}
+        aggregates={aggregates}
         handleHouseUpdate={handleUnitStatusUpdate}
       />
     );
@@ -29,7 +29,7 @@ const PublisherTerritoryTable = ({
       postalCode={postalCode}
       floors={floors}
       maxUnitNumberLength={maxUnitNumberLength}
-      completedPercent={completedPercent}
+      aggregates={aggregates}
       handleUnitStatusUpdate={handleUnitStatusUpdate}
       policy={policy}
     />

@@ -28,4 +28,24 @@ const getOptions = async (code: string) => {
   return householdTypes;
 };
 
-export default getOptions;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const processOptions = (optionList: any) => {
+  const householdTypes = new Array<HHOptionProps>();
+
+  // Retrieve the household types from the snapshot
+  Object.keys(optionList).forEach((key) => {
+    const value = optionList[key];
+    householdTypes.push({
+      code: key,
+      description: value.description,
+      isCountable: value.isCountable,
+      isDefault: value.isDefault,
+      sequence: value.sequence
+    });
+  });
+  // Sort the household types by sequence
+  householdTypes.sort((a, b) => a.sequence - b.sequence);
+  return householdTypes;
+};
+
+export { getOptions, processOptions };

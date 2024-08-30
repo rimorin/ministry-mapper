@@ -42,7 +42,7 @@ const InviteUser = NiceModal.create(
         }
         const getUserByEmail = httpsCallable(
           functions,
-          CLOUD_FUNCTIONS_CALLS.GET_USER_BY_EMAIL
+          `${import.meta.env.VITE_SYSTEM_ENVIRONMENT}-${CLOUD_FUNCTIONS_CALLS.GET_USER_BY_EMAIL}`
         );
         const user = await getUserByEmail({ email: userEmail });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -61,7 +61,7 @@ const InviteUser = NiceModal.create(
         }
         const updateUserAccess = httpsCallable(
           functions,
-          CLOUD_FUNCTIONS_CALLS.UPDATE_USER_ACCESS
+          `${import.meta.env.VITE_SYSTEM_ENVIRONMENT}-${CLOUD_FUNCTIONS_CALLS.UPDATE_USER_ACCESS}`
         );
         await updateUserAccess({
           uid: userId,

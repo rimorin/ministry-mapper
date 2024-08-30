@@ -8,7 +8,8 @@ import {
   TERRITORY_TYPES,
   STATUS_CODES,
   NOT_HOME_STATUS_CODES,
-  WIKI_CATEGORIES
+  WIKI_CATEGORIES,
+  DEFAULT_AGGREGATES
 } from "../../utils/constants";
 import isValidPostal from "../../utils/helpers/checkvalidpostal";
 import isValidPostalSequence from "../../utils/helpers/checkvalidseq";
@@ -112,7 +113,9 @@ const NewPrivateAddress = NiceModal.create(
             location: location,
             units: floorDetails,
             type: TERRITORY_TYPES.PRIVATE,
-            coordinates: coordinates
+            coordinates: coordinates,
+            aggregates: DEFAULT_AGGREGATES,
+            delta: 0
           })
         );
         posthog?.capture("create_private_address", {
