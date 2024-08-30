@@ -67,10 +67,8 @@ import errorHandler from "../utils/helpers/errorhandler";
 import ZeroPad from "../utils/helpers/zeropad";
 import assignmentMessage from "../utils/helpers/assignmentmsg";
 import getMaxUnitLength from "../utils/helpers/maxunitlength";
-import checkCongregationExpireHours from "../utils/helpers/checkcongexp";
 import SetPollerInterval from "../utils/helpers/pollinginterval";
 import pollingVoidFunction from "../utils/helpers/pollingvoid";
-import checkCongregationMaxTries from "../utils/helpers/checkmaxtries";
 import TerritoryListing from "../components/navigation/territorylist";
 import UserListing from "../components/navigation/userlist";
 import NavBarBranding from "../components/navigation/branding";
@@ -97,17 +95,15 @@ import {
   DEFAULT_CONGREGATION_MAX_TRIES,
   DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
   DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION,
-  CLOUD_FUNCTIONS_CALLS
+  CLOUD_FUNCTIONS_CALLS,
+  DEFAULT_AGGREGATES
 } from "../utils/constants";
 import ModalManager from "@ebay/nice-modal-react";
 import SuspenseComponent from "../components/utils/suspense";
-import getOptions from "../utils/helpers/getcongoptions";
+import { processOptions } from "../utils/helpers/getcongoptions";
 import GetDirection from "../utils/helpers/directiongenerator";
-import getOptionIsMultiSelect from "../utils/helpers/getoptionmultiselect";
-import getCongregationOrigin from "../utils/helpers/getcongorigin";
 import useLocalStorage from "../utils/helpers/storage";
 import CongListing from "../components/navigation/conglist";
-import getCongregationDetails from "../utils/helpers/getcongdetails";
 import setLink from "../utils/helpers/setlink";
 import getTerritoryData from "../utils/helpers/getterritorydetails";
 import { usePostHog } from "posthog-js/react";
@@ -191,8 +187,6 @@ function Admin({ user }: adminProps) {
   const [sortedAddressList, setSortedAddressList] = useState<Array<string>>([]);
   const [selectedTerritoryCode, setSelectedTerritoryCode] = useState<string>();
   const [selectedTerritoryName, setSelectedTerritoryName] = useState<string>();
-  const [selectedTerritoryAggregates, setSelectedTerritoryAggregates] =
-    useState<number>(0);
   const [addressData, setAddressData] = useState(
     new Map<string, addressDetails>()
   );
@@ -286,17 +280,16 @@ function Admin({ user }: adminProps) {
 
   const processSelectedTerritory = async (selectedTerritoryCode: string) => {
     try {
-      const { territoryAddsResult, territoryNameResult, territoryAggregates } =
-        await getTerritoryData(code, selectedTerritoryCode);
-      setSelectedTerritoryCode(selectedTerritoryCode);
-      setSelectedTerritoryName(territoryNameResult.val());
-      setSelectedTerritoryAggregates(
-        territoryAggregates.exists() ? territoryAggregates.val().value : 0
+      const territoryAddsResult = await getTerritoryData(
+        code,
+        selectedTerritoryCode
       );
-
+      setSelectedTerritoryCode(selectedTerritoryCode);
+      setSelectedTerritoryName(territories.get(selectedTerritoryCode)?.name);
       refreshAddressState();
       unsubscribers.current = [] as Array<Unsubscribe>;
 
+      if (!territoryAddsResult) return;
       const detailsListing = getDetailsListing(territoryAddsResult);
       setSortedAddressList(detailsListing);
 
@@ -716,15 +709,12 @@ function Admin({ user }: adminProps) {
   };
 
   const processCongregationTerritories = (
-    snapshot: DataSnapshot | undefined
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    congregationTerritories: any
   ) => {
+    const territoryList = new Map<string, territoryDetails>();
     try {
-      if (!snapshot) return;
-      const data = snapshot.val();
-      if (!data) return;
-      document.title = data["name"] as string;
-      const congregationTerritories = data["territories"];
-      const territoryList = new Map<string, territoryDetails>();
+      if (!congregationTerritories) return territoryList;
       for (const territory in congregationTerritories) {
         const name = congregationTerritories[territory]["name"];
         const addresses = congregationTerritories[territory]["addresses"];
@@ -737,15 +727,10 @@ function Admin({ user }: adminProps) {
           aggregates: aggregates
         });
       }
-      setTerritories(territoryList);
-      setName(data["name"] as string);
-      return territoryList;
     } catch (error) {
       console.error("Error processing congregation territories: ", error);
     }
-  };
-  const getUserAccessLevel = async (congregationCode: string) => {
-    return congregationAccess.current[congregationCode];
+    return territoryList;
   };
 
   const handleTerritorySelect = useCallback(
@@ -934,63 +919,65 @@ function Admin({ user }: adminProps) {
     if (!code) return;
     refreshAddressState();
 
-    Promise.all([
-      getUserAccessLevel(code),
-      checkCongregationExpireHours(code),
-      checkCongregationMaxTries(code),
-      getOptions(code),
-      getOptionIsMultiSelect(code),
-      getCongregationDetails(code),
-      getCongregationOrigin(code)
-    ])
-      .then(
-        ([
-          userAccessLevel,
-          expireHours,
-          maxTries,
-          options,
-          optionIsMultiselect,
-          congregationDetails,
-          origin
-        ]) => {
-          setUserAccessLevel(Number(userAccessLevel));
-          setDefaultExpiryHours(
-            expireHours.exists()
-              ? expireHours.val()
-              : DEFAULT_SELF_DESTRUCT_HOURS
+    setUserAccessLevel(congregationAccess.current[code]);
+    const congregationUnsub = onValue(
+      child(ref(database), `congregations/${code}`),
+      (snapshot) => {
+        try {
+          if (!snapshot.exists()) {
+            setIsUnauthorised(true);
+            errorHandler(
+              `Unauthorised access by ${user.email}`,
+              rollbar,
+              false
+            );
+            return;
+          }
+          const congregationDetails = snapshot.val();
+          const congName = congregationDetails["name"] as string;
+          const expireHours =
+            congregationDetails["expireHours"] || DEFAULT_SELF_DESTRUCT_HOURS;
+          const maxTries =
+            congregationDetails["maxTries"] || DEFAULT_CONGREGATION_MAX_TRIES;
+          const options = processOptions(
+            congregationDetails["options"]["list"]
           );
+          const optionIsMultiselect =
+            congregationDetails["options"]["isMultiselect"] ||
+            DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE;
+          const origin =
+            congregationDetails["origin"] ||
+            DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION;
+          const congregationTerritories = processCongregationTerritories(
+            congregationDetails["territories"]
+          );
+
+          document.title = congName;
+          setName(congName);
+          setDefaultExpiryHours(expireHours);
           setOptions(options);
           setPolicy(
             new Policy(
               loginUserClaims.current,
               options,
-              maxTries.exists()
-                ? maxTries.val()
-                : DEFAULT_CONGREGATION_MAX_TRIES,
-              optionIsMultiselect.exists()
-                ? optionIsMultiselect.val()
-                : DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
-              origin.exists()
-                ? origin.val()
-                : DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION
+              maxTries,
+              optionIsMultiselect,
+              origin
             )
           );
-
+          setTerritories(congregationTerritories);
           posthog?.identify(code, {
-            name: congregationDetails.exists()
-              ? congregationDetails.val()["name"]
-              : ""
+            name: congName
           });
-          processCongregationTerritories(
-            congregationDetails.exists() ? congregationDetails : undefined
-          );
+        } catch (error) {
+          errorHandler(error, rollbar);
+        } finally {
           setIsLoading(false);
         }
-      )
-      .catch((error) => {
-        // Handle the error here
-        console.error(error);
-      });
+      }
+    );
+
+    return () => congregationUnsub();
   }, [code]);
 
   if (isLoading) return <Loader />;
@@ -1068,7 +1055,10 @@ function Admin({ user }: adminProps) {
                   {selectedTerritoryCode ? (
                     <>
                       <AggregationBadge
-                        aggregate={selectedTerritoryAggregates}
+                        aggregate={
+                          territories.get(selectedTerritoryCode)?.aggregates ||
+                          0
+                        }
                       />
                       {selectedTerritoryCode}
                     </>
@@ -1480,8 +1470,10 @@ function Admin({ user }: adminProps) {
           if (!addressElement)
             return <div key={`empty-div-${currentPostalcode}`}></div>;
           const currentPostalname = addressElement.name;
-          const completeValue = addressElement.aggregates.value;
-          const completedPercent = addressElement.aggregates.display;
+          const completeValue =
+            addressElement.aggregates?.value || DEFAULT_AGGREGATES.value;
+          const completedPercent =
+            addressElement.aggregates?.display || DEFAULT_AGGREGATES.display;
           const assigneeCount = addressElement.assigneeDetailsList.length;
           const personalCount = addressElement.personalDetailsList.length;
           const maxUnitNumberLength = addressElement.maxUnitLength;

@@ -1,4 +1,4 @@
-import { get, query, ref, orderByValue, child } from "firebase/database";
+import { get, query, ref, orderByValue } from "firebase/database";
 import { database } from "../../firebase";
 import pollingQueryFunction from "./pollingquery";
 
@@ -6,38 +6,24 @@ const getTerritoryData = async (
   code: string,
   selectedTerritoryCode: string
 ) => {
-  const [territoryAddsResult, territoryNameResult, territoryAggregates] =
-    await Promise.all([
-      pollingQueryFunction(() =>
-        get(
-          query(
-            ref(
-              database,
-              `congregations/${code}/territories/${selectedTerritoryCode}/addresses`
-            ),
-            orderByValue()
-          )
-        )
+  try {
+    const territoryRef = query(
+      ref(
+        database,
+        `congregations/${code}/territories/${selectedTerritoryCode}/addresses`
       ),
-      pollingQueryFunction(() =>
-        get(
-          child(
-            ref(database),
-            `congregations/${code}/territories/${selectedTerritoryCode}/name`
-          )
-        )
-      ),
-      pollingQueryFunction(() =>
-        get(
-          child(
-            ref(database),
-            `congregations/${code}/territories/${selectedTerritoryCode}/aggregates`
-          )
-        )
-      )
-    ]);
+      orderByValue()
+    );
 
-  return { territoryAddsResult, territoryNameResult, territoryAggregates };
+    const territoryAddsResult = await pollingQueryFunction(() =>
+      get(territoryRef)
+    );
+
+    return territoryAddsResult;
+  } catch (error) {
+    console.error("Error fetching territory data:", error);
+    return;
+  }
 };
 
 export default getTerritoryData;

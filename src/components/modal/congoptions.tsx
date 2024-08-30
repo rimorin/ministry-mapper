@@ -1,13 +1,6 @@
 import NiceModal, { useModal, bootstrapDialog } from "@ebay/nice-modal-react";
 import { useRollbar } from "@rollbar/react";
-import {
-  set,
-  ref,
-  get,
-  query,
-  orderByChild,
-  DataSnapshot
-} from "firebase/database";
+import { set, ref } from "firebase/database";
 import {
   useState,
   FormEvent,
@@ -35,12 +28,12 @@ import {
   HHOptionProps,
   UpdateCongregationOptionsModalProps
 } from "../../utils/interface";
-import pollingQueryFunction from "../../utils/helpers/pollingquery";
 import GenericInputField from "../form/input";
 import ModalSubmitButton from "../form/submit";
 import { confirmAlert } from "react-confirm-alert";
 import { flushSync } from "react-dom";
 import { usePostHog } from "posthog-js/react";
+import { getOptions } from "../../utils/helpers/getcongoptions";
 
 const UpdateCongregationOptions = NiceModal.create(
   ({ currentCongregation }: UpdateCongregationOptionsModalProps) => {
@@ -184,38 +177,16 @@ const UpdateCongregationOptions = NiceModal.create(
     );
 
     useEffect(() => {
-      const getOptions = async () => {
+      const getHHOptions = async () => {
         try {
-          const optionsSnapshot = await pollingQueryFunction(() =>
-            get(
-              query(
-                ref(
-                  database,
-                  `congregations/${currentCongregation}/options/list`
-                ),
-                orderByChild("sequence")
-              )
-            )
-          );
-          const optionValues: Array<HHOptionProps> = [];
-          optionsSnapshot.forEach((element: DataSnapshot) => {
-            const optionDetails = element.val();
-            const optionCode = element.key as string;
-            const option = {
-              code: optionCode,
-              description: optionDetails.description,
-              isCountable: optionDetails.isCountable || false,
-              isDefault: optionDetails.isDefault || false,
-              sequence: optionDetails.sequence
-            };
-            optionValues.push(option);
-          });
+          const optionValues: Array<HHOptionProps> =
+            await getOptions(currentCongregation);
           setOptions(optionValues);
         } catch (error) {
           errorHandler(error, rollbar);
         }
       };
-      getOptions();
+      getHHOptions();
     }, [currentCongregation]);
 
     return (

@@ -40,7 +40,7 @@ const TerritoryListing = memo(
                   className="d-flex justify-content-between align-items-start"
                 >
                   <>
-                    {element.code} - {element.name} ({element.aggregates})
+                    {element.code} - {element.name}
                   </>
                   <AggregationBadge
                     aggregate={element.aggregates}

@@ -3,7 +3,8 @@ import {
   TERRITORY_TYPES,
   USER_ACCESS_LEVELS,
   DEFAULT_FLOOR_PADDING,
-  DEFAULT_UNIT_DNC_MS_TIME
+  DEFAULT_UNIT_DNC_MS_TIME,
+  DEFAULT_AGGREGATES
 } from "../../utils/constants";
 import ZeroPad from "../../utils/helpers/zeropad";
 import { territoryTableProps } from "../../utils/interface";
@@ -97,7 +98,7 @@ const AdminTable = ({
                 <td
                   className={`text-center align-middle inline-cell ${policy?.getUnitColor(
                     detailsElement,
-                    aggregates.value
+                    aggregates?.value || DEFAULT_AGGREGATES.value
                   )}`}
                   onClick={handleUnitStatusUpdate}
                   key={`${index}-${detailsElement.number}`}

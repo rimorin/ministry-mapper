@@ -97,6 +97,11 @@ const NOTIFICATION_TYPES = {
   INSTRUCTIONS: 2
 };
 
+const DEFAULT_AGGREGATES = {
+  value: 0,
+  display: "0%"
+};
+
 //eslint-disable-next-line
 const SPECIAL_CHARACTERS = /[`!@#$%^&()_+\=\[\]{};':"\\|,.<>\/?~][^-*]/;
 const NUMERIC_CHARACTERS = /^-?\d+$/;
@@ -324,5 +329,6 @@ export {
   DEFAULT_COORDINATES,
   CLOUD_FUNCTIONS_CALLS,
   AI_SETTINGS,
-  PH_STATUS_KEYS
+  PH_STATUS_KEYS,
+  DEFAULT_AGGREGATES
 };

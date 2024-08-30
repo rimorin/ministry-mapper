@@ -4,7 +4,11 @@ import { child, ref, get, set } from "firebase/database";
 import { useState, FormEvent, ChangeEvent } from "react";
 import { Modal, Form } from "react-bootstrap";
 import { database } from "../../firebase";
-import { USER_ACCESS_LEVELS, WIKI_CATEGORIES } from "../../utils/constants";
+import {
+  DEFAULT_AGGREGATES,
+  USER_ACCESS_LEVELS,
+  WIKI_CATEGORIES
+} from "../../utils/constants";
 import pollingVoidFunction from "../../utils/helpers/pollingvoid";
 import errorHandler from "../../utils/helpers/errorhandler";
 import pollingQueryFunction from "../../utils/helpers/pollingquery";
@@ -45,7 +49,8 @@ const NewTerritoryCode = NiceModal.create(
         }
         await pollingVoidFunction(() =>
           set(territoryCodeReference, {
-            name: name
+            name: name,
+            aggregates: DEFAULT_AGGREGATES
           })
         );
         posthog?.capture("create_territory", {
