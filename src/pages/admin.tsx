@@ -9,7 +9,6 @@ import {
   push,
   get,
   query,
-  DataSnapshot,
   orderByChild,
   equalTo
 } from "firebase/database";
@@ -38,8 +37,7 @@ import {
   Spinner,
   ButtonGroup
 } from "react-bootstrap";
-import { database, auth, functions } from "../firebase";
-import { httpsCallable } from "firebase/functions";
+import { database, auth } from "../firebase";
 import {
   valuesDetails,
   floorDetails,
@@ -61,13 +59,9 @@ import { useRollbar } from "@rollbar/react";
 import { LinkSession, Policy } from "../utils/policies";
 import AdminTable from "../components/table/admin";
 import pollingQueryFunction from "../utils/helpers/pollingquery";
-import processAddressData from "../utils/helpers/processadddata";
-import processLinkDetails from "../utils/helpers/processlinkct";
 import errorHandler from "../utils/helpers/errorhandler";
 import ZeroPad from "../utils/helpers/zeropad";
 import assignmentMessage from "../utils/helpers/assignmentmsg";
-import getMaxUnitLength from "../utils/helpers/maxunitlength";
-import SetPollerInterval from "../utils/helpers/pollinginterval";
 import pollingVoidFunction from "../utils/helpers/pollingvoid";
 import TerritoryListing from "../components/navigation/territorylist";
 import UserListing from "../components/navigation/userlist";
@@ -95,7 +89,6 @@ import {
   DEFAULT_CONGREGATION_MAX_TRIES,
   DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
   DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION,
-  CLOUD_FUNCTIONS_CALLS,
   DEFAULT_AGGREGATES
 } from "../utils/constants";
 import ModalManager from "@ebay/nice-modal-react";
@@ -108,6 +101,11 @@ import setLink from "../utils/helpers/setlink";
 import getTerritoryData from "../utils/helpers/getterritorydetails";
 import { usePostHog } from "posthog-js/react";
 import updateAddressDelta from "../utils/helpers/updateaddressdelta";
+import getAddressData from "../utils/helpers/getaddressdata";
+import getCongregationUsers from "../utils/helpers/getcongregationusers";
+import deleteTerritoryAddress from "../utils/helpers/deleteterritoryaddress";
+import deleteAddress from "../utils/helpers/deleteaddress";
+import deleteTerritoryData from "../utils/helpers/deleteterritory";
 
 const UnauthorizedPage = SuspenseComponent(
   lazy(() => import("../components/statics/unauth"))
@@ -238,32 +236,9 @@ function Admin({ user }: adminProps) {
   };
 
   const getUsers = useCallback(async () => {
-    const getCongregationUsers = httpsCallable(
-      functions,
-      `${import.meta.env.VITE_SYSTEM_ENVIRONMENT}-${CLOUD_FUNCTIONS_CALLS.GET_CONGREGATION_USERS}`
-    );
     try {
       setIsShowingUserListing(true);
-      const result = (await getCongregationUsers({
-        congregation: code
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      })) as any;
-      if (Object.keys(result.data).length === 0) {
-        alert("There are no users to manage.");
-        return;
-      }
-      const userListing = new Map<string, userDetails>();
-      for (const key in result.data) {
-        const data = result.data[key];
-        userListing.set(key, {
-          uid: key,
-          name: data.name,
-          verified: data.verified,
-          email: data.email,
-          role: data.role
-        });
-      }
-      setCongUsers(userListing);
+      setCongUsers(await getCongregationUsers(code));
       toggleUserListing();
     } catch (error) {
       errorHandler(error, rollbar);
@@ -273,14 +248,13 @@ function Admin({ user }: adminProps) {
   }, [code]);
 
   const logoutUser = useCallback(async () => {
-    refreshAddressState();
     posthog?.capture("logout", { email: user.email });
     await signOut(auth);
   }, []);
 
   const processSelectedTerritory = async (selectedTerritoryCode: string) => {
     try {
-      const territoryAddsResult = await getTerritoryData(
+      const territoryAddresses = await getTerritoryData(
         code,
         selectedTerritoryCode
       );
@@ -288,84 +262,39 @@ function Admin({ user }: adminProps) {
       setSelectedTerritoryName(territories.get(selectedTerritoryCode)?.name);
       refreshAddressState();
       unsubscribers.current = [] as Array<Unsubscribe>;
-
-      if (!territoryAddsResult) return;
-      const detailsListing = getDetailsListing(territoryAddsResult);
-      setSortedAddressList(detailsListing);
-
-      const pollerId = SetPollerInterval();
-
-      await processAddressListing(detailsListing, pollerId);
+      setSortedAddressList(territoryAddresses);
+      await processAddressListing(territoryAddresses);
     } catch (error) {
       console.error("Error processing selected territory: ", error);
       errorHandler(error, rollbar);
     }
   };
 
-  const getDetailsListing = (territoryAddsResult: DataSnapshot) => {
-    const detailsListing = [] as Array<string>;
-    territoryAddsResult.forEach((addElement: DataSnapshot) => {
-      detailsListing.push(addElement.val());
-    });
-    return detailsListing;
-  };
-
-  const processAddressListing = async (
-    addressCodeListing: Array<string>,
-    pollerId: NodeJS.Timeout
-  ) => {
-    for (const addressCode of addressCodeListing) {
-      setAccordionKeys((existingKeys) => [...existingKeys, addressCode]);
-      unsubscribers.current.push(
-        onValue(
-          child(ref(database), `addresses/${code}/${addressCode}`),
-          async (snapshot) => {
-            clearInterval(pollerId);
-            if (snapshot.exists()) {
-              const addressData = await getAddressData(
-                code,
-                addressCode,
-                snapshot.val()
-              );
-              setAddressData(
-                (existingAddresses) =>
-                  new Map<string, addressDetails>(
-                    existingAddresses.set(addressCode, addressData)
-                  )
-              );
+  const processAddressListing = async (addressCodeListing: Array<string>) => {
+    const processListenerData = async () => {
+      const listenerPromises = addressCodeListing.map((addressCode) => {
+        setAccordionKeys((existingKeys) => [...existingKeys, addressCode]);
+        return new Promise<void>((resolve) => {
+          const unsubscribe = onValue(
+            child(ref(database), `addresses/${code}/${addressCode}`),
+            async (snapshot) => {
+              const data = await getAddressData(code, addressCode, snapshot);
+              if (data) {
+                setAddressData(
+                  (existingAddresses) =>
+                    new Map(existingAddresses.set(addressCode, data))
+                );
+              }
+              resolve();
             }
-          }
-        )
-      );
-    }
-  };
-
-  const getAddressData = async (
-    code: string,
-    postalCode: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    postalSnapshot: any
-  ) => {
-    const floorData = await processAddressData(
-      code,
-      postalCode,
-      postalSnapshot.units
-    );
-    const linkDetails = await processLinkDetails(code, postalCode);
-    return {
-      assigneeDetailsList: linkDetails.assigneeDetailsList,
-      personalDetailsList: linkDetails.personalDetailsList,
-      name: postalSnapshot.name,
-      postalCode: postalCode,
-      floors: floorData,
-      feedback: postalSnapshot.feedback,
-      type: postalSnapshot.type,
-      instructions: postalSnapshot.instructions,
-      location: postalSnapshot.location,
-      coordinates: postalSnapshot.coordinates,
-      aggregates: postalSnapshot.aggregates,
-      maxUnitLength: getMaxUnitLength(floorData)
+          );
+          unsubscribers.current.push(unsubscribe);
+        });
+      });
+      await Promise.all(listenerPromises);
     };
+
+    await processListenerData();
   };
 
   const deleteBlockFloor = useCallback(
@@ -387,20 +316,6 @@ function Admin({ user }: adminProps) {
     [code]
   );
 
-  const getTerritoryAddress = useCallback(
-    async (territoryCode: string) => {
-      return await pollingQueryFunction(() =>
-        get(
-          ref(
-            database,
-            `congregations/${code}/territories/${territoryCode}/addresses`
-          )
-        )
-      );
-    },
-    [code]
-  );
-
   const getAddressDetails = useCallback(
     async (postalcode: string) => {
       return await pollingQueryFunction(() =>
@@ -413,25 +328,7 @@ function Admin({ user }: adminProps) {
   const deleteTerritory = useCallback(async () => {
     if (!selectedTerritoryCode) return;
     try {
-      const addressesSnapshot = await getTerritoryAddress(
-        selectedTerritoryCode
-      );
-      if (addressesSnapshot.exists()) {
-        const addressData = addressesSnapshot.val();
-        for (const addkey in addressData) {
-          const postalcode = addressData[addkey];
-          const postalPath = `addresses/${code}/${postalcode}`;
-          await pollingVoidFunction(() => remove(ref(database, postalPath)));
-        }
-      }
-      await pollingVoidFunction(() =>
-        remove(
-          ref(
-            database,
-            `congregations/${code}/territories/${selectedTerritoryCode}`
-          )
-        )
-      );
+      await deleteTerritoryData(code, selectedTerritoryCode);
       posthog?.capture("delete_territory", {
         territory: selectedTerritoryCode
       });
@@ -442,40 +339,12 @@ function Admin({ user }: adminProps) {
     }
   }, [selectedTerritoryCode, code]);
 
-  const deleteTerritoryAddress = useCallback(
-    async (territoryCode: string, postalCode: string) => {
-      const addressesSnapshot = await getTerritoryAddress(territoryCode);
-      if (addressesSnapshot.exists()) {
-        const addressData = addressesSnapshot.val();
-        for (const addkey in addressData) {
-          const currentPostalcode = addressData[addkey];
-          if (currentPostalcode === postalCode) {
-            await pollingVoidFunction(() =>
-              remove(
-                ref(
-                  database,
-                  `congregations/${code}/territories/${selectedTerritoryCode}/addresses/${addkey}`
-                )
-              )
-            );
-            posthog?.capture("delete_address", {
-              mapId: postalCode,
-              territory: territoryCode
-            });
-            break;
-          }
-        }
-      }
-    },
-    [code, selectedTerritoryCode]
-  );
-
   const deleteBlock = useCallback(
     async (postalCode: string, name: string, showAlert: boolean) => {
       if (!selectedTerritoryCode) return;
       try {
-        await remove(ref(database, `addresses/${code}/${postalCode}`));
-        await deleteTerritoryAddress(selectedTerritoryCode, postalCode);
+        await deleteAddress(code, postalCode);
+        await deleteTerritoryAddress(code, selectedTerritoryCode, postalCode);
         posthog?.capture("delete_block", {
           mapId: postalCode
         });
@@ -534,15 +403,12 @@ function Admin({ user }: adminProps) {
   const resetTerritory = useCallback(async () => {
     if (!selectedTerritoryCode) return;
     try {
-      const addressesSnapshot = await getTerritoryAddress(
+      const addressesSnapshot = await getTerritoryData(
+        code,
         selectedTerritoryCode
       );
-      if (addressesSnapshot.exists()) {
-        const addressData = addressesSnapshot.val();
-        for (const addkey in addressData) {
-          const postalcode = addressData[addkey];
-          await resetBlock(postalcode);
-        }
+      for (const postalcode of addressesSnapshot) {
+        await resetBlock(postalcode);
       }
       posthog?.capture("reset_territory", {
         territory: selectedTerritoryCode
@@ -798,6 +664,7 @@ function Admin({ user }: adminProps) {
         )
       );
       await deleteTerritoryAddress(
+        code,
         selectedTerritoryCode as string,
         selectedPostalcode
       );
@@ -824,14 +691,12 @@ function Admin({ user }: adminProps) {
       const congregationCode = newCongCode as string;
       setCongregationCode(congregationCode);
       setCode(congregationCode);
-      refreshAddressState();
       setName("");
       setSelectedPostal("");
       setSelectedTerritoryCode("");
       setSelectedTerritoryName("");
       toggleCongregationListing();
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [showCongregationListing]
   );
 
@@ -904,20 +769,21 @@ function Admin({ user }: adminProps) {
     };
 
     fetchData();
-  }, []);
 
-  useEffect(() => {
     const handleScroll = () => {
       setShowBkTopButton(window.scrollY > PIXELS_TILL_BK_TO_TOP_BUTTON_DISPLAY);
     };
 
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      console.log("Unsubscribing from admin data");
+      window.removeEventListener("scroll", handleScroll);
+      refreshAddressState();
+    };
   }, []);
 
   useEffect(() => {
     if (!code) return;
-    refreshAddressState();
 
     setUserAccessLevel(congregationAccess.current[code]);
     const congregationUnsub = onValue(
@@ -977,7 +843,11 @@ function Admin({ user }: adminProps) {
       }
     );
 
-    return () => congregationUnsub();
+    return () => {
+      console.log("Unsubscribing from congregation data");
+      congregationUnsub();
+      refreshAddressState();
+    };
   }, [code]);
 
   if (isLoading) return <Loader />;
