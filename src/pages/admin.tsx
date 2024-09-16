@@ -935,8 +935,8 @@ function Admin({ user }: adminProps) {
           }
           const congregationDetails = snapshot.val();
           const congName = congregationDetails["name"] as string;
-          const expireHours =
-            congregationDetails["expireHours"] || DEFAULT_SELF_DESTRUCT_HOURS;
+          const expiryHours =
+            congregationDetails["expiryHours"] || DEFAULT_SELF_DESTRUCT_HOURS;
           const maxTries =
             congregationDetails["maxTries"] || DEFAULT_CONGREGATION_MAX_TRIES;
           const options = processOptions(
@@ -954,7 +954,7 @@ function Admin({ user }: adminProps) {
 
           document.title = congName;
           setName(congName);
-          setDefaultExpiryHours(expireHours);
+          setDefaultExpiryHours(expiryHours);
           setOptions(options);
           setPolicy(
             new Policy(
