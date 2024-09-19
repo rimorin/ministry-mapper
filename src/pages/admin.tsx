@@ -776,7 +776,6 @@ function Admin({ user }: adminProps) {
 
     window.addEventListener("scroll", handleScroll);
     return () => {
-      console.log("Unsubscribing from admin data");
       window.removeEventListener("scroll", handleScroll);
       refreshAddressState();
     };
@@ -844,7 +843,6 @@ function Admin({ user }: adminProps) {
     );
 
     return () => {
-      console.log("Unsubscribing from congregation data");
       congregationUnsub();
       refreshAddressState();
     };
