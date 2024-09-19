@@ -292,6 +292,7 @@ const AI_SETTINGS = {
     temperature: 0.2
   }
 };
+const RTDB_WEBSOCKET_FAILURE = "firebase:previous_websocket_failure";
 export {
   UNSUPPORTED_BROWSER_MSG,
   STATUS_CODES,
@@ -330,5 +331,6 @@ export {
   CLOUD_FUNCTIONS_CALLS,
   AI_SETTINGS,
   PH_STATUS_KEYS,
-  DEFAULT_AGGREGATES
+  DEFAULT_AGGREGATES,
+  RTDB_WEBSOCKET_FAILURE
 };

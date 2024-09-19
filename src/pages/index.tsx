@@ -12,6 +12,7 @@ import MapsMiddleware from "../components/middlewares/googlemap";
 import PostHogMiddleware from "../components/middlewares/posthog";
 import RollbarMiddleware from "../components/middlewares/rollbar";
 import { Provider as NiceModelMiddleware } from "@ebay/nice-modal-react";
+import { RTDB_WEBSOCKET_FAILURE } from "../utils/constants";
 
 const Map = lazy(() => import("./slip"));
 const NotFoundPage = lazy(() => import("../components/statics/notfound"));
@@ -64,6 +65,10 @@ const CombinedMiddleware: React.FC<CombinedMiddlewareProps> = ({
 );
 
 const Main: React.FC = () => {
+  // Clear the RTDB_WEBSOCKET_FAILURE flag if it exists. This key is causing the app to load indefinitely.
+  if (window.localStorage.getItem(RTDB_WEBSOCKET_FAILURE) !== null) {
+    window.localStorage.removeItem(RTDB_WEBSOCKET_FAILURE);
+  }
   return (
     <CombinedMiddleware>
       <Suspense fallback={<Loader />}>
