@@ -1,3 +1,10 @@
+## [1.32.2](https://github.com/rimorin/ministry-mapper/compare/v1.32.1...v1.32.2) (2024-09-19)
+
+
+### Bug Fixes
+
+* remove rtdb websocket failure on load ([3f63543](https://github.com/rimorin/ministry-mapper/commit/3f63543ab4ea02ada93e1a3ae1144e7e88a586c1))
+
 ## [1.32.1](https://github.com/rimorin/ministry-mapper/compare/v1.32.0...v1.32.1) (2024-09-16)
 
 
