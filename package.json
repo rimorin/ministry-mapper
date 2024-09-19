@@ -8,7 +8,7 @@
     "@rollbar/react": "^0.11.2",
     "@vis.gl/react-google-maps": "^1.1.0",
     "bootstrap": "^5.3.3",
-    "firebase": "^10.13.0",
+    "firebase": "^10.13.2",
     "nanoid": "^5.0.7",
     "posthog-js": "^1.155.4",
     "react": "^18.3.1",

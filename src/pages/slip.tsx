@@ -21,10 +21,7 @@ import {
   TERRITORY_TYPES,
   USER_ACCESS_LEVELS,
   WIKI_CATEGORIES,
-  DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE,
-  DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION,
-  DEFAULT_COORDINATES,
-  DEFAULT_CONGREGATION_MAX_TRIES
+  DEFAULT_COORDINATES
 } from "../utils/constants";
 import "../css/slip.css";
 import InfoImg from "../assets/information.svg?react";
@@ -39,8 +36,10 @@ import InvalidPage from "../components/statics/invalidpage";
 import { useRollbar } from "@rollbar/react";
 import SuspenseComponent from "../components/utils/suspense";
 import { usePostHog } from "posthog-js/react";
-import { processOptions } from "../utils/helpers/getcongoptions";
-import getCongregationDetails from "../utils/helpers/getcongdetails";
+import { getOptions } from "../utils/helpers/getcongoptions";
+import getCongregationOrigin from "../utils/helpers/getcongorigin";
+import getOptionIsMultiSelect from "../utils/helpers/getoptionmultiselect";
+import getCongregationMaxTries from "../utils/helpers/getcongmaxtries";
 
 const UpdateUnitStatus = lazy(() => import("../components/modal/updatestatus"));
 
@@ -159,20 +158,11 @@ const Map = () => {
   useEffect(() => {
     const getMapData = async () => {
       if (!code || !postalcode) return;
-      const congregationDetails = await getCongregationDetails(code);
-      if (!congregationDetails.exists()) {
-        setIsLoading(false);
-        return;
-      }
-      const congregationData = congregationDetails.val();
-      const options = processOptions(congregationData.options?.list);
-      const isMultiselect =
-        congregationData.options?.isMultiSelect ||
-        DEFAULT_CONGREGATION_OPTION_IS_MULTIPLE;
-      const origin =
-        congregationData.origin || DEFAULT_MAP_DIRECTION_CONGREGATION_LOCATION;
-      const congregationMaxTries =
-        congregationData.maxTries || DEFAULT_CONGREGATION_MAX_TRIES;
+      const options = await getOptions(code);
+      const isMultiselect = await getOptionIsMultiSelect(code);
+      const origin = await getCongregationOrigin(code);
+      const congregationMaxTries = await getCongregationMaxTries(code);
+      await getMapListenerData(code, postalcode);
       setOptions(options);
       setPolicy(
         new Policy(
@@ -183,37 +173,48 @@ const Map = () => {
           origin
         )
       );
-      onValue(
-        child(ref(database), `addresses/${code}/${postalcode}`),
-        async (snapshot) => {
-          try {
-            if (!snapshot.exists()) {
-              return;
+      setIsLoading(false);
+    };
+
+    const getMapListenerData = (
+      congregationCode: string,
+      postalCode: string
+    ): Promise<void> => {
+      return new Promise((resolve, reject) => {
+        onValue(
+          child(ref(database), `addresses/${congregationCode}/${postalCode}`),
+          async (snapshot) => {
+            try {
+              if (!snapshot.exists()) {
+                return;
+              }
+              const postalSnapshot = snapshot.val();
+              setValues((values) => ({
+                ...values,
+                feedback: postalSnapshot.feedback,
+                instructions: postalSnapshot.instructions
+              }));
+              setPostalName(postalSnapshot.name);
+              setTerritoryType(postalSnapshot.type);
+              setCoordinates(
+                postalSnapshot.coordinates || DEFAULT_COORDINATES.Singapore
+              );
+              setAggregate(postalSnapshot.aggregates);
+              const data = await processAddressData(
+                congregationCode,
+                postalCode,
+                postalSnapshot.units
+              );
+              setFloors(data);
+              document.title = postalSnapshot.name;
+            } catch (error) {
+              reject(error);
+            } finally {
+              resolve();
             }
-            const postalSnapshot = snapshot.val();
-            setValues((values) => ({
-              ...values,
-              feedback: postalSnapshot.feedback,
-              instructions: postalSnapshot.instructions
-            }));
-            setPostalName(postalSnapshot.name);
-            setTerritoryType(postalSnapshot.type);
-            setCoordinates(
-              postalSnapshot.coordinates || DEFAULT_COORDINATES.Singapore
-            );
-            setAggregate(postalSnapshot.aggregates);
-            const data = await processAddressData(
-              code,
-              postalcode,
-              postalSnapshot.units
-            );
-            setFloors(data);
-            document.title = postalSnapshot.name;
-          } finally {
-            setIsLoading(false);
           }
-        }
-      );
+        );
+      });
     };
 
     getMapData();

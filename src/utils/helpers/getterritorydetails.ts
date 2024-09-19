@@ -3,14 +3,15 @@ import { database } from "../../firebase";
 import pollingQueryFunction from "./pollingquery";
 
 const getTerritoryData = async (
-  code: string,
+  congregationCode: string,
   selectedTerritoryCode: string
 ) => {
+  const detailsListing = [] as Array<string>;
   try {
     const territoryRef = query(
       ref(
         database,
-        `congregations/${code}/territories/${selectedTerritoryCode}/addresses`
+        `congregations/${congregationCode}/territories/${selectedTerritoryCode}/addresses`
       ),
       orderByValue()
     );
@@ -19,11 +20,17 @@ const getTerritoryData = async (
       get(territoryRef)
     );
 
-    return territoryAddsResult;
+    if (!territoryAddsResult.exists()) {
+      return detailsListing;
+    }
+
+    territoryAddsResult.forEach((address) => {
+      detailsListing.push(address.val());
+    });
   } catch (error) {
     console.error("Error fetching territory data:", error);
-    return;
   }
+  return detailsListing;
 };
 
 export default getTerritoryData;
