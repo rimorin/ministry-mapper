@@ -99,36 +99,36 @@ const UpdateUnitStatus = NiceModal.create(
     const rollbar = useRollbar();
     const posthog = usePostHog();
 
-    const checkIfNotesAreSensitive = async (note: string) => {
-      // Return early if note is not provided or matches unitDetails.note
-      if (!note || note === unitDetails?.note) {
-        return false;
-      }
-      setCheckingNotes(true);
-      try {
-        const modal = getGenerativeModel(ai, AI_SETTINGS);
-        const result = await modal.generateContent(note);
-        const text = result.response.text();
-        const json = JSON.parse(text);
-        if (json.containsPersonalInfo) {
-          posthog?.capture("sensitive_note_submission", {
-            note: note,
-            reason: json.reason,
-            publisherName
-          });
-          rollbar.warn(
-            `Note submission rejected: ${json.reason}. Note content: ${note}`
-          );
-          alert(json.recommendation);
-        }
-        return json.containsPersonalInfo;
-      } catch (error) {
-        errorHandler(error, rollbar, true);
-        return false;
-      } finally {
-        setCheckingNotes(false);
-      }
-    };
+    // const checkIfNotesAreSensitive = async (note: string) => {
+    //   // Return early if note is not provided or matches unitDetails.note
+    //   if (!note || note === unitDetails?.note) {
+    //     return false;
+    //   }
+    //   setCheckingNotes(true);
+    //   try {
+    //     const modal = getGenerativeModel(ai, AI_SETTINGS);
+    //     const result = await modal.generateContent(note);
+    //     const text = result.response.text();
+    //     const json = JSON.parse(text);
+    //     if (json.containsPersonalInfo) {
+    //       posthog?.capture("sensitive_note_submission", {
+    //         note: note,
+    //         reason: json.reason,
+    //         publisherName
+    //       });
+    //       rollbar.warn(
+    //         `Note submission rejected: ${json.reason}. Note content: ${note}`
+    //       );
+    //       alert(json.recommendation);
+    //     }
+    //     return json.containsPersonalInfo;
+    //   } catch (error) {
+    //     errorHandler(error, rollbar, true);
+    //     return false;
+    //   } finally {
+    //     setCheckingNotes(false);
+    //   }
+    // };
 
     const handleSubmitClick = async (event: FormEvent<HTMLElement>) => {
       event.preventDefault();
@@ -159,9 +159,9 @@ const UpdateUnitStatus = NiceModal.create(
       }
       try {
         setIsSaving(true);
-        if (await checkIfNotesAreSensitive(updateData.note as string)) {
-          return;
-        }
+        // if (await checkIfNotesAreSensitive(updateData.note as string)) {
+        //   return;
+        // }
         await pollingVoidFunction(() =>
           update(
             ref(
