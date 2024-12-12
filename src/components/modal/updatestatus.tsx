@@ -159,9 +159,9 @@ const UpdateUnitStatus = NiceModal.create(
       }
       try {
         setIsSaving(true);
-        if (await checkIfNotesAreSensitive(updateData.note as string)) {
-          return;
-        }
+        // if (await checkIfNotesAreSensitive(updateData.note as string)) {
+        //   return;
+        // }
         await pollingVoidFunction(() =>
           update(
             ref(
