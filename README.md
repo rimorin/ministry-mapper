@@ -1,5 +1,7 @@
-![Screenshot 2022-08-19 at 2 10 11 PM](https://user-images.githubusercontent.com/40650158/185554709-ce94a04e-2a34-43a9-b7de-09aa7f437139.png)
+**Important Note: This project is no longer maintained. Please refer to [Ministry Mapper V2](https://github.com/rimorin/ministry-mapper-v2) for the latest version and updates.**
 
+![Screenshot 2022-08-19 at 2 10 11 PM](https://user-images.githubusercontent.com/40650158/185554709-ce94a04e-2a34-43a9-b7de-09aa7f437139.png)
+ 
 A web application for the field ministry.
 
 **Important Notice**: Ministry Mapper incorporates the capability to track residential addresses, a feature that may raise concerns under strict data privacy regulations in certain jurisdictions. We urge users to conduct a comprehensive review of their local data protection laws and ensure adherence to all applicable guidelines before implementing Ministry Mapper. This proactive approach will safeguard your ministry activities against potential legal challenges.
